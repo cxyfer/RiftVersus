@@ -1,10 +1,27 @@
+import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 
-import { ComparisonQuerySchema } from "@riftversus/contracts";
+import { ComparisonQuerySchema, UuidSchema } from "@riftversus/contracts";
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
 
 import { isMissingSubjectError, notFoundError, validationError } from "../errors.js";
 import type { AppDependencies } from "../types.js";
+
+const CursorPayloadSchema = z.object({ playedAt: z.iso.datetime(), id: UuidSchema });
+const CursorSchema = z.string().min(1).superRefine((cursor, context) => {
+  if (!/^[A-Za-z0-9_-]+$/.test(cursor)) {
+    context.addIssue({ code: "custom", message: "Invalid comparison cursor." });
+    return;
+  }
+  try {
+    if (!CursorPayloadSchema.safeParse(JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"))).success) {
+      context.addIssue({ code: "custom", message: "Invalid comparison cursor." });
+    }
+  } catch {
+    context.addIssue({ code: "custom", message: "Invalid comparison cursor." });
+  }
+});
 
 function values(value: unknown) {
   return (Array.isArray(value) ? value : [value]).flatMap((item) => typeof item === "string" ? item.split(",") : []).filter(Boolean);
@@ -16,6 +33,11 @@ function optionalString(query: Record<string, unknown>, key: string) {
 }
 
 function normalizeQuery(query: Record<string, unknown>) {
+  const cursor = optionalString(query, "cursor");
+  if (cursor !== undefined) {
+    const parsedCursor = CursorSchema.safeParse(cursor);
+    if (!parsedCursor.success) throw validationError(parsedCursor.error);
+  }
   const parsed = ComparisonQuerySchema.safeParse({
     left: { kind: query["left.kind"], id: query["left.id"], teamEraId: optionalString(query, "left.teamEraId") },
     right: { kind: query["right.kind"], id: query["right.id"], teamEraId: optionalString(query, "right.teamEraId") },
@@ -24,7 +46,7 @@ function normalizeQuery(query: Record<string, unknown>) {
     eventCategories: values(query.eventCategories).sort(),
     bestOf: values(query.bestOf).sort(),
     tournamentIds: values(query.tournamentIds).sort(),
-    cursor: optionalString(query, "cursor"),
+    cursor,
     limit: query.limit,
   });
   if (!parsed.success) throw validationError(parsed.error);
@@ -45,6 +67,13 @@ function etag(query: ReturnType<typeof normalizeQuery>, datasetVersion: string) 
   return `"${createHash("sha256").update(payload).digest("hex")}"`;
 }
 
+function ifNoneMatchMatches(header: string | undefined, current: string) {
+  return header?.split(",").some((value) => {
+    const tag = value.trim();
+    return tag === "*" || (tag.startsWith("W/") ? tag.slice(2).trim() : tag) === current;
+  }) ?? false;
+}
+
 export function registerComparisonRoutes(app: FastifyInstance, dependencies: AppDependencies) {
   app.get("/api/comparisons", async (request, reply) => {
     const query = normalizeQuery(request.query as Record<string, unknown>);
@@ -60,7 +89,7 @@ export function registerComparisonRoutes(app: FastifyInstance, dependencies: App
     const cacheTag = etag(query, comparison.dataset.version);
     reply.header("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     reply.header("ETag", cacheTag);
-    if (request.headers["if-none-match"] === cacheTag) return reply.code(304).send();
+    if (ifNoneMatchMatches(request.headers["if-none-match"], cacheTag)) return reply.code(304).send();
     return comparison;
   });
 }

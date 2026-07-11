@@ -1,4 +1,5 @@
 import type { ComparisonResponse, Dataset, ResolvedSubject } from "@riftversus/contracts";
+import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { buildApp } from "../src/app.js";
@@ -70,6 +71,16 @@ describe("HTTP API", () => {
     expect(response.json()).toMatchObject({ error: { code: "VALIDATION_ERROR" } });
   });
 
+  it("rejects an invalid comparison cursor with a safe validation envelope", async () => {
+    const { app, dependencies } = createApp();
+
+    const response = await app.inject(`/api/comparisons?left.kind=team&left.id=${leftId}&right.kind=team&right.id=${rightId}&cursor=not-a-cursor`);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toMatchObject({ error: { code: "VALIDATION_ERROR" } });
+    expect(dependencies.compare).not.toHaveBeenCalled();
+  });
+
   it("returns 404 when comparison subjects are missing", async () => {
     const { app } = createApp({ compare: vi.fn(async () => null) });
 
@@ -125,12 +136,16 @@ describe("HTTP API", () => {
 
     const first = await app.inject(url);
     const second = await app.inject({ url, headers: { "if-none-match": first.headers.etag! } });
+    const weak = await app.inject({ url, headers: { "if-none-match": `W/${first.headers.etag}` } });
+    const list = await app.inject({ url, headers: { "if-none-match": `"other", W/${first.headers.etag}` } });
 
     expect(first.statusCode).toBe(200);
     expect(first.headers["cache-control"]).toBe("public, max-age=60, stale-while-revalidate=300");
     expect(first.headers.etag).toMatch(/^"[a-f0-9]{64}"$/);
     expect(second.statusCode).toBe(304);
-    expect(dependencies.compare).toHaveBeenCalledTimes(2);
+    expect(weak.statusCode).toBe(304);
+    expect(list.statusCode).toBe(304);
+    expect(dependencies.compare).toHaveBeenCalledTimes(4);
 
     const changed = createApp({ compare: vi.fn(async () => ({ ...comparison(), dataset: { ...dataset, version: "2026-07-12.2" } })) });
     const changedResponse = await changed.app.inject(url);
@@ -141,10 +156,28 @@ describe("HTTP API", () => {
     const { app } = createApp({ staticHtml: "<main>RiftVersus</main>" });
 
     await expect(app.inject("/comparison/left/right")).resolves.toMatchObject({ statusCode: 200, body: "<main>RiftVersus</main>" });
-    for (const url of ["/api", "/api?preview=1", "/api/not-a-route", "/api/not-a-route?preview=1", "/media", "/media?preview=1", "/media/missing.png", "/media/missing.png?preview=1"]) {
+    for (const url of ["/api", "/api?preview=1", "/api/not-a-route", "/api/not-a-route?preview=1", "/media", "/media?preview=1", "/media/missing.png", "/media/missing.png?preview=1", "/%61pi/unknown", "/api%2Funknown", "/media%2Fmissing"]) {
       const response = await app.inject(url);
       expect(response.statusCode).toBe(404);
       expect(response.json()).toMatchObject({ error: { code: "NOT_FOUND" } });
     }
+  });
+
+  it("returns a safe validation envelope for malformed URI encoding", async () => {
+    const { app } = createApp({ staticHtml: "<main>RiftVersus</main>" });
+
+    const response = await app.inject("/%ZZ");
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toMatchObject({ error: { code: "VALIDATION_ERROR" } });
+  });
+
+  it("returns a safe API error when a static fallback index is unavailable", async () => {
+    const { app } = createApp({ staticDir: resolve("test/fixtures") });
+
+    const response = await app.inject("/comparison/left/right");
+
+    expect(response.statusCode).toBe(404);
+    expect(response.json()).toMatchObject({ error: { code: "NOT_FOUND" } });
   });
 });
