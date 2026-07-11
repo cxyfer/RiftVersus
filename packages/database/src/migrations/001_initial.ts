@@ -250,16 +250,30 @@ export const initialMigration: Migration = {
       declare
         fact_schema text;
         fact_table text;
+        fact_kind "char";
+        fact_owner oid;
+        authorization_owner oid;
+        definer_owner oid;
         fact_exists boolean;
         provenance_exists boolean;
       begin
-        select namespace.nspname, class.relname into fact_schema, fact_table
+        select namespace.nspname, class.relname, class.relkind, class.relowner
+          into fact_schema, fact_table, fact_kind, fact_owner
         from pg_class class
         join pg_namespace namespace on namespace.oid = class.relnamespace
         where class.oid = target_fact;
 
-        if fact_table not in ('series_facts', 'game_facts') then
-          raise exception 'Only canonical fact tables may be authorized';
+        select class.relowner into authorization_owner
+        from pg_class class
+        join pg_namespace namespace on namespace.oid = class.relnamespace
+        where namespace.nspname = fact_schema
+          and class.relname = 'fact_mutation_authorizations'
+          and class.relkind = 'r';
+        select oid into definer_owner from pg_roles where rolname = current_user;
+
+        if fact_kind <> 'r' or fact_table not in ('series_facts', 'game_facts')
+          or authorization_owner is null or fact_owner <> definer_owner or authorization_owner <> definer_owner then
+          raise exception 'Only owner-controlled canonical fact tables may be authorized';
         end if;
 
         execute format('select exists (select 1 from %I.%I where id = $1)', fact_schema, fact_table)
@@ -478,7 +492,7 @@ export const initialMigration: Migration = {
       revoke all on function riftversus_require_entity_kind(text, uuid, text, text) from public;
       revoke all on function riftversus_enforce_entity_kinds() from public;
       comment on function riftversus_authorize_fact_update(regclass, uuid, text, uuid) is
-        'SECURITY DEFINER controlled update route. EXECUTE is revoked from PUBLIC; grant it explicitly to a trusted sync writer. The function owner is the DBA trust boundary.';
+        'SECURITY DEFINER controlled update route. It accepts only owner-controlled base fact tables in a schema containing the owner-controlled authorization table. EXECUTE is revoked from PUBLIC; grant it explicitly to a trusted sync writer. The function owner is the DBA trust boundary.';
 
       create index entities_canonical_name_search on entities (lower(canonical_name));
       create index entity_aliases_display_name_search on entity_aliases (lower(display_name)) where searchable;

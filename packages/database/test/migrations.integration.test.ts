@@ -13,6 +13,7 @@ const describeWithDatabase = databaseUrl ? describe : describe.skip;
 
 describeWithDatabase("initial schema migration", () => {
   const schema = createTestSchemaName();
+  const decoySchema = `${schema}_decoy`;
   const adminPool = new Pool({ connectionString: databaseUrl });
 
   beforeAll(async () => {
@@ -297,6 +298,22 @@ describeWithDatabase("initial schema migration", () => {
       await expect(
         db.deleteFrom("override_applications").where("id", "=", seedIds.overrideApplication).execute(),
       ).rejects.toThrow();
+      await sql.raw(`create schema ${decoySchema}`).execute(db);
+      try {
+        await sql.raw(`create table ${decoySchema}.series_facts (id uuid primary key)`).execute(db);
+        await expect(
+          sql.raw(`
+            select riftversus_authorize_fact_update(
+              '${decoySchema}.series_facts'::regclass,
+              '${seedIds.series}'::uuid,
+              'source_object',
+              '${seedIds.sourceObject}'::uuid
+            )
+          `).execute(db),
+        ).rejects.toThrow();
+      } finally {
+        await sql.raw(`drop schema ${decoySchema} cascade`).execute(db);
+      }
       await db.connection().execute(async (connection) => {
         await sql`
           select set_config('riftversus.fact_update_provenance_kind', 'source_object', false)
@@ -330,15 +347,34 @@ describeWithDatabase("initial schema migration", () => {
         .where("id", "=", seedIds.series)
         .executeTakeFirstOrThrow();
       expect(updatedSeries.played_at.toISOString()).toBe("2026-01-02T00:00:00.000Z");
+      await db.transaction().execute(async (trx) => {
+        await sql`
+          select riftversus_authorize_fact_update(
+            'series_facts'::regclass,
+            ${seedIds.series}::uuid,
+            'override_application',
+            ${seedIds.overrideApplication}::uuid
+          )
+        `.execute(trx);
+        await trx.updateTable("series_facts")
+          .set({ played_at: new Date("2026-01-03T00:00:00Z") })
+          .where("id", "=", seedIds.series)
+          .execute();
+      });
       const mutationAudits = await sql<{
         fact_id: string;
         fact_table: string;
         source_object_id: string | null;
         override_application_id: string | null;
+        old_played_at: string;
+        new_played_at: string;
       }>`
-        select fact_id, fact_table, source_object_id, override_application_id
+        select fact_id, fact_table, source_object_id, override_application_id,
+          old_payload ->> 'played_at' as old_played_at,
+          new_payload ->> 'played_at' as new_played_at
         from fact_mutation_audits
         where fact_id = ${seedIds.series}::uuid
+        order by audit_id
       `.execute(db);
       expect(mutationAudits.rows).toEqual([
         {
@@ -346,6 +382,16 @@ describeWithDatabase("initial schema migration", () => {
           fact_table: "series_facts",
           source_object_id: seedIds.sourceObject,
           override_application_id: null,
+          old_played_at: expect.stringContaining("2026-01-01"),
+          new_played_at: expect.stringContaining("2026-01-02"),
+        },
+        {
+          fact_id: seedIds.series,
+          fact_table: "series_facts",
+          source_object_id: null,
+          override_application_id: seedIds.overrideApplication,
+          old_played_at: expect.stringContaining("2026-01-02"),
+          new_played_at: expect.stringContaining("2026-01-03"),
         },
       ]);
       await expect(
@@ -354,6 +400,11 @@ describeWithDatabase("initial schema migration", () => {
           set changed_at = now()
           where fact_id = ${seedIds.series}::uuid
         `.execute(db),
+      ).rejects.toThrow();
+      await expect(
+        db.deleteFrom("fact_mutation_audits")
+          .where("fact_id", "=", seedIds.series)
+          .execute(),
       ).rejects.toThrow();
       await expect(
         db.insertInto("series_facts").values({
