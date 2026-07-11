@@ -46,6 +46,10 @@ describe("loadConfig", () => {
       "https://username:password@s3.example.com",
       "https://s3.example.com?X-Amz-Signature=signed-value&querySecret=secret-value",
       "https://s3.example.com#X-Amz-Signature=signed-value",
+      "mailto:storage@example.com",
+      "javascript:alert(1)",
+      "ftp://s3.example.com",
+      "file:///var/lib/riftversus",
     ]) {
       expect(() => loadConfig({ ...s3Config, S3_ENDPOINT: endpoint })).toThrow();
     }

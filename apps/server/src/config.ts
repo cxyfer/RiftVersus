@@ -13,9 +13,15 @@ const S3EndpointSchema = z.url().refine(
   (endpoint) => {
     const url = new URL(endpoint);
 
-    return url.username === "" && url.password === "" && url.search === "" && url.hash === "";
+    return (
+      (url.protocol === "http:" || url.protocol === "https:") &&
+      url.username === "" &&
+      url.password === "" &&
+      url.search === "" &&
+      url.hash === ""
+    );
   },
-  "S3_ENDPOINT must not contain userinfo, query parameters, or a fragment.",
+  "S3_ENDPOINT must be an HTTP(S) URL without userinfo, query parameters, or a fragment.",
 );
 
 const EnvironmentSchema = z
