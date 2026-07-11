@@ -137,13 +137,14 @@ describe("HTTP API", () => {
     expect(changedResponse.headers.etag).not.toBe(first.headers.etag);
   });
 
-  it("does not use the SPA fallback for API or media paths", async () => {
+  it("does not use the SPA fallback for API or media pathnames, including roots with query strings", async () => {
     const { app } = createApp({ staticHtml: "<main>RiftVersus</main>" });
 
     await expect(app.inject("/comparison/left/right")).resolves.toMatchObject({ statusCode: 200, body: "<main>RiftVersus</main>" });
-    await expect(app.inject("/api/not-a-route")).resolves.toMatchObject({ statusCode: 404 });
-    const media = await app.inject("/media/missing.png");
-    expect(media.statusCode).toBe(404);
-    expect(media.json()).toMatchObject({ error: { code: "NOT_FOUND" } });
+    for (const url of ["/api", "/api?preview=1", "/api/not-a-route", "/api/not-a-route?preview=1", "/media", "/media?preview=1", "/media/missing.png", "/media/missing.png?preview=1"]) {
+      const response = await app.inject(url);
+      expect(response.statusCode).toBe(404);
+      expect(response.json()).toMatchObject({ error: { code: "NOT_FOUND" } });
+    }
   });
 });

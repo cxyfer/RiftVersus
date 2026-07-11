@@ -25,7 +25,9 @@ export function buildApp(dependencies: AppDependencies) {
   registerMediaRoute(app);
 
   app.setNotFoundHandler((request, reply) => {
-    if (request.method === "GET" && !request.url.startsWith("/api/") && !request.url.startsWith("/media/")) {
+    const pathname = new URL(request.url, "http://riftversus.local").pathname;
+    const isReservedNamespace = pathname === "/api" || pathname.startsWith("/api/") || pathname === "/media" || pathname.startsWith("/media/");
+    if (request.method === "GET" && !isReservedNamespace) {
       if (dependencies.staticHtml !== undefined) return reply.type("text/html; charset=utf-8").send(dependencies.staticHtml);
       if (dependencies.staticDir !== undefined) return reply.type("text/html; charset=utf-8").sendFile("index.html");
     }
