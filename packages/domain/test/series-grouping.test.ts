@@ -42,6 +42,29 @@ describe("series grouping", () => {
     expect(result.series).toEqual([expect.objectContaining({ gameIds: ["g-bo1"], winnerTeamId: "t1" })]);
   });
 
+  it("splits games outside the derived time window into separate series", () => {
+    const result = groupGamesIntoSeries([
+      game("g-first", 1, "t1"),
+      game("g-later", 1, "weibo", "2024-05-02T00:00:01.000Z"),
+    ], []);
+
+    expect(result.errors).toEqual([]);
+    expect(result.series).toEqual([
+      expect.objectContaining({ source: "derived", gameIds: ["g-first"], winnerTeamId: "t1" }),
+      expect.objectContaining({ source: "derived", gameIds: ["g-later"], winnerTeamId: "weibo" }),
+    ]);
+  });
+
+  it.each([
+    ["has no game winner", [game("g-missing", 1, null)]],
+    ["has a tied game result", [game("g-tied-a", 1, "t1"), game("g-tied-b", 2, "weibo")]],
+  ])("returns AMBIGUOUS_RESULT when a derived group %s", (_description, games) => {
+    const result = groupGamesIntoSeries(games, []);
+
+    expect(result.series).toEqual([]);
+    expect(result.errors).toEqual([expect.objectContaining({ code: "AMBIGUOUS_RESULT" })]);
+  });
+
   it("returns validation errors for ambiguous derived groups instead of guessing", () => {
     const result = groupGamesIntoSeries([game("g1", 1, "t1"), game("g2", 1, "weibo")], []);
 
