@@ -2,9 +2,9 @@
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
   "lastCheckpointRef": "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json",
-  "resumeInstruction": "Before Task 4, preserve database canonical-owner and dataset-version invariants; run Task 4 pure tests independently. Revisit Task 3 integration immediately when a safe TEST_DATABASE_URL is available.",
+  "resumeInstruction": "Preserve Task 3 canonical-schema integrity and Task 4 pure-domain oracle. Do not duplicate qualification logic in SQL; query rows must feed or match domain functions.",
   "knownPartialWork": [
-    "Task 3 canonical PostgreSQL schema, migrator, safe test harness, and integrity constraints merged after reviews"
+    "Task 4 pure domain comparison/classification/grouping oracle merged after reviews"
   ],
   "mustReadBeforeContinuing": [
     "docs/aegis/work/2026-07-12-riftversus-mvp/10-intent.md",
@@ -12,6 +12,6 @@
     "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json"
   ],
   "unsafeToAssume": [
-    "Do not claim migration SQL, triggers, security-definer behavior, or rollback are runtime-verified while integration test is skipped."
+    "Do not claim any PostgreSQL integration test ran while TEST_DATABASE_URL is unavailable."
   ]
 }

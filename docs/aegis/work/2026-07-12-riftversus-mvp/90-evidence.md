@@ -25,3 +25,11 @@ No evidence has been recorded yet.
 - Source: merge commit c84a7c3; task commits de6625d,c19a4bb,082c288,0f0e0af,774c4a2
 - Summary: Task 3 schema/migrator passed controller static verification (consumer/unit test, typecheck, lint, build, CLI help, diff check) and spec/quality reviews after integrity hardening. PostgreSQL integration command ran twice but skipped because TEST_DATABASE_URL is unset; Docker CLI unavailable.
 - Verifier: controller plus independent spec and quality reviewers
+
+## EvidenceBundleDraft
+
+- Artifact key: task-04-domain-semantics
+- Type: verification
+- Source: merge commit f37df06; task commits 53fca222,9b3ca445,1097aad,80dfa2b,8499584
+- Summary: Task 4 pure comparison/classification/grouping oracle passed controller verification: domain 19 tests, root consumer/unit tests, typecheck, lint, build, diff check; spec and quality reviews approved after grouping and identity fixes.
+- Verifier: controller plus independent spec and quality reviewers

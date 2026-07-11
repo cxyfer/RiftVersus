@@ -76,3 +76,23 @@
 - Task 3 merge c84a7c3; evidence artifact task-03-database-schema
 - Blocked on: No TEST_DATABASE_URL for real PostgreSQL acceptance evidence; does not block pure Task 4 domain implementation.
 - Next step: Create Task 4 isolated worktree and dispatch pure domain-rule implementation.
+
+## DriftCheckDraft
+
+- Scope status: Task 4 only: pure domain comparison, classification, grouping and fixtures; no database, provider, API, UI, or Docker changes.
+- Compatibility status: Domain is the single semantic oracle without database imports; API contracts remain @riftversus/contracts and persistence remains @riftversus/database.
+- Retirement status: No legacy logic, fallback, or second semantic owner added.
+- New risk signals:
+- Task 3 real PostgreSQL integration remains unverified until TEST_DATABASE_URL is supplied.
+- Advisory decision: continue
+
+## Checkpoint Update
+
+- Current todo: Execute Task 5 canonical repositories, comparison SQL, and sync publication
+- Active slice: Task 4 complete; Task 5 preparation
+- Completed todos:
+- Task 4 pure domain comparison/classification/grouping oracle merged after reviews
+- Evidence refs:
+- Task 4 merge f37df06; evidence artifact task-04-domain-semantics
+- Blocked on: No TEST_DATABASE_URL for Task 3 PostgreSQL runtime evidence; Task 5 integration tests will require the same safe connection.
+- Next step: Create Task 5 isolated worktree and implement repositories plus comparison/publication integration tests.

@@ -1,15 +1,15 @@
 {
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
-  "currentTodo": "Execute Task 4 comparison and classification domain rules",
+  "currentTodo": "Execute Task 5 canonical repositories, comparison SQL, and sync publication",
   "completedTodos": [
-    "Task 3 canonical PostgreSQL schema, migrator, safe test harness, and integrity constraints merged after reviews"
+    "Task 4 pure domain comparison/classification/grouping oracle merged after reviews"
   ],
-  "activeSlice": "Task 3 complete with runtime verification gap; Task 4 preparation",
+  "activeSlice": "Task 4 complete; Task 5 preparation",
   "evidenceRefs": [
-    "Task 3 merge c84a7c3; evidence artifact task-03-database-schema"
+    "Task 4 merge f37df06; evidence artifact task-04-domain-semantics"
   ],
-  "blockedOn": "No TEST_DATABASE_URL for real PostgreSQL acceptance evidence; does not block pure Task 4 domain implementation.",
-  "nextStep": "Create Task 4 isolated worktree and dispatch pure domain-rule implementation.",
+  "blockedOn": "No TEST_DATABASE_URL for Task 3 PostgreSQL runtime evidence; Task 5 integration tests will require the same safe connection.",
+  "nextStep": "Create Task 5 isolated worktree and implement repositories plus comparison/publication integration tests.",
   "updatedAt": "2026-07-12"
 }

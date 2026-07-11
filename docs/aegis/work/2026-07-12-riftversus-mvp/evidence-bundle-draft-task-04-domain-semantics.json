@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "task-04-domain-semantics",
+  "type": "verification",
+  "source": "merge commit f37df06; task commits 53fca222,9b3ca445,1097aad,80dfa2b,8499584",
+  "summary": "Task 4 pure comparison/classification/grouping oracle passed controller verification: domain 19 tests, root consumer/unit tests, typecheck, lint, build, diff check; spec and quality reviews approved after grouping and identity fixes.",
+  "verifier": "controller plus independent spec and quality reviewers"
+}

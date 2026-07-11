@@ -21,3 +21,4 @@ Entries are workspace records, not authoritative runtime decisions.
 | 2026-07-12 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-01-foundation.json | 2026-07-12-riftversus-mvp evidence task-01-foundation |
 | 2026-07-12 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-02-contracts-config.json | 2026-07-12-riftversus-mvp evidence task-02-contracts-config |
 | 2026-07-12 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-03-database-schema.json | 2026-07-12-riftversus-mvp evidence task-03-database-schema |
+| 2026-07-12 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-04-domain-semantics.json | 2026-07-12-riftversus-mvp evidence task-04-domain-semantics |
