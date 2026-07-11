@@ -1,15 +1,15 @@
 {
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
-  "currentTodo": "Execute Task 6 Fastify application, routes, caching and health checks",
+  "currentTodo": "Execute Task 7 sync orchestration, object storage, and source-access proof",
   "completedTodos": [
-    "Task 5 canonical repositories, comparison SQL, publication visibility and integration test harness merged after reviews"
+    "Task 6 Fastify API, caching, health checks, static boundary and CLI serve merged after reviews"
   ],
-  "activeSlice": "Task 5 complete with PostgreSQL runtime verification gap; Task 6 preparation",
+  "activeSlice": "Task 6 complete; Task 7 preparation",
   "evidenceRefs": [
-    "Task 5 merge eba4f0d; evidence artifact task-05-repositories-publication"
+    "Task 6 merge f9daac9; evidence artifact task-06-http-api"
   ],
-  "blockedOn": "No TEST_DATABASE_URL for real PostgreSQL runtime evidence; does not block API unit/inject tests.",
-  "nextStep": "Create Task 6 isolated worktree and implement Fastify app/routes with dependency injection.",
+  "blockedOn": "No TEST_DATABASE_URL for PostgreSQL runtime evidence; does not block sync unit tests and source manifest proof.",
+  "nextStep": "Create Task 7 isolated worktree and implement sync runner, S3 boundary and reviewed source manifest.",
   "updatedAt": "2026-07-12"
 }

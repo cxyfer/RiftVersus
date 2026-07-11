@@ -116,3 +116,23 @@
 - Task 5 merge eba4f0d; evidence artifact task-05-repositories-publication
 - Blocked on: No TEST_DATABASE_URL for real PostgreSQL runtime evidence; does not block API unit/inject tests.
 - Next step: Create Task 6 isolated worktree and implement Fastify app/routes with dependency injection.
+
+## DriftCheckDraft
+
+- Scope status: Task 6 HTTP API, CLI, static fallback and tests only; no provider, sync, database schema, UI or Docker changes.
+- Compatibility status: Routes consume contracts/repositories through DI; no provider imports; API errors remain structured and media is reserved without proxying.
+- Retirement status: No legacy route owner or fallback introduced.
+- New risk signals:
+- Task 3/5 PostgreSQL runtime integration remains unverified until TEST_DATABASE_URL is supplied.
+- Advisory decision: continue
+
+## Checkpoint Update
+
+- Current todo: Execute Task 7 sync orchestration, object storage, and source-access proof
+- Active slice: Task 6 complete; Task 7 preparation
+- Completed todos:
+- Task 6 Fastify API, caching, health checks, static boundary and CLI serve merged after reviews
+- Evidence refs:
+- Task 6 merge f9daac9; evidence artifact task-06-http-api
+- Blocked on: No TEST_DATABASE_URL for PostgreSQL runtime evidence; does not block sync unit tests and source manifest proof.
+- Next step: Create Task 7 isolated worktree and implement sync runner, S3 boundary and reviewed source manifest.

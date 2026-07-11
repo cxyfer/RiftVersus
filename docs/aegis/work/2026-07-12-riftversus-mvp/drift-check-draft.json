@@ -5,11 +5,11 @@
   "baselineRefs": [
     "docs/aegis/BASELINE-GOVERNANCE.md"
   ],
-  "scopeStatus": "Task 5 canonical database repositories, migrations, and tests only; no API/provider/UI/Docker changes.",
-  "compatStatus": "Facts remain current canonical rows without dataset_version_id; publication_generation is an atomic visibility fence, versions append-only; Task4 domain stays semantic oracle.",
-  "retirementStatus": "No legacy repository owner or fallback introduced.",
+  "scopeStatus": "Task 6 HTTP API, CLI, static fallback and tests only; no provider, sync, database schema, UI or Docker changes.",
+  "compatStatus": "Routes consume contracts/repositories through DI; no provider imports; API errors remain structured and media is reserved without proxying.",
+  "retirementStatus": "No legacy route owner or fallback introduced.",
   "newRiskSignals": [
-    "11 PostgreSQL integration tests, migrations, triggers, publication locks and EXPLAIN plans remain runtime-unverified until TEST_DATABASE_URL is provided."
+    "Task 3/5 PostgreSQL runtime integration remains unverified until TEST_DATABASE_URL is supplied."
   ],
-  "decision": "needs-verification"
+  "decision": "continue"
 }

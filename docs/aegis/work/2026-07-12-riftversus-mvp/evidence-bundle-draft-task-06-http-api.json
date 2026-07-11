@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "task-06-http-api",
+  "type": "verification",
+  "source": "merge f9daac9; task commits 3f42f7e,c3d728f,b190ac2,c97df4c",
+  "summary": "Task 6 Fastify API passed controller verification: server tests 22, filtered server build, root consumer/unit tests, typecheck, lint, build, CLI help, spec and independent quality review.",
+  "verifier": "controller plus independent spec and quality reviewers"
+}
