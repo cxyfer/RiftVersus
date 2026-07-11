@@ -12,6 +12,9 @@
   "files": [
     "dist"
   ],
+  "scripts": {
+    "test": "vitest run --config ../../vitest.unit.config.ts"
+  },
   "dependencies": {
     "zod": "4.4.3"
   }
