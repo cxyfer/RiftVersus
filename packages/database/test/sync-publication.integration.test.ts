@@ -29,7 +29,7 @@ describeWithDatabase("sync publication repository", () => {
   });
 
   it("atomically upserts canonical facts and rolls staged changes back on validation failure", async () => {
-    const source = { provider: "fixture", sourceKey: "facts-source", sourceUrl: "https://example.test/facts", objectKey: "sources/facts", checksum: "facts", parserVersion: "test" };
+    const source = { provider: "fixture", sourceKey: "t1", sourceUrl: "https://example.test/facts", objectKey: "sources/facts", checksum: "facts", parserVersion: "test" };
     await recordSourceObject(source, db);
     const sourceObject = await db.selectFrom("source_objects").select("id").where("provider", "=", source.provider).where("source_key", "=", source.sourceKey).executeTakeFirstOrThrow();
     const run = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
@@ -44,6 +44,14 @@ describeWithDatabase("sync publication repository", () => {
     await publishDataset({ syncRunId: retry.id, version: "facts-v2", sourceObjectId: sourceObject.id, coverage: [], facts });
     const retryCounts = await Promise.all([db.selectFrom("series_facts").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow(), db.selectFrom("game_facts").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow(), db.selectFrom("game_players").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow()]);
     expect(retryCounts).toEqual(counts);
+    const correction = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({ syncRunId: correction.id, version: "facts-v3", sourceObjectId: sourceObject.id, coverage: [], facts: { series: [input], games: [game], gamePlayers: [players[0]!] } });
+    expect(await db.selectFrom("game_players").select("player_entity_id").where("game_id", "=", seedIds.t1Game).where("player_entity_id", "=", seedIds.xiaohu).executeTakeFirst()).toBeUndefined();
+    const badSource = { provider: "wrong", sourceKey: "t1", sourceUrl: "https://example.test/wrong", objectKey: "sources/wrong", checksum: "wrong", parserVersion: "test" };
+    await recordSourceObject(badSource, db);
+    const badObject = await db.selectFrom("source_objects").select("id").where("provider", "=", "wrong").executeTakeFirstOrThrow();
+    const badRun = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    await expect(publishDataset({ syncRunId: badRun.id, version: "bad-source", sourceObjectId: badObject.id, coverage: [], facts: { series: [input] } })).rejects.toThrow("Source object does not match");
     const before = await db.selectFrom("series_facts").select("publication_generation").where("id", "=", seedIds.t1Series).executeTakeFirstOrThrow();
     const failed = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
     await expect(publishDataset({ syncRunId: failed.id, version: "facts-never", sourceObjectId: sourceObject.id, coverage: [], facts: { series: [input], games: [{ id: "99999999-9999-4999-8999-999999999999", provider: "fixture", sourceKey: "invalid", seriesId: "99999999-9999-4999-8999-999999999998", gameNumber: 1, playedAt: new Date(), sideATeamId: seedIds.t1, sideBTeamId: seedIds.weibo }] } }, db)).rejects.toThrow();

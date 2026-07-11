@@ -83,6 +83,8 @@ export async function seedComparisonFixture(db: Kysely<Database>) {
   await db.insertInto("media_assets").values([
     { id: mediaId(1), entity_id: seedIds.t1, kind: "logo", source_url: "https://example.test/t1.png", object_key: "media/t1.png", is_current: true },
     { id: mediaId(2), entity_id: seedIds.lpl, kind: "logo", source_url: "https://example.test/lpl.png", object_key: "media/lpl.png", is_current: true },
+    { id: mediaId(3), entity_id: seedIds.faker, kind: "portrait", source_url: "https://example.test/faker.png", object_key: "media/faker.png", is_current: true },
+    { id: mediaId(4), team_era_id: seedIds.t1Era, kind: "logo", source_url: "https://example.test/t1-era.png", object_key: "media/t1-era.png", is_current: true },
   ]).execute();
   await db.insertInto("tournaments").values([
     { id: seedIds.worlds, provider: "fixture", source_key: "worlds", name: "World Championship", category: "worlds", start_date: "2024-10-01", end_date: "2024-11-02" },

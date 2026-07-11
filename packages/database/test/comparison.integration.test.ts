@@ -77,6 +77,16 @@ describeWithDatabase("comparison repositories", () => {
     expect(comparison.coverageWarnings).not.toEqual(expect.arrayContaining([expect.objectContaining({ code: "NO_PUBLISHED_DATASET" })]));
   });
 
+  it("resolves visible player and exact-era media and rejects invalid subject input", async () => {
+    const player = await compareHeadToHead(query({ kind: "player", id: seedIds.faker }, { kind: "team", id: seedIds.weibo }), db);
+    expect(player.mediaUrls.left).toBe("/media/media/faker.png");
+    expect(await getMediaByKey("media/faker.png", db)).toMatchObject({ objectKey: "media/faker.png" });
+    const era = await compareHeadToHead(query({ kind: "team", id: seedIds.t1, teamEraId: seedIds.t1Era }, { kind: "team", id: seedIds.weibo }), db);
+    expect(era.mediaUrls.left).toBe("/media/media/t1-era.png");
+    await expect(compareHeadToHead({ ...query({ kind: "team", id: seedIds.t1 }, { kind: "team", id: seedIds.weibo }), cursor: "not-a-cursor" }, db)).rejects.toThrow("Invalid comparison cursor");
+    await expect(compareHeadToHead(query({ kind: "team", id: seedIds.weibo, teamEraId: seedIds.t1Era }, { kind: "team", id: seedIds.t1 }), db)).rejects.toThrow("Team era does not belong");
+  });
+
   it("uses participant and player indexes above the planner threshold", async () => {
     const otherA = randomUUID();
     const otherB = randomUUID();
@@ -112,7 +122,7 @@ describeWithDatabase("comparison repositories", () => {
       for (const child of Object.values(record)) visit(child);
     };
     visit(plan.rows[0]?.["QUERY PLAN"]);
-    expect(nodes.filter((node) => node.relation === "series_facts" || node.relation === "game_players").every((node) => node.node !== "Seq Scan")).toBe(true);
-    expect(nodes.map((node) => node.index)).toEqual(expect.arrayContaining(["game_players_player_game_lookup", "series_facts_comparison_lookup"]));
+    expect(nodes.filter((node) => node.relation === "series_facts" || node.relation === "game_facts" || node.relation === "game_players").every((node) => node.node !== "Seq Scan")).toBe(true);
+    expect(nodes.map((node) => node.index)).toEqual(expect.arrayContaining(["game_players_player_game_lookup", "series_facts_comparison_lookup", "game_facts_comparison_lookup"]));
   });
 });
