@@ -61,6 +61,33 @@ describe("series grouping", () => {
     ]);
   });
 
+  it("gives colon-colliding derived tuples distinct series IDs", () => {
+    const result = groupGamesIntoSeries([
+      {
+        id: "d:e",
+        tournamentId: "a",
+        teamAId: "b",
+        teamBId: "c",
+        gameNumber: 1,
+        winnerTeamId: "b",
+        playedAt: "2024-05-01T12:00:00.000Z",
+      },
+      {
+        id: "e",
+        tournamentId: "a:b",
+        teamAId: "c",
+        teamBId: "d",
+        gameNumber: 1,
+        winnerTeamId: "c",
+        playedAt: "2024-05-01T12:00:00.000Z",
+      },
+    ], []);
+
+    expect(result.errors).toEqual([]);
+    expect(result.series).toHaveLength(2);
+    expect(new Set(result.series.map((series) => series.id)).size).toBe(2);
+  });
+
   it("derives only bounded, same-opponent games with unique numbers and a winner", () => {
     const result = groupGamesIntoSeries([
       game("g1", 1, "t1"),

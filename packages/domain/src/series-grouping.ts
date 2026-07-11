@@ -112,7 +112,7 @@ function deriveCluster(games: readonly SourceGame[], series: GroupedSeries[], er
 
   const teamIds = teamIdsFor(games);
   series.push({
-    id: `derived:${firstGame.tournamentId}:${teamIds[0]}:${teamIds[1]}:${firstGame.id}`,
+    id: JSON.stringify(["derived", firstGame.tournamentId, teamIds[0], teamIds[1], firstGame.id]),
     source: "derived",
     tournamentId: firstGame.tournamentId,
     teamIds,
