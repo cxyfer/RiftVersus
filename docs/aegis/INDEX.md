@@ -18,3 +18,4 @@ Entries are workspace records, not authoritative runtime decisions.
 | 2026-07-12 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json | RiftVersus MVP execution todo checkpoint draft |
 | 2026-07-12 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/drift-check-draft.json | RiftVersus MVP execution drift check draft |
 | 2026-07-12 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/resume-state-hint.json | 2026-07-12-riftversus-mvp resume state hint |
+| 2026-07-12 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-01-foundation.json | 2026-07-12-riftversus-mvp evidence task-01-foundation |

@@ -1,15 +1,15 @@
 {
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
-  "currentTodo": "選定 worktree 位置並建立 Task 1 隔離工作樹",
+  "currentTodo": "Execute Task 2 contracts and runtime configuration in a new isolated worktree",
   "completedTodos": [
-    "Git metadata 初始化於 /tmp/RiftVersus.git；加入 .gitignore；建立 Aegis work records；commit 79eabe6"
+    "Task 1 workspace foundation merged to main after spec compliance and code-quality reviews"
   ],
-  "activeSlice": "pre-task bootstrap complete",
+  "activeSlice": "Task 2 preparation",
   "evidenceRefs": [
-    "git commit 79eabe6: 🎉 init: establish project baseline"
+    "main merge commit for feat/task-01-foundation; Task 1 all checks passed and reviews approved"
   ],
-  "blockedOn": "需要依 using-git-worktrees 選擇 worktree 位置",
-  "nextStep": "使用者選擇 project-local .worktrees 或 /tmp isolated worktree",
+  "blockedOn": null,
+  "nextStep": "Create feat/task-02-contracts worktree and dispatch Task 2 implementer",
   "updatedAt": "2026-07-12"
 }

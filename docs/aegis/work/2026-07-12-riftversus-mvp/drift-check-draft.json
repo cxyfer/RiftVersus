@@ -3,14 +3,13 @@
   "taskId": "2026-07-12-riftversus-mvp",
   "taskIntentRef": "docs/aegis/work/2026-07-12-riftversus-mvp/task-intent-draft.json",
   "baselineRefs": [
-    "docs/aegis/specs/2026-07-12-riftversus-design.md",
-    "docs/aegis/BASELINE-GOVERNANCE.md"
+    "docs/aegis/specs/2026-07-12-riftversus-design.md"
   ],
-  "scopeStatus": "not-yet-verified",
-  "compatStatus": "not-yet-verified",
-  "retirementStatus": "not-yet-verified",
+  "scopeStatus": "Task 1 only; no runtime database, API, provider, UI, or Docker behavior added.",
+  "compatStatus": "Workspace dependency direction and public package-entry boundary preserved.",
+  "retirementStatus": "No retired D1, Rust, SQLite, Redis, runtime-scraping, or server-Chromium path introduced.",
   "newRiskSignals": [
-    "來源存取、歷史資料正確性、Docker WSL 整合與跨模組契約"
+    "Docker remains environment-unverified; Task 2 introduces contracts/config only."
   ],
-  "decision": "needs-baseline-readback"
+  "decision": "continue"
 }

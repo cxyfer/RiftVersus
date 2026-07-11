@@ -16,3 +16,23 @@
 - git commit 79eabe6: 🎉 init: establish project baseline
 - Blocked on: 需要依 using-git-worktrees 選擇 worktree 位置
 - Next step: 使用者選擇 project-local .worktrees 或 /tmp isolated worktree
+
+## DriftCheckDraft
+
+- Scope status: Task 1 only; no runtime database, API, provider, UI, or Docker behavior added.
+- Compatibility status: Workspace dependency direction and public package-entry boundary preserved.
+- Retirement status: No retired D1, Rust, SQLite, Redis, runtime-scraping, or server-Chromium path introduced.
+- New risk signals:
+- Docker remains environment-unverified; Task 2 introduces contracts/config only.
+- Advisory decision: continue
+
+## Checkpoint Update
+
+- Current todo: Execute Task 2 contracts and runtime configuration in a new isolated worktree
+- Active slice: Task 2 preparation
+- Completed todos:
+- Task 1 workspace foundation merged to main after spec compliance and code-quality reviews
+- Evidence refs:
+- main merge commit for feat/task-01-foundation; Task 1 all checks passed and reviews approved
+- Blocked on: none
+- Next step: Create feat/task-02-contracts worktree and dispatch Task 2 implementer
