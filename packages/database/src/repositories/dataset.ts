@@ -7,7 +7,7 @@ export async function getDatasetStatus(db: Kysely<Database>): Promise<DatasetSta
   const version = await db.selectFrom("dataset_versions")
     .innerJoin("sync_runs", "sync_runs.id", "dataset_versions.sync_run_id")
     .select(["dataset_versions.id", "dataset_versions.version", "dataset_versions.published_at", "sync_runs.finished_at"])
-    .orderBy("dataset_versions.published_at", "desc")
+    .orderBy("dataset_versions.generation", "desc")
     .orderBy("dataset_versions.id", "desc")
     .executeTakeFirst();
   if (version === undefined) return null;

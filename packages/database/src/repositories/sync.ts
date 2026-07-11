@@ -34,6 +34,8 @@ export async function recordSourceObject(input: SourceObjectInput, db: Kysely<Da
 
 export async function publishDataset(input: PublishDatasetInput, db: Kysely<Database>): Promise<DatasetVersion> {
   return db.transaction().execute(async (trx) => {
+    // Version generations are global visibility state, so providers serialize only this allocation.
+    await sql`select pg_advisory_xact_lock(817242991)`.execute(trx);
     const run = await trx.selectFrom("sync_runs").select(["id", "status"])
       .where("id", "=", input.syncRunId).executeTakeFirst();
     if (run === undefined || run.status !== "running") throw new Error("Only a running sync run may publish a dataset.");

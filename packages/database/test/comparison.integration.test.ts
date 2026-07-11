@@ -71,9 +71,9 @@ describeWithDatabase("comparison repositories", () => {
     expect((await searchEntities({ query: "skt" }, db)).entities).toEqual(expect.arrayContaining([expect.objectContaining({ id: seedIds.t1 })]));
     expect((await listAvailableFilters(db)).eventCategories).toEqual(expect.arrayContaining(["league", "worlds"]));
     expect(await getMediaByKey("media/t1.png", db)).toMatchObject({ objectKey: "media/t1.png" });
-    expect(await getDatasetStatus(db)).toBeNull();
+    expect(await getDatasetStatus(db)).toMatchObject({ version: "fixture-publication" });
     const comparison = await compareHeadToHead(query({ kind: "team", id: seedIds.t1 }, { kind: "region", id: seedIds.lpl }), db);
-    expect(comparison.coverageWarnings).toEqual(expect.arrayContaining([expect.objectContaining({ code: "NO_PUBLISHED_DATASET" })]));
+    expect(comparison.coverageWarnings).not.toEqual(expect.arrayContaining([expect.objectContaining({ code: "NO_PUBLISHED_DATASET" })]));
   });
 
   it("uses participant and player indexes above the planner threshold", async () => {
@@ -99,7 +99,6 @@ describeWithDatabase("comparison repositories", () => {
     }))).execute();
     await db.insertInto("game_players").values(rows.map(({ gameId }) => ({ game_id: gameId, player_entity_id: otherPlayer, side: "a", team_entity_id: otherA }))).execute();
     const plan = await db.transaction().execute(async (trx) => {
-      await sql`set local enable_seqscan = off`.execute(trx);
       return sql<{ "QUERY PLAN": unknown }>`
         explain (format json) select series.id
         from series_facts series join game_facts game on game.series_id = series.id
