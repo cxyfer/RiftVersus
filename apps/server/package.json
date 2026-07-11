@@ -4,11 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "tsc -b",
     "test": "vitest run --config ../../vitest.unit.config.ts"
   },
   "dependencies": {
+    "@fastify/sensible": "6.0.4",
+    "@fastify/static": "10.1.0",
     "@riftversus/contracts": "workspace:*",
     "@riftversus/database": "workspace:*",
+    "fastify": "5.10.0",
     "zod": "4.4.3"
   }
 }
