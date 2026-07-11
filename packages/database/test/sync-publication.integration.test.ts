@@ -23,6 +23,7 @@ describeWithDatabase("sync publication repository", () => {
     const source = { provider: "fixture", sourceKey: "source-1", sourceUrl: "https://example.test/a", objectKey: "sources/a", checksum: "a", parserVersion: "test" };
     expect(await recordSourceObject(source, db)).toBe("inserted");
     expect(await recordSourceObject(source, db)).toBe("existing");
+    await expect(recordSourceObject({ ...source, checksum: "different" }, db)).rejects.toThrow("Immutable source object metadata conflicts");
     const first = await publishDataset({ syncRunId: run.id, version: "v1", coverage: [{ provider: "fixture", competition: "all", seasonYear: 2024, earliestDate: "2024-01-01", latestDate: "2024-12-31", status: "complete" }] }, db);
     const secondRun = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
     const second = await publishDataset({ syncRunId: secondRun.id, version: "v2", coverage: [] }, db);
@@ -54,10 +55,14 @@ describeWithDatabase("sync publication repository", () => {
     const badRun = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
     await expect(publishDataset({ syncRunId: badRun.id, version: "bad-source", sourceObjectId: badObject.id, coverage: [], facts: { series: [input] } })).rejects.toThrow("Source object does not match");
     const before = await db.selectFrom("series_facts").select("publication_generation").where("id", "=", seedIds.t1Series).executeTakeFirstOrThrow();
+    const publishedBeforeFailure = await getDatasetStatus(db);
+    const countsBeforeFailure = await db.selectFrom("game_facts").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow();
     const failed = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
     await expect(publishDataset({ syncRunId: failed.id, version: "facts-never", sourceObjectId: sourceObject.id, coverage: [], facts: { series: [input], games: [{ id: "99999999-9999-4999-8999-999999999999", provider: "fixture", sourceKey: "invalid", seriesId: "99999999-9999-4999-8999-999999999998", gameNumber: 1, playedAt: new Date(), sideATeamId: seedIds.t1, sideBTeamId: seedIds.weibo }] } }, db)).rejects.toThrow();
     const after = await db.selectFrom("series_facts").select("publication_generation").where("id", "=", seedIds.t1Series).executeTakeFirstOrThrow();
     expect(after).toEqual(before);
+    expect(await db.selectFrom("game_facts").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow()).toEqual(countsBeforeFailure);
+    expect(await getDatasetStatus(db)).toEqual(publishedBeforeFailure);
     expect(await db.selectFrom("dataset_versions").select("version").where("version", "=", "facts-never").executeTakeFirst()).toBeUndefined();
   });
 
@@ -91,5 +96,11 @@ describeWithDatabase("sync publication repository", () => {
       .where("fact_table", "=", "series_facts").where("fact_id", "=", seriesId).executeTakeFirstOrThrow();
     expect(audit).toMatchObject({ fact_table: "series_facts", fact_id: seriesId, source_object_id: sourceObject.id, old_payload: {} });
     expect(audit.new_payload).toMatchObject({ id: seriesId, source_key: "fresh-series" });
+  });
+
+  it("rejects direct mutation of append-only dataset versions", async () => {
+    const version = await db.selectFrom("dataset_versions").select("id").orderBy("generation", "desc").executeTakeFirstOrThrow();
+    await expect(db.updateTable("dataset_versions").set({ version: "mutated" }).where("id", "=", version.id).execute()).rejects.toThrow();
+    await expect(db.deleteFrom("dataset_versions").where("id", "=", version.id).execute()).rejects.toThrow();
   });
 });
