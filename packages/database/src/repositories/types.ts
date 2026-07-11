@@ -88,6 +88,8 @@ export interface PublishDatasetInput {
   coverage: readonly CoverageInput[];
   sourceObjectId?: string;
   facts?: CanonicalFacts;
+  /** Every listed game has an authoritative roster, including an intentionally empty one. */
+  rosterGameIds?: readonly string[];
 }
 
 export interface SeriesFactInput {

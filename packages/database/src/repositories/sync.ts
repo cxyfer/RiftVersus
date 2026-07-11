@@ -29,7 +29,11 @@ export async function recordSourceObject(input: SourceObjectInput, db: Kysely<Da
     object_key: input.objectKey, checksum: input.checksum, content_type: input.contentType ?? null,
     byte_size: input.byteSize ?? null, parser_version: input.parserVersion,
   }).onConflict((conflict) => conflict.columns(["provider", "source_key"]).doNothing()).returning("id").executeTakeFirst();
-  return inserted === undefined ? "existing" : "inserted";
+  if (inserted !== undefined) return "inserted";
+  const existing = await db.selectFrom("source_objects").select(["source_url", "object_key", "checksum", "content_type", "byte_size", "parser_version"])
+    .where("provider", "=", input.provider).where("source_key", "=", input.sourceKey).executeTakeFirstOrThrow();
+  if (existing.source_url !== input.sourceUrl || existing.object_key !== input.objectKey || existing.checksum !== input.checksum || existing.content_type !== (input.contentType ?? null) || existing.byte_size !== (input.byteSize ?? null) || existing.parser_version !== input.parserVersion) throw new Error("Immutable source object metadata conflicts with an existing source key.");
+  return "existing";
 }
 
 export async function publishDataset(input: PublishDatasetInput, db: Kysely<Database>): Promise<DatasetVersion> {
@@ -44,20 +48,23 @@ export async function publishDataset(input: PublishDatasetInput, db: Kysely<Data
     if (input.sourceObjectId !== undefined) {
       const source = await trx.selectFrom("source_objects").select(["id", "provider", "source_key"]).where("id", "=", input.sourceObjectId).executeTakeFirst();
       if (source === undefined) throw new Error("Canonical fact publication source object does not exist.");
-      for (const fact of [...(facts?.series ?? []), ...(facts?.games ?? [])]) if (fact.provider !== source.provider || !fact.sourceKey.startsWith(source.source_key)) throw new Error("Source object does not match canonical fact provenance.");
+      for (const fact of [...(facts?.series ?? []), ...(facts?.games ?? [])]) if (fact.provider !== source.provider) throw new Error("Source object does not match canonical fact provenance.");
     }
     const latest = await trx.selectFrom("dataset_versions").select("generation").orderBy("generation", "desc").executeTakeFirst();
     const generation = (BigInt(latest?.generation ?? "0") + 1n).toString();
     for (const item of facts?.series ?? []) await upsertSeries(item, generation, input.sourceObjectId!, trx);
     for (const item of facts?.games ?? []) await upsertGame(item, generation, input.sourceObjectId!, trx);
     const gamePlayers = facts?.gamePlayers ?? [];
-    if (gamePlayers.length > 0) {
+    const rosterGameIds = input.rosterGameIds ?? [...new Set(gamePlayers.map((player) => player.gameId))];
+    if (rosterGameIds.length > 0) {
       const rosterByGame = new Map<string, typeof gamePlayers>();
       for (const player of gamePlayers) rosterByGame.set(player.gameId, [...(rosterByGame.get(player.gameId) ?? []), player]);
-      for (const [gameId, roster] of rosterByGame) {
+      for (const gameId of rosterGameIds) {
+        const roster = rosterByGame.get(gameId) ?? [];
         const game = await trx.selectFrom("game_facts").select(["side_a_team_id", "side_b_team_id"]).where("id", "=", gameId).executeTakeFirst();
-        if (game === undefined || roster === undefined || roster.some((player) => player.teamEntityId !== (player.side === "a" ? game.side_a_team_id : game.side_b_team_id))) throw new Error("Game player roster does not match the canonical game side.");
-        await trx.deleteFrom("game_players").where("game_id", "=", gameId).where("player_entity_id", "not in", roster.map((player) => player.playerEntityId)).execute();
+        if (game === undefined || roster.some((player) => player.teamEntityId !== (player.side === "a" ? game.side_a_team_id : game.side_b_team_id))) throw new Error("Game player roster does not match the canonical game side.");
+        if (roster.length === 0) await trx.deleteFrom("game_players").where("game_id", "=", gameId).execute();
+        else await trx.deleteFrom("game_players").where("game_id", "=", gameId).where("player_entity_id", "not in", roster.map((player) => player.playerEntityId)).execute();
       }
       await trx.insertInto("game_players").values(gamePlayers.map((item) => ({
       game_id: item.gameId, player_entity_id: item.playerEntityId, side: item.side, team_entity_id: item.teamEntityId,
