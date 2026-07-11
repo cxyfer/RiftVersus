@@ -12,6 +12,9 @@
   "files": [
     "dist"
   ],
+  "scripts": {
+    "test": "vitest run"
+  },
   "dependencies": {
     "@riftversus/contracts": "workspace:*"
   }
