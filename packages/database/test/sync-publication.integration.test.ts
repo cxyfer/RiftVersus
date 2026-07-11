@@ -46,6 +46,10 @@ describeWithDatabase("sync publication repository", () => {
     await publishDataset({ syncRunId: retry.id, version: "facts-v2", sourceObjectId: sourceObject.id, coverage: [], facts });
     const retryCounts = await Promise.all([db.selectFrom("series_facts").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow(), db.selectFrom("game_facts").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow(), db.selectFrom("game_players").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow()]);
     expect(retryCounts).toEqual(counts);
+    const sourceLess = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    const rosterBeforeRejection = await db.selectFrom("game_players").select("player_entity_id").where("game_id", "=", seedIds.t1Game).execute();
+    await expect(publishDataset({ syncRunId: sourceLess.id, version: "no-source-roster", coverage: [], rosterGameIds: [seedIds.t1Game] }, db)).rejects.toThrow("requires sourceObjectId");
+    expect(await db.selectFrom("game_players").select("player_entity_id").where("game_id", "=", seedIds.t1Game).execute()).toEqual(rosterBeforeRejection);
     const correction = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
     await publishDataset({ syncRunId: correction.id, version: "facts-v3", sourceObjectId: sourceObject.id, coverage: [], facts: { series: [input], games: [game], gamePlayers: [] }, rosterGameIds: [seedIds.t1Game] });
     expect(await db.selectFrom("game_players").select("player_entity_id").where("game_id", "=", seedIds.t1Game).execute()).toEqual([]);

@@ -44,18 +44,22 @@ export async function publishDataset(input: PublishDatasetInput, db: Kysely<Data
       .where("id", "=", input.syncRunId).executeTakeFirst();
     if (run === undefined || run.status !== "running") throw new Error("Only a running sync run may publish a dataset.");
     const facts = input.facts;
-    if (facts !== undefined && input.sourceObjectId === undefined) throw new Error("Canonical fact publication requires sourceObjectId provenance.");
+    const rosterGameIds = input.rosterGameIds ?? [...new Set((facts?.gamePlayers ?? []).map((player) => player.gameId))];
+    if ((facts !== undefined || rosterGameIds.length > 0) && input.sourceObjectId === undefined) throw new Error("Canonical fact publication requires sourceObjectId provenance.");
     if (input.sourceObjectId !== undefined) {
       const source = await trx.selectFrom("source_objects").select(["id", "provider", "source_key"]).where("id", "=", input.sourceObjectId).executeTakeFirst();
       if (source === undefined) throw new Error("Canonical fact publication source object does not exist.");
       for (const fact of [...(facts?.series ?? []), ...(facts?.games ?? [])]) if (fact.provider !== source.provider) throw new Error("Source object does not match canonical fact provenance.");
+      if (rosterGameIds.length > 0) {
+        const games = await trx.selectFrom("game_facts").select(["id", "provider"]).where("id", "in", rosterGameIds).execute();
+        if (games.length !== rosterGameIds.length || games.some((game) => game.provider !== source.provider)) throw new Error("Source object does not match canonical roster provenance.");
+      }
     }
     const latest = await trx.selectFrom("dataset_versions").select("generation").orderBy("generation", "desc").executeTakeFirst();
     const generation = (BigInt(latest?.generation ?? "0") + 1n).toString();
     for (const item of facts?.series ?? []) await upsertSeries(item, generation, input.sourceObjectId!, trx);
     for (const item of facts?.games ?? []) await upsertGame(item, generation, input.sourceObjectId!, trx);
     const gamePlayers = facts?.gamePlayers ?? [];
-    const rosterGameIds = input.rosterGameIds ?? [...new Set(gamePlayers.map((player) => player.gameId))];
     if (rosterGameIds.length > 0) {
       const rosterByGame = new Map<string, typeof gamePlayers>();
       for (const player of gamePlayers) rosterByGame.set(player.gameId, [...(rosterByGame.get(player.gameId) ?? []), player]);
