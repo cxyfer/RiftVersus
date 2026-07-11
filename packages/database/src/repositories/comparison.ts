@@ -53,9 +53,10 @@ function decodeCursor(cursor: string | undefined): { playedAt: string; id: strin
   try {
     const value: unknown = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
     if (typeof value === "object" && value !== null && "playedAt" in value && "id" in value
-      && typeof value.playedAt === "string" && typeof value.id === "string") return { playedAt: value.playedAt, id: value.id };
-  } catch { /* Invalid cursors are treated as an empty page rather than interpolated into SQL. */ }
-  return null;
+      && typeof value.playedAt === "string" && typeof value.id === "string" && !Number.isNaN(Date.parse(value.playedAt))
+      && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value.id)) return { playedAt: new Date(value.playedAt).toISOString(), id: value.id };
+  } catch { /* Fall through to a stable boundary error. */ }
+  throw new Error("Invalid comparison cursor.");
 }
 
 function encodeCursor(row: CandidateRow): string {
@@ -67,7 +68,9 @@ async function resolveSubject(subject: SubjectRef, db: Kysely<Database>): Promis
     .leftJoin("team_eras as era", (join) => subject.teamEraId === undefined
       ? join.on("era.team_entity_id", "=", subject.id).on("era.id", "=", sql.lit(null))
       : join.on("era.id", "=", subject.teamEraId))
-    .leftJoin("media_assets as media", (join) => join.onRef("media.entity_id", "=", "entity.id").on("media.is_current", "=", true))
+    .leftJoin("media_assets as media", (join) => subject.teamEraId === undefined
+      ? join.onRef("media.entity_id", "=", "entity.id").on("media.is_current", "=", true)
+      : join.on("media.team_era_id", "=", subject.teamEraId).on("media.is_current", "=", true))
     .select(["entity.id", "entity.kind", "entity.canonical_name", "era.display_name as era_label", "media.object_key as media_key"])
     .where("entity.id", "=", subject.id)
     .where(sql<boolean>`(
@@ -76,6 +79,10 @@ async function resolveSubject(subject: SubjectRef, db: Kysely<Database>): Promis
     )`)
     .executeTakeFirst();
   if (row === undefined || row.kind !== subject.kind) throw new Error(`Unknown ${subject.kind} subject: ${subject.id}`);
+  if (subject.teamEraId !== undefined) {
+    const validEra = await db.selectFrom("team_eras").select("id").where("id", "=", subject.teamEraId).where("team_entity_id", "=", subject.id).executeTakeFirst();
+    if (validEra === undefined) throw new Error("Team era does not belong to the selected team.");
+  }
   return {
     kind: subject.kind, id: subject.id, displayName: row.era_label ?? row.canonical_name,
     ...(subject.teamEraId === undefined ? {} : { teamEraId: subject.teamEraId, eraLabel: row.era_label ?? row.canonical_name }),

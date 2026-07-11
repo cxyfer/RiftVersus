@@ -49,9 +49,18 @@ export async function publishDataset(input: PublishDatasetInput, db: Kysely<Data
     const generation = (BigInt(latest?.generation ?? "0") + 1n).toString();
     for (const item of facts?.series ?? []) await upsertSeries(item, generation, input.sourceObjectId!, trx);
     for (const item of facts?.games ?? []) await upsertGame(item, generation, input.sourceObjectId!, trx);
-    if ((facts?.gamePlayers?.length ?? 0) > 0) await trx.insertInto("game_players").values(facts!.gamePlayers!.map((item) => ({
+    if ((facts?.gamePlayers?.length ?? 0) > 0) {
+      const rosterByGame = new Map<string, typeof facts.gamePlayers>();
+      for (const player of facts.gamePlayers!) rosterByGame.set(player.gameId, [...(rosterByGame.get(player.gameId) ?? []), player]);
+      for (const [gameId, roster] of rosterByGame) {
+        const game = await trx.selectFrom("game_facts").select(["side_a_team_id", "side_b_team_id"]).where("id", "=", gameId).executeTakeFirst();
+        if (game === undefined || roster === undefined || roster.some((player) => player.teamEntityId !== (player.side === "a" ? game.side_a_team_id : game.side_b_team_id))) throw new Error("Game player roster does not match the canonical game side.");
+        await trx.deleteFrom("game_players").where("game_id", "=", gameId).where("player_entity_id", "not in", roster.map((player) => player.playerEntityId)).execute();
+      }
+      await trx.insertInto("game_players").values(facts!.gamePlayers!.map((item) => ({
       game_id: item.gameId, player_entity_id: item.playerEntityId, side: item.side, team_entity_id: item.teamEntityId,
-    }))).onConflict((conflict) => conflict.columns(["game_id", "player_entity_id"]).doUpdateSet((eb) => ({ side: eb.ref("excluded.side"), team_entity_id: eb.ref("excluded.team_entity_id") }))).execute();
+      }))).onConflict((conflict) => conflict.columns(["game_id", "player_entity_id"]).doUpdateSet((eb) => ({ side: eb.ref("excluded.side"), team_entity_id: eb.ref("excluded.team_entity_id") }))).execute();
+    }
     const finishedAt = new Date();
     const version = await trx.insertInto("dataset_versions").values({ id: randomUUID(), version: input.version, sync_run_id: input.syncRunId, generation })
       .returning(["id", "version", "published_at", "sync_run_id", "generation"]).executeTakeFirstOrThrow();
