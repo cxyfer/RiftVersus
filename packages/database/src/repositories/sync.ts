@@ -42,22 +42,24 @@ export async function publishDataset(input: PublishDatasetInput, db: Kysely<Data
     const facts = input.facts;
     if (facts !== undefined && input.sourceObjectId === undefined) throw new Error("Canonical fact publication requires sourceObjectId provenance.");
     if (input.sourceObjectId !== undefined) {
-      const source = await trx.selectFrom("source_objects").select("id").where("id", "=", input.sourceObjectId).executeTakeFirst();
+      const source = await trx.selectFrom("source_objects").select(["id", "provider", "source_key"]).where("id", "=", input.sourceObjectId).executeTakeFirst();
       if (source === undefined) throw new Error("Canonical fact publication source object does not exist.");
+      for (const fact of [...(facts?.series ?? []), ...(facts?.games ?? [])]) if (fact.provider !== source.provider || !fact.sourceKey.startsWith(source.source_key)) throw new Error("Source object does not match canonical fact provenance.");
     }
     const latest = await trx.selectFrom("dataset_versions").select("generation").orderBy("generation", "desc").executeTakeFirst();
     const generation = (BigInt(latest?.generation ?? "0") + 1n).toString();
     for (const item of facts?.series ?? []) await upsertSeries(item, generation, input.sourceObjectId!, trx);
     for (const item of facts?.games ?? []) await upsertGame(item, generation, input.sourceObjectId!, trx);
-    if ((facts?.gamePlayers?.length ?? 0) > 0) {
-      const rosterByGame = new Map<string, typeof facts.gamePlayers>();
-      for (const player of facts.gamePlayers!) rosterByGame.set(player.gameId, [...(rosterByGame.get(player.gameId) ?? []), player]);
+    const gamePlayers = facts?.gamePlayers ?? [];
+    if (gamePlayers.length > 0) {
+      const rosterByGame = new Map<string, typeof gamePlayers>();
+      for (const player of gamePlayers) rosterByGame.set(player.gameId, [...(rosterByGame.get(player.gameId) ?? []), player]);
       for (const [gameId, roster] of rosterByGame) {
         const game = await trx.selectFrom("game_facts").select(["side_a_team_id", "side_b_team_id"]).where("id", "=", gameId).executeTakeFirst();
         if (game === undefined || roster === undefined || roster.some((player) => player.teamEntityId !== (player.side === "a" ? game.side_a_team_id : game.side_b_team_id))) throw new Error("Game player roster does not match the canonical game side.");
         await trx.deleteFrom("game_players").where("game_id", "=", gameId).where("player_entity_id", "not in", roster.map((player) => player.playerEntityId)).execute();
       }
-      await trx.insertInto("game_players").values(facts!.gamePlayers!.map((item) => ({
+      await trx.insertInto("game_players").values(gamePlayers.map((item) => ({
       game_id: item.gameId, player_entity_id: item.playerEntityId, side: item.side, team_entity_id: item.teamEntityId,
       }))).onConflict((conflict) => conflict.columns(["game_id", "player_entity_id"]).doUpdateSet((eb) => ({ side: eb.ref("excluded.side"), team_entity_id: eb.ref("excluded.team_entity_id") }))).execute();
     }
@@ -74,21 +76,24 @@ export async function publishDataset(input: PublishDatasetInput, db: Kysely<Data
   });
 }
 
-async function authorizeExistingFact(table: "series_facts" | "game_facts", id: string, sourceObjectId: string, trx: Kysely<Database>) {
+async function authorizeExistingFact(table: "series_facts" | "game_facts", id: string, sourceObjectId: string, trx: Kysely<Database>): Promise<boolean> {
   const existing = await trx.selectFrom(table).select("id").where("id", "=", id).executeTakeFirst();
   if (existing !== undefined) await sql`select riftversus_authorize_fact_update(${sql.lit(table)}::regclass, ${id}::uuid, 'source_object', ${sourceObjectId}::uuid)`.execute(trx);
+  return existing !== undefined;
 }
 
 async function upsertSeries(item: SeriesFactInput, generation: string, sourceObjectId: string, trx: Kysely<Database>) {
-  await authorizeExistingFact("series_facts", item.id, sourceObjectId, trx);
+  const existing = await authorizeExistingFact("series_facts", item.id, sourceObjectId, trx);
   const values = { id: item.id, provider: item.provider, source_key: item.sourceKey, tournament_id: item.tournamentId, played_at: item.playedAt, best_of: item.bestOf, completed: item.completed, side_a_team_id: item.sideATeamId, side_a_era_id: item.sideAEraId ?? null, side_a_region_id: item.sideARegionId ?? null, side_b_team_id: item.sideBTeamId, side_b_era_id: item.sideBEraId ?? null, side_b_region_id: item.sideBRegionId ?? null, side_a_score: item.sideAScore ?? null, side_b_score: item.sideBScore ?? null, winner_team_id: item.winnerTeamId ?? null, publication_generation: generation };
   await trx.insertInto("series_facts").values(values).onConflict((conflict) => conflict.column("id").doUpdateSet(values)).execute();
+  if (!existing) await trx.insertInto("fact_mutation_audits").values({ fact_table: "series_facts", fact_id: item.id, source_object_id: sourceObjectId, override_application_id: null, old_payload: {}, new_payload: values }).execute();
 }
 
 async function upsertGame(item: GameFactInput, generation: string, sourceObjectId: string, trx: Kysely<Database>) {
-  await authorizeExistingFact("game_facts", item.id, sourceObjectId, trx);
+  const existing = await authorizeExistingFact("game_facts", item.id, sourceObjectId, trx);
   const values = { id: item.id, provider: item.provider, source_key: item.sourceKey, series_id: item.seriesId, game_number: item.gameNumber, played_at: item.playedAt, side_a_team_id: item.sideATeamId, side_a_era_id: item.sideAEraId ?? null, side_a_region_id: item.sideARegionId ?? null, side_b_team_id: item.sideBTeamId, side_b_era_id: item.sideBEraId ?? null, side_b_region_id: item.sideBRegionId ?? null, winner_team_id: item.winnerTeamId ?? null, publication_generation: generation };
   await trx.insertInto("game_facts").values(values).onConflict((conflict) => conflict.column("id").doUpdateSet(values)).execute();
+  if (!existing) await trx.insertInto("fact_mutation_audits").values({ fact_table: "game_facts", fact_id: item.id, source_object_id: sourceObjectId, override_application_id: null, old_payload: {}, new_payload: values }).execute();
 }
 
 export async function failSyncRun(input: FailSyncRunInput, db: Kysely<Database>): Promise<void> {
