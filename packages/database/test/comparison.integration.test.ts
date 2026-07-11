@@ -1,6 +1,8 @@
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { summarizeComparison } from "@riftversus/domain";
+import { randomUUID } from "node:crypto";
+import { sql } from "kysely";
 
 import { beginSyncRun, compareHeadToHead, getDatasetStatus, getMediaByKey, listAvailableFilters, publishDataset, searchEntities } from "../src/index.js";
 import { createDb, destroyDb } from "../src/db.js";
@@ -72,5 +74,51 @@ describeWithDatabase("comparison repositories", () => {
     expect(await getDatasetStatus(db)).toBeNull();
     const comparison = await compareHeadToHead(query({ kind: "team", id: seedIds.t1 }, { kind: "region", id: seedIds.lpl }), db);
     expect(comparison.coverageWarnings).toEqual(expect.arrayContaining([expect.objectContaining({ code: "NO_PUBLISHED_DATASET" })]));
+  });
+
+  it("uses participant and player indexes above the planner threshold", async () => {
+    const otherA = randomUUID();
+    const otherB = randomUUID();
+    const otherPlayer = randomUUID();
+    await db.insertInto("entities").values([
+      { id: otherA, kind: "team", canonical_name: "Load A", slug: `load-a-${otherA}` },
+      { id: otherB, kind: "team", canonical_name: "Load B", slug: `load-b-${otherB}` },
+      { id: otherPlayer, kind: "player", canonical_name: "Load Player", slug: `load-p-${otherPlayer}` },
+    ]).execute();
+    const rows = Array.from({ length: 600 }, (_, index) => {
+      const seriesId = randomUUID();
+      return { seriesId, gameId: randomUUID(), index };
+    });
+    await db.insertInto("series_facts").values(rows.map(({ seriesId, index }) => ({
+      id: seriesId, provider: "explain", source_key: `series-${index}`, tournament_id: seedIds.worlds, played_at: new Date("2024-01-01T00:00:00Z"), best_of: 1, completed: true,
+      side_a_team_id: otherA, side_b_team_id: otherB, side_a_score: 1, side_b_score: 0, winner_team_id: otherA, publication_generation: "0",
+    }))).execute();
+    await db.insertInto("game_facts").values(rows.map(({ seriesId, gameId, index }) => ({
+      id: gameId, provider: "explain", source_key: `game-${index}`, series_id: seriesId, game_number: 1, played_at: new Date("2024-01-01T00:00:00Z"),
+      side_a_team_id: otherA, side_b_team_id: otherB, winner_team_id: otherA, publication_generation: "0",
+    }))).execute();
+    await db.insertInto("game_players").values(rows.map(({ gameId }) => ({ game_id: gameId, player_entity_id: otherPlayer, side: "a", team_entity_id: otherA }))).execute();
+    const plan = await db.transaction().execute(async (trx) => {
+      await sql`set local enable_seqscan = off`.execute(trx);
+      return sql<{ "QUERY PLAN": unknown }>`
+        explain (format json) select series.id
+        from series_facts series join game_facts game on game.series_id = series.id
+        join game_players left_player on left_player.game_id = game.id
+        join game_players right_player on right_player.game_id = game.id
+        where series.publication_generation <= (select max(generation) from dataset_versions)
+          and series.side_a_team_id = ${seedIds.t1} and series.side_b_team_id = ${seedIds.weibo}
+          and left_player.player_entity_id = ${seedIds.faker} and right_player.player_entity_id = ${seedIds.xiaohu}
+      `.execute(trx);
+    });
+    const nodes: Array<{ relation?: string; node?: string; index?: string }> = [];
+    const visit = (value: unknown): void => {
+      if (typeof value !== "object" || value === null) return;
+      const record = value as Record<string, unknown>;
+      if (typeof record["Node Type"] === "string") nodes.push({ relation: typeof record["Relation Name"] === "string" ? record["Relation Name"] : undefined, node: record["Node Type"], index: typeof record["Index Name"] === "string" ? record["Index Name"] : undefined });
+      for (const child of Object.values(record)) visit(child);
+    };
+    visit(plan.rows[0]?.["QUERY PLAN"]);
+    expect(nodes.filter((node) => node.relation === "series_facts" || node.relation === "game_players").every((node) => node.node !== "Seq Scan")).toBe(true);
+    expect(nodes.map((node) => node.index)).toEqual(expect.arrayContaining(["game_players_player_game_lookup", "series_facts_comparison_lookup"]));
   });
 });
