@@ -33,3 +33,11 @@ No evidence has been recorded yet.
 - Source: merge commit f37df06; task commits 53fca222,9b3ca445,1097aad,80dfa2b,8499584
 - Summary: Task 4 pure comparison/classification/grouping oracle passed controller verification: domain 19 tests, root consumer/unit tests, typecheck, lint, build, diff check; spec and quality reviews approved after grouping and identity fixes.
 - Verifier: controller plus independent spec and quality reviewers
+
+## EvidenceBundleDraft
+
+- Artifact key: task-05-repositories-publication
+- Type: verification
+- Source: merge eba4f0d; task commits e45eb8e,a404d93,03131ac,66ba5a9,0415fa4,3fb7f7a,1e20751,7a4c7f8,acc9ed3,94f82d6,a266d9a,bd0a963,21f1612,e90b3fb
+- Summary: Task 5 repositories/publication passed static controller verification and dual reviews. Root consumer/unit, typecheck, lint, build and integration typecheck pass; 11 PostgreSQL runtime integration cases are skipped because TEST_DATABASE_URL is unset.
+- Verifier: controller plus independent spec and quality reviewers

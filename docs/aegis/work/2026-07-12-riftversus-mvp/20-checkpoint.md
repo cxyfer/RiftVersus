@@ -96,3 +96,23 @@
 - Task 4 merge f37df06; evidence artifact task-04-domain-semantics
 - Blocked on: No TEST_DATABASE_URL for Task 3 PostgreSQL runtime evidence; Task 5 integration tests will require the same safe connection.
 - Next step: Create Task 5 isolated worktree and implement repositories plus comparison/publication integration tests.
+
+## DriftCheckDraft
+
+- Scope status: Task 5 canonical database repositories, migrations, and tests only; no API/provider/UI/Docker changes.
+- Compatibility status: Facts remain current canonical rows without dataset_version_id; publication_generation is an atomic visibility fence, versions append-only; Task4 domain stays semantic oracle.
+- Retirement status: No legacy repository owner or fallback introduced.
+- New risk signals:
+- 11 PostgreSQL integration tests, migrations, triggers, publication locks and EXPLAIN plans remain runtime-unverified until TEST_DATABASE_URL is provided.
+- Advisory decision: needs-verification
+
+## Checkpoint Update
+
+- Current todo: Execute Task 6 Fastify application, routes, caching and health checks
+- Active slice: Task 5 complete with PostgreSQL runtime verification gap; Task 6 preparation
+- Completed todos:
+- Task 5 canonical repositories, comparison SQL, publication visibility and integration test harness merged after reviews
+- Evidence refs:
+- Task 5 merge eba4f0d; evidence artifact task-05-repositories-publication
+- Blocked on: No TEST_DATABASE_URL for real PostgreSQL runtime evidence; does not block API unit/inject tests.
+- Next step: Create Task 6 isolated worktree and implement Fastify app/routes with dependency injection.

@@ -5,11 +5,11 @@
   "baselineRefs": [
     "docs/aegis/BASELINE-GOVERNANCE.md"
   ],
-  "scopeStatus": "Task 4 only: pure domain comparison, classification, grouping and fixtures; no database, provider, API, UI, or Docker changes.",
-  "compatStatus": "Domain is the single semantic oracle without database imports; API contracts remain @riftversus/contracts and persistence remains @riftversus/database.",
-  "retirementStatus": "No legacy logic, fallback, or second semantic owner added.",
+  "scopeStatus": "Task 5 canonical database repositories, migrations, and tests only; no API/provider/UI/Docker changes.",
+  "compatStatus": "Facts remain current canonical rows without dataset_version_id; publication_generation is an atomic visibility fence, versions append-only; Task4 domain stays semantic oracle.",
+  "retirementStatus": "No legacy repository owner or fallback introduced.",
   "newRiskSignals": [
-    "Task 3 real PostgreSQL integration remains unverified until TEST_DATABASE_URL is supplied."
+    "11 PostgreSQL integration tests, migrations, triggers, publication locks and EXPLAIN plans remain runtime-unverified until TEST_DATABASE_URL is provided."
   ],
-  "decision": "continue"
+  "decision": "needs-verification"
 }
