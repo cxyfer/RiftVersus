@@ -9,3 +9,4 @@ export type {
   EntityKind,
   TournamentCategory,
 } from "./types.js";
+export * from "./repositories/index.js";

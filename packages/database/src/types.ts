@@ -82,6 +82,7 @@ export interface SeriesFactsTable {
   side_a_score: number | null;
   side_b_score: number | null;
   winner_team_id: string | null;
+  publication_generation: Generated<string>;
 }
 
 export interface GameFactsTable {
@@ -98,6 +99,7 @@ export interface GameFactsTable {
   side_b_era_id: string | null;
   side_b_region_id: string | null;
   winner_team_id: string | null;
+  publication_generation: Generated<string>;
 }
 
 export interface GamePlayersTable {
@@ -156,6 +158,7 @@ export interface DatasetVersionsTable {
   version: string;
   published_at: DefaultTimestamp;
   sync_run_id: string;
+  generation: string;
 }
 
 export interface CoverageStatusTable {
