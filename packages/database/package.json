@@ -12,6 +12,9 @@
   "files": [
     "dist"
   ],
+  "scripts": {
+    "test:integration": "vitest run --config ../../vitest.integration.config.ts --passWithNoTests"
+  },
   "dependencies": {
     "@riftversus/contracts": "workspace:*",
     "@riftversus/domain": "workspace:*",

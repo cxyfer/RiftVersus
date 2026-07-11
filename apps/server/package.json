@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@riftversus/contracts": "workspace:*",
+    "@riftversus/database": "workspace:*",
     "zod": "4.4.3"
   }
 }
