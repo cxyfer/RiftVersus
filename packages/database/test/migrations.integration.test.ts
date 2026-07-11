@@ -66,7 +66,8 @@ describeWithDatabase("initial schema migration", () => {
       const migrationMetadata = await sql<{ table_name: string; table_schema: string }>`
         select table_name, table_schema
         from information_schema.tables
-        where table_name in ('kysely_migration', 'kysely_migration_lock')
+        where table_schema = ${schema}
+          and table_name in ('kysely_migration', 'kysely_migration_lock')
       `.execute(db);
       expect(migrationMetadata.rows).toEqual([
         { table_name: "kysely_migration", table_schema: schema },
