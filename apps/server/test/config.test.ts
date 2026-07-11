@@ -32,6 +32,25 @@ describe("loadConfig", () => {
     ).toThrow();
   });
 
+  it("rejects S3 endpoints that could leak credentials or signed URL data", () => {
+    const s3Config = {
+      DATABASE_URL: databaseUrl,
+      S3_REGION: "us-east-1",
+      S3_BUCKET: "riftversus",
+      S3_ACCESS_KEY_ID: "access-key",
+      S3_SECRET_ACCESS_KEY: "secret-value",
+      S3_FORCE_PATH_STYLE: "true",
+    };
+
+    for (const endpoint of [
+      "https://username:password@s3.example.com",
+      "https://s3.example.com?X-Amz-Signature=signed-value&querySecret=secret-value",
+      "https://s3.example.com#X-Amz-Signature=signed-value",
+    ]) {
+      expect(() => loadConfig({ ...s3Config, S3_ENDPOINT: endpoint })).toThrow();
+    }
+  });
+
   it("parses an all-or-nothing S3 configuration", () => {
     expect(
       loadConfig({

@@ -9,10 +9,19 @@ const S3_VARIABLES = [
   "S3_FORCE_PATH_STYLE",
 ] as const;
 
+const S3EndpointSchema = z.url().refine(
+  (endpoint) => {
+    const url = new URL(endpoint);
+
+    return url.username === "" && url.password === "" && url.search === "" && url.hash === "";
+  },
+  "S3_ENDPOINT must not contain userinfo, query parameters, or a fragment.",
+);
+
 const EnvironmentSchema = z
   .object({
     DATABASE_URL: z.string().min(1),
-    S3_ENDPOINT: z.string().min(1).optional(),
+    S3_ENDPOINT: S3EndpointSchema.optional(),
     S3_REGION: z.string().min(1).optional(),
     S3_BUCKET: z.string().min(1).optional(),
     S3_ACCESS_KEY_ID: z.string().min(1).optional(),

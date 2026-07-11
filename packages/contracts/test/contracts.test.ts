@@ -5,6 +5,7 @@ import {
   BestOfSchema,
   ComparisonQuerySchema,
   ComparisonResponseSchema,
+  DateSchema,
   EntityKindSchema,
   EventCategorySchema,
   SubjectRefSchema,
@@ -35,6 +36,12 @@ describe("shared runtime contracts", () => {
 
   it("uses lineage mode when a team has no exact era", () => {
     expect(SubjectRefSchema.parse({ kind: "team", id: leftId })).toEqual({ kind: "team", id: leftId });
+  });
+
+  it("accepts real calendar dates and rejects impossible dates", () => {
+    expect(DateSchema.parse("2026-02-28")).toBe("2026-02-28");
+    expect(DateSchema.safeParse("2026-99-99").success).toBe(false);
+    expect(DateSchema.safeParse("2026-02-30").success).toBe(false);
   });
 
   it("rejects an era restriction for non-team subjects", () => {
