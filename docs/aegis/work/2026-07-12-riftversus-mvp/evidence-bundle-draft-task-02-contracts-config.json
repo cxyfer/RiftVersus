@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "task-02-contracts-config",
+  "type": "verification",
+  "source": "merge commit 295de3e; task commits 56581dc, ed88d14, 5ffc912",
+  "summary": "Task 2 contracts and runtime configuration passed controller verification: contract tests 9, config tests 6, typecheck, lint, root consumer/unit tests, build, diff check; spec and independent quality reviews approved after validation fixes.",
+  "verifier": "controller plus independent spec and quality reviewers"
+}

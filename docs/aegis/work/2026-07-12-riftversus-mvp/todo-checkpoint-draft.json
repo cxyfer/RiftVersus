@@ -1,15 +1,15 @@
 {
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
-  "currentTodo": "Execute Task 2 contracts and runtime configuration in a new isolated worktree",
+  "currentTodo": "Execute Task 3 canonical PostgreSQL schema and migrator",
   "completedTodos": [
-    "Task 1 workspace foundation merged to main after spec compliance and code-quality reviews"
+    "Task 2 shared Zod contracts and server runtime configuration merged after review"
   ],
-  "activeSlice": "Task 2 preparation",
+  "activeSlice": "Task 2 complete; Task 3 preparation",
   "evidenceRefs": [
-    "main merge commit for feat/task-01-foundation; Task 1 all checks passed and reviews approved"
+    "Task 2 merge 295de3e; evidence artifact task-02-contracts-config"
   ],
   "blockedOn": null,
-  "nextStep": "Create feat/task-02-contracts worktree and dispatch Task 2 implementer",
+  "nextStep": "Create an isolated Task 3 worktree and dispatch the canonical schema/migrator slice.",
   "updatedAt": "2026-07-12"
 }

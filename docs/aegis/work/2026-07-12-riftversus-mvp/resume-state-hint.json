@@ -2,9 +2,9 @@
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
   "lastCheckpointRef": "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json",
-  "resumeInstruction": "Read approved plan Task 2 and current checkpoint; verify main baseline before new worktree",
+  "resumeInstruction": "Read the Task 2 evidence and drift record, then execute Task 3 from the approved MVP plan. Preserve canonical fact ownership and the dataset-version invariant.",
   "knownPartialWork": [
-    "Task 1 workspace foundation merged to main after spec compliance and code-quality reviews"
+    "Task 2 shared Zod contracts and server runtime configuration merged after review"
   ],
   "mustReadBeforeContinuing": [
     "docs/aegis/work/2026-07-12-riftversus-mvp/10-intent.md",
@@ -12,6 +12,6 @@
     "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json"
   ],
   "unsafeToAssume": [
-    "Do not implement database schema, API routes, sync providers, or web UI during Task 2"
+    "Do not assume a local Docker daemon is available; verify the actual PostgreSQL test path before claiming container coverage."
   ]
 }

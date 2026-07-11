@@ -36,3 +36,23 @@
 - main merge commit for feat/task-01-foundation; Task 1 all checks passed and reviews approved
 - Blocked on: none
 - Next step: Create feat/task-02-contracts worktree and dispatch Task 2 implementer
+
+## DriftCheckDraft
+
+- Scope status: Task 2 only: shared contracts, server config, tests, and env template; no DB, route, provider, UI, or Docker work.
+- Compatibility status: Public contract ownership remains solely @riftversus/contracts; config ownership remains server; invalid dates and unsafe/non-HTTP S3 endpoints now fail before runtime.
+- Retirement status: No legacy owner, compatibility fallback, or retired path added.
+- New risk signals:
+- Docker integration remains environment-unverified until Docker Desktop/daemon is available.
+- Advisory decision: continue
+
+## Checkpoint Update
+
+- Current todo: Execute Task 3 canonical PostgreSQL schema and migrator
+- Active slice: Task 2 complete; Task 3 preparation
+- Completed todos:
+- Task 2 shared Zod contracts and server runtime configuration merged after review
+- Evidence refs:
+- Task 2 merge 295de3e; evidence artifact task-02-contracts-config
+- Blocked on: none
+- Next step: Create an isolated Task 3 worktree and dispatch the canonical schema/migrator slice.
