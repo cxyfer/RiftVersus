@@ -1,0 +1,24 @@
+{
+  "name": "@riftversus/database",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@riftversus/contracts": "workspace:*",
+    "@riftversus/domain": "workspace:*",
+    "kysely": "0.29.3",
+    "pg": "8.22.0"
+  },
+  "devDependencies": {
+    "@types/pg": "8.20.0"
+  }
+}

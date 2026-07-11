@@ -1,0 +1,25 @@
+{
+  "name": "riftversus",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc -b --pretty false",
+    "test": "pnpm test:consumer && pnpm test:unit",
+    "test:consumer": "pnpm build && node packages/sync/test/public-entry.consumer.mjs && tsc --noEmit -p packages/sync/test/consumer.tsconfig.json",
+    "test:unit": "vitest run --config vitest.unit.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts --passWithNoTests",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts --passWithNoTests"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@vitest/coverage-v8": "4.1.10",
+    "eslint": "10.7.0",
+    "prettier": "3.9.5",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.63.0",
+    "vitest": "4.1.10"
+  }
+}
