@@ -28,12 +28,12 @@ describeWithDatabase("initial schema migration", () => {
     const db = createDb({ databaseUrl: databaseUrl!, schema });
 
     try {
-      const firstRun = await migrateToLatest(db);
+      const firstRun = await migrateToLatest(db, { schema });
       expect(firstRun.results).toEqual([
         expect.objectContaining({ migrationName: "001_initial", status: "Success" }),
       ]);
 
-      const secondRun = await migrateToLatest(db);
+      const secondRun = await migrateToLatest(db, { schema });
       expect(secondRun.error).toBeUndefined();
       expect(secondRun.results).toEqual([]);
 
@@ -57,6 +57,21 @@ describeWithDatabase("initial schema migration", () => {
           "source_cursors",
           "dataset_versions",
           "coverage_status",
+          "kysely_migration",
+          "kysely_migration_lock",
+        ]),
+      );
+
+      const migrationMetadata = await sql<{ table_name: string; table_schema: string }>`
+        select table_name, table_schema
+        from information_schema.tables
+        where table_schema = ${schema}
+          and table_name in ('kysely_migration', 'kysely_migration_lock')
+      `.execute(db);
+      expect(migrationMetadata.rows).toEqual(
+        expect.arrayContaining([
+          { table_name: "kysely_migration", table_schema: schema },
+          { table_name: "kysely_migration_lock", table_schema: schema },
         ]),
       );
 
@@ -100,7 +115,7 @@ describeWithDatabase("initial schema migration", () => {
         provider: "fixture",
         source_key: "tournament-1",
         name: "Fixture Tournament",
-        category: "worlds",
+        category: "league",
       }).execute();
       await expect(
         db.insertInto("tournaments").values({
@@ -160,6 +175,50 @@ describeWithDatabase("initial schema migration", () => {
         side_b_score: 0,
         winner_team_id: seedIds.teamA,
       }).execute();
+      await expect(
+        db.updateTable("series_facts")
+          .set({ played_at: new Date("2026-01-02T00:00:00Z") })
+          .where("id", "=", seedIds.series)
+          .execute(),
+      ).rejects.toThrow();
+
+      await db.insertInto("source_objects").values({
+        id: seedIds.sourceObject,
+        provider: "fixture",
+        source_key: "series-1-correction",
+        source_url: "https://example.test/series-1-correction.json",
+        object_key: "fixtures/series-1-correction.json",
+        checksum: "fixture-checksum",
+        parser_version: "test",
+      }).execute();
+      await db.connection().execute(async (connection) => {
+        await sql`
+          select set_config('riftversus.fact_update_provenance_kind', 'source_object', false)
+        `.execute(connection);
+        await sql`
+          select set_config('riftversus.fact_update_provenance_id', ${seedIds.sourceObject}, false)
+        `.execute(connection);
+        await expect(
+          connection.updateTable("series_facts")
+            .set({ played_at: new Date("2026-01-02T00:00:00Z") })
+            .where("id", "=", seedIds.series)
+            .execute(),
+        ).rejects.toThrow();
+      });
+      await db.transaction().execute(async (trx) => {
+        await sql`
+          select riftversus_authorize_fact_update('source_object', ${seedIds.sourceObject}::uuid)
+        `.execute(trx);
+        await trx.updateTable("series_facts")
+          .set({ played_at: new Date("2026-01-02T00:00:00Z") })
+          .where("id", "=", seedIds.series)
+          .execute();
+      });
+      const updatedSeries = await db.selectFrom("series_facts")
+        .select("played_at")
+        .where("id", "=", seedIds.series)
+        .executeTakeFirstOrThrow();
+      expect(updatedSeries.played_at.toISOString()).toBe("2026-01-02T00:00:00.000Z");
       await expect(
         db.insertInto("series_facts").values({
           id: randomUUID(),

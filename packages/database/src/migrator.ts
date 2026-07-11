@@ -1,8 +1,14 @@
 import type { Kysely } from "kysely";
 import { Migrator, type Migration, type MigrationProvider } from "kysely/migration";
 
+import { assertSchemaName } from "./db.js";
 import { initialMigration } from "./migrations/001_initial.js";
 import type { Database } from "./types.js";
+
+export interface MigrationOptions {
+  /** Schema that owns both canonical objects and Kysely migration metadata. */
+  schema?: string;
+}
 
 class StaticMigrationProvider implements MigrationProvider {
   async getMigrations(): Promise<Record<string, Migration>> {
@@ -10,12 +16,20 @@ class StaticMigrationProvider implements MigrationProvider {
   }
 }
 
-export function createMigrator(db: Kysely<Database>) {
-  return new Migrator({ db, provider: new StaticMigrationProvider() });
+export function createMigrator(db: Kysely<Database>, { schema }: MigrationOptions = {}) {
+  if (schema !== undefined) {
+    assertSchemaName(schema);
+  }
+
+  return new Migrator({
+    db,
+    provider: new StaticMigrationProvider(),
+    ...(schema === undefined ? {} : { migrationTableSchema: schema }),
+  });
 }
 
-export async function migrateToLatest(db: Kysely<Database>) {
-  const result = await createMigrator(db).migrateToLatest();
+export async function migrateToLatest(db: Kysely<Database>, options?: MigrationOptions) {
+  const result = await createMigrator(db, options).migrateToLatest();
 
   if (result.error !== undefined) {
     throw result.error;

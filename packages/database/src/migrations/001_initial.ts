@@ -63,7 +63,7 @@ export const initialMigration: Migration = {
         source_key text not null,
         name text not null,
         league_slug text,
-        category text not null check (category in ('domestic', 'first_stand', 'msi', 'worlds', 'other')),
+        category text not null check (category in ('league', 'fst', 'msi', 'worlds', 'other')),
         tier text,
         start_date date,
         end_date date,
@@ -102,6 +102,15 @@ export const initialMigration: Migration = {
         retrieved_at timestamptz not null default now(),
         parser_version text not null,
         constraint source_objects_provider_source_key_unique unique (provider, source_key)
+      );
+
+      create table fact_mutation_authorizations (
+        transaction_id bigint not null,
+        backend_pid integer not null,
+        provenance_kind text not null check (provenance_kind in ('source_object', 'override_application')),
+        provenance_id uuid not null,
+        created_at timestamptz not null default now(),
+        primary key (transaction_id, backend_pid, provenance_kind, provenance_id)
       );
 
       create table series_facts (
@@ -216,6 +225,101 @@ export const initialMigration: Migration = {
         constraint override_applications_file_checksum_unique unique (override_file, checksum)
       );
 
+      create function riftversus_authorize_fact_update(provenance_kind text, provenance_id uuid)
+      returns void
+      language plpgsql
+      security definer
+      set search_path from current
+      as $$
+      declare
+        fact_schema text := current_schema();
+        provenance_exists boolean;
+      begin
+        if provenance_kind = 'source_object' then
+          execute format('select exists (select 1 from %I.source_objects where id = $1)', fact_schema)
+            into provenance_exists using provenance_id;
+        elsif provenance_kind = 'override_application' then
+          execute format('select exists (select 1 from %I.override_applications where id = $1)', fact_schema)
+            into provenance_exists using provenance_id;
+        else
+          raise exception 'Unknown fact update provenance kind: %', provenance_kind;
+        end if;
+
+        if not provenance_exists then
+          raise exception 'Fact update provenance does not exist: % %', provenance_kind, provenance_id;
+        end if;
+
+        execute format(
+          'insert into %I.fact_mutation_authorizations (transaction_id, backend_pid, provenance_kind, provenance_id) values (txid_current(), pg_backend_pid(), $1, $2) on conflict do nothing',
+          fact_schema
+        ) using provenance_kind, provenance_id;
+        perform set_config('riftversus.fact_update_provenance_kind', provenance_kind, true);
+        perform set_config('riftversus.fact_update_provenance_id', provenance_id::text, true);
+      end;
+      $$;
+
+      create function riftversus_enforce_fact_update_provenance()
+      returns trigger
+      language plpgsql
+      security definer
+      set search_path = pg_catalog
+      as $$
+      declare
+        provenance_kind text := current_setting('riftversus.fact_update_provenance_kind', true);
+        provenance_id_text text := current_setting('riftversus.fact_update_provenance_id', true);
+        provenance_id uuid;
+        provenance_exists boolean;
+        authorization_exists boolean;
+      begin
+        if row(new.*) is not distinct from row(old.*) then
+          return new;
+        end if;
+
+        if provenance_kind is null or provenance_id_text is null then
+          raise exception 'Canonical fact updates require transaction-local source object or override application provenance';
+        end if;
+
+        if provenance_kind not in ('source_object', 'override_application') then
+          raise exception 'Invalid fact update provenance kind: %', provenance_kind;
+        end if;
+
+        begin
+          provenance_id := provenance_id_text::uuid;
+        exception when invalid_text_representation then
+          raise exception 'Invalid fact update provenance id';
+        end;
+
+        if provenance_kind = 'source_object' then
+          execute format('select exists (select 1 from %I.source_objects where id = $1)', tg_table_schema)
+            into provenance_exists using provenance_id;
+        else
+          execute format('select exists (select 1 from %I.override_applications where id = $1)', tg_table_schema)
+            into provenance_exists using provenance_id;
+        end if;
+
+        execute format(
+          'select exists (select 1 from %I.fact_mutation_authorizations where transaction_id = txid_current() and backend_pid = pg_backend_pid() and provenance_kind = $1 and provenance_id = $2)',
+          tg_table_schema
+        ) into authorization_exists using provenance_kind, provenance_id;
+
+        if not provenance_exists or not authorization_exists then
+          raise exception 'Canonical fact update is not authorized by current transaction provenance';
+        end if;
+
+        return new;
+      end;
+      $$;
+
+      create trigger series_facts_require_provenance_before_update
+        before update on series_facts
+        for each row execute function riftversus_enforce_fact_update_provenance();
+      create trigger game_facts_require_provenance_before_update
+        before update on game_facts
+        for each row execute function riftversus_enforce_fact_update_provenance();
+
+      revoke all on table fact_mutation_authorizations from public;
+      revoke all on function riftversus_authorize_fact_update(text, uuid) from public;
+
       create index entities_canonical_name_search on entities (lower(canonical_name));
       create index entity_aliases_display_name_search on entity_aliases (lower(display_name)) where searchable;
       create unique index media_assets_current_entity_kind_unique on media_assets (entity_id, kind)
@@ -232,9 +336,9 @@ export const initialMigration: Migration = {
       create index team_region_history_lookup on team_region_history (team_entity_id, valid_from, valid_to);
 
       comment on table series_facts is
-        'Canonical facts are changed only by a sync transaction backed by a new source_objects or override_applications record; dataset_versions are append-only publication markers.';
+        'Updates require riftversus_authorize_fact_update in the same transaction with existing source_objects or override_applications provenance; dataset_versions are append-only publication markers.';
       comment on table game_facts is
-        'Canonical facts are changed only by a sync transaction backed by a new source_objects or override_applications record; dataset_versions are append-only publication markers.';
+        'Updates require riftversus_authorize_fact_update in the same transaction with existing source_objects or override_applications provenance; dataset_versions are append-only publication markers.';
       comment on table dataset_versions is
         'Append-only publication/cache version. Canonical series_facts and game_facts intentionally do not reference this table.';
     `).execute(db);
@@ -242,6 +346,10 @@ export const initialMigration: Migration = {
 
   async down(db) {
     await sql.raw(`
+      drop trigger if exists series_facts_require_provenance_before_update on series_facts;
+      drop trigger if exists game_facts_require_provenance_before_update on game_facts;
+      drop function if exists riftversus_enforce_fact_update_provenance();
+      drop function if exists riftversus_authorize_fact_update(text, uuid);
       drop table if exists override_applications;
       drop table if exists coverage_status;
       drop table if exists dataset_versions;
@@ -251,6 +359,7 @@ export const initialMigration: Migration = {
       drop table if exists game_facts;
       drop table if exists series_facts;
       drop table if exists source_objects;
+      drop table if exists fact_mutation_authorizations;
       drop table if exists sync_runs;
       drop table if exists tournaments;
       drop table if exists media_assets;

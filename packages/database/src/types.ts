@@ -6,7 +6,7 @@ export type DateColumn = ColumnType<string, string, string>;
 export type NullableDateColumn = ColumnType<string | null, string | null | undefined, string | null | undefined>;
 
 export type EntityKind = "player" | "team" | "region";
-export type TournamentCategory = "domestic" | "first_stand" | "msi" | "worlds" | "other";
+export type TournamentCategory = "league" | "fst" | "msi" | "worlds" | "other";
 export type CompetitiveSide = "a" | "b";
 
 export interface EntitiesTable {

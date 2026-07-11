@@ -9,19 +9,27 @@ export interface CreateDbOptions {
   schema?: string;
 }
 
-const schemaName = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+const schemaName = /^[a-z_][a-z0-9_]*$/;
+
+export function assertSchemaName(schema: string) {
+  if (!schemaName.test(schema)) {
+    throw new Error("Database schema must be a lowercase PostgreSQL identifier.");
+  }
+}
 
 export function createDb({ databaseUrl, schema }: CreateDbOptions): Kysely<Database> {
-  if (schema !== undefined && !schemaName.test(schema)) {
-    throw new Error("Database schema must be a simple PostgreSQL identifier.");
+  if (schema !== undefined) {
+    assertSchemaName(schema);
   }
 
   const pool = new Pool({
     connectionString: databaseUrl,
-    ...(schema === undefined ? {} : { options: `-c search_path=${schema},public` }),
+    ...(schema === undefined ? {} : { options: `-c search_path=${schema}` }),
   });
 
-  return new Kysely<Database>({ dialect: new PostgresDialect({ pool }) });
+  const db = new Kysely<Database>({ dialect: new PostgresDialect({ pool }) });
+
+  return schema === undefined ? db : db.withSchema(schema);
 }
 
 export async function destroyDb(db: Kysely<Database>) {
