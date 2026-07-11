@@ -1,5 +1,6 @@
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { randomUUID } from "node:crypto";
 
 import { beginSyncRun, failSyncRun, getDatasetStatus, publishDataset, recordSourceObject, withSyncAdvisoryLock } from "../src/index.js";
 import { createDb, destroyDb } from "../src/db.js";
@@ -71,5 +72,24 @@ describeWithDatabase("sync publication repository", () => {
     expect(await withSyncAdvisoryLock("fixture-lock", async () => undefined, db)).toBe("locked");
     release?.();
     expect(await first).toBe("ran");
+  });
+
+  it("records durable provenance audits for newly inserted canonical facts", async () => {
+    const seriesId = randomUUID();
+    const gameId = randomUUID();
+    const source = { provider: "fixture", sourceKey: "fresh", sourceUrl: "https://example.test/fresh", objectKey: "sources/fresh", checksum: "fresh", parserVersion: "test" };
+    await recordSourceObject(source, db);
+    const sourceObject = await db.selectFrom("source_objects").select("id").where("provider", "=", source.provider).where("source_key", "=", source.sourceKey).executeTakeFirstOrThrow();
+    const run = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({
+      syncRunId: run.id, version: "fresh-audit", sourceObjectId: sourceObject.id, coverage: [], facts: {
+        series: [{ id: seriesId, provider: "fixture", sourceKey: "fresh-series", tournamentId: seedIds.worlds, playedAt: new Date("2025-01-01T00:00:00Z"), bestOf: 1, completed: true, sideATeamId: seedIds.t1, sideBTeamId: seedIds.weibo, sideAScore: 1, sideBScore: 0, winnerTeamId: seedIds.t1 }],
+        games: [{ id: gameId, provider: "fixture", sourceKey: "fresh-game", seriesId, gameNumber: 1, playedAt: new Date("2025-01-01T00:00:00Z"), sideATeamId: seedIds.t1, sideBTeamId: seedIds.weibo, winnerTeamId: seedIds.t1 }],
+      },
+    }, db);
+    const audit = await db.selectFrom("fact_mutation_audits").select(["fact_table", "fact_id", "source_object_id", "old_payload", "new_payload"])
+      .where("fact_table", "=", "series_facts").where("fact_id", "=", seriesId).executeTakeFirstOrThrow();
+    expect(audit).toMatchObject({ fact_table: "series_facts", fact_id: seriesId, source_object_id: sourceObject.id, old_payload: {} });
+    expect(audit.new_payload).toMatchObject({ id: seriesId, source_key: "fresh-series" });
   });
 });
