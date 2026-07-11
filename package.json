@@ -7,9 +7,11 @@
     "build": "tsc -b",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc -b --pretty false",
-    "test": "vitest run --config vitest.workspace.ts",
-    "test:integration": "vitest run --config vitest.workspace.ts --passWithNoTests test/**/*.integration.test.ts",
-    "test:e2e": "vitest run --config vitest.workspace.ts --passWithNoTests e2e"
+    "test": "pnpm test:consumer && pnpm test:unit",
+    "test:consumer": "pnpm build && node packages/sync/test/public-entry.consumer.mjs && tsc --noEmit -p packages/sync/test/consumer.tsconfig.json",
+    "test:unit": "vitest run --config vitest.unit.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts --passWithNoTests",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts --passWithNoTests"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
