@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "2026-07-12-riftversus-mvp",
+  "taskIntentRef": "docs/aegis/work/2026-07-12-riftversus-mvp/task-intent-draft.json",
+  "baselineRefs": [
+    "docs/aegis/specs/2026-07-12-riftversus-design.md",
+    "docs/aegis/BASELINE-GOVERNANCE.md"
+  ],
+  "scopeStatus": "not-yet-verified",
+  "compatStatus": "not-yet-verified",
+  "retirementStatus": "not-yet-verified",
+  "newRiskSignals": [
+    "來源存取、歷史資料正確性、Docker WSL 整合與跨模組契約"
+  ],
+  "decision": "needs-baseline-readback"
+}

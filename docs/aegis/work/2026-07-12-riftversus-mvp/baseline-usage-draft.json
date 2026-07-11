@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "2026-07-12-riftversus-mvp",
+  "requiredBaselineRefs": [
+    "docs/aegis/specs/2026-07-12-riftversus-design.md",
+    "docs/aegis/BASELINE-GOVERNANCE.md"
+  ],
+  "deliveredContextRefs": [],
+  "acknowledgedBeforePlanRefs": [],
+  "citedInPlanRefs": [],
+  "missingRefs": [
+    "docs/aegis/specs/2026-07-12-riftversus-design.md",
+    "docs/aegis/BASELINE-GOVERNANCE.md"
+  ],
+  "decision": "needs-baseline-readback"
+}

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "requestedOutcome": "完成可驗收的 RiftVersus MVP，採用分階段 subagent-driven 實作與 commits",
+  "goal": "依核准設計與計畫完成可驗收的 Docker 化 LoL 對戰統計網站",
+  "successEvidence": [
+    "13 個計畫任務完成、reviews、測試、Docker 驗證與歷史資料驗收證據"
+  ],
+  "stopCondition": "所有計畫與驗收證據完成；或外部來源/環境連續阻塞且無法進展",
+  "nonGoals": [
+    "accounts, bookmarks, Redis, D1, Rust, server-side Chromium, runtime scraping"
+  ],
+  "scope": "docs/aegis/plans/2026-07-12-riftversus-mvp.md 的 13 個任務",
+  "changeKinds": [
+    "architecture"
+  ],
+  "riskHints": [
+    "來源存取、歷史資料正確性、Docker WSL 整合與跨模組契約"
+  ]
+}

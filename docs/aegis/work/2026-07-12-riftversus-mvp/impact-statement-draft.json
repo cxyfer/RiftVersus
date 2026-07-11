@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "affectedLayers": [
+    "web, server, domain, database, sync, storage, Docker"
+  ],
+  "owners": [
+    "domain/database canonical facts; sync providers; server HTTP; web presentation"
+  ],
+  "invariants": [
+    "公開結果只讀已發布 PostgreSQL canonical facts，API 不做 runtime scraping"
+  ],
+  "compatBoundary": "同一 DATABASE_URL 與 S3 contract 支援 local/remote；failed sync 不取代已發布資料",
+  "nonGoals": [
+    "accounts, bookmarks, Redis, D1, Rust, server-side Chromium, runtime scraping"
+  ]
+}

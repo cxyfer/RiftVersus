@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "candidateDocs": [
+    "docs/aegis/specs/2026-07-12-riftversus-design.md",
+    "docs/aegis/BASELINE-GOVERNANCE.md"
+  ],
+  "whyRelevant": "核准需求、架構邊界與 drift 判定依據",
+  "missingAuthority": []
+}

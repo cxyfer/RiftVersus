@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "2026-07-12-riftversus-mvp",
+  "currentTodo": "bootstrap Git baseline and create isolated worktree",
+  "completedTodos": [],
+  "activeSlice": "pre-task bootstrap",
+  "evidenceRefs": [],
+  "blockedOn": null,
+  "nextStep": "commit baseline then create task-1 worktree",
+  "updatedAt": "2026-07-12"
+}

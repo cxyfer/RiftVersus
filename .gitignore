@@ -1,0 +1,34 @@
+# Dependencies and package-manager caches
+node_modules/
+.pnpm-store/
+
+# Build, test, and browser artifacts
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+.vite/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Local service data
+.data/
+data/local/
+postgres-data/
+minio-data/
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Isolated Git worktrees
+.worktrees/
+worktrees/
