@@ -1,11 +1,15 @@
 {
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
-  "currentTodo": "bootstrap Git baseline and create isolated worktree",
-  "completedTodos": [],
-  "activeSlice": "pre-task bootstrap",
-  "evidenceRefs": [],
-  "blockedOn": null,
-  "nextStep": "commit baseline then create task-1 worktree",
+  "currentTodo": "選定 worktree 位置並建立 Task 1 隔離工作樹",
+  "completedTodos": [
+    "Git metadata 初始化於 /tmp/RiftVersus.git；加入 .gitignore；建立 Aegis work records；commit 79eabe6"
+  ],
+  "activeSlice": "pre-task bootstrap complete",
+  "evidenceRefs": [
+    "git commit 79eabe6: 🎉 init: establish project baseline"
+  ],
+  "blockedOn": "需要依 using-git-worktrees 選擇 worktree 位置",
+  "nextStep": "使用者選擇 project-local .worktrees 或 /tmp isolated worktree",
   "updatedAt": "2026-07-12"
 }

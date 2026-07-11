@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "2026-07-12-riftversus-mvp",
+  "lastCheckpointRef": "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json",
+  "resumeInstruction": "讀取此 checkpoint、核准 spec/plan、確認 Git custom metadata location，建立 task-1 branch/worktree",
+  "knownPartialWork": [
+    "Git metadata 初始化於 /tmp/RiftVersus.git；加入 .gitignore；建立 Aegis work records；commit 79eabe6"
+  ],
+  "mustReadBeforeContinuing": [
+    "docs/aegis/work/2026-07-12-riftversus-mvp/10-intent.md",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/20-checkpoint.md",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json"
+  ],
+  "unsafeToAssume": [
+    "不得在 main 直接開始 application code；不得假設 /tmp Git metadata 可以改為 root .git mount"
+  ]
+}
