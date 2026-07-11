@@ -1,16 +1,36 @@
-import { createDb, destroyDb, migrateToLatest } from "@riftversus/database";
+import { compareHeadToHead, createDb, destroyDb, getDatasetStatus, listAvailableFilters, migrateToLatest, searchEntities } from "@riftversus/database";
+import { resolve } from "node:path";
 
-import { loadConfig } from "./config.js";
-import { startServer } from "./server.js";
+import { buildApp } from "./app.js";
+import { loadConfig, type Config } from "./config.js";
+import { startListeningServer } from "./server.js";
 
 declare const process: {
   argv: string[];
+  cwd(): string;
   env: Record<string, string | undefined>;
   exitCode?: number;
 };
 
 function printUsage() {
   console.log("Usage: riftversus <serve|migrate>");
+}
+
+export async function startServer(config: Config) {
+  return startListeningServer(config, {
+    createDb: () => createDb({ databaseUrl: config.databaseUrl }),
+    buildApp: (db) => buildApp({
+      searchEntities: (query) => searchEntities(query, db),
+      listFilters: () => listAvailableFilters(db),
+      compare: (query) => compareHeadToHead(query, db),
+      getDataset: async () => {
+        const status = await getDatasetStatus(db);
+        return status === null ? null : { version: status.version, lastSuccessfulSyncAt: status.lastSuccessfulSyncAt, coverage: status.coverage };
+      },
+      staticDir: resolve(process.cwd(), "apps/web/dist"),
+    }),
+    destroyDb,
+  });
 }
 
 async function main() {

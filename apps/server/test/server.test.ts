@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { Config } from "../src/config.js";
-import { startServer } from "../src/server.js";
+import { startListeningServer } from "../src/server.js";
 
 const config: Config = {
   databaseUrl: "postgresql://riftversus:password@localhost:5432/riftversus",
@@ -14,7 +14,7 @@ const config: Config = {
   s3: undefined,
 };
 
-function createDependencies(listen: () => Promise<unknown>) {
+function createDependencies(listen: () => Promise<unknown>, buildApp?: () => unknown) {
   const close = vi.fn(async () => undefined);
   let onClose: (() => Promise<void>) | undefined;
   const app = {
@@ -22,13 +22,13 @@ function createDependencies(listen: () => Promise<unknown>) {
     listen: vi.fn(listen),
     close,
   };
+  const database = { connection: "db" };
   const destroyDb = vi.fn(async () => undefined);
   return {
     dependencies: {
-      createDb: vi.fn(() => ({ connection: "db" })),
+      createDb: vi.fn(() => database),
+      buildApp: vi.fn(buildApp ?? (() => app)),
       destroyDb,
-      buildApp: vi.fn(() => app),
-      cwd: () => "/workspace",
     },
     app,
     destroyDb,
@@ -36,11 +36,11 @@ function createDependencies(listen: () => Promise<unknown>) {
   };
 }
 
-describe("startServer", () => {
+describe("startListeningServer", () => {
   it("closes the app and database when listen fails", async () => {
     const setup = createDependencies(async () => { throw new Error("address in use"); });
 
-    await expect(startServer(config, setup.dependencies)).rejects.toThrow("address in use");
+    await expect(startListeningServer(config, setup.dependencies)).rejects.toThrow("address in use");
 
     expect(setup.app.close).toHaveBeenCalledOnce();
     expect(setup.destroyDb).toHaveBeenCalledOnce();
@@ -49,11 +49,20 @@ describe("startServer", () => {
   it("releases the database when the started app closes", async () => {
     const setup = createDependencies(async () => undefined);
 
-    const app = await startServer(config, setup.dependencies);
+    const app = await startListeningServer(config, setup.dependencies);
     await setup.triggerClose();
 
     expect(app).toBe(setup.app);
     expect(setup.app.close).not.toHaveBeenCalled();
     expect(setup.destroyDb).toHaveBeenCalledOnce();
+  });
+
+  it("releases the database when app construction throws before listen", async () => {
+    const setup = createDependencies(async () => undefined, () => { throw new Error("app setup failed"); });
+
+    await expect(startListeningServer(config, setup.dependencies)).rejects.toThrow("app setup failed");
+
+    expect(setup.destroyDb).toHaveBeenCalledOnce();
+    expect(setup.app.listen).not.toHaveBeenCalled();
   });
 });

@@ -33,10 +33,11 @@ function optionalString(query: Record<string, unknown>, key: string) {
 }
 
 function normalizeQuery(query: Record<string, unknown>) {
-  const cursor = optionalString(query, "cursor");
-  if (cursor !== undefined) {
-    const parsedCursor = CursorSchema.safeParse(cursor);
+  let cursor: string | undefined;
+  if (query.cursor !== undefined) {
+    const parsedCursor = CursorSchema.safeParse(query.cursor);
     if (!parsedCursor.success) throw validationError(parsedCursor.error);
+    cursor = parsedCursor.data;
   }
   const parsed = ComparisonQuerySchema.safeParse({
     left: { kind: query["left.kind"], id: query["left.id"], teamEraId: optionalString(query, "left.teamEraId") },

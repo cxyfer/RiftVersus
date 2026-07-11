@@ -81,6 +81,16 @@ describe("HTTP API", () => {
     expect(dependencies.compare).not.toHaveBeenCalled();
   });
 
+  it("rejects an empty comparison cursor with a validation envelope", async () => {
+    const { app, dependencies } = createApp();
+
+    const response = await app.inject(`/api/comparisons?left.kind=team&left.id=${leftId}&right.kind=team&right.id=${rightId}&cursor=`);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toMatchObject({ error: { code: "VALIDATION_ERROR" } });
+    expect(dependencies.compare).not.toHaveBeenCalled();
+  });
+
   it("returns 404 when comparison subjects are missing", async () => {
     const { app } = createApp({ compare: vi.fn(async () => null) });
 
@@ -156,7 +166,8 @@ describe("HTTP API", () => {
     const { app } = createApp({ staticHtml: "<main>RiftVersus</main>" });
 
     await expect(app.inject("/comparison/left/right")).resolves.toMatchObject({ statusCode: 200, body: "<main>RiftVersus</main>" });
-    for (const url of ["/api", "/api?preview=1", "/api/not-a-route", "/api/not-a-route?preview=1", "/media", "/media?preview=1", "/media/missing.png", "/media/missing.png?preview=1", "/%61pi/unknown", "/api%2Funknown", "/media%2Fmissing"]) {
+    await expect(app.inject("/comparison/100%25")).resolves.toMatchObject({ statusCode: 200, body: "<main>RiftVersus</main>" });
+    for (const url of ["/api", "/api?preview=1", "/api/not-a-route", "/api/not-a-route?preview=1", "/media", "/media?preview=1", "/media/missing.png", "/media/missing.png?preview=1", "/%61pi/unknown", "/api%2Funknown", "/media%2Fmissing", "/%2561pi/unknown"]) {
       const response = await app.inject(url);
       expect(response.statusCode).toBe(404);
       expect(response.json()).toMatchObject({ error: { code: "NOT_FOUND" } });

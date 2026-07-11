@@ -19,7 +19,8 @@ function isReservedNamespace(requestUrl: string) {
   const rawPathname = requestUrl.split("?", 1)[0] ?? "/";
   try {
     const decodedPathname = decodeURIComponent(rawPathname);
-    return [rawPathname, decodedPathname].some((pathname) => pathname === "/api" || pathname.startsWith("/api/") || pathname === "/media" || pathname.startsWith("/media/"));
+    const residualDecodedPathname = decodedPathname.replace(/%([0-9A-Fa-f]{2})/g, (_match, hex: string) => String.fromCharCode(Number.parseInt(hex, 16)));
+    return [rawPathname, decodedPathname, residualDecodedPathname].some((pathname) => pathname === "/api" || pathname.startsWith("/api/") || pathname === "/media" || pathname.startsWith("/media/"));
   } catch {
     return true;
   }
