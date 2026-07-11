@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import type { ComparisonQuery, DomainSeries } from "../src/comparison.js";
+import { summarizeComparison } from "../src/comparison.js";
 import { groupGamesIntoSeries } from "../src/series-grouping.js";
 
 const game = (id: string, gameNumber: number, winnerTeamId: string | null, playedAt = "2024-05-01T12:00:00.000Z") => ({
@@ -86,6 +88,39 @@ describe("series grouping", () => {
     expect(result.errors).toEqual([]);
     expect(result.series).toHaveLength(2);
     expect(new Set(result.series.map((series) => series.id)).size).toBe(2);
+    const domainSeries: DomainSeries[] = result.series.map((grouped) => {
+      const winnerSide = grouped.winnerTeamId === grouped.teamIds[0] ? "a" : "b";
+      return {
+        id: grouped.id,
+        date: "2024-05-01",
+        tournament: { id: grouped.tournamentId, name: "Test tournament", category: "worlds" },
+        bestOf: 1,
+        sides: [
+          { teamId: grouped.teamIds[0], eraId: null, regionId: "left-region", playerIds: [] },
+          { teamId: grouped.teamIds[1], eraId: null, regionId: "right-region", playerIds: [] },
+        ],
+        games: [],
+        completed: true,
+        winnerSide,
+        score: winnerSide === "a" ? { a: 1, b: 0 } : { a: 0, b: 1 },
+      };
+    });
+    const qualifyingQuery: ComparisonQuery = {
+      left: { kind: "region", id: "left-region" },
+      right: { kind: "region", id: "right-region" },
+      eventCategories: [],
+      bestOf: [],
+      tournamentIds: [],
+      limit: 50,
+    };
+
+    expect(summarizeComparison(qualifyingQuery, domainSeries).series.total).toBe(2);
+  });
+
+  it("uses the same derived output for tied match times in any input order", () => {
+    const games = [game("g-tied-second", 2, "t1"), game("g-tied-first", 1, "t1")];
+
+    expect(groupGamesIntoSeries(games, [])).toEqual(groupGamesIntoSeries([...games].reverse(), []));
   });
 
   it("derives only bounded, same-opponent games with unique numbers and a winner", () => {

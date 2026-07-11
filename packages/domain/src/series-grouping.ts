@@ -54,6 +54,20 @@ function invalidGame(game: SourceGame): boolean {
   return game.teamAId === game.teamBId || Number.isNaN(Date.parse(game.playedAt));
 }
 
+function compareGames(left: SourceGame, right: SourceGame): number {
+  const playedAtOrder = Date.parse(left.playedAt) - Date.parse(right.playedAt);
+  if (playedAtOrder !== 0) {
+    return playedAtOrder;
+  }
+
+  const gameNumberOrder = (left.gameNumber ?? Number.MAX_SAFE_INTEGER) - (right.gameNumber ?? Number.MAX_SAFE_INTEGER);
+  if (gameNumberOrder !== 0) {
+    return gameNumberOrder;
+  }
+
+  return left.id.localeCompare(right.id);
+}
+
 function findWinner(games: readonly SourceGame[]): string | null {
   const wins = new Map<string, number>();
   for (const game of games) {
@@ -169,7 +183,7 @@ export function groupGamesIntoSeries(games: readonly SourceGame[], explicit: rea
   }
 
   for (const bucket of buckets.values()) {
-    const sorted = [...bucket].sort((left, right) => Date.parse(left.playedAt) - Date.parse(right.playedAt));
+    const sorted = [...bucket].sort(compareGames);
     let cluster: SourceGame[] = [];
     let clusterStartedAt = 0;
     for (const game of sorted) {
