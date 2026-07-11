@@ -57,6 +57,7 @@ describeWithDatabase("initial schema migration", () => {
           "source_cursors",
           "dataset_versions",
           "coverage_status",
+          "fact_mutation_audits",
           "kysely_migration",
           "kysely_migration_lock",
         ]),
@@ -65,15 +66,12 @@ describeWithDatabase("initial schema migration", () => {
       const migrationMetadata = await sql<{ table_name: string; table_schema: string }>`
         select table_name, table_schema
         from information_schema.tables
-        where table_schema = ${schema}
-          and table_name in ('kysely_migration', 'kysely_migration_lock')
+        where table_name in ('kysely_migration', 'kysely_migration_lock')
       `.execute(db);
-      expect(migrationMetadata.rows).toEqual(
-        expect.arrayContaining([
-          { table_name: "kysely_migration", table_schema: schema },
-          { table_name: "kysely_migration_lock", table_schema: schema },
-        ]),
-      );
+      expect(migrationMetadata.rows).toEqual([
+        { table_name: "kysely_migration", table_schema: schema },
+        { table_name: "kysely_migration_lock", table_schema: schema },
+      ]);
 
       const indexes = await sql<{ indexname: string; indexdef: string }>`
         select indexname, indexdef from pg_indexes where schemaname = ${schema}
@@ -89,6 +87,7 @@ describeWithDatabase("initial schema migration", () => {
           "game_players_player_game_lookup",
           "game_players_game_player_lookup",
           "team_region_history_lookup",
+          "fact_mutation_audits_fact_lookup",
         ]),
       );
       expect(indexes.rows.find((index) => index.indexname === "media_assets_current_entity_kind_unique")?.indexdef).toContain(
@@ -108,7 +107,17 @@ describeWithDatabase("initial schema migration", () => {
         { id: seedIds.teamA, kind: "team", canonical_name: "Alpha", slug: "alpha" },
         { id: seedIds.teamB, kind: "team", canonical_name: "Bravo", slug: "bravo" },
         { id: seedIds.teamC, kind: "team", canonical_name: "Charlie", slug: "charlie" },
+        { id: seedIds.player, kind: "player", canonical_name: "Player", slug: "player" },
+        { id: seedIds.region, kind: "region", canonical_name: "Region", slug: "region" },
       ]).execute();
+      await expect(
+        db.insertInto("team_eras").values({
+          id: randomUUID(),
+          team_entity_id: seedIds.player,
+          display_name: "Invalid era",
+          slug: "invalid-era",
+        }).execute(),
+      ).rejects.toThrow();
 
       await db.insertInto("tournaments").values({
         id: seedIds.tournament,
@@ -137,6 +146,70 @@ describeWithDatabase("initial schema migration", () => {
           best_of: 2 as never,
           completed: true,
           side_a_team_id: seedIds.teamA,
+          side_b_team_id: seedIds.teamB,
+          side_a_score: 1,
+          side_b_score: 0,
+          winner_team_id: seedIds.teamA,
+        }).execute(),
+      ).rejects.toThrow();
+      for (const [bestOf, sideAScore, sideBScore] of [
+        [1, 4, 0],
+        [3, 3, 2],
+        [5, 7, 6],
+      ] as const) {
+        await expect(
+          db.insertInto("series_facts").values({
+            id: randomUUID(),
+            provider: "fixture",
+            source_key: `impossible-score-${bestOf}`,
+            tournament_id: seedIds.tournament,
+            played_at: new Date("2026-01-01T00:00:00Z"),
+            best_of: bestOf,
+            completed: true,
+            side_a_team_id: seedIds.teamA,
+            side_b_team_id: seedIds.teamB,
+            side_a_score: sideAScore,
+            side_b_score: sideBScore,
+            winner_team_id: seedIds.teamA,
+          }).execute(),
+        ).rejects.toThrow();
+      }
+      await expect(
+        db.insertInto("series_facts").values({
+          id: randomUUID(),
+          provider: "fixture",
+          source_key: "wrong-side-kind",
+          tournament_id: seedIds.tournament,
+          played_at: new Date("2026-01-01T00:00:00Z"),
+          best_of: 1,
+          completed: true,
+          side_a_team_id: seedIds.player,
+          side_b_team_id: seedIds.teamB,
+          side_a_score: 1,
+          side_b_score: 0,
+          winner_team_id: seedIds.teamB,
+        }).execute(),
+      ).rejects.toThrow();
+      await expect(
+        db.insertInto("team_region_history").values({
+          team_entity_id: seedIds.teamA,
+          region_entity_id: seedIds.teamB,
+          valid_from: "2026-01-01",
+          provider: "fixture",
+          source_key: "wrong-region-kind",
+        }).execute(),
+      ).rejects.toThrow();
+      await expect(
+        db.insertInto("series_facts").values({
+          id: randomUUID(),
+          provider: "fixture",
+          source_key: "wrong-region-kind",
+          tournament_id: seedIds.tournament,
+          played_at: new Date("2026-01-01T00:00:00Z"),
+          best_of: 1,
+          completed: true,
+          side_a_team_id: seedIds.teamA,
+          side_a_region_id: seedIds.teamA,
           side_b_team_id: seedIds.teamB,
           side_a_score: 1,
           side_b_score: 0,
@@ -191,6 +264,38 @@ describeWithDatabase("initial schema migration", () => {
         checksum: "fixture-checksum",
         parser_version: "test",
       }).execute();
+      await db.insertInto("source_objects").values({
+        id: seedIds.sourceObjectTwo,
+        provider: "fixture",
+        source_key: "immutable-source",
+        source_url: "https://example.test/immutable-source.json",
+        object_key: "fixtures/immutable-source.json",
+        checksum: "immutable-checksum",
+        parser_version: "test",
+      }).execute();
+      await db.insertInto("override_applications").values({
+        id: seedIds.overrideApplication,
+        override_file: "data/overrides/fixture.yaml",
+        checksum: "override-checksum",
+      }).execute();
+      await expect(
+        db.updateTable("source_objects")
+          .set({ parser_version: "changed" })
+          .where("id", "=", seedIds.sourceObjectTwo)
+          .execute(),
+      ).rejects.toThrow();
+      await expect(
+        db.deleteFrom("source_objects").where("id", "=", seedIds.sourceObjectTwo).execute(),
+      ).rejects.toThrow();
+      await expect(
+        db.updateTable("override_applications")
+          .set({ checksum: "changed" })
+          .where("id", "=", seedIds.overrideApplication)
+          .execute(),
+      ).rejects.toThrow();
+      await expect(
+        db.deleteFrom("override_applications").where("id", "=", seedIds.overrideApplication).execute(),
+      ).rejects.toThrow();
       await db.connection().execute(async (connection) => {
         await sql`
           select set_config('riftversus.fact_update_provenance_kind', 'source_object', false)
@@ -207,7 +312,12 @@ describeWithDatabase("initial schema migration", () => {
       });
       await db.transaction().execute(async (trx) => {
         await sql`
-          select riftversus_authorize_fact_update('source_object', ${seedIds.sourceObject}::uuid)
+          select riftversus_authorize_fact_update(
+            'series_facts'::regclass,
+            ${seedIds.series}::uuid,
+            'source_object',
+            ${seedIds.sourceObject}::uuid
+          )
         `.execute(trx);
         await trx.updateTable("series_facts")
           .set({ played_at: new Date("2026-01-02T00:00:00Z") })
@@ -219,6 +329,31 @@ describeWithDatabase("initial schema migration", () => {
         .where("id", "=", seedIds.series)
         .executeTakeFirstOrThrow();
       expect(updatedSeries.played_at.toISOString()).toBe("2026-01-02T00:00:00.000Z");
+      const mutationAudits = await sql<{
+        fact_id: string;
+        fact_table: string;
+        source_object_id: string | null;
+        override_application_id: string | null;
+      }>`
+        select fact_id, fact_table, source_object_id, override_application_id
+        from fact_mutation_audits
+        where fact_id = ${seedIds.series}::uuid
+      `.execute(db);
+      expect(mutationAudits.rows).toEqual([
+        {
+          fact_id: seedIds.series,
+          fact_table: "series_facts",
+          source_object_id: seedIds.sourceObject,
+          override_application_id: null,
+        },
+      ]);
+      await expect(
+        sql`
+          update fact_mutation_audits
+          set changed_at = now()
+          where fact_id = ${seedIds.series}::uuid
+        `.execute(db),
+      ).rejects.toThrow();
       await expect(
         db.insertInto("series_facts").values({
           id: randomUUID(),
@@ -267,6 +402,14 @@ describeWithDatabase("initial schema migration", () => {
           player_entity_id: seedIds.teamA,
           team_entity_id: seedIds.teamA,
           side: "invalid" as never,
+        }).execute(),
+      ).rejects.toThrow();
+      await expect(
+        db.insertInto("game_players").values({
+          game_id: seedIds.game,
+          player_entity_id: seedIds.teamA,
+          team_entity_id: seedIds.teamA,
+          side: "a",
         }).execute(),
       ).rejects.toThrow();
     } finally {

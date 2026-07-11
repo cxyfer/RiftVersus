@@ -1,6 +1,7 @@
 import type { ColumnType, Generated } from "kysely";
 
-export type Timestamp = ColumnType<Date, Date | string | undefined, Date | string | undefined>;
+export type DefaultTimestamp = ColumnType<Date, Date | string | undefined, Date | string | undefined>;
+export type RequiredTimestamp = ColumnType<Date, Date | string, Date | string>;
 export type NullableTimestamp = ColumnType<Date | null, Date | string | null | undefined, Date | string | null | undefined>;
 export type DateColumn = ColumnType<string, string, string>;
 export type NullableDateColumn = ColumnType<string | null, string | null | undefined, string | null | undefined>;
@@ -14,8 +15,8 @@ export interface EntitiesTable {
   kind: EntityKind;
   canonical_name: string;
   slug: string;
-  created_at: Timestamp;
-  updated_at: Timestamp;
+  created_at: DefaultTimestamp;
+  updated_at: DefaultTimestamp;
 }
 
 export interface EntityAliasesTable {
@@ -69,7 +70,7 @@ export interface SeriesFactsTable {
   provider: string;
   source_key: string;
   tournament_id: string;
-  played_at: Timestamp;
+  played_at: RequiredTimestamp;
   best_of: 1 | 3 | 5;
   completed: boolean;
   side_a_team_id: string;
@@ -89,7 +90,7 @@ export interface GameFactsTable {
   source_key: string;
   series_id: string;
   game_number: number;
-  played_at: Timestamp;
+  played_at: RequiredTimestamp;
   side_a_team_id: string;
   side_a_era_id: string | null;
   side_a_region_id: string | null;
@@ -121,7 +122,7 @@ export interface SyncRunsTable {
   mode: string;
   status: string;
   parser_version: string;
-  started_at: Timestamp;
+  started_at: DefaultTimestamp;
   finished_at: NullableTimestamp;
   source_count: Generated<number>;
   inserted_count: Generated<number>;
@@ -138,8 +139,8 @@ export interface SourceObjectsTable {
   object_key: string;
   checksum: string;
   content_type: string | null;
-  byte_size: number | null;
-  retrieved_at: Timestamp;
+  byte_size: string | null;
+  retrieved_at: DefaultTimestamp;
   parser_version: string;
 }
 
@@ -147,13 +148,13 @@ export interface SourceCursorsTable {
   provider: string;
   cursor_key: string;
   cursor_value: string;
-  updated_at: Timestamp;
+  updated_at: DefaultTimestamp;
 }
 
 export interface DatasetVersionsTable {
   id: string;
   version: string;
-  published_at: Timestamp;
+  published_at: DefaultTimestamp;
   sync_run_id: string;
 }
 
@@ -173,8 +174,19 @@ export interface OverrideApplicationsTable {
   id: string;
   override_file: string;
   checksum: string;
-  applied_at: Timestamp;
+  applied_at: DefaultTimestamp;
   sync_run_id: string | null;
+}
+
+export interface FactMutationAuditsTable {
+  audit_id: Generated<string>;
+  fact_table: "series_facts" | "game_facts";
+  fact_id: string;
+  source_object_id: string | null;
+  override_application_id: string | null;
+  changed_at: DefaultTimestamp;
+  old_payload: unknown;
+  new_payload: unknown;
 }
 
 export interface Database {
@@ -193,4 +205,5 @@ export interface Database {
   dataset_versions: DatasetVersionsTable;
   coverage_status: CoverageStatusTable;
   override_applications: OverrideApplicationsTable;
+  fact_mutation_audits: FactMutationAuditsTable;
 }

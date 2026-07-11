@@ -107,10 +107,12 @@ export const initialMigration: Migration = {
       create table fact_mutation_authorizations (
         transaction_id bigint not null,
         backend_pid integer not null,
+        fact_table text not null check (fact_table in ('series_facts', 'game_facts')),
+        fact_id uuid not null,
         provenance_kind text not null check (provenance_kind in ('source_object', 'override_application')),
         provenance_id uuid not null,
         created_at timestamptz not null default now(),
-        primary key (transaction_id, backend_pid, provenance_kind, provenance_id)
+        primary key (transaction_id, backend_pid, fact_table, fact_id, provenance_kind, provenance_id)
       );
 
       create table series_facts (
@@ -127,8 +129,8 @@ export const initialMigration: Migration = {
         side_b_team_id uuid not null references entities(id),
         side_b_era_id uuid references team_eras(id),
         side_b_region_id uuid references entities(id),
-        side_a_score smallint check (side_a_score is null or side_a_score >= 0),
-        side_b_score smallint check (side_b_score is null or side_b_score >= 0),
+        side_a_score smallint check (side_a_score is null or (side_a_score >= 0 and side_a_score <= (best_of + 1) / 2)),
+        side_b_score smallint check (side_b_score is null or (side_b_score >= 0 and side_b_score <= (best_of + 1) / 2)),
         winner_team_id uuid references entities(id),
         constraint series_facts_provider_source_key_unique unique (provider, source_key),
         constraint series_facts_distinct_sides check (side_a_team_id <> side_b_team_id),
@@ -141,8 +143,8 @@ export const initialMigration: Migration = {
         ),
         constraint series_facts_winner_matches_score check (
           winner_team_id is null or
-          (winner_team_id = side_a_team_id and side_a_score > side_b_score) or
-          (winner_team_id = side_b_team_id and side_b_score > side_a_score)
+          (winner_team_id = side_a_team_id and side_a_score = (best_of + 1) / 2 and side_b_score < (best_of + 1) / 2) or
+          (winner_team_id = side_b_team_id and side_b_score = (best_of + 1) / 2 and side_a_score < (best_of + 1) / 2)
         )
       );
 
@@ -225,16 +227,47 @@ export const initialMigration: Migration = {
         constraint override_applications_file_checksum_unique unique (override_file, checksum)
       );
 
-      create function riftversus_authorize_fact_update(provenance_kind text, provenance_id uuid)
+      create table fact_mutation_audits (
+        audit_id bigint generated always as identity primary key,
+        fact_table text not null check (fact_table in ('series_facts', 'game_facts')),
+        fact_id uuid not null,
+        source_object_id uuid references source_objects(id),
+        override_application_id uuid references override_applications(id),
+        changed_at timestamptz not null default now(),
+        old_payload jsonb not null,
+        new_payload jsonb not null,
+        constraint fact_mutation_audits_one_provenance check (
+          (source_object_id is not null)::integer + (override_application_id is not null)::integer = 1
+        )
+      );
+
+      create function riftversus_authorize_fact_update(target_fact regclass, target_fact_id uuid, provenance_kind text, provenance_id uuid)
       returns void
       language plpgsql
       security definer
-      set search_path from current
+      set search_path = pg_catalog
       as $$
       declare
-        fact_schema text := current_schema();
+        fact_schema text;
+        fact_table text;
+        fact_exists boolean;
         provenance_exists boolean;
       begin
+        select namespace.nspname, class.relname into fact_schema, fact_table
+        from pg_class class
+        join pg_namespace namespace on namespace.oid = class.relnamespace
+        where class.oid = target_fact;
+
+        if fact_table not in ('series_facts', 'game_facts') then
+          raise exception 'Only canonical fact tables may be authorized';
+        end if;
+
+        execute format('select exists (select 1 from %I.%I where id = $1)', fact_schema, fact_table)
+          into fact_exists using target_fact_id;
+        if not fact_exists then
+          raise exception 'Fact does not exist: %.%', fact_table, target_fact_id;
+        end if;
+
         if provenance_kind = 'source_object' then
           execute format('select exists (select 1 from %I.source_objects where id = $1)', fact_schema)
             into provenance_exists using provenance_id;
@@ -250,9 +283,11 @@ export const initialMigration: Migration = {
         end if;
 
         execute format(
-          'insert into %I.fact_mutation_authorizations (transaction_id, backend_pid, provenance_kind, provenance_id) values (txid_current(), pg_backend_pid(), $1, $2) on conflict do nothing',
+          'insert into %I.fact_mutation_authorizations (transaction_id, backend_pid, fact_table, fact_id, provenance_kind, provenance_id) values (txid_current(), pg_backend_pid(), $1, $2, $3, $4) on conflict do nothing',
           fact_schema
-        ) using provenance_kind, provenance_id;
+        ) using fact_table, target_fact_id, provenance_kind, provenance_id;
+        perform set_config('riftversus.fact_update_fact_table', fact_table, true);
+        perform set_config('riftversus.fact_update_fact_id', target_fact_id::text, true);
         perform set_config('riftversus.fact_update_provenance_kind', provenance_kind, true);
         perform set_config('riftversus.fact_update_provenance_id', provenance_id::text, true);
       end;
@@ -265,18 +300,23 @@ export const initialMigration: Migration = {
       set search_path = pg_catalog
       as $$
       declare
+        context_fact_table text := current_setting('riftversus.fact_update_fact_table', true);
+        context_fact_id_text text := current_setting('riftversus.fact_update_fact_id', true);
         provenance_kind text := current_setting('riftversus.fact_update_provenance_kind', true);
         provenance_id_text text := current_setting('riftversus.fact_update_provenance_id', true);
+        context_fact_id uuid;
         provenance_id uuid;
         provenance_exists boolean;
         authorization_exists boolean;
+        old_payload jsonb;
+        new_payload jsonb;
       begin
         if row(new.*) is not distinct from row(old.*) then
           return new;
         end if;
 
-        if provenance_kind is null or provenance_id_text is null then
-          raise exception 'Canonical fact updates require transaction-local source object or override application provenance';
+        if context_fact_table is distinct from tg_table_name or context_fact_id_text is null or provenance_kind is null or provenance_id_text is null then
+          raise exception 'Canonical fact updates require exact transaction-local fact and provenance authorization';
         end if;
 
         if provenance_kind not in ('source_object', 'override_application') then
@@ -284,10 +324,15 @@ export const initialMigration: Migration = {
         end if;
 
         begin
+          context_fact_id := context_fact_id_text::uuid;
           provenance_id := provenance_id_text::uuid;
         exception when invalid_text_representation then
-          raise exception 'Invalid fact update provenance id';
+          raise exception 'Invalid fact update context';
         end;
+
+        if context_fact_id <> old.id then
+          raise exception 'Fact update authorization does not match this fact';
+        end if;
 
         if provenance_kind = 'source_object' then
           execute format('select exists (select 1 from %I.source_objects where id = $1)', tg_table_schema)
@@ -298,14 +343,98 @@ export const initialMigration: Migration = {
         end if;
 
         execute format(
-          'select exists (select 1 from %I.fact_mutation_authorizations where transaction_id = txid_current() and backend_pid = pg_backend_pid() and provenance_kind = $1 and provenance_id = $2)',
+          'select exists (select 1 from %I.fact_mutation_authorizations where transaction_id = txid_current() and backend_pid = pg_backend_pid() and fact_table = $1 and fact_id = $2 and provenance_kind = $3 and provenance_id = $4)',
           tg_table_schema
-        ) into authorization_exists using provenance_kind, provenance_id;
+        ) into authorization_exists using tg_table_name, old.id, provenance_kind, provenance_id;
 
         if not provenance_exists or not authorization_exists then
           raise exception 'Canonical fact update is not authorized by current transaction provenance';
         end if;
 
+        old_payload := to_jsonb(old);
+        new_payload := to_jsonb(new);
+        if provenance_kind = 'source_object' then
+          execute format(
+            'insert into %I.fact_mutation_audits (fact_table, fact_id, source_object_id, old_payload, new_payload) values ($1, $2, $3, $4, $5)',
+            tg_table_schema
+          ) using tg_table_name, old.id, provenance_id, old_payload, new_payload;
+        else
+          execute format(
+            'insert into %I.fact_mutation_audits (fact_table, fact_id, override_application_id, old_payload, new_payload) values ($1, $2, $3, $4, $5)',
+            tg_table_schema
+          ) using tg_table_name, old.id, provenance_id, old_payload, new_payload;
+        end if;
+
+        return new;
+      end;
+      $$;
+
+      create function riftversus_reject_append_only_mutation()
+      returns trigger
+      language plpgsql
+      security definer
+      set search_path = pg_catalog
+      as $$
+      begin
+        raise exception '% is append-only', tg_table_name;
+      end;
+      $$;
+
+      create function riftversus_require_entity_kind(entity_schema text, entity_id uuid, expected_kind text, reference_name text)
+      returns void
+      language plpgsql
+      security definer
+      set search_path = pg_catalog
+      as $$
+      declare
+        actual_kind text;
+      begin
+        execute format('select kind from %I.entities where id = $1', entity_schema)
+          into actual_kind using entity_id;
+        if actual_kind is distinct from expected_kind then
+          raise exception '% must reference an entity of kind %, got %', reference_name, expected_kind, coalesce(actual_kind, 'missing');
+        end if;
+      end;
+      $$;
+
+      create function riftversus_enforce_entity_kinds()
+      returns trigger
+      language plpgsql
+      security definer
+      set search_path = pg_catalog
+      as $$
+      begin
+        if tg_table_name = 'team_eras' then
+          execute format('select %I.riftversus_require_entity_kind($1, $2, $3, $4)', tg_table_schema)
+            using tg_table_schema, new.team_entity_id, 'team', 'team_eras.team_entity_id';
+        elsif tg_table_name in ('series_facts', 'game_facts') then
+          execute format('select %I.riftversus_require_entity_kind($1, $2, $3, $4)', tg_table_schema)
+            using tg_table_schema, new.side_a_team_id, 'team', tg_table_name || '.side_a_team_id';
+          execute format('select %I.riftversus_require_entity_kind($1, $2, $3, $4)', tg_table_schema)
+            using tg_table_schema, new.side_b_team_id, 'team', tg_table_name || '.side_b_team_id';
+          if new.side_a_region_id is not null then
+            execute format('select %I.riftversus_require_entity_kind($1, $2, $3, $4)', tg_table_schema)
+              using tg_table_schema, new.side_a_region_id, 'region', tg_table_name || '.side_a_region_id';
+          end if;
+          if new.side_b_region_id is not null then
+            execute format('select %I.riftversus_require_entity_kind($1, $2, $3, $4)', tg_table_schema)
+              using tg_table_schema, new.side_b_region_id, 'region', tg_table_name || '.side_b_region_id';
+          end if;
+          if new.winner_team_id is not null then
+            execute format('select %I.riftversus_require_entity_kind($1, $2, $3, $4)', tg_table_schema)
+              using tg_table_schema, new.winner_team_id, 'team', tg_table_name || '.winner_team_id';
+          end if;
+        elsif tg_table_name = 'game_players' then
+          execute format('select %I.riftversus_require_entity_kind($1, $2, $3, $4)', tg_table_schema)
+            using tg_table_schema, new.player_entity_id, 'player', 'game_players.player_entity_id';
+          execute format('select %I.riftversus_require_entity_kind($1, $2, $3, $4)', tg_table_schema)
+            using tg_table_schema, new.team_entity_id, 'team', 'game_players.team_entity_id';
+        elsif tg_table_name = 'team_region_history' then
+          execute format('select %I.riftversus_require_entity_kind($1, $2, $3, $4)', tg_table_schema)
+            using tg_table_schema, new.team_entity_id, 'team', 'team_region_history.team_entity_id';
+          execute format('select %I.riftversus_require_entity_kind($1, $2, $3, $4)', tg_table_schema)
+            using tg_table_schema, new.region_entity_id, 'region', 'team_region_history.region_entity_id';
+        end if;
         return new;
       end;
       $$;
@@ -316,9 +445,40 @@ export const initialMigration: Migration = {
       create trigger game_facts_require_provenance_before_update
         before update on game_facts
         for each row execute function riftversus_enforce_fact_update_provenance();
+      create trigger source_objects_append_only_before_mutation
+        before update or delete on source_objects
+        for each row execute function riftversus_reject_append_only_mutation();
+      create trigger override_applications_append_only_before_mutation
+        before update or delete on override_applications
+        for each row execute function riftversus_reject_append_only_mutation();
+      create trigger fact_mutation_audits_append_only_before_mutation
+        before update or delete on fact_mutation_audits
+        for each row execute function riftversus_reject_append_only_mutation();
+      create trigger team_eras_require_entity_kinds_before_write
+        before insert or update on team_eras
+        for each row execute function riftversus_enforce_entity_kinds();
+      create trigger series_facts_require_entity_kinds_before_write
+        before insert or update on series_facts
+        for each row execute function riftversus_enforce_entity_kinds();
+      create trigger game_facts_require_entity_kinds_before_write
+        before insert or update on game_facts
+        for each row execute function riftversus_enforce_entity_kinds();
+      create trigger game_players_require_entity_kinds_before_write
+        before insert or update on game_players
+        for each row execute function riftversus_enforce_entity_kinds();
+      create trigger team_region_history_require_entity_kinds_before_write
+        before insert or update on team_region_history
+        for each row execute function riftversus_enforce_entity_kinds();
 
       revoke all on table fact_mutation_authorizations from public;
-      revoke all on function riftversus_authorize_fact_update(text, uuid) from public;
+      revoke all on table fact_mutation_audits from public;
+      revoke all on function riftversus_authorize_fact_update(regclass, uuid, text, uuid) from public;
+      revoke all on function riftversus_enforce_fact_update_provenance() from public;
+      revoke all on function riftversus_reject_append_only_mutation() from public;
+      revoke all on function riftversus_require_entity_kind(text, uuid, text, text) from public;
+      revoke all on function riftversus_enforce_entity_kinds() from public;
+      comment on function riftversus_authorize_fact_update(regclass, uuid, text, uuid) is
+        'SECURITY DEFINER controlled update route. EXECUTE is revoked from PUBLIC; grant it explicitly to a trusted sync writer. The function owner is the DBA trust boundary.';
 
       create index entities_canonical_name_search on entities (lower(canonical_name));
       create index entity_aliases_display_name_search on entity_aliases (lower(display_name)) where searchable;
@@ -334,6 +494,7 @@ export const initialMigration: Migration = {
       create index game_players_player_game_lookup on game_players (player_entity_id, game_id);
       create index game_players_game_player_lookup on game_players (game_id, player_entity_id);
       create index team_region_history_lookup on team_region_history (team_entity_id, valid_from, valid_to);
+      create index fact_mutation_audits_fact_lookup on fact_mutation_audits (fact_table, fact_id, changed_at);
 
       comment on table series_facts is
         'Updates require riftversus_authorize_fact_update in the same transaction with existing source_objects or override_applications provenance; dataset_versions are append-only publication markers.';
@@ -348,8 +509,20 @@ export const initialMigration: Migration = {
     await sql.raw(`
       drop trigger if exists series_facts_require_provenance_before_update on series_facts;
       drop trigger if exists game_facts_require_provenance_before_update on game_facts;
+      drop trigger if exists source_objects_append_only_before_mutation on source_objects;
+      drop trigger if exists override_applications_append_only_before_mutation on override_applications;
+      drop trigger if exists fact_mutation_audits_append_only_before_mutation on fact_mutation_audits;
+      drop trigger if exists team_eras_require_entity_kinds_before_write on team_eras;
+      drop trigger if exists series_facts_require_entity_kinds_before_write on series_facts;
+      drop trigger if exists game_facts_require_entity_kinds_before_write on game_facts;
+      drop trigger if exists game_players_require_entity_kinds_before_write on game_players;
+      drop trigger if exists team_region_history_require_entity_kinds_before_write on team_region_history;
       drop function if exists riftversus_enforce_fact_update_provenance();
-      drop function if exists riftversus_authorize_fact_update(text, uuid);
+      drop function if exists riftversus_authorize_fact_update(regclass, uuid, text, uuid);
+      drop function if exists riftversus_reject_append_only_mutation();
+      drop function if exists riftversus_require_entity_kind(text, uuid, text, text);
+      drop function if exists riftversus_enforce_entity_kinds();
+      drop table if exists fact_mutation_audits;
       drop table if exists override_applications;
       drop table if exists coverage_status;
       drop table if exists dataset_versions;
