@@ -7,6 +7,7 @@ import { sql } from "kysely";
 import { beginSyncRun, compareHeadToHead, getDatasetStatus, getMediaByKey, listAvailableFilters, publishDataset, searchEntities } from "../src/index.js";
 import { createDb, destroyDb } from "../src/db.js";
 import { migrateToLatest } from "../src/migrator.js";
+import { buildComparisonQueryPlan } from "../src/repositories/comparison.js";
 import { comparisonOracleFixture, createTestSchemaName, seedComparisonFixture, seedIds } from "./fixtures/seed.js";
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
@@ -99,15 +100,9 @@ describeWithDatabase("comparison repositories", () => {
     }))).execute();
     await db.insertInto("game_players").values(rows.map(({ gameId }) => ({ game_id: gameId, player_entity_id: otherPlayer, side: "a", team_entity_id: otherA }))).execute();
     const plan = await db.transaction().execute(async (trx) => {
-      return sql<{ "QUERY PLAN": unknown }>`
-        explain (format json) select series.id
-        from series_facts series join game_facts game on game.series_id = series.id
-        join game_players left_player on left_player.game_id = game.id
-        join game_players right_player on right_player.game_id = game.id
-        where series.publication_generation <= (select max(generation) from dataset_versions)
-          and series.side_a_team_id = ${seedIds.t1} and series.side_b_team_id = ${seedIds.weibo}
-          and left_player.player_entity_id = ${seedIds.faker} and right_player.player_entity_id = ${seedIds.xiaohu}
-      `.execute(trx);
+      await sql.raw("analyze series_facts; analyze game_facts; analyze game_players").execute(trx);
+      const exact = buildComparisonQueryPlan({ left: { kind: "player", id: seedIds.faker }, right: { kind: "player", id: seedIds.xiaohu }, eventCategories: [], bestOf: [], tournamentIds: [], limit: 50 });
+      return sql<{ "QUERY PLAN": unknown }>`explain (format json) ${exact.directSql}`.execute(trx);
     });
     const nodes: Array<{ relation?: string; node?: string; index?: string }> = [];
     const visit = (value: unknown): void => {

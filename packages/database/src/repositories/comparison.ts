@@ -89,21 +89,15 @@ function record(outcomes: readonly ("left" | "right")[]) {
   return { wins, losses, total: outcomes.length, winRate: outcomes.length === 0 ? 0 : wins / outcomes.length };
 }
 
-/**
- * The CTEs are deliberately split: candidate_series owns series-level filters,
- * while direct_games enforces game-time player membership before aggregation.
- */
-export async function compareHeadToHead(query: ComparisonQuery, db: Kysely<Database>): Promise<ComparisonResponse> {
+/** Internal SQL owner shared by repository execution and integration plan checks. */
+export function buildComparisonQueryPlan(query: ComparisonQuery) {
   const candidateAssignment = assignment(query.left, query.right, "s");
   const directAssignment = assignment(query.left, query.right, "g");
   const requiresDirectGame = query.left.kind === "player" || query.right.kind === "player";
-  const candidateMatch = requiresDirectGame
-    ? sql<boolean>`exists (select 1 from game_facts g where g.series_id = s.id and ${directAssignment})`
-    : candidateAssignment;
+  const candidateMatch = requiresDirectGame ? sql<boolean>`exists (select 1 from game_facts g where g.series_id = s.id and ${directAssignment})` : candidateAssignment;
   const cursor = decodeCursor(query.cursor);
   const filters = [
-    sql<boolean>`s.publication_generation <= ${latestPublicationGeneration} and s.completed = true and s.winner_team_id is not null and s.side_a_score is not null and s.side_b_score is not null`,
-    candidateMatch,
+    sql<boolean>`s.publication_generation <= ${latestPublicationGeneration} and s.completed = true and s.winner_team_id is not null and s.side_a_score is not null and s.side_b_score is not null`, candidateMatch,
     query.from === undefined ? sql<boolean>`true` : sql<boolean>`s.played_at::date >= ${query.from}`,
     query.to === undefined ? sql<boolean>`true` : sql<boolean>`s.played_at::date <= ${query.to}`,
     query.eventCategories.length === 0 ? sql<boolean>`true` : sql<boolean>`t.category = any(${sql.val(query.eventCategories)}::text[])`,
@@ -111,7 +105,20 @@ export async function compareHeadToHead(query: ComparisonQuery, db: Kysely<Datab
     query.tournamentIds.length === 0 ? sql<boolean>`true` : sql<boolean>`s.tournament_id = any(${sql.val(query.tournamentIds)}::uuid[])`,
     cursor === null ? sql<boolean>`true` : sql<boolean>`(s.played_at, s.id) < (${cursor.playedAt}::timestamptz, ${cursor.id}::uuid)`,
   ];
-  const candidateSql = sql<CandidateRow>`
+  const summaryFilters = filters.slice(0, 7);
+  const candidateSql = sql<CandidateRow>`with candidate_series as (select s.id, s.played_at, s.tournament_id, t.name as tournament_name, t.category, s.best_of, s.side_a_team_id, s.side_a_era_id, s.side_a_region_id, s.side_b_team_id, s.side_b_era_id, s.side_b_region_id, s.side_a_score, s.side_b_score, s.winner_team_id from series_facts s join tournaments t on t.id = s.tournament_id where ${sql.join(filters, sql` and `)}) select * from candidate_series order by played_at desc, id desc limit ${query.limit + 1}`;
+  const summarySql = sql<CandidateRow>`with candidate_series as (select s.id, s.played_at, s.tournament_id, t.name as tournament_name, t.category, s.best_of, s.side_a_team_id, s.side_a_era_id, s.side_a_region_id, s.side_b_team_id, s.side_b_era_id, s.side_b_region_id, s.side_a_score, s.side_b_score, s.winner_team_id from series_facts s join tournaments t on t.id = s.tournament_id where ${sql.join(summaryFilters, sql` and `)}) select * from candidate_series`;
+  const directSql = sql<DirectGameRow>`with candidate_series as (select s.id from series_facts s join tournaments t on t.id = s.tournament_id where ${sql.join(summaryFilters, sql` and `)}), direct_games as (select distinct g.id, g.series_id, g.played_at, g.winner_team_id, case when ${sideMatch(query.left, "g", "a")} and ${sideMatch(query.right, "g", "b")} then g.side_a_team_id else g.side_b_team_id end as left_team_id from game_facts g join candidate_series candidate on candidate.id = g.series_id where g.publication_generation <= ${latestPublicationGeneration} and ${directAssignment}) select * from direct_games`;
+  return { candidateSql, summarySql, directSql };
+}
+
+/**
+ * The CTEs are deliberately split: candidate_series owns series-level filters,
+ * while direct_games enforces game-time player membership before aggregation.
+ */
+export async function compareHeadToHead(query: ComparisonQuery, db: Kysely<Database>): Promise<ComparisonResponse> {
+  const { candidateSql, summarySql, directSql } = buildComparisonQueryPlan(query);
+  /*
     with candidate_series as (
       select s.id, s.played_at, s.tournament_id, t.name as tournament_name, t.category, s.best_of,
         s.side_a_team_id, s.side_a_era_id, s.side_a_region_id, s.side_b_team_id, s.side_b_era_id, s.side_b_region_id,
@@ -119,10 +126,9 @@ export async function compareHeadToHead(query: ComparisonQuery, db: Kysely<Datab
       from series_facts s join tournaments t on t.id = s.tournament_id
       where ${sql.join(filters, sql` and `)}
     ) select * from candidate_series order by played_at desc, id desc limit ${query.limit + 1}`;
-  const candidates = (await candidateSql.execute(db)).rows;
+  */ const candidates = (await candidateSql.execute(db)).rows;
   const page = candidates.slice(0, query.limit);
-  const summaryFilters = filters.slice(0, 7);
-  const summarySql = sql<CandidateRow>`
+  /* const summarySql = sql<CandidateRow>`
     with candidate_series as (
       select s.id, s.played_at, s.tournament_id, t.name as tournament_name, t.category, s.best_of,
         s.side_a_team_id, s.side_a_era_id, s.side_a_region_id, s.side_b_team_id, s.side_b_era_id, s.side_b_region_id,
@@ -130,8 +136,8 @@ export async function compareHeadToHead(query: ComparisonQuery, db: Kysely<Datab
       from series_facts s join tournaments t on t.id = s.tournament_id
       where ${sql.join(summaryFilters, sql` and `)}
     ) select * from candidate_series`;
-  const summaryCandidates = (await summarySql.execute(db)).rows;
-  const directSql = sql<DirectGameRow>`
+  */ const summaryCandidates = (await summarySql.execute(db)).rows;
+  /* const directSql = sql<DirectGameRow>`
     with candidate_series as (
       select s.id from series_facts s join tournaments t on t.id = s.tournament_id
       where ${sql.join(summaryFilters, sql` and `)}
@@ -141,7 +147,7 @@ export async function compareHeadToHead(query: ComparisonQuery, db: Kysely<Datab
       from game_facts g join candidate_series candidate on candidate.id = g.series_id
       where g.publication_generation <= ${latestPublicationGeneration} and ${directAssignment}
     ) select * from direct_games`;
-  const directGames = (await directSql.execute(db)).rows;
+  */ const directGames = (await directSql.execute(db)).rows;
   const directBySeries = new Map<string, DirectGameRow[]>();
   for (const game of directGames) directBySeries.set(game.series_id, [...(directBySeries.get(game.series_id) ?? []), game]);
   const seriesOutcomes: Array<"left" | "right"> = [];
