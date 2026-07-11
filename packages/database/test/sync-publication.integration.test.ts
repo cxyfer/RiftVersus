@@ -50,6 +50,8 @@ describeWithDatabase("sync publication repository", () => {
     const rosterBeforeRejection = await db.selectFrom("game_players").select("player_entity_id").where("game_id", "=", seedIds.t1Game).execute();
     await expect(publishDataset({ syncRunId: sourceLess.id, version: "no-source-roster", coverage: [], rosterGameIds: [seedIds.t1Game] }, db)).rejects.toThrow("requires sourceObjectId");
     expect(await db.selectFrom("game_players").select("player_entity_id").where("game_id", "=", seedIds.t1Game).execute()).toEqual(rosterBeforeRejection);
+    const unlisted = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    await expect(publishDataset({ syncRunId: unlisted.id, version: "unlisted-roster", sourceObjectId: sourceObject.id, coverage: [], rosterGameIds: [], facts: { gamePlayers: [players[0]!] } })).rejects.toThrow("rosterGameIds");
     const correction = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
     await publishDataset({ syncRunId: correction.id, version: "facts-v3", sourceObjectId: sourceObject.id, coverage: [], facts: { series: [input], games: [game], gamePlayers: [] }, rosterGameIds: [seedIds.t1Game] });
     expect(await db.selectFrom("game_players").select("player_entity_id").where("game_id", "=", seedIds.t1Game).execute()).toEqual([]);
@@ -93,8 +95,9 @@ describeWithDatabase("sync publication repository", () => {
     await publishDataset({
       syncRunId: run.id, version: "fresh-audit", sourceObjectId: sourceObject.id, coverage: [], facts: {
         series: [{ id: seriesId, provider: "fixture", sourceKey: "fresh-series", tournamentId: seedIds.worlds, playedAt: new Date("2025-01-01T00:00:00Z"), bestOf: 1, completed: true, sideATeamId: seedIds.t1, sideBTeamId: seedIds.weibo, sideAScore: 1, sideBScore: 0, winnerTeamId: seedIds.t1 }],
-        games: [{ id: gameId, provider: "fixture", sourceKey: "fresh-game", seriesId, gameNumber: 1, playedAt: new Date("2025-01-01T00:00:00Z"), sideATeamId: seedIds.t1, sideBTeamId: seedIds.weibo, winnerTeamId: seedIds.t1 }],
+        games: [{ id: gameId, provider: "fixture", sourceKey: "fresh-game", seriesId, gameNumber: 1, playedAt: new Date("2025-01-01T00:00:00Z"), sideATeamId: seedIds.t1, sideBTeamId: seedIds.weibo, winnerTeamId: seedIds.t1 }], gamePlayers: [{ gameId, playerEntityId: seedIds.faker, side: "a", teamEntityId: seedIds.t1 }],
       },
+      rosterGameIds: [gameId],
     }, db);
     const audit = await db.selectFrom("fact_mutation_audits").select(["fact_table", "fact_id", "source_object_id", "old_payload", "new_payload"])
       .where("fact_table", "=", "series_facts").where("fact_id", "=", seriesId).executeTakeFirstOrThrow();
