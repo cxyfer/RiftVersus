@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "task-03-database-schema",
+  "type": "verification",
+  "source": "merge commit c84a7c3; task commits de6625d,c19a4bb,082c288,0f0e0af,774c4a2",
+  "summary": "Task 3 schema/migrator passed controller static verification (consumer/unit test, typecheck, lint, build, CLI help, diff check) and spec/quality reviews after integrity hardening. PostgreSQL integration command ran twice but skipped because TEST_DATABASE_URL is unset; Docker CLI unavailable.",
+  "verifier": "controller plus independent spec and quality reviewers"
+}

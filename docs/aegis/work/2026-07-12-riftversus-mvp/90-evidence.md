@@ -17,3 +17,11 @@ No evidence has been recorded yet.
 - Source: merge commit 295de3e; task commits 56581dc, ed88d14, 5ffc912
 - Summary: Task 2 contracts and runtime configuration passed controller verification: contract tests 9, config tests 6, typecheck, lint, root consumer/unit tests, build, diff check; spec and independent quality reviews approved after validation fixes.
 - Verifier: controller plus independent spec and quality reviewers
+
+## EvidenceBundleDraft
+
+- Artifact key: task-03-database-schema
+- Type: verification
+- Source: merge commit c84a7c3; task commits de6625d,c19a4bb,082c288,0f0e0af,774c4a2
+- Summary: Task 3 schema/migrator passed controller static verification (consumer/unit test, typecheck, lint, build, CLI help, diff check) and spec/quality reviews after integrity hardening. PostgreSQL integration command ran twice but skipped because TEST_DATABASE_URL is unset; Docker CLI unavailable.
+- Verifier: controller plus independent spec and quality reviewers

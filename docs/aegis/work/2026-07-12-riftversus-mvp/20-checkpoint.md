@@ -56,3 +56,23 @@
 - Task 2 merge 295de3e; evidence artifact task-02-contracts-config
 - Blocked on: none
 - Next step: Create an isolated Task 3 worktree and dispatch the canonical schema/migrator slice.
+
+## DriftCheckDraft
+
+- Scope status: Task 3 canonical PostgreSQL persistence only; added internal audit table as required provenance integrity, no repositories/domain/API/provider/UI/Docker.
+- Compatibility status: Database remains sole schema owner; contracts vocabulary aligned; fact rows retain no dataset_version_id; canonical facts require durable source/override audit authorization.
+- Retirement status: No legacy owner or fallback introduced.
+- New risk signals:
+- Real PostgreSQL migration, PL/pgSQL trigger, security-definer and rollback behavior remain unverified until TEST_DATABASE_URL is supplied; Docker CLI unavailable. Quality review also suggests optional assertions for public metadata invariance and writer-owned decoy schema.
+- Advisory decision: needs-verification
+
+## Checkpoint Update
+
+- Current todo: Execute Task 4 comparison and classification domain rules
+- Active slice: Task 3 complete with runtime verification gap; Task 4 preparation
+- Completed todos:
+- Task 3 canonical PostgreSQL schema, migrator, safe test harness, and integrity constraints merged after reviews
+- Evidence refs:
+- Task 3 merge c84a7c3; evidence artifact task-03-database-schema
+- Blocked on: No TEST_DATABASE_URL for real PostgreSQL acceptance evidence; does not block pure Task 4 domain implementation.
+- Next step: Create Task 4 isolated worktree and dispatch pure domain-rule implementation.

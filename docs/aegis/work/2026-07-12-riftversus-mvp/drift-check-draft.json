@@ -5,11 +5,11 @@
   "baselineRefs": [
     "docs/aegis/BASELINE-GOVERNANCE.md"
   ],
-  "scopeStatus": "Task 2 only: shared contracts, server config, tests, and env template; no DB, route, provider, UI, or Docker work.",
-  "compatStatus": "Public contract ownership remains solely @riftversus/contracts; config ownership remains server; invalid dates and unsafe/non-HTTP S3 endpoints now fail before runtime.",
-  "retirementStatus": "No legacy owner, compatibility fallback, or retired path added.",
+  "scopeStatus": "Task 3 canonical PostgreSQL persistence only; added internal audit table as required provenance integrity, no repositories/domain/API/provider/UI/Docker.",
+  "compatStatus": "Database remains sole schema owner; contracts vocabulary aligned; fact rows retain no dataset_version_id; canonical facts require durable source/override audit authorization.",
+  "retirementStatus": "No legacy owner or fallback introduced.",
   "newRiskSignals": [
-    "Docker integration remains environment-unverified until Docker Desktop/daemon is available."
+    "Real PostgreSQL migration, PL/pgSQL trigger, security-definer and rollback behavior remain unverified until TEST_DATABASE_URL is supplied; Docker CLI unavailable. Quality review also suggests optional assertions for public metadata invariance and writer-owned decoy schema."
   ],
-  "decision": "continue"
+  "decision": "needs-verification"
 }
