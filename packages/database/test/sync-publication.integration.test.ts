@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { beginSyncRun, failSyncRun, publishDataset, recordSourceObject, withSyncAdvisoryLock } from "../src/index.js";
 import { createDb, destroyDb } from "../src/db.js";
 import { migrateToLatest } from "../src/migrator.js";
-import { createTestSchemaName } from "./fixtures/seed.js";
+import { createTestSchemaName, seedComparisonFixture, seedIds } from "./fixtures/seed.js";
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
 const describeWithDatabase = databaseUrl ? describe : describe.skip;
@@ -13,7 +13,7 @@ describeWithDatabase("sync publication repository", () => {
   const schema = createTestSchemaName();
   const adminPool = new Pool({ connectionString: databaseUrl });
   const db = createDb({ databaseUrl: databaseUrl!, schema });
-  beforeAll(async () => { await adminPool.query(`create schema ${schema}`); await migrateToLatest(db, { schema }); });
+  beforeAll(async () => { await adminPool.query(`create schema ${schema}`); await migrateToLatest(db, { schema }); await seedComparisonFixture(db); });
   afterAll(async () => { await destroyDb(db); await adminPool.query(`drop schema if exists ${schema} cascade`); await adminPool.end(); });
 
   it("is idempotent for source objects and publishes append-only dataset versions", async () => {
@@ -25,6 +25,22 @@ describeWithDatabase("sync publication repository", () => {
     const secondRun = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
     const second = await publishDataset({ syncRunId: secondRun.id, version: "v2", coverage: [] }, db);
     expect(second.id).not.toBe(first.id);
+  });
+
+  it("atomically upserts canonical facts and rolls staged changes back on validation failure", async () => {
+    const source = { provider: "fixture", sourceKey: "facts-source", sourceUrl: "https://example.test/facts", objectKey: "sources/facts", checksum: "facts", parserVersion: "test" };
+    await recordSourceObject(source, db);
+    const sourceObject = await db.selectFrom("source_objects").select("id").where("provider", "=", source.provider).where("source_key", "=", source.sourceKey).executeTakeFirstOrThrow();
+    const run = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    const input = { id: seedIds.t1Series, provider: "fixture", sourceKey: "t1", tournamentId: seedIds.worlds, playedAt: new Date("2024-11-02T12:00:00Z"), bestOf: 5 as const, completed: true, sideATeamId: seedIds.t1, sideAEraId: seedIds.t1Era, sideARegionId: seedIds.lck, sideBTeamId: seedIds.weibo, sideBRegionId: seedIds.lpl, sideAScore: 3, sideBScore: 1, winnerTeamId: seedIds.t1 };
+    const published = await publishDataset({ syncRunId: run.id, version: "facts-v1", sourceObjectId: sourceObject.id, coverage: [], facts: { series: [input] } }, db);
+    expect(published.generation).toBeDefined();
+    const before = await db.selectFrom("series_facts").select("publication_generation").where("id", "=", seedIds.t1Series).executeTakeFirstOrThrow();
+    const failed = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    await expect(publishDataset({ syncRunId: failed.id, version: "facts-never", sourceObjectId: sourceObject.id, coverage: [], facts: { series: [input], games: [{ id: "99999999-9999-4999-8999-999999999999", provider: "fixture", sourceKey: "invalid", seriesId: "99999999-9999-4999-8999-999999999998", gameNumber: 1, playedAt: new Date(), sideATeamId: seedIds.t1, sideBTeamId: seedIds.weibo }] } }, db)).rejects.toThrow();
+    const after = await db.selectFrom("series_facts").select("publication_generation").where("id", "=", seedIds.t1Series).executeTakeFirstOrThrow();
+    expect(after).toEqual(before);
+    expect(await db.selectFrom("dataset_versions").select("version").where("version", "=", "facts-never").executeTakeFirst()).toBeUndefined();
   });
 
   it("does not publish a failed run and excludes concurrent provider work", async () => {

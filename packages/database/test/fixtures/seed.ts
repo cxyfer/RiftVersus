@@ -93,14 +93,14 @@ export async function seedComparisonFixture(db: Kysely<Database>) {
     { id: seedIds.incompleteSeries, source_key: "incomplete", tournament_id: seedIds.lckTournament, played_at: new Date("2024-07-02T12:00:00Z"), best_of: 3 as const, completed: false, side_a_team_id: seedIds.t1, side_a_era_id: seedIds.t1Era, side_a_region_id: seedIds.lpl, side_b_team_id: seedIds.genG, side_b_region_id: seedIds.lck },
     { id: seedIds.changedSeries, source_key: "changed", tournament_id: seedIds.lckTournament, played_at: new Date("2024-06-02T12:00:00Z"), best_of: 3 as const, completed: true, side_a_team_id: seedIds.t1, side_a_era_id: seedIds.t1Era, side_a_region_id: seedIds.lpl, side_b_team_id: seedIds.genG, side_b_region_id: seedIds.lck, side_a_score: 2, side_b_score: 0, winner_team_id: seedIds.t1 },
   ];
-  await db.insertInto("series_facts").values(series.map((row) => ({ provider: "fixture", ...row }))).execute();
+  await db.insertInto("series_facts").values(series.map((row) => ({ provider: "fixture", publication_generation: "0", ...row }))).execute();
   const games = [
     { id: gameId(1), series_id: seedIds.sktSeries, source_key: "skt-1", played_at: new Date("2023-11-02T12:00:00Z"), side_a_team_id: seedIds.t1, side_a_era_id: seedIds.sktEra, side_a_region_id: seedIds.lck, side_b_team_id: seedIds.weibo, side_b_region_id: seedIds.lpl, winner_team_id: seedIds.t1 },
     { id: gameId(2), series_id: seedIds.t1Series, source_key: "t1-1", played_at: new Date("2024-11-02T12:00:00Z"), side_a_team_id: seedIds.t1, side_a_era_id: seedIds.t1Era, side_a_region_id: seedIds.lck, side_b_team_id: seedIds.weibo, side_b_region_id: seedIds.lpl, winner_team_id: seedIds.t1 },
     { id: gameId(3), series_id: seedIds.t1Series, source_key: "t1-2", played_at: new Date("2024-11-02T13:00:00Z"), side_a_team_id: seedIds.t1, side_a_era_id: seedIds.t1Era, side_a_region_id: seedIds.lck, side_b_team_id: seedIds.weibo, side_b_region_id: seedIds.lpl, winner_team_id: seedIds.weibo },
     { id: gameId(4), series_id: seedIds.changedSeries, source_key: "changed-1", played_at: new Date("2024-06-02T12:00:00Z"), side_a_team_id: seedIds.t1, side_a_era_id: seedIds.t1Era, side_a_region_id: seedIds.lpl, side_b_team_id: seedIds.genG, side_b_region_id: seedIds.lck, winner_team_id: seedIds.t1 },
   ];
-  await db.insertInto("game_facts").values(games.map((row, index) => ({ provider: "fixture", game_number: index === 2 ? 2 : 1, ...row }))).execute();
+  await db.insertInto("game_facts").values(games.map((row, index) => ({ provider: "fixture", publication_generation: "0", game_number: index === 2 ? 2 : 1, ...row }))).execute();
   await db.insertInto("game_players").values([
     { game_id: gameId(1), player_entity_id: seedIds.faker, side: "a", team_entity_id: seedIds.t1 },
     { game_id: gameId(1), player_entity_id: seedIds.xiaohu, side: "b", team_entity_id: seedIds.weibo },

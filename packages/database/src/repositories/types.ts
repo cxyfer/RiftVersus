@@ -52,6 +52,7 @@ export interface DatasetVersion {
   version: string;
   publishedAt: string;
   syncRunId: string;
+  generation: string;
 }
 
 export interface BeginSyncRunInput {
@@ -85,7 +86,21 @@ export interface PublishDatasetInput {
   syncRunId: string;
   version: string;
   coverage: readonly CoverageInput[];
+  sourceObjectId?: string;
+  facts?: CanonicalFacts;
 }
+
+export interface SeriesFactInput {
+  id: string; provider: string; sourceKey: string; tournamentId: string; playedAt: Date;
+  bestOf: 1 | 3 | 5; completed: boolean; sideATeamId: string; sideAEraId?: string | null; sideARegionId?: string | null;
+  sideBTeamId: string; sideBEraId?: string | null; sideBRegionId?: string | null; sideAScore?: number | null; sideBScore?: number | null; winnerTeamId?: string | null;
+}
+export interface GameFactInput {
+  id: string; provider: string; sourceKey: string; seriesId: string; gameNumber: number; playedAt: Date;
+  sideATeamId: string; sideAEraId?: string | null; sideARegionId?: string | null; sideBTeamId: string; sideBEraId?: string | null; sideBRegionId?: string | null; winnerTeamId?: string | null;
+}
+export interface GamePlayerInput { gameId: string; playerEntityId: string; side: "a" | "b"; teamEntityId: string; }
+export interface CanonicalFacts { series?: readonly SeriesFactInput[]; games?: readonly GameFactInput[]; gamePlayers?: readonly GamePlayerInput[]; }
 
 export interface FailSyncRunInput {
   syncRunId: string;

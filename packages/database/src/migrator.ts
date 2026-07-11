@@ -3,6 +3,7 @@ import { Migrator, type Migration, type MigrationProvider } from "kysely/migrati
 
 import { assertSchemaName } from "./db.js";
 import { initialMigration } from "./migrations/001_initial.js";
+import { publicationGenerationMigration } from "./migrations/002_publication_generation.js";
 import type { Database } from "./types.js";
 
 export interface MigrationOptions {
@@ -12,7 +13,7 @@ export interface MigrationOptions {
 
 class StaticMigrationProvider implements MigrationProvider {
   async getMigrations(): Promise<Record<string, Migration>> {
-    return { "001_initial": initialMigration };
+    return { "001_initial": initialMigration, "002_publication_generation": publicationGenerationMigration };
   }
 }
 

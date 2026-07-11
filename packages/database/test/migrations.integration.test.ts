@@ -30,9 +30,10 @@ describeWithDatabase("initial schema migration", () => {
 
     try {
       const firstRun = await migrateToLatest(db, { schema });
-      expect(firstRun.results).toEqual([
+      expect(firstRun.results).toEqual(expect.arrayContaining([
         expect.objectContaining({ migrationName: "001_initial", status: "Success" }),
-      ]);
+        expect.objectContaining({ migrationName: "002_publication_generation", status: "Success" }),
+      ]));
 
       const secondRun = await migrateToLatest(db, { schema });
       expect(secondRun.error).toBeUndefined();

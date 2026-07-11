@@ -2,7 +2,7 @@ import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { summarizeComparison } from "@riftversus/domain";
 
-import { compareHeadToHead, getDatasetStatus, getMediaByKey, listAvailableFilters, searchEntities } from "../src/index.js";
+import { beginSyncRun, compareHeadToHead, getDatasetStatus, getMediaByKey, listAvailableFilters, publishDataset, searchEntities } from "../src/index.js";
 import { createDb, destroyDb } from "../src/db.js";
 import { migrateToLatest } from "../src/migrator.js";
 import { comparisonOracleFixture, createTestSchemaName, seedComparisonFixture, seedIds } from "./fixtures/seed.js";
@@ -19,6 +19,8 @@ describeWithDatabase("comparison repositories", () => {
     await adminPool.query(`create schema ${schema}`);
     await migrateToLatest(db, { schema });
     await seedComparisonFixture(db);
+    const run = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({ syncRunId: run.id, version: "fixture-publication", coverage: [] }, db);
   });
   afterAll(async () => {
     await destroyDb(db);
@@ -57,6 +59,10 @@ describeWithDatabase("comparison repositories", () => {
     expect(filtered.nextCursor).toBeDefined();
     const pageTwo = await compareHeadToHead({ ...query({ kind: "team", id: seedIds.t1 }, { kind: "team", id: seedIds.weibo }), limit: 1, cursor: filtered.nextCursor }, db);
     expect(pageTwo.rows[0]?.id).not.toBe(filtered.rows[0]?.id);
+    const rightEra = await compareHeadToHead(query({ kind: "team", id: seedIds.weibo }, { kind: "team", id: seedIds.t1, teamEraId: seedIds.t1Era }), db);
+    expect(rightEra.seriesSummary.total).toBe(1);
+    expect((await compareHeadToHead({ ...query({ kind: "team", id: seedIds.t1 }, { kind: "team", id: seedIds.weibo }), to: "2023-12-31" }, db)).seriesSummary.total).toBe(1);
+    expect((await compareHeadToHead({ ...query({ kind: "team", id: seedIds.t1 }, { kind: "team", id: seedIds.weibo }), tournamentIds: [seedIds.worlds] }, db)).seriesSummary.total).toBe(2);
   });
 
   it("uses alias search, derived filters, current media, and coverage warnings", async () => {
