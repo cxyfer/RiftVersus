@@ -47,7 +47,7 @@ function teamIdsFor(games: readonly SourceGame[]): readonly [string, string] {
 
 function groupKey(game: SourceGame): string {
   const teamIds = teamIdsFor([game]);
-  return `${game.tournamentId}:${teamIds[0]}:${teamIds[1]}`;
+  return JSON.stringify([game.tournamentId, teamIds[0], teamIds[1]]);
 }
 
 function invalidGame(game: SourceGame): boolean {
@@ -129,8 +129,16 @@ export function groupGamesIntoSeries(games: readonly SourceGame[], explicit: rea
 
   for (const entry of explicit) {
     const selected: SourceGame[] = [];
+    const entryGameIds = new Set<string>();
     let valid = true;
     for (const gameId of entry.gameIds) {
+      if (entryGameIds.has(gameId)) {
+        errors.push({ code: "GAME_ASSIGNED_TWICE", gameIds: [gameId], message: "An explicit series lists a game more than once." });
+        valid = false;
+        continue;
+      }
+      entryGameIds.add(gameId);
+
       const game = byId.get(gameId);
       if (game === undefined) {
         errors.push({ code: "UNKNOWN_GAME", gameIds: [gameId], message: "Explicit series references an unknown game." });
@@ -142,10 +150,10 @@ export function groupGamesIntoSeries(games: readonly SourceGame[], explicit: rea
         selected.push(game);
       }
     }
+    selected.forEach((game) => assigned.add(game.id));
     if (!valid || selected.length === 0) {
       continue;
     }
-    selected.forEach((game) => assigned.add(game.id));
     series.push(makeExplicitSeries(entry, selected));
   }
 

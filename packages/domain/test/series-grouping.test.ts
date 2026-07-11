@@ -22,6 +22,45 @@ describe("series grouping", () => {
     ]);
   });
 
+  it("rejects a duplicate game ID within one explicit series", () => {
+    const result = groupGamesIntoSeries(
+      [game("g1", 1, "t1"), game("g2", 2, "t1")],
+      [{ id: "explicit", gameIds: ["g1", "g2", "g2"] }],
+    );
+
+    expect(result.series).toEqual([]);
+    expect(result.errors).toEqual([expect.objectContaining({ code: "GAME_ASSIGNED_TWICE", gameIds: ["g2"] })]);
+  });
+
+  it("keeps distinct tournament and team tuples out of the same derived bucket", () => {
+    const result = groupGamesIntoSeries([
+      {
+        id: "g-colon-first",
+        tournamentId: "event:alpha",
+        teamAId: "blue",
+        teamBId: "red",
+        gameNumber: 1,
+        winnerTeamId: "blue",
+        playedAt: "2024-05-01T12:00:00.000Z",
+      },
+      {
+        id: "g-colon-second",
+        tournamentId: "event",
+        teamAId: "alpha:blue",
+        teamBId: "red",
+        gameNumber: 1,
+        winnerTeamId: "alpha:blue",
+        playedAt: "2024-05-01T12:00:00.000Z",
+      },
+    ], []);
+
+    expect(result.errors).toEqual([]);
+    expect(result.series).toEqual([
+      expect.objectContaining({ tournamentId: "event:alpha", gameIds: ["g-colon-first"] }),
+      expect.objectContaining({ tournamentId: "event", gameIds: ["g-colon-second"] }),
+    ]);
+  });
+
   it("derives only bounded, same-opponent games with unique numbers and a winner", () => {
     const result = groupGamesIntoSeries([
       game("g1", 1, "t1"),

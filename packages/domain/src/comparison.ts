@@ -143,6 +143,22 @@ function recordFrom(outcomes: readonly (ComparisonWinner | null)[]): RecordSumma
   return { wins, losses, total, winRate: total === 0 ? 0 : wins / total };
 }
 
+function leftTeamIdForSeries(query: ComparisonQuery, series: DomainSeries): string | null {
+  const seriesAssignment = resolveSides(query, series.sides);
+  if (seriesAssignment !== null) {
+    return sideAt(series.sides, seriesAssignment.left).teamId;
+  }
+
+  for (const game of series.games) {
+    const directGame = resolveDirectGame(query, game);
+    if (directGame !== null) {
+      return sideAt(game.sides, directGame.leftSide).teamId;
+    }
+  }
+
+  return null;
+}
+
 export function resolveDirectGame(query: ComparisonQuery, game: DomainGame): DirectGame | null {
   const assignment = resolveSides(query, game.sides);
   if (assignment === null) {
@@ -176,20 +192,12 @@ export function summarizeComparison(query: ComparisonQuery, series: readonly Dom
     }
     seenSeriesIds.add(item.id);
 
-    const assignment = resolveSides(query, item.sides);
-    if (assignment === null) {
-      const directGame = item.games.find((game) => resolveDirectGame(query, game) !== null);
-      if (directGame === undefined) {
-        continue;
-      }
-      const directAssignment = resolveDirectGame(query, directGame);
-      if (directAssignment === null) {
-        continue;
-      }
-      seriesOutcomes.push(item.winnerSide === directAssignment.leftSide ? "left" : "right");
-    } else {
-      seriesOutcomes.push(item.winnerSide === assignment.left ? "left" : "right");
+    const leftTeamId = leftTeamIdForSeries(query, item);
+    if (leftTeamId === null) {
+      continue;
     }
+    const winnerTeamId = sideAt(item.sides, item.winnerSide).teamId;
+    seriesOutcomes.push(winnerTeamId === leftTeamId ? "left" : "right");
 
     for (const game of item.games) {
       const directGame = resolveDirectGame(query, game);

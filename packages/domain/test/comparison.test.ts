@@ -103,6 +103,20 @@ describe("comparison domain semantics", () => {
     });
   });
 
+  it("keeps a player series win when game sides are reversed from series sides", () => {
+    const seriesSides = [t1(ids.t1Era, ids.lck, []), weibo()] as const;
+    const reversedGameSides = [weibo(), t1(ids.t1Era, ids.lck, [ids.faker])] as const;
+    const directGame = game("g-reversed", ids.st1, reversedGameSides, "b");
+    const item = series({ id: ids.st1, sides: seriesSides, games: [directGame], winnerSide: "a" });
+    const playerQuery = query({ kind: "player", id: ids.faker }, { kind: "team", id: ids.weibo });
+
+    expect(resolveDirectGame(playerQuery, directGame)).toMatchObject({ winner: "left" });
+    expect(summarizeComparison(playerQuery, [item])).toEqual({
+      series: { wins: 1, losses: 0, total: 1, winRate: 1 },
+      games: { wins: 1, losses: 0, total: 1, winRate: 1 },
+    });
+  });
+
   it("matches a lineage across SKT and T1 but restricts an exact era", () => {
     const sktSides = [t1(ids.sktEra), weibo()] as const;
     const t1Sides = [t1(ids.t1Era), weibo()] as const;
