@@ -5,7 +5,7 @@ import { sql } from "kysely";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { createDb, destroyDb } from "../src/db.js";
-import { migrateToLatest } from "../src/migrator.js";
+import { createMigrator, migrateToLatest } from "../src/migrator.js";
 import { createTestSchemaName, seedIds } from "./fixtures/seed.js";
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
@@ -472,5 +472,57 @@ describeWithDatabase("initial schema migration", () => {
     } finally {
       await destroyDb(db);
     }
+  });
+});
+
+describeWithDatabase("override provenance migration downgrade", () => {
+  const adminPool = new Pool({ connectionString: databaseUrl });
+  afterAll(async () => { await adminPool.end(); });
+
+  async function setup() {
+    const schema = createTestSchemaName();
+    await adminPool.query(`create schema ${schema}`);
+    const db = createDb({ databaseUrl: databaseUrl!, schema });
+    await migrateToLatest(db, { schema });
+    const applicationId = randomUUID(); const firstRunId = randomUUID(); const secondRunId = randomUUID();
+    await db.insertInto("sync_runs").values([
+      { id: firstRunId, provider: "leaguepedia", mode: "sync", status: "running", parser_version: "test" },
+      { id: secondRunId, provider: "leaguepedia", mode: "sync", status: "running", parser_version: "test" },
+    ]).execute();
+    await db.insertInto("override_applications").values({ id: applicationId, override_file: "data/overrides/identities.yaml", checksum: "sha256:fixture" }).execute();
+    return { schema, db, applicationId, firstRunId, secondRunId };
+  }
+
+  async function cleanup(schema: string, db: ReturnType<typeof createDb>) {
+    await destroyDb(db); await adminPool.query(`drop schema if exists ${schema} cascade`);
+  }
+
+  it("refuses a lossy downgrade and leaves migration 005 state intact", async () => {
+    const context = await setup();
+    try {
+      await context.db.insertInto("override_application_runs").values([
+        { override_application_id: context.applicationId, sync_run_id: context.firstRunId },
+        { override_application_id: context.applicationId, sync_run_id: context.secondRunId },
+      ]).execute();
+      const result = await createMigrator(context.db, { schema: context.schema }).migrateDown();
+      expect(result.error).toBeInstanceOf(Error);
+      expect(String((result.error as Error).message)).toMatch(/cannot losslessly downgrade/i);
+      expect(await context.db.selectFrom("override_application_runs").select("sync_run_id").where("override_application_id", "=", context.applicationId).execute()).toHaveLength(2);
+      const migration = await sql<{ name: string }>`select name from ${sql.table(`${context.schema}.kysely_migration`)} where name = '005_override_run_provenance'`.execute(context.db);
+      expect(migration.rows).toEqual([{ name: "005_override_run_provenance" }]);
+    } finally { await cleanup(context.schema, context.db); }
+  });
+
+  it("downgrades one association without changing its legacy run identity", async () => {
+    const context = await setup();
+    try {
+      await context.db.insertInto("override_application_runs").values({ override_application_id: context.applicationId, sync_run_id: context.firstRunId }).execute();
+      const result = await createMigrator(context.db, { schema: context.schema }).migrateDown();
+      expect(result.error).toBeUndefined();
+      const legacy = await sql<{ sync_run_id: string }>`select sync_run_id from override_applications where id = ${context.applicationId}`.execute(context.db);
+      expect(legacy.rows).toEqual([{ sync_run_id: context.firstRunId }]);
+      const table = await sql<{ exists: boolean }>`select to_regclass(${`${context.schema}.override_application_runs`}) is not null as exists`.execute(context.db);
+      expect(table.rows).toEqual([{ exists: false }]);
+    } finally { await cleanup(context.schema, context.db); }
   });
 });
