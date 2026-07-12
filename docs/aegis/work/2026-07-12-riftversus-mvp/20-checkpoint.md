@@ -156,3 +156,23 @@
 - Task 10 merge b7946c1; evidence artifact task-10-web-comparison
 - Blocked on: A publicly verifiable Oracle CSV direct URL/header proof is unavailable; the plan forbids guessing file identifiers or parsing the downloads-page HTML.
 - Next step: Obtain an approved public direct Oracle CSV URL or choose a different reviewed provider/source, then create the Task 7 worktree.
+
+## DriftCheckDraft
+
+- Scope status: Task 11 added browser-only export using the existing web API adapter; no server rendering, provider access, database schema, or Docker behavior was added.
+- Compatibility status: Export validates immutable dataset/query across cursor pages before rendering and uses same-origin or data-image media with placeholder fallback. It does not change comparison meaning or API ownership.
+- Retirement status: No Chromium runtime, server render endpoint, raw provider media URL, D1, SQLite, Rust, runtime scraper, or second export path was introduced.
+- New risk signals:
+- PostgreSQL integration, Docker stack and source access remain unverified; Task 11 e2e passed only under elevated local loopback because the sandbox cannot bind 127.0.0.1.
+- Advisory decision: needs-verification
+
+## Checkpoint Update
+
+- Current todo: Resolve Oracle public direct-download source access, then execute Task 7 sync orchestration and source manifest
+- Active slice: Task 11 complete; Task 7 source-access checkpoint
+- Completed todos:
+- Task 11 browser PNG/ZIP export merged after spec and quality reviews
+- Evidence refs:
+- Task 11 merge 77756f6; evidence artifact task-11-browser-export
+- Blocked on: A publicly verifiable Oracle CSV direct URL/header proof is unavailable; the plan forbids guessing file identifiers or parsing the downloads-page HTML.
+- Next step: Obtain an approved public direct Oracle CSV URL or choose a different reviewed provider/source, then create or resume the Task 7 worktree.

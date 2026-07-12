@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "task-11-browser-export",
+  "type": "verification",
+  "source": "merge 77756f6; task commits e8848fb,8a0e55b,5b5de64",
+  "summary": "Task 11 browser-only PNG/ZIP export passed spec and quality reviews. Controller verification: web 38 tests, web production build, typecheck, lint, root consumer/unit tests and build. Elevated local loopback Playwright 3/3 verified the comparison journey, PNG signature, and ZIP entries with PNG signatures.",
+  "verifier": "controller plus independent spec and quality reviewers"
+}

@@ -3,13 +3,13 @@
   "taskId": "2026-07-12-riftversus-mvp",
   "currentTodo": "Resolve Oracle public direct-download source access, then execute Task 7 sync orchestration and source manifest",
   "completedTodos": [
-    "Task 10 comparison web experience and controlled media delivery merged after spec and security reviews"
+    "Task 11 browser PNG/ZIP export merged after spec and quality reviews"
   ],
-  "activeSlice": "Task 10 complete; Task 7 source-access checkpoint",
+  "activeSlice": "Task 11 complete; Task 7 source-access checkpoint",
   "evidenceRefs": [
-    "Task 10 merge b7946c1; evidence artifact task-10-web-comparison"
+    "Task 11 merge 77756f6; evidence artifact task-11-browser-export"
   ],
   "blockedOn": "A publicly verifiable Oracle CSV direct URL/header proof is unavailable; the plan forbids guessing file identifiers or parsing the downloads-page HTML.",
-  "nextStep": "Obtain an approved public direct Oracle CSV URL or choose a different reviewed provider/source, then create the Task 7 worktree.",
+  "nextStep": "Obtain an approved public direct Oracle CSV URL or choose a different reviewed provider/source, then create or resume the Task 7 worktree.",
   "updatedAt": "2026-07-12"
 }

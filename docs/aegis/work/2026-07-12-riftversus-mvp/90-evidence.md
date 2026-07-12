@@ -57,3 +57,11 @@ No evidence has been recorded yet.
 - Source: merge b7946c1; task commits 69c4a90,d8b4b9a,d3903cb,7e8f4b2,038185a,25ad9a9
 - Summary: Task 10 comparison SPA, production HTTP client, URL query contract, local saved comparisons, controlled media delivery and S3-compatible ObjectStore passed controller and independent reviews. Controller verification: sync 4 tests, server 30 tests, web 18 tests, consumer/unit tests, typecheck, lint, build. Browser screenshots were inspected; Playwright runner produced no reliable final summary.
 - Verifier: controller plus independent spec, quality, media-security, and S3-security reviewers
+
+## EvidenceBundleDraft
+
+- Artifact key: task-11-browser-export
+- Type: verification
+- Source: merge 77756f6; task commits e8848fb,8a0e55b,5b5de64
+- Summary: Task 11 browser-only PNG/ZIP export passed spec and quality reviews. Controller verification: web 38 tests, web production build, typecheck, lint, root consumer/unit tests and build. Elevated local loopback Playwright 3/3 verified the comparison journey, PNG signature, and ZIP entries with PNG signatures.
+- Verifier: controller plus independent spec and quality reviewers
