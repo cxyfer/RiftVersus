@@ -109,6 +109,7 @@ describe("series grouping", () => {
       left: { kind: "region", id: "left-region" },
       right: { kind: "region", id: "right-region" },
       eventCategories: [],
+      leagues: [],
       bestOf: [],
       tournamentIds: [],
       limit: 50,

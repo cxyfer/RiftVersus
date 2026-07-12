@@ -19,7 +19,7 @@ const right: ResolvedSubject = { id: rightId, kind: "team", displayName: "Right"
 function comparison(): ComparisonResponse {
   return {
     subjects: { left, right },
-    query: { left: { id: leftId, kind: "team" }, right: { id: rightId, kind: "team" }, eventCategories: [], bestOf: [], tournamentIds: [], limit: 50 },
+    query: { left: { id: leftId, kind: "team" }, right: { id: rightId, kind: "team" }, eventCategories: [], leagues: [], bestOf: [], tournamentIds: [], limit: 50 },
     seriesSummary: { wins: 1, losses: 0, total: 1, winRate: 1 },
     gameSummary: { wins: 2, losses: 0, total: 2, winRate: 1 },
     rows: [],
@@ -69,6 +69,13 @@ describe("HTTP API", () => {
 
     expect(response.statusCode).toBe(400);
     expect(response.json()).toMatchObject({ error: { code: "VALIDATION_ERROR" } });
+  });
+
+  it("normalizes league filters before calling the comparison owner", async () => {
+    const { app, dependencies } = createApp();
+    const response = await app.inject(`/api/comparisons?left.kind=team&left.id=${leftId}&right.kind=team&right.id=${rightId}&leagues=lpl,lck`);
+    expect(response.statusCode).toBe(200);
+    expect(dependencies.compare).toHaveBeenCalledWith(expect.objectContaining({ leagues: ["lck", "lpl"] }));
   });
 
   it("rejects an invalid comparison cursor with a safe validation envelope", async () => {

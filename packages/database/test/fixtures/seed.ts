@@ -88,7 +88,7 @@ export async function seedComparisonFixture(db: Kysely<Database>) {
   ]).execute();
   await db.insertInto("tournaments").values([
     { id: seedIds.worlds, provider: "fixture", source_key: "worlds", name: "World Championship", category: "worlds", start_date: "2024-10-01", end_date: "2024-11-02" },
-    { id: seedIds.lckTournament, provider: "fixture", source_key: "lck", name: "LCK", category: "league", start_date: "2024-01-01", end_date: "2024-12-31" },
+    { id: seedIds.lckTournament, provider: "fixture", source_key: "lck", name: "LCK", league_slug: "lck", category: "league", start_date: "2024-01-01", end_date: "2024-12-31" },
   ]).execute();
   const series = [
     { id: seedIds.sktSeries, source_key: "skt", tournament_id: seedIds.worlds, played_at: new Date("2023-11-02T12:00:00Z"), best_of: 5 as const, completed: true, side_a_team_id: seedIds.t1, side_a_era_id: seedIds.sktEra, side_a_region_id: seedIds.lck, side_b_team_id: seedIds.weibo, side_b_region_id: seedIds.lpl, side_a_score: 3, side_b_score: 1, winner_team_id: seedIds.t1 },

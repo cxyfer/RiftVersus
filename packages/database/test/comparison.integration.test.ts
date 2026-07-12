@@ -31,7 +31,7 @@ describeWithDatabase("comparison repositories", () => {
     await adminPool.end();
   });
 
-  const query = (left: { kind: "team" | "player" | "region"; id: string; teamEraId?: string }, right: { kind: "team" | "player" | "region"; id: string; teamEraId?: string }) => ({ left, right, eventCategories: [], bestOf: [], tournamentIds: [], limit: 50 });
+  const query = (left: { kind: "team" | "player" | "region"; id: string; teamEraId?: string }, right: { kind: "team" | "player" | "region"; id: string; teamEraId?: string }) => ({ left, right, eventCategories: [], leagues: [], bestOf: [], tournamentIds: [], limit: 50 });
 
   it("matches the domain oracle for all nine subject-kind combinations", async () => {
     const subjects = [
@@ -69,6 +69,7 @@ describeWithDatabase("comparison repositories", () => {
     expect(rightEra.seriesSummary.total).toBe(1);
     expect((await compareHeadToHead({ ...query({ kind: "team", id: seedIds.t1 }, { kind: "team", id: seedIds.weibo }), to: "2023-12-31" }, db)).seriesSummary.total).toBe(1);
     expect((await compareHeadToHead({ ...query({ kind: "team", id: seedIds.t1 }, { kind: "team", id: seedIds.weibo }), tournamentIds: [seedIds.worlds] }, db)).seriesSummary.total).toBe(2);
+    expect((await compareHeadToHead({ ...query({ kind: "team", id: seedIds.t1 }, { kind: "team", id: seedIds.genG }), leagues: ["lck"] }, db)).seriesSummary.total).toBe(1);
   });
 
   it("uses alias search, derived filters, current media, and coverage warnings", async () => {
@@ -114,7 +115,7 @@ describeWithDatabase("comparison repositories", () => {
     await db.insertInto("game_players").values(rows.map(({ gameId }) => ({ game_id: gameId, player_entity_id: otherPlayer, side: "a", team_entity_id: otherA }))).execute();
     const plan = await db.transaction().execute(async (trx) => {
       await sql.raw("analyze series_facts; analyze game_facts; analyze game_players").execute(trx);
-      const exact = buildComparisonQueryPlan({ left: { kind: "player", id: seedIds.faker }, right: { kind: "player", id: seedIds.xiaohu }, eventCategories: [], bestOf: [], tournamentIds: [], limit: 50 });
+      const exact = buildComparisonQueryPlan({ left: { kind: "player", id: seedIds.faker }, right: { kind: "player", id: seedIds.xiaohu }, eventCategories: [], leagues: [], bestOf: [], tournamentIds: [], limit: 50 });
       return sql<{ "QUERY PLAN": unknown }>`explain (format json) ${exact.directSql}`.execute(trx);
     });
     const nodes: Array<{ relation?: string; node?: string; index?: string }> = [];

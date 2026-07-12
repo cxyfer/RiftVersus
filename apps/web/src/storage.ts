@@ -1,7 +1,7 @@
-import type { ComparisonRouteState } from "./model.js";
+import { toContractQuery, type ComparisonRouteState } from "./model.js";
 
 const key = "riftversus.saved-comparisons";
-const version = 1;
+const version = 2;
 
 export interface SavedComparison {
   id: string;
@@ -9,10 +9,19 @@ export interface SavedComparison {
   state: ComparisonRouteState;
 }
 
+function isRouteState(value: unknown): value is ComparisonRouteState {
+  if (!value || typeof value !== "object") return false;
+  const state = value as Record<string, unknown>;
+  if (typeof state.leftKind !== "string" || typeof state.leftId !== "string" || typeof state.rightKind !== "string" || typeof state.rightId !== "string") return false;
+  if (![state.events, state.leagues, state.bestOf].every(Array.isArray)) return false;
+  if ([state.leftEraId, state.rightEraId, state.from, state.to].some((item) => item !== undefined && typeof item !== "string")) return false;
+  try { toContractQuery(state as unknown as ComparisonRouteState); return true; } catch { return false; }
+}
+
 function isSavedComparison(value: unknown): value is SavedComparison {
   if (!value || typeof value !== "object") return false;
   const item = value as Partial<SavedComparison>;
-  return typeof item.id === "string" && typeof item.createdAt === "string" && !!item.state && typeof item.state === "object";
+  return typeof item.id === "string" && typeof item.createdAt === "string" && isRouteState(item.state);
 }
 
 export function loadSavedComparisons(storage: Storage = localStorage): SavedComparison[] {

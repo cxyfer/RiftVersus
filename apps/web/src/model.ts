@@ -1,6 +1,6 @@
-import { ComparisonQuerySchema, type BestOf, type ComparisonQuery, type EntityKind, type EventCategory } from "@riftversus/contracts";
+import { ComparisonQuerySchema, type BestOf, type ComparisonQuery, type EntityKind, type EventCategory, type LeagueSlug } from "@riftversus/contracts";
 
-export type LeagueCode = "LCK" | "LPL" | "LEC" | "LCS";
+export type LeagueCode = LeagueSlug;
 
 export interface ComparisonRouteState {
   leftKind: EntityKind;
@@ -34,13 +34,13 @@ export const defaultRouteState: ComparisonRouteState = {
   from: "2019-01-01",
   to: "2026-12-31",
   events: ["worlds"],
-  leagues: ["LPL"],
+  leagues: [],
   bestOf: [5],
 };
 
 const kinds = new Set<EntityKind>(["player", "team", "region"]);
 const events = new Set<EventCategory>(["league", "fst", "msi", "worlds", "other"]);
-const leagues = new Set<LeagueCode>(["LCK", "LPL", "LEC", "LCS"]);
+const leagues = new Set<LeagueCode>(["lck", "lpl", "lec", "lcs"]);
 const bestOf = new Set<BestOf>([1, 3, 5]);
 
 function csv(value: string | null): string[] {
@@ -66,6 +66,7 @@ export function toContractQuery(state: ComparisonRouteState): ComparisonQuery {
     ...(state.from ? { from: state.from } : {}),
     ...(state.to ? { to: state.to } : {}),
     eventCategories: sorted(state.events),
+    leagues: sorted(state.leagues),
     bestOf: sorted(state.bestOf),
     tournamentIds: [],
   });

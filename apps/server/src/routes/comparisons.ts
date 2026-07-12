@@ -45,6 +45,7 @@ function normalizeQuery(query: Record<string, unknown>) {
     from: optionalString(query, "from"),
     to: optionalString(query, "to"),
     eventCategories: values(query.eventCategories).sort(),
+    leagues: values(query.leagues).sort(),
     bestOf: values(query.bestOf).sort(),
     tournamentIds: values(query.tournamentIds).sort(),
     cursor,

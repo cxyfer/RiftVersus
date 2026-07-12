@@ -23,4 +23,11 @@ describe("saved comparisons", () => {
     const fakeStorage = { getItem: () => "{not json" } as unknown as Storage;
     expect(loadSavedComparisons(fakeStorage)).toEqual([]);
   });
+
+  it("drops JSON-valid records whose route query cannot pass the shared contract", () => {
+    const storage = new Map<string, string>();
+    storage.set("riftversus.saved-comparisons", JSON.stringify({ version: 2, items: [{ id: "bad", createdAt: "2026-01-01T00:00:00.000Z", state: { ...defaultRouteState, leftId: "not-a-uuid" } }] }));
+    const fakeStorage = { getItem: (key: string) => storage.get(key) ?? null } as unknown as Storage;
+    expect(loadSavedComparisons(fakeStorage)).toEqual([]);
+  });
 });
