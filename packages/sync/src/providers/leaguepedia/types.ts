@@ -13,6 +13,7 @@ export interface LeaguepediaClientOptions {
   maxRetries?: number;
   sleep?: (milliseconds: number) => Promise<void>;
   now?: () => number;
+  maxResponseBytes?: number;
 }
 
 export interface RawApiEvidence {
@@ -89,6 +90,12 @@ export interface LeaguepediaSnapshot {
   rawEvidence: readonly RawApiEvidence[];
 }
 
+export interface LeaguepediaRawInput {
+  sourceUrl: string;
+  slices: readonly { competition: string; seasonYear: number }[];
+  rawEvidence: readonly RawApiEvidence[];
+}
+
 export interface LeaguepediaSliceEvidence {
   competition: string;
   seasonYear: number;
@@ -108,6 +115,7 @@ export interface LeaguepediaNormalizationResult {
   entityIds: ReadonlyMap<string, string>;
   quarantine: readonly QuarantinedIdentity[];
   quarantineAffectedGameKeys: readonly string[];
+  rosterIncompleteGameKeys: readonly string[];
   dimensions: StagedDimensions;
   eraIds: ReadonlyMap<string, string>;
   facts: CanonicalFacts;

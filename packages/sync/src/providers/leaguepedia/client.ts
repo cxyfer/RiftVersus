@@ -14,6 +14,7 @@ export class LeaguepediaClient {
   readonly #maxRetries: number;
   readonly #sleep: (milliseconds: number) => Promise<void>;
   readonly #now: () => number;
+  readonly #maxResponseBytes: number;
 
   constructor(options: LeaguepediaClientOptions) {
     const endpoint = new URL(options.endpoint);
@@ -26,6 +27,7 @@ export class LeaguepediaClient {
     this.#maxRetries = nonNegativeInteger(options.maxRetries ?? 2, "maxRetries");
     this.#sleep = options.sleep ?? (async (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)));
     this.#now = options.now ?? Date.now;
+    this.#maxResponseBytes = positiveInteger(options.maxResponseBytes ?? 5_000_000, "maxResponseBytes");
   }
 
   async fetchSiteInfo(): Promise<Record<string, unknown>> {
@@ -110,15 +112,27 @@ export class LeaguepediaClient {
       try {
         const response = await this.#fetch(url, { headers: { Accept: "application/json", "User-Agent": this.userAgent }, signal: controller.signal });
         if (!response.ok) {
+          await consumeBounded(response, this.#maxResponseBytes, url.toString());
           const error = new Error(`Leaguepedia ${action} request failed (${response.status}).`);
           if (!retryableStatus(response.status) || attempt === this.#maxRetries) throw error;
           lastError = error;
           await this.#sleep(retryDelay(response.headers.get("Retry-After"), attempt, this.#now()));
           continue;
         }
-        const body: unknown = await response.json();
+        const body: unknown = await readJsonBounded(response, this.#maxResponseBytes, url.toString());
         if (!isRecord(body)) throw new Error("Leaguepedia response must be a JSON object.");
-        if (isRecord(body.error)) throw new Error("Leaguepedia returned an API error.");
+        if (isRecord(body.error)) {
+          const code = typeof body.error.code === "string" ? body.error.code : "unknown";
+          const result = { body, url: url.toString() };
+          const apiError = new LeaguepediaApiError(code, toRawEvidence(result, { action }));
+          if ((code === "ratelimited" || code === "maxlag") && attempt < this.#maxRetries) {
+            lastError = apiError;
+            const apiDelay = numberField(body.error["retry-after"]) ?? numberField(body.error.lag);
+            await this.#sleep(response.headers.has("Retry-After") ? retryDelay(response.headers.get("Retry-After"), attempt, this.#now()) : Math.min((apiDelay ?? 0.1 * 2 ** attempt) * 1000, MAX_RETRY_AFTER_MS));
+            continue;
+          }
+          throw apiError;
+        }
         return { body, url: url.toString() };
       } catch (error) {
         const reason = error instanceof Error ? error : new Error(String(error));
@@ -139,6 +153,10 @@ export class LeaguepediaCargoEnvelopeError extends Error {
     this.name = "LeaguepediaCargoEnvelopeError";
   }
 }
+export class LeaguepediaApiError extends Error {
+  constructor(readonly code: string, readonly rawEvidence: RawApiEvidence) { super(`Leaguepedia API error: ${code}.`); this.name = "LeaguepediaApiError"; }
+}
+export class LeaguepediaResourceLimitError extends Error { constructor(readonly sourceUrl: string, readonly limit: number) { super(`Leaguepedia response exceeds the ${limit} byte limit.`); this.name = "LeaguepediaResourceLimitError"; } }
 
 interface RequestResult { body: Record<string, unknown>; url: string }
 
@@ -179,6 +197,18 @@ function retryDelay(header: string | null, attempt: number, now: number): number
   }
   return 100 * 2 ** attempt;
 }
+async function readJsonBounded(response: Response, maxBytes: number, sourceUrl: string): Promise<unknown> { const bytes = await readBounded(response, maxBytes, sourceUrl); return JSON.parse(new TextDecoder().decode(bytes)) as unknown; }
+async function consumeBounded(response: Response, maxBytes: number, sourceUrl: string): Promise<void> { try { await readBounded(response, maxBytes, sourceUrl); } catch { await response.body?.cancel().catch(() => undefined); } }
+async function readBounded(response: Response, maxBytes: number, sourceUrl: string): Promise<Uint8Array> {
+  const declared = Number(response.headers.get("Content-Length"));
+  if (Number.isFinite(declared) && declared > maxBytes) { await response.body?.cancel(); throw new LeaguepediaResourceLimitError(sourceUrl, maxBytes); }
+  if (response.body === null) return new Uint8Array();
+  const reader = response.body.getReader(); const chunks: Uint8Array[] = []; let total = 0;
+  try { while (true) { const { done, value } = await reader.read(); if (done) break; total += value.byteLength; if (total > maxBytes) { await reader.cancel(); throw new LeaguepediaResourceLimitError(sourceUrl, maxBytes); } chunks.push(value); } }
+  finally { reader.releaseLock(); }
+  const output = new Uint8Array(total); let offset = 0; for (const chunk of chunks) { output.set(chunk, offset); offset += chunk.byteLength; } return output;
+}
+function numberField(value: unknown): number | null { const parsed = typeof value === "number" ? value : typeof value === "string" ? Number(value) : Number.NaN; return Number.isFinite(parsed) && parsed >= 0 ? parsed : null; }
 function collectRevisionIds(value: unknown): number[] {
   const result = new Set<number>();
   const visit = (item: unknown): void => {

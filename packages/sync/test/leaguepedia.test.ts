@@ -6,15 +6,19 @@ import { describe, expect, it, vi } from "vitest";
 import {
   LeaguepediaClient,
   LeaguepediaCargoEnvelopeError,
+  LeaguepediaApiError,
   LeaguepediaSnapshotError,
   createLeaguepediaProvider,
   deriveLeaguepediaCoverage,
   fetchAllCargoPages,
+  fetchLeaguepediaRawInput,
   fetchLeaguepediaSnapshot,
   loadOverrides,
   normalizeLeaguepediaSnapshot,
   parseLeaguepediaMedia,
+  parseLeaguepediaRawInput,
   type LeaguepediaSnapshot,
+  type LeaguepediaRawInput,
   type LeaguepediaCargoTable,
   type RawApiEvidence,
 } from "../src/providers/leaguepedia/index.js";
@@ -24,8 +28,9 @@ const root = fileURLToPath(new URL("../../..", import.meta.url));
 const fixturePath = fileURLToPath(new URL("./fixtures/leaguepedia-snapshot.json", import.meta.url));
 
 async function fixture(): Promise<LeaguepediaSnapshot> {
-  return JSON.parse(await readFile(fixturePath, "utf8")) as LeaguepediaSnapshot;
+  return parseLeaguepediaRawInput(await rawFixture());
 }
+async function rawFixture(): Promise<LeaguepediaRawInput> { return JSON.parse(await readFile(fixturePath, "utf8")) as LeaguepediaRawInput; }
 
 async function overrides() {
   return loadOverrides({
@@ -41,6 +46,7 @@ function rawEvidence(table: LeaguepediaCargoTable, offset: number, rows: readonl
 function cargoPage(table: LeaguepediaCargoTable, offset: number, rows: readonly Record<string, unknown>[]) {
   return { offset, rows, rawEvidence: rawEvidence(table, offset, rows) };
 }
+function rawInput(snapshot: LeaguepediaSnapshot): LeaguepediaRawInput { return { sourceUrl: snapshot.sourceUrl, slices: snapshot.slices.map(({ competition, seasonYear }) => ({ competition, seasonYear })), rawEvidence: snapshot.rawEvidence }; }
 
 describe("LeaguepediaClient", () => {
   it("fixes endpoint, action, format, fields and table in typed methods", async () => {
@@ -133,6 +139,43 @@ describe("LeaguepediaClient", () => {
     expect(calls).toBe(2);
   });
 
+  it("retries bounded retryable API error envelopes and preserves the final one", async () => {
+    const sleeps: number[] = []; let calls = 0;
+    const client = new LeaguepediaClient({ endpoint: "https://lol.example/api.php", userAgent: "RiftVersus/0.1 contact@example.com", maxRetries: 2, sleep: async (ms) => { sleeps.push(ms); }, fetch: async () => { calls += 1; return Response.json(calls < 3 ? { error: { code: calls === 1 ? "ratelimited" : "maxlag", ...(calls === 1 ? {} : { lag: 2 }) } } : { query: { general: {} } }); } });
+    await expect(client.fetchSiteInfo()).resolves.toHaveProperty("query");
+    expect(calls).toBe(3);
+    expect(sleeps).toEqual([100, 2000]);
+
+    const failing = new LeaguepediaClient({ endpoint: "https://lol.example/api.php", userAgent: "RiftVersus/0.1 contact@example.com", maxRetries: 0, fetch: async () => Response.json({ error: { code: "maxlag", lag: 4, info: "busy" } }) });
+    const error = await failing.fetchSiteInfo().catch((reason: unknown) => reason);
+    expect(error).toBeInstanceOf(LeaguepediaApiError);
+    expect((error as LeaguepediaApiError).code).toBe("maxlag");
+    expect((error as LeaguepediaApiError).rawEvidence.response).toEqual({ error: { code: "maxlag", lag: 4, info: "busy" } });
+  });
+
+  it("fails non-retryable API errors immediately", async () => {
+    let calls = 0;
+    const client = new LeaguepediaClient({ endpoint: "https://lol.example/api.php", userAgent: "RiftVersus/0.1 contact@example.com", maxRetries: 2, fetch: async () => { calls += 1; return Response.json({ error: { code: "badvalue" } }); } });
+    await expect(client.fetchSiteInfo()).rejects.toBeInstanceOf(LeaguepediaApiError);
+    expect(calls).toBe(1);
+  });
+
+  it("cancels a declared oversized response before JSON parsing", async () => {
+    let cancelled = false;
+    const body = new ReadableStream<Uint8Array>({ pull(controller) { controller.enqueue(new TextEncoder().encode("{}")); }, cancel() { cancelled = true; } });
+    const client = new LeaguepediaClient({ endpoint: "https://lol.example/api.php", userAgent: "RiftVersus/0.1 contact@example.com", maxResponseBytes: 10, fetch: async () => new Response(body, { headers: { "Content-Length": "100" } }) });
+    await expect(client.fetchSiteInfo()).rejects.toThrow(/byte limit/);
+    expect(cancelled).toBe(true);
+  });
+
+  it("consumes a bounded non-2xx body before failing", async () => {
+    let consumed = false;
+    const body = new ReadableStream<Uint8Array>({ pull(controller) { consumed = true; controller.enqueue(new TextEncoder().encode("busy")); controller.close(); } });
+    const client = new LeaguepediaClient({ endpoint: "https://lol.example/api.php", userAgent: "RiftVersus/0.1 contact@example.com", maxRetries: 0, fetch: async () => new Response(body, { status: 503 }) });
+    await expect(client.fetchSiteInfo()).rejects.toThrow("503");
+    expect(consumed).toBe(true);
+  });
+
   it.each([
     ["missing cargoquery", {}],
     ["non-array cargoquery", { cargoquery: {} }],
@@ -164,6 +207,30 @@ describe("Leaguepedia fetching", () => {
     expect(pages.evidence).toEqual({ requestedPages: 2, visitedPages: 2, complete: true });
   });
 
+  it("enforces Cargo page, traversal page, and slice bounds", async () => {
+    await expect(fetchAllCargoPages(async (offset) => cargoPage("Teams", offset, Array.from({ length: 501 }, (_, id) => ({ id }))))).rejects.toThrow(/500 rows/);
+    const bounded = await fetchAllCargoPages(async (offset) => cargoPage("Teams", offset, Array.from({ length: 500 }, (_, id) => ({ id }))), 2);
+    expect(bounded.evidence).toEqual({ requestedPages: 3, visitedPages: 2, complete: false });
+    const client = {
+      fetchTeamsPage: async ({ offset }: { offset: number }) => cargoPage("Teams", offset, []), fetchPlayersPage: async ({ offset }: { offset: number }) => cargoPage("Players", offset, []),
+      fetchTournamentsPage: async ({ offset }: { offset: number }) => cargoPage("Tournaments", offset, []), fetchGamesPage: async ({ offset }: { offset: number }) => cargoPage("ScoreboardGames", offset, []),
+      fetchGamePlayersPage: async ({ offset }: { offset: number }) => cargoPage("ScoreboardPlayers", offset, []), fetchImageInfoWithEvidence: async () => ({ data: {}, rawEvidence: [] }),
+    };
+    await expect(fetchLeaguepediaRawInput(client, { sourceUrl: "https://lol.example/wiki", slices: Array.from({ length: 1001 }, (_, seasonYear) => ({ competition: "Worlds", seasonYear, from: "2024-01-01", to: "2025-01-01" })) })).rejects.toThrow(/1000/);
+  });
+
+  it("limits concurrent slice requests to four", async () => {
+    let active = 0; let maximum = 0;
+    const client = {
+      fetchTeamsPage: async ({ offset }: { offset: number }) => cargoPage("Teams", offset, []), fetchPlayersPage: async ({ offset }: { offset: number }) => cargoPage("Players", offset, []),
+      fetchTournamentsPage: async ({ offset }: { offset: number }) => cargoPage("Tournaments", offset, []),
+      fetchGamesPage: async ({ offset }: { offset: number }) => { active += 1; maximum = Math.max(maximum, active); await new Promise((resolve) => setTimeout(resolve, 1)); active -= 1; return cargoPage("ScoreboardGames", offset, []); },
+      fetchGamePlayersPage: async ({ offset }: { offset: number }) => cargoPage("ScoreboardPlayers", offset, []), fetchImageInfoWithEvidence: async () => ({ data: {}, rawEvidence: [] }),
+    };
+    await fetchLeaguepediaRawInput(client, { sourceUrl: "https://lol.example/wiki", slices: Array.from({ length: 12 }, (_, index) => ({ competition: `C${index}`, seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" })) });
+    expect(maximum).toBeLessThanOrEqual(4);
+  });
+
   it("converts typed Cargo pages into explicit series, games, players and media", async () => {
     const snapshot = await fetchLeaguepediaSnapshot({
       fetchTeamsPage: async ({ offset }) => cargoPage("Teams", offset, [
@@ -179,7 +246,7 @@ describe("Leaguepedia fetching", () => {
       fetchGamePlayersPage: async ({ offset }) => cargoPage("ScoreboardPlayers", offset, [{ GameId: "G1", PlayerName: "Faker", Team: "T1", PlayerWin: 1 }]),
       fetchImageInfoWithEvidence: async () => ({ data: { query: { pages: [{ title: "File:T1.png", imageinfo: [{
         url: "https://static.wikia.nocookie.net/t1.png", mime: "image/png", extmetadata: { LicenseShortName: { value: "CC BY-SA" }, Artist: { value: "Leaguepedia contributors" } },
-      }] }] } }, rawEvidence: [{ requestId: "query:image:0", action: "query", sourceUrl: "https://lol.example/api.php?action=query&titles=T1.png", response: { query: {} }, revisionIds: [77] }] }),
+      }] }] } }, rawEvidence: [{ requestId: "query:image:0", action: "query", sourceUrl: "https://lol.example/api.php?action=query&titles=T1.png", response: { query: { pages: [{ title: "File:T1.png", imageinfo: [{ url: "https://static.wikia.nocookie.net/t1.png", mime: "image/png", extmetadata: { LicenseShortName: { value: "CC BY-SA" }, Artist: { value: "Leaguepedia contributors" } } }] }] } }, revisionIds: [77] }] }),
     }, { slices: [{ competition: "2024 Season World Championship", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" }], sourceUrl: "https://lol.fandom.com/wiki/T1" });
 
     expect(snapshot.series).toEqual([expect.objectContaining({ sourceKey: "M1", bestOf: 5 })]);
@@ -214,7 +281,7 @@ describe("Leaguepedia fetching", () => {
       userAgent: "RiftVersus/0.1 contact@example.com",
       fetch: async () => Response.json({ cargoquery: [{}] }),
     });
-    const loadSnapshot = () => fetchLeaguepediaSnapshot({
+    const loadRawInput = () => fetchLeaguepediaRawInput({
       fetchTeamsPage: async ({ offset }) => cargoPage("Teams", offset, [{ OverviewPage: "T1", Name: "T1" }, { OverviewPage: "Bilibili Gaming", Name: "Bilibili Gaming" }]),
       fetchPlayersPage: async ({ offset }) => cargoPage("Players", offset, [{ OverviewPage: "Faker", Name: "Faker" }]),
       fetchTournamentsPage: async ({ offset }) => cargoPage("Tournaments", offset, [{ OverviewPage: "2024 Season World Championship", Name: "Worlds 2024" }]),
@@ -222,7 +289,7 @@ describe("Leaguepedia fetching", () => {
       fetchGamePlayersPage: (input) => malformedPlayersClient.fetchGamePlayersPage(input),
       fetchImageInfoWithEvidence: async () => ({ data: {}, rawEvidence: [] }),
     }, { slices: [{ competition: "Worlds", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" }], sourceUrl: "https://lol.fandom.com/wiki/Worlds" });
-    const provider = createLeaguepediaProvider({ loadSnapshot, overrides: await overrides() });
+    const provider = createLeaguepediaProvider({ loadRawInput, overrides: await overrides() });
 
     const failure = await provider.stage({ mode: "sync-once" }).catch((error: unknown) => error);
     expect(failure).toBeInstanceOf(RetainableStageError);
@@ -256,6 +323,19 @@ describe("Leaguepedia normalization", () => {
     expect(new Set(t1Eras.map((era) => era.id)).size).toBe(2);
     expect(result.facts.series?.[0]?.sideAEraId).toBe(result.eraIds.get("T1"));
     expect(result.dimensions.tournaments).toEqual([expect.objectContaining({ name: "Worlds 2024", category: "worlds" })]);
+  });
+
+  it("selects the unique canonical team era by playedAt", async () => {
+    const snapshot = await fixture(); const reviewed = await overrides();
+    const series = [
+      { ...snapshot.series[0]!, sourceKey: "S2018", playedAt: "2018-10-01T00:00:00Z", sideATeam: "T1" },
+      { ...snapshot.series[0]!, sourceKey: "S2020", playedAt: "2020-10-01T00:00:00Z", sideATeam: "SK Telecom T1" },
+    ];
+    const games = series.map((item, index) => ({ ...snapshot.games[0]!, sourceKey: `G${index}`, seriesKey: item.sourceKey, playedAt: item.playedAt, sideATeam: item.sideATeam }));
+    const result = normalizeLeaguepediaSnapshot({ ...snapshot, series, games, gamePlayers: [], slices: [] }, reviewed);
+    const sktEra = result.dimensions.teamEras.find((era) => era.sourceKey === "SK Telecom T1")!;
+    const t1Era = result.dimensions.teamEras.find((era) => era.sourceKey === "T1")!;
+    expect(result.facts.series?.map((item) => item.sideAEraId)).toEqual([sktEra.id, t1Era.id]);
   });
 
   it("override checksums are deterministic and reviewed precedence wins", async () => {
@@ -305,7 +385,7 @@ describe("Leaguepedia coverage and provider", () => {
 
   it("stages a runner-owned batch without repository or publication access", async () => {
     const snapshot = await fixture();
-    const provider = createLeaguepediaProvider({ loadSnapshot: async () => snapshot, overrides: await overrides() });
+    const provider = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: await overrides() });
     const batch = await provider.stage({ mode: "backfill", years: [2024], competitions: ["Worlds"] });
     expect(provider.id).toBe("leaguepedia");
     expect(batch.source.bytes.byteLength).toBeGreaterThan(0);
@@ -315,20 +395,24 @@ describe("Leaguepedia coverage and provider", () => {
     expect(batch.dimensions.entities).not.toHaveLength(0);
     const raw = JSON.parse(new TextDecoder().decode(batch.source.bytes)) as Record<string, unknown>;
     expect(raw).toHaveProperty("format", "riftversus-leaguepedia-raw-v1");
-    expect(raw).toHaveProperty("evidence");
+    expect(raw).toHaveProperty("input");
     expect(raw).not.toHaveProperty("entities");
+    expect(raw).not.toHaveProperty("games");
     expect(new TextDecoder().decode(batch.source.bytes)).toContain("Duplicate One");
     expect(batch.source.sourceUrl).toContain("action=cargoquery");
     expect(batch.provenance).toMatchObject({ sourceDigest: expect.stringMatching(/^sha256:[a-f0-9]{64}$/), parserVersion: "leaguepedia-v1" });
     expect(batch.provenance.overrideChecksums).toHaveLength(2);
+    const replayed = normalizeLeaguepediaSnapshot(parseLeaguepediaRawInput(raw.input as LeaguepediaRawInput), await overrides());
+    expect(replayed.facts).toEqual(batch.facts);
+    expect(replayed.dimensions).toEqual(batch.dimensions);
     expect("repository" in provider).toBe(false);
     expect("publish" in provider).toBe(false);
   });
 
   it("only marks a slice partial when it references a quarantined identity", async () => {
     const snapshot = await fixture();
-    const affected = { ...snapshot, gamePlayers: [...snapshot.gamePlayers, { gameKey: "WORLD24-FINAL-G1", playerKey: "Duplicate One", teamKey: "T1", playerWin: false }] };
-    const provider = createLeaguepediaProvider({ loadSnapshot: async () => affected, overrides: await overrides() });
+    const affected: LeaguepediaRawInput = { ...rawInput(snapshot), rawEvidence: snapshot.rawEvidence.map((item) => item.table === "ScoreboardPlayers" ? { ...item, response: { cargoquery: [...(item.response.cargoquery as unknown[]), { title: { GameId: "WORLD24-FINAL-G1", PlayerName: "Duplicate One", Team: "T1", PlayerWin: 0 } }] } } : item) };
+    const provider = createLeaguepediaProvider({ loadRawInput: async () => affected, overrides: await overrides() });
     const batch = await provider.stage({ mode: "backfill", years: [2024, 2025], competitions: ["Worlds"] });
     expect(batch.coverage).toEqual([
       expect.objectContaining({ seasonYear: 2024, status: "partial" }),
@@ -336,10 +420,29 @@ describe("Leaguepedia coverage and provider", () => {
     ]);
   });
 
+  it("does not publish destructive roster authority for a nine-player game", async () => {
+    const snapshot = await fixture();
+    const incomplete: LeaguepediaRawInput = { ...rawInput(snapshot), rawEvidence: snapshot.rawEvidence.map((item) => item.table === "ScoreboardPlayers" ? { ...item, response: { cargoquery: (item.response.cargoquery as unknown[]).slice(0, 9) } } : item) };
+    const batch = await createLeaguepediaProvider({ loadRawInput: async () => incomplete, overrides: await overrides() }).stage({ mode: "backfill", years: [2024], competitions: ["Worlds"] });
+    expect(batch.facts.gamePlayers).toEqual([]);
+    expect(batch.rosterGameIds).toEqual([]);
+    expect(batch.coverage[0]?.status).toBe("partial");
+  });
+
+  it("fails duplicate or extra roster rows", async () => {
+    const snapshot = await fixture(); const reviewed = await overrides();
+    const mutate = (rows: unknown[]) => ({ ...rawInput(snapshot), rawEvidence: snapshot.rawEvidence.map((item) => item.table === "ScoreboardPlayers" ? { ...item, response: { cargoquery: rows } } : item) });
+    const rows = snapshot.rawEvidence.find((item) => item.table === "ScoreboardPlayers")!.response.cargoquery as Array<{ title: Record<string, unknown> }>;
+    const duplicate = [...rows.slice(0, 9), { title: { ...rows[9]!.title, PlayerName: "Faker" } }];
+    await expect(createLeaguepediaProvider({ loadRawInput: async () => mutate(duplicate), overrides: reviewed }).stage({ mode: "sync-once" })).rejects.toThrow(/duplicate/i);
+    const extra = [...rows, { title: { GameId: "WORLD24-FINAL-G1", PlayerName: "Extra", Team: "T1", PlayerWin: 0 } }];
+    await expect(createLeaguepediaProvider({ loadRawInput: async () => mutate(extra), overrides: reviewed }).stage({ mode: "sync-once" })).rejects.toThrow(/exceeds 10/);
+  });
+
   it("converts a malformed Cargo envelope into retainable raw provider evidence", async () => {
     const client = new LeaguepediaClient({ endpoint: "https://lol.example/api.php", userAgent: "RiftVersus/0.1 contact@example.com", fetch: async () => Response.json({ cargoquery: [{}] }) });
     const provider = createLeaguepediaProvider({
-      loadSnapshot: async () => {
+      loadRawInput: async () => {
         await client.fetchTeamsPage({ offset: 0 });
         throw new Error("unreachable");
       },
@@ -352,7 +455,7 @@ describe("Leaguepedia coverage and provider", () => {
 
   it("derives dates and completeness independently for each requested slice", async () => {
     const snapshot = await fixture();
-    const provider = createLeaguepediaProvider({ loadSnapshot: async () => snapshot, overrides: await overrides() });
+    const provider = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: await overrides() });
     const batch = await provider.stage({ mode: "backfill", years: [2024, 2025], competitions: ["Worlds"] });
     expect(batch.coverage).toEqual([
       expect.objectContaining({ seasonYear: 2024, earliestDate: "2024-11-02", latestDate: "2024-11-02", status: "complete" }),
@@ -363,9 +466,9 @@ describe("Leaguepedia coverage and provider", () => {
   it("changes deterministic version when parser or reviewed override checksums change", async () => {
     const snapshot = await fixture();
     const reviewed = await overrides();
-    const base = createLeaguepediaProvider({ loadSnapshot: async () => snapshot, overrides: reviewed, parserVersion: "parser-a" });
-    const changedParser = createLeaguepediaProvider({ loadSnapshot: async () => snapshot, overrides: reviewed, parserVersion: "parser-b" });
-    const changedOverrides = createLeaguepediaProvider({ loadSnapshot: async () => snapshot, overrides: { ...reviewed, checksums: { ...reviewed.checksums, synthetic: `sha256:${"f".repeat(64)}` } }, parserVersion: "parser-a" });
+    const base = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: reviewed, parserVersion: "parser-a" });
+    const changedParser = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: reviewed, parserVersion: "parser-b" });
+    const changedOverrides = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: { ...reviewed, checksums: { ...reviewed.checksums, synthetic: `sha256:${"f".repeat(64)}` } }, parserVersion: "parser-a" });
     const request = { mode: "backfill", years: [2024], competitions: ["Worlds"] } as const;
     const [a1, a2, parser, override] = await Promise.all([base.stage(request), base.stage(request), changedParser.stage(request), changedOverrides.stage(request)]);
     expect(a1.version).toBe(a2.version);
@@ -376,13 +479,12 @@ describe("Leaguepedia coverage and provider", () => {
   it("changes sourceKey and version when raw Cargo evidence changes despite identical revisions", async () => {
     const snapshot = await fixture();
     const reviewed = await overrides();
-    const changed = {
-      ...snapshot,
+    const changed: LeaguepediaRawInput = {
+      ...rawInput(snapshot),
       rawEvidence: snapshot.rawEvidence.map((item, index) => index === 0 ? { ...item, response: { ...item.response, changedCargoField: "changed" } } : item),
     };
-    const originalBatch = await createLeaguepediaProvider({ loadSnapshot: async () => snapshot, overrides: reviewed }).stage({ mode: "sync-once" });
-    const changedBatch = await createLeaguepediaProvider({ loadSnapshot: async () => changed, overrides: reviewed }).stage({ mode: "sync-once" });
-    expect(changed.revisionIds).toEqual(snapshot.revisionIds);
+    const originalBatch = await createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: reviewed }).stage({ mode: "sync-once" });
+    const changedBatch = await createLeaguepediaProvider({ loadRawInput: async () => changed, overrides: reviewed }).stage({ mode: "sync-once" });
     expect(originalBatch.source.sourceKey).toMatch(/^sha256:[a-f0-9]{64}$/);
     expect(changedBatch.source.sourceKey).not.toBe(originalBatch.source.sourceKey);
     expect(changedBatch.version).not.toBe(originalBatch.version);

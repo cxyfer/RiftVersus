@@ -2,14 +2,14 @@ import { createHash } from "node:crypto";
 
 import type { ReviewedOverrides } from "../../overrides.js";
 import { RetainableStageError, type SyncProvider, type SyncRequest } from "../../types.js";
-import { LeaguepediaCargoEnvelopeError } from "./client.js";
-import { LeaguepediaSnapshotError } from "./fetch.js";
+import { LeaguepediaApiError, LeaguepediaCargoEnvelopeError } from "./client.js";
+import { LeaguepediaSnapshotError, parseLeaguepediaRawInput } from "./fetch.js";
 import { parseLeaguepediaMedia } from "./media.js";
 import { deriveLeaguepediaCoverage, normalizeLeaguepediaSnapshot } from "./normalize.js";
-import type { LeaguepediaSnapshot } from "./types.js";
+import type { LeaguepediaRawInput, LeaguepediaSnapshot } from "./types.js";
 
-export { LeaguepediaCargoEnvelopeError, LeaguepediaClient } from "./client.js";
-export { fetchAllCargoPages, fetchLeaguepediaSnapshot, LeaguepediaSnapshotError } from "./fetch.js";
+export { LeaguepediaApiError, LeaguepediaCargoEnvelopeError, LeaguepediaClient, LeaguepediaResourceLimitError } from "./client.js";
+export { fetchAllCargoPages, fetchLeaguepediaRawInput, fetchLeaguepediaSnapshot, LeaguepediaSnapshotError, parseLeaguepediaRawInput } from "./fetch.js";
 export type { LeaguepediaReadClient, SnapshotRequest, SnapshotSliceRequest, TraversedRows } from "./fetch.js";
 export { parseLeaguepediaMedia } from "./media.js";
 export { deriveLeaguepediaCoverage, normalizeLeaguepediaSnapshot } from "./normalize.js";
@@ -17,7 +17,7 @@ export { loadOverrides } from "../../overrides.js";
 export type * from "./types.js";
 
 export interface LeaguepediaProviderOptions {
-  loadSnapshot: (request: SyncRequest) => Promise<LeaguepediaSnapshot>;
+  loadRawInput: (request: SyncRequest) => Promise<LeaguepediaRawInput>;
   overrides: ReviewedOverrides;
   parserVersion?: string;
 }
@@ -28,11 +28,11 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
     id: "leaguepedia",
     parserVersion,
     async stage(request) {
-      let snapshot: LeaguepediaSnapshot;
+      let rawInput: LeaguepediaRawInput;
       try {
-        snapshot = await options.loadSnapshot(request);
+        rawInput = await options.loadRawInput(request);
       } catch (error) {
-        if (error instanceof LeaguepediaCargoEnvelopeError) throw retainableEvidenceError(error, [error.rawEvidence]);
+        if (error instanceof LeaguepediaCargoEnvelopeError || error instanceof LeaguepediaApiError) throw retainableEvidenceError(error, [error.rawEvidence]);
         if (error instanceof LeaguepediaSnapshotError && error.rawEvidence.length > 0) {
           const bytes = new TextEncoder().encode(canonicalJson({ format: "riftversus-leaguepedia-raw-v1", evidence: error.rawEvidence }));
           const digest = createHash("sha256").update(bytes).digest("hex");
@@ -40,15 +40,17 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
         }
         throw error;
       }
+      let snapshot: LeaguepediaSnapshot;
       let normalized: ReturnType<typeof normalizeLeaguepediaSnapshot>;
       try {
+        snapshot = parseLeaguepediaRawInput(rawInput);
         validateRawEvidence(snapshot);
         normalized = normalizeLeaguepediaSnapshot(snapshot, options.overrides);
       } catch (error) {
-        if (snapshot.rawEvidence.length > 0) throw retainableEvidenceError(error, snapshot.rawEvidence);
+        if (rawInput.rawEvidence.length > 0) throw retainableRawInputError(error, rawInput);
         throw error;
       }
-      const raw = canonicalJson({ format: "riftversus-leaguepedia-raw-v1", evidence: snapshot.rawEvidence });
+      const raw = canonicalJson({ format: "riftversus-leaguepedia-raw-v1", input: rawInput });
       const bytes = new TextEncoder().encode(raw);
       const digest = createHash("sha256").update(bytes).digest("hex");
       const overrideDigest = createHash("sha256").update(canonicalJson(Object.values(options.overrides.checksums).sort())).digest("hex");
@@ -60,13 +62,14 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
         const slice = snapshot.slices.find((item) => item.competition === competition && item.seasonYear === seasonYear);
         const sliceGames = slice === undefined ? [] : snapshot.games.filter((game) => slice.gameSourceKeys.includes(game.sourceKey));
         const affectedGames = slice === undefined ? 0 : normalized.quarantineAffectedGameKeys.filter((key) => slice.gameSourceKeys.includes(key)).length;
+        const incompleteRosters = slice === undefined ? 0 : normalized.rosterIncompleteGameKeys.filter((key) => slice.gameSourceKeys.includes(key)).length;
         const dates = sliceGames.map((game) => game.playedAt).sort();
         return deriveLeaguepediaCoverage({
           competition,
           seasonYear,
           observedRows: sliceGames.length,
           traversal: slice?.traversal ?? { requestedPages: 1, visitedPages: 0, complete: false },
-          unresolvedRows: (slice?.malformedOptionalRows ?? 0) + affectedGames,
+          unresolvedRows: (slice?.malformedOptionalRows ?? 0) + affectedGames + incompleteRosters,
           earliestDate: dates[0]?.slice(0, 10) ?? null,
           latestDate: dates.at(-1)?.slice(0, 10) ?? null,
         });
@@ -120,4 +123,10 @@ function retainableEvidenceError(error: unknown, evidence: LeaguepediaSnapshot["
   const bytes = new TextEncoder().encode(canonicalJson({ format: "riftversus-leaguepedia-raw-v1", evidence }));
   const digest = createHash("sha256").update(bytes).digest("hex");
   return new RetainableStageError(reason.message, { sourceKey: `failed:sha256:${digest}`, sourceUrl: evidence[0]!.sourceUrl, bytes, contentType: "application/json" }, { cause: reason });
+}
+function retainableRawInputError(error: unknown, input: LeaguepediaRawInput): RetainableStageError {
+  const reason = error instanceof Error ? error : new Error(String(error));
+  const bytes = new TextEncoder().encode(canonicalJson({ format: "riftversus-leaguepedia-raw-v1", input }));
+  const digest = createHash("sha256").update(bytes).digest("hex");
+  return new RetainableStageError(reason.message, { sourceKey: `failed:sha256:${digest}`, sourceUrl: input.rawEvidence[0]!.sourceUrl, bytes, contentType: "application/json" }, { cause: reason });
 }

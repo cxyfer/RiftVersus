@@ -1,40 +1,14 @@
 {
-  "revisionIds": [1001, 1002],
   "sourceUrl": "https://lol.fandom.com/wiki/2024_Season_World_Championship/Match_History",
-  "entities": [
-    { "kind": "team", "sourceKey": "SK Telecom T1", "displayName": "SK Telecom T1", "aliases": ["SKT"], "region": "Korea" },
-    { "kind": "team", "sourceKey": "T1", "displayName": "T1", "aliases": ["SKT"], "region": "Korea" },
-    { "kind": "team", "sourceKey": "Bilibili Gaming", "displayName": "Bilibili Gaming", "aliases": ["BLG"], "region": "China" },
-    { "kind": "player", "sourceKey": "Faker", "displayName": "Faker", "aliases": ["Hide on bush"] },
-    { "kind": "player", "sourceKey": "Duplicate One", "displayName": "Rookie", "aliases": [] },
-    { "kind": "player", "sourceKey": "Duplicate Two", "displayName": "Rookie", "aliases": [] }
-  ],
-  "tournaments": [
-    { "sourceKey": "2024 Season World Championship", "displayName": "2024 Season World Championship", "validFrom": "2024-09-25", "validTo": "2024-11-02" }
-  ],
-  "series": [
-    { "sourceKey": "WORLD24-FINAL", "tournamentKey": "2024 Season World Championship", "playedAt": "2024-11-02T14:00:00Z", "bestOf": 5, "sideATeam": "T1", "sideBTeam": "Bilibili Gaming", "sideAScore": 3, "sideBScore": 2 }
-  ],
-  "games": [
-    { "sourceKey": "WORLD24-FINAL-G1", "seriesKey": "WORLD24-FINAL", "gameNumber": 1, "playedAt": "2024-11-02T14:00:00Z", "sideATeam": "T1", "sideBTeam": "Bilibili Gaming", "winnerTeam": "Bilibili Gaming" }
-  ],
-  "gamePlayers": [
-    { "gameKey": "WORLD24-FINAL-G1", "playerKey": "Faker", "teamKey": "T1", "playerWin": false }
-  ],
-  "media": [
-    { "sourceKey": "T1 logo", "entityKey": "T1", "sourceUrl": "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/t1.png", "contentType": "image/png", "license": "CC BY-SA", "attribution": "Leaguepedia contributors" },
-    { "sourceKey": "Faker portrait", "entityKey": "Faker", "sourceUrl": null, "contentType": null, "license": null, "attribution": null }
-  ],
-  "traversal": { "requestedPages": 5, "visitedPages": 5, "complete": true },
   "slices": [
-    { "competition": "Worlds", "seasonYear": 2024, "gameSourceKeys": ["WORLD24-FINAL-G1"], "traversal": { "requestedPages": 1, "visitedPages": 1, "complete": true }, "malformedOptionalRows": 0 }
+    { "competition": "Worlds", "seasonYear": 2024 }
   ],
   "rawEvidence": [
     { "requestId": "cargoquery:Teams:0:fixture", "action": "cargoquery", "table": "Teams", "offset": 0, "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=Teams&offset=0", "response": { "cargoquery": [{ "title": { "OverviewPage": "SK Telecom T1", "Name": "SK Telecom T1", "Aliases": "SKT", "Region": "Korea" } }, { "title": { "OverviewPage": "T1", "Name": "T1", "Aliases": "SKT", "Region": "Korea", "Image": "T1 logo" } }, { "title": { "OverviewPage": "Bilibili Gaming", "Name": "Bilibili Gaming", "Aliases": "BLG", "Region": "China" } }] }, "revisionIds": [] },
-    { "requestId": "cargoquery:Players:0:fixture", "action": "cargoquery", "table": "Players", "offset": 0, "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=Players&offset=0", "response": { "cargoquery": [{ "title": { "OverviewPage": "Faker", "Name": "Faker", "Aliases": "Hide on bush" } }, { "title": { "OverviewPage": "Duplicate One", "Name": "Rookie" } }, { "title": { "OverviewPage": "Duplicate Two", "Name": "Rookie" } }] }, "revisionIds": [] },
+    { "requestId": "cargoquery:Players:0:fixture", "action": "cargoquery", "table": "Players", "offset": 0, "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=Players&offset=0", "response": { "cargoquery": [{ "title": { "OverviewPage": "Faker", "Name": "Faker", "Aliases": "Hide on bush" } }, { "title": { "OverviewPage": "T1P2", "Name": "T1P2" } }, { "title": { "OverviewPage": "T1P3", "Name": "T1P3" } }, { "title": { "OverviewPage": "T1P4", "Name": "T1P4" } }, { "title": { "OverviewPage": "T1P5", "Name": "T1P5" } }, { "title": { "OverviewPage": "BLGP1", "Name": "BLGP1" } }, { "title": { "OverviewPage": "BLGP2", "Name": "BLGP2" } }, { "title": { "OverviewPage": "BLGP3", "Name": "BLGP3" } }, { "title": { "OverviewPage": "BLGP4", "Name": "BLGP4" } }, { "title": { "OverviewPage": "BLGP5", "Name": "BLGP5" } }, { "title": { "OverviewPage": "Duplicate One", "Name": "Rookie" } }, { "title": { "OverviewPage": "Duplicate Two", "Name": "Rookie" } }] }, "revisionIds": [] },
     { "requestId": "cargoquery:Tournaments:0:fixture", "action": "cargoquery", "table": "Tournaments", "offset": 0, "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=Tournaments&offset=0", "response": { "cargoquery": [{ "title": { "OverviewPage": "2024 Season World Championship", "Name": "2024 Season World Championship", "DateStart": "2024-09-25", "DateEnd": "2024-11-02" } }] }, "revisionIds": [] },
     { "requestId": "cargoquery:ScoreboardGames:0:fixture", "action": "cargoquery", "table": "ScoreboardGames", "offset": 0, "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=ScoreboardGames&offset=0", "response": { "cargoquery": [{ "title": { "GameId": "WORLD24-FINAL-G1", "MatchId": "WORLD24-FINAL", "Tournament": "2024 Season World Championship", "DateTime_UTC": "2024-11-02T14:00:00Z", "BestOf": 5, "N_GameInMatch": 1, "Team1": "T1", "Team2": "Bilibili Gaming", "Team1Score": 3, "Team2Score": 2, "Winner": 2 } }] }, "revisionIds": [] },
-    { "requestId": "cargoquery:ScoreboardPlayers:0:fixture", "action": "cargoquery", "table": "ScoreboardPlayers", "offset": 0, "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=ScoreboardPlayers&offset=0", "response": { "cargoquery": [{ "title": { "GameId": "WORLD24-FINAL-G1", "PlayerName": "Faker", "Team": "T1", "PlayerWin": 0 } }] }, "revisionIds": [] },
+    { "requestId": "cargoquery:ScoreboardPlayers:0:fixture", "action": "cargoquery", "table": "ScoreboardPlayers", "offset": 0, "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=ScoreboardPlayers&offset=0", "response": { "cargoquery": [{ "title": { "GameId": "WORLD24-FINAL-G1", "PlayerName": "Faker", "Team": "T1", "PlayerWin": 0 } }, { "title": { "GameId": "WORLD24-FINAL-G1", "PlayerName": "T1P2", "Team": "T1", "PlayerWin": 0 } }, { "title": { "GameId": "WORLD24-FINAL-G1", "PlayerName": "T1P3", "Team": "T1", "PlayerWin": 0 } }, { "title": { "GameId": "WORLD24-FINAL-G1", "PlayerName": "T1P4", "Team": "T1", "PlayerWin": 0 } }, { "title": { "GameId": "WORLD24-FINAL-G1", "PlayerName": "T1P5", "Team": "T1", "PlayerWin": 0 } }, { "title": { "GameId": "WORLD24-FINAL-G1", "PlayerName": "BLGP1", "Team": "Bilibili Gaming", "PlayerWin": 1 } }, { "title": { "GameId": "WORLD24-FINAL-G1", "PlayerName": "BLGP2", "Team": "Bilibili Gaming", "PlayerWin": 1 } }, { "title": { "GameId": "WORLD24-FINAL-G1", "PlayerName": "BLGP3", "Team": "Bilibili Gaming", "PlayerWin": 1 } }, { "title": { "GameId": "WORLD24-FINAL-G1", "PlayerName": "BLGP4", "Team": "Bilibili Gaming", "PlayerWin": 1 } }, { "title": { "GameId": "WORLD24-FINAL-G1", "PlayerName": "BLGP5", "Team": "Bilibili Gaming", "PlayerWin": 1 } }] }, "revisionIds": [] },
     { "requestId": "query:mediawiki:0:fixture", "action": "query", "sourceUrl": "https://lol.fandom.com/api.php?action=query&titles=T1_logo", "response": { "query": { "pages": [{ "pageid": 294322, "lastrevid": 1001, "revisions": [{ "revid": 1002 }], "title": "File:T1 logo", "imageinfo": [{ "url": "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/t1.png", "mime": "image/png", "extmetadata": { "LicenseShortName": { "value": "CC BY-SA" }, "Artist": { "value": "Leaguepedia contributors" } } }] }] } }, "revisionIds": [1001, 1002] }
   ]
 }
