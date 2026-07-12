@@ -236,3 +236,23 @@
 - merge 901f481; evidence artifact leaguepedia-task-01-sync-runner
 - Blocked on: No TEST_DATABASE_URL or Docker/S3 integration environment; does not block fixture-driven Leaguepedia adapter implementation.
 - Next step: Create a fresh Task 2 worktree from main and implement the strict Leaguepedia client, normalization, reviewed overrides, fixtures and bounded live probe.
+
+## DriftCheckDraft
+
+- Scope status: Leaguepedia replacement Task 2: strict source client, raw-only deterministic replay, reviewed overrides, staged dimensions/facts/media requests and honest logical coverage; no SQL persistence or CLI composition.
+- Compatibility status: Adapter remains staging-only and runSync remains the single publication owner. Dataset versions include raw source, parser and override provenance; unchanged runs use the provider-neutral repository contract.
+- Retirement status: No Oracle fallback or alternate provider path was added. Oracle planned surfaces remain pending delete-first cleanup in replacement Task 4.
+- New risk signals:
+- Default 100 MB snapshot budget requires historical backfill tuning; shared traversal counts may repeat in human-readable coverage detail. PostgreSQL publication, successful Cargo live envelope, CLI composition and Docker remain unverified.
+- Advisory decision: needs-verification
+
+## Checkpoint Update
+
+- Current todo: Execute Leaguepedia-primary replacement Task 3: persist dimensions/media/coverage and compose CLI sync paths
+- Active slice: Leaguepedia Task 2 complete; Task 3 integration preparation
+- Completed todos:
+- Replacement Task 2 hardened Leaguepedia client, raw replay adapter, reviewed overrides, canonical staged dimensions/facts/media and coverage merged after final spec and quality approval
+- Evidence refs:
+- merge b442e4b; evidence artifact leaguepedia-task-02-provider-adapter; bounded official siteinfo/T1 probes
+- Blocked on: No TEST_DATABASE_URL or Docker/S3 integration environment; Task 3 code and unit composition can proceed, but publication acceptance remains environment-gated.
+- Next step: Create a fresh Task 3 worktree from main; implement repository persistence for staged dimensions/media/unchanged runs and compose sync/backfill/fixture CLI through the single runner.

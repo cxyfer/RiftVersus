@@ -1,15 +1,15 @@
 {
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
-  "currentTodo": "Execute Leaguepedia-primary replacement Task 2: hardened Leaguepedia adapter and identity overrides",
+  "currentTodo": "Execute Leaguepedia-primary replacement Task 3: persist dimensions/media/coverage and compose CLI sync paths",
   "completedTodos": [
-    "Replacement Task 1 provider-neutral sync runner, immutable storage, downloader, scheduler and pinned advisory-lock contract merged after spec and quality approval"
+    "Replacement Task 2 hardened Leaguepedia client, raw replay adapter, reviewed overrides, canonical staged dimensions/facts/media and coverage merged after final spec and quality approval"
   ],
-  "activeSlice": "Leaguepedia Task 1 complete; Task 2 adapter preparation",
+  "activeSlice": "Leaguepedia Task 2 complete; Task 3 integration preparation",
   "evidenceRefs": [
-    "merge 901f481; evidence artifact leaguepedia-task-01-sync-runner"
+    "merge b442e4b; evidence artifact leaguepedia-task-02-provider-adapter; bounded official siteinfo/T1 probes"
   ],
-  "blockedOn": "No TEST_DATABASE_URL or Docker/S3 integration environment; does not block fixture-driven Leaguepedia adapter implementation.",
-  "nextStep": "Create a fresh Task 2 worktree from main and implement the strict Leaguepedia client, normalization, reviewed overrides, fixtures and bounded live probe.",
+  "blockedOn": "No TEST_DATABASE_URL or Docker/S3 integration environment; Task 3 code and unit composition can proceed, but publication acceptance remains environment-gated.",
+  "nextStep": "Create a fresh Task 3 worktree from main; implement repository persistence for staged dimensions/media/unchanged runs and compose sync/backfill/fixture CLI through the single runner.",
   "updatedAt": "2026-07-12"
 }

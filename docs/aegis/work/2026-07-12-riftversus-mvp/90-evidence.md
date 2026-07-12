@@ -73,3 +73,11 @@ No evidence has been recorded yet.
 - Source: merge 901f481; task commits 9b8254a,31dd9dc,428cafd,bd26fab
 - Summary: Provider-neutral runSync, immutable S3-compatible retention, bounded media downloader, scheduler and PostgreSQL advisory-lock callback contract passed controller verification: sync 44/44, server 30/30, root consumer/unit tests, typecheck, lint, build and diff check. Spec and independent quality reviews approved after lock ownership, fail-closed metadata and response-body cleanup fixes. Real PostgreSQL, S3-compatible storage and undici integration remain unverified in this environment.
 - Verifier: controller plus independent spec and quality reviewers
+
+## EvidenceBundleDraft
+
+- Artifact key: leaguepedia-task-02-provider-adapter
+- Type: verification
+- Source: merge b442e4b; task commits 1cce867,ffdd239,5344b8d,eeb9f0b,4220a19,d4ba40b,93b017b,3085b1a
+- Summary: Hardened Leaguepedia provider passed controller verification: sync 99/99, server 30/30, root consumer/unit, typecheck, lint, build and diff check. Final spec regression and independent quality review approved after raw-only replay, staged dimensions, strict roster authority, rate-limit retry, resource budgets, era/region selection and per-logical coverage aggregation fixes. Bounded official siteinfo and T1 page probes succeeded after approved network retry; no bulk Cargo assertion was used.
+- Verifier: controller plus independent spec and quality reviewers; bounded official Leaguepedia API probe
