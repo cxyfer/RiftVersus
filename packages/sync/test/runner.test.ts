@@ -43,22 +43,25 @@ function createHarness(overrides: Partial<SyncDependencies> = {}) {
   const provider: SyncProvider = {
     id: "fixture",
     parserVersion: "fixture-1",
-    stage: vi.fn(async () => ({
-      version: "fixture-v1",
-      source: {
-        sourceKey: "page:1",
-        sourceUrl: "https://wiki.example.test/page/1",
-        bytes: sourceBytes,
-        contentType: "application/json",
-      },
-      media: [{
-        sourceUrl: "https://wiki.example.test/media/logo.png",
-        attribution: "Fixture Wiki",
-      }],
-      coverage: [],
-      facts: {},
-      rosterGameIds: [],
-    })),
+    stage: vi.fn(async () => {
+      events.push("stage");
+      return {
+        version: "fixture-v1",
+        source: {
+          sourceKey: "page:1",
+          sourceUrl: "https://wiki.example.test/page/1",
+          bytes: sourceBytes,
+          contentType: "application/json",
+        },
+        media: [{
+          sourceUrl: "https://wiki.example.test/media/logo.png",
+          attribution: "Fixture Wiki",
+        }],
+        coverage: [],
+        facts: {},
+        rosterGameIds: [],
+      };
+    }),
   };
   return { dependencies, events, provider, repository, store };
 }
@@ -85,6 +88,7 @@ describe("runSync", () => {
     expect(events).toEqual([
       "lock",
       "begin",
+      "stage",
       "validate",
       expect.stringMatching(/^store:sources\/fixture\/[a-f0-9]{64}$/),
       expect.stringMatching(/^source:sources\/fixture\/[a-f0-9]{64}$/),
@@ -103,21 +107,44 @@ describe("runSync", () => {
     expect(repository.releaseLock).not.toHaveBeenCalled();
   });
 
-  it.each(["provider", "validation", "download", "storage", "publication"] as const)("records a failed run and releases the lock after %s failure", async (failure) => {
+  it.each(["provider", "validation", "source-storage", "source-record", "download", "media-storage", "publication"] as const)("stops at the %s failure boundary, records failure, and releases last", async (failure) => {
     const { dependencies, provider, repository, store, events } = createHarness();
     const error = new Error(`${failure} failed`);
-    if (failure === "provider") vi.mocked(provider.stage).mockRejectedValue(error);
-    if (failure === "validation") vi.mocked(dependencies.validate).mockRejectedValue(error);
-    if (failure === "download") vi.mocked(dependencies.downloadMedia).mockRejectedValue(error);
-    if (failure === "storage") vi.mocked(store.putImmutable).mockRejectedValue(error);
-    if (failure === "publication") vi.mocked(repository.publish).mockRejectedValue(error);
+    if (failure === "provider") vi.mocked(provider.stage).mockImplementation(async () => { events.push("stage"); throw error; });
+    if (failure === "validation") vi.mocked(dependencies.validate).mockImplementation(async () => { events.push("validate"); throw error; });
+    if (failure === "source-storage" || failure === "media-storage") {
+      vi.mocked(store.putImmutable).mockImplementation(async (object) => {
+        events.push(`store:${object.key}`);
+        if ((failure === "source-storage" && object.key.startsWith("sources/")) || (failure === "media-storage" && object.key.startsWith("media/"))) throw error;
+        return "inserted";
+      });
+    }
+    if (failure === "source-record") vi.mocked(repository.recordSource).mockImplementation(async (input) => { events.push(`source:${input.objectKey}`); throw error; });
+    if (failure === "download") vi.mocked(dependencies.downloadMedia).mockImplementation(async (sourceUrl) => { events.push(`download:${sourceUrl}`); throw error; });
+    if (failure === "publication") vi.mocked(repository.publish).mockImplementation(async () => { events.push("publish"); throw error; });
 
     await expect(runSync(provider, { mode: "sync-once" }, dependencies)).rejects.toBe(error);
     expect(repository.failRun).toHaveBeenCalledWith({ syncRunId: "run-1", error: `${failure} failed` });
+    expect(repository.failRun).toHaveBeenCalledOnce();
     expect(repository.releaseLock).toHaveBeenCalledOnce();
-    expect(events.indexOf("fail")).toBeLessThan(events.indexOf("unlock"));
-    expect(events.at(-1)).toBe("unlock");
-    if (failure !== "publication") expect(repository.publish).not.toHaveBeenCalled();
+    const normalizedEvents = events.map((event) => {
+      if (event.startsWith("store:sources/")) return "store:source";
+      if (event.startsWith("source:sources/")) return "record:source";
+      if (event.startsWith("store:media/")) return "store:media";
+      if (event.startsWith("download:")) return "download:media";
+      return event;
+    });
+    const expectedEvents: Record<typeof failure, string[]> = {
+      provider: ["lock", "begin", "stage", "fail", "unlock"],
+      validation: ["lock", "begin", "stage", "validate", "fail", "unlock"],
+      "source-storage": ["lock", "begin", "stage", "validate", "store:source", "fail", "unlock"],
+      "source-record": ["lock", "begin", "stage", "validate", "store:source", "record:source", "fail", "unlock"],
+      download: ["lock", "begin", "stage", "validate", "store:source", "record:source", "download:media", "fail", "unlock"],
+      "media-storage": ["lock", "begin", "stage", "validate", "store:source", "record:source", "download:media", "store:media", "fail", "unlock"],
+      publication: ["lock", "begin", "stage", "validate", "store:source", "record:source", "download:media", "store:media", "publish", "fail", "unlock"],
+    };
+    expect(normalizedEvents).toEqual(expectedEvents[failure]);
+    expect(repository.publish).toHaveBeenCalledTimes(failure === "publication" ? 1 : 0);
   });
 });
 
@@ -159,11 +186,13 @@ describe("scheduleSync", () => {
     run.mockRejectedValueOnce(new Error("sync rejected"));
     tick!();
     await vi.waitFor(() => expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "sync rejected" })));
+    expect(onError).toHaveBeenCalledOnce();
     await vi.waitFor(() => expect(handle.running).toBe(false));
     run.mockResolvedValueOnce(undefined);
     tick!();
     expect(run).toHaveBeenCalledTimes(3);
     await vi.waitFor(() => expect(handle.running).toBe(false));
+    expect(onError).toHaveBeenCalledOnce();
     handle.stop();
     expect(stop).toHaveBeenCalledOnce();
   });
