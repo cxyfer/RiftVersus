@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   LeaguepediaClient,
+  LeaguepediaCargoEnvelopeError,
   LeaguepediaSnapshotError,
   createLeaguepediaProvider,
   deriveLeaguepediaCoverage,
@@ -17,6 +18,7 @@ import {
   type LeaguepediaCargoTable,
   type RawApiEvidence,
 } from "../src/providers/leaguepedia/index.js";
+import { RetainableStageError } from "../src/types.js";
 
 const root = fileURLToPath(new URL("../../..", import.meta.url));
 const fixturePath = fileURLToPath(new URL("./fixtures/leaguepedia-snapshot.json", import.meta.url));
@@ -130,6 +132,23 @@ describe("LeaguepediaClient", () => {
     await expect(client.fetchSiteInfo()).rejects.toThrow(/aborted/i);
     expect(calls).toBe(2);
   });
+
+  it.each([
+    ["missing cargoquery", {}],
+    ["non-array cargoquery", { cargoquery: {} }],
+    ["non-object item", { cargoquery: ["bad"] }],
+    ["missing title object", { cargoquery: [{}] }],
+  ])("rejects %s while preserving the raw response", async (_label, response) => {
+    const client = new LeaguepediaClient({ endpoint: "https://lol.example/api.php", userAgent: "RiftVersus/0.1 contact@example.com", fetch: async () => Response.json(response) });
+    const failure = await client.fetchTeamsPage({ offset: 0 }).catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(LeaguepediaCargoEnvelopeError);
+    expect((failure as LeaguepediaCargoEnvelopeError).rawEvidence.response).toEqual(response);
+  });
+
+  it("accepts an explicit empty cargoquery array as zero rows", async () => {
+    const client = new LeaguepediaClient({ endpoint: "https://lol.example/api.php", userAgent: "RiftVersus/0.1 contact@example.com", fetch: async () => Response.json({ cargoquery: [] }) });
+    await expect(client.fetchTeamsPage({ offset: 0 })).resolves.toMatchObject({ rows: [] });
+  });
 });
 
 describe("Leaguepedia fetching", () => {
@@ -157,7 +176,7 @@ describe("Leaguepedia fetching", () => {
         GameId: "G1", MatchId: "M1", Tournament: "2024 Season World Championship", DateTime_UTC: "2024-11-02T14:00:00Z",
         BestOf: "5", N_GameInMatch: "1", Team1: "T1", Team2: "Bilibili Gaming", Team1Score: "3", Team2Score: "2", Winner: "1",
       }]),
-      fetchGamePlayersPage: async ({ offset }) => cargoPage("ScoreboardPlayers", offset, [{ GameId: "G1", PlayerName: "Faker", Team: "T1" }]),
+      fetchGamePlayersPage: async ({ offset }) => cargoPage("ScoreboardPlayers", offset, [{ GameId: "G1", PlayerName: "Faker", Team: "T1", PlayerWin: 1 }]),
       fetchImageInfoWithEvidence: async () => ({ data: { query: { pages: [{ title: "File:T1.png", imageinfo: [{
         url: "https://static.wikia.nocookie.net/t1.png", mime: "image/png", extmetadata: { LicenseShortName: { value: "CC BY-SA" }, Artist: { value: "Leaguepedia contributors" } },
       }] }] } }, rawEvidence: [{ requestId: "query:image:0", action: "query", sourceUrl: "https://lol.example/api.php?action=query&titles=T1.png", response: { query: {} }, revisionIds: [77] }] }),
@@ -165,7 +184,7 @@ describe("Leaguepedia fetching", () => {
 
     expect(snapshot.series).toEqual([expect.objectContaining({ sourceKey: "M1", bestOf: 5 })]);
     expect(snapshot.games).toEqual([expect.objectContaining({ sourceKey: "G1", seriesKey: "M1", winnerTeam: "T1" })]);
-    expect(snapshot.gamePlayers).toEqual([{ gameKey: "G1", playerKey: "Faker", teamKey: "T1" }]);
+    expect(snapshot.gamePlayers).toEqual([{ gameKey: "G1", playerKey: "Faker", teamKey: "T1", playerWin: true }]);
     expect(snapshot.media).toEqual([expect.objectContaining({ entityKey: "T1", attribution: "Leaguepedia contributors" })]);
     expect(snapshot.tournaments).toEqual([expect.objectContaining({ sourceKey: "2024 Season World Championship" })]);
     expect(snapshot.slices[0]).toMatchObject({ competition: "2024 Season World Championship", seasonYear: 2024, gameSourceKeys: ["G1"] });
@@ -196,6 +215,7 @@ describe("Leaguepedia normalization", () => {
     expect(result.entities.filter((entity) => entity.canonicalName === "T1")).toHaveLength(2);
     expect(result.entities.find((entity) => entity.sourceKey === "SK Telecom T1")?.precedence).toBe("override");
     expect(result.quarantine.map((item) => item.sourceKey)).toEqual(["Duplicate One", "Duplicate Two"]);
+    expect(result.quarantineAffectedGameKeys).toEqual([]);
     expect(result.entities.some((entity) => entity.sourceKey === "Duplicate One")).toBe(false);
   });
 
@@ -267,7 +287,7 @@ describe("Leaguepedia coverage and provider", () => {
     expect(batch.source.bytes.byteLength).toBeGreaterThan(0);
     expect(batch.media).toHaveLength(1);
     expect(batch.facts.series).toHaveLength(1);
-    expect(batch.coverage[0]?.status).toBe("partial");
+    expect(batch.coverage[0]?.status).toBe("complete");
     expect(batch.dimensions.entities).not.toHaveLength(0);
     const raw = JSON.parse(new TextDecoder().decode(batch.source.bytes)) as Record<string, unknown>;
     expect(raw).toHaveProperty("format", "riftversus-leaguepedia-raw-v1");
@@ -281,12 +301,37 @@ describe("Leaguepedia coverage and provider", () => {
     expect("publish" in provider).toBe(false);
   });
 
+  it("only marks a slice partial when it references a quarantined identity", async () => {
+    const snapshot = await fixture();
+    const affected = { ...snapshot, gamePlayers: [...snapshot.gamePlayers, { gameKey: "WORLD24-FINAL-G1", playerKey: "Duplicate One", teamKey: "T1", playerWin: false }] };
+    const provider = createLeaguepediaProvider({ loadSnapshot: async () => affected, overrides: await overrides() });
+    const batch = await provider.stage({ mode: "backfill", years: [2024, 2025], competitions: ["Worlds"] });
+    expect(batch.coverage).toEqual([
+      expect.objectContaining({ seasonYear: 2024, status: "partial" }),
+      expect.objectContaining({ seasonYear: 2025, status: "missing" }),
+    ]);
+  });
+
+  it("converts a malformed Cargo envelope into retainable raw provider evidence", async () => {
+    const client = new LeaguepediaClient({ endpoint: "https://lol.example/api.php", userAgent: "RiftVersus/0.1 contact@example.com", fetch: async () => Response.json({ cargoquery: [{}] }) });
+    const provider = createLeaguepediaProvider({
+      loadSnapshot: async () => {
+        await client.fetchTeamsPage({ offset: 0 });
+        throw new Error("unreachable");
+      },
+      overrides: await overrides(),
+    });
+    const failure = await provider.stage({ mode: "sync-once" }).catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(RetainableStageError);
+    expect(JSON.parse(new TextDecoder().decode((failure as RetainableStageError).source.bytes))).toEqual(expect.objectContaining({ format: "riftversus-leaguepedia-raw-v1", evidence: expect.any(Array) }));
+  });
+
   it("derives dates and completeness independently for each requested slice", async () => {
     const snapshot = await fixture();
     const provider = createLeaguepediaProvider({ loadSnapshot: async () => snapshot, overrides: await overrides() });
     const batch = await provider.stage({ mode: "backfill", years: [2024, 2025], competitions: ["Worlds"] });
     expect(batch.coverage).toEqual([
-      expect.objectContaining({ seasonYear: 2024, earliestDate: "2024-11-02", latestDate: "2024-11-02", status: "partial" }),
+      expect.objectContaining({ seasonYear: 2024, earliestDate: "2024-11-02", latestDate: "2024-11-02", status: "complete" }),
       expect.objectContaining({ seasonYear: 2025, earliestDate: null, latestDate: null, status: "missing" }),
     ]);
   });
@@ -302,5 +347,26 @@ describe("Leaguepedia coverage and provider", () => {
     expect(a1.version).toBe(a2.version);
     expect(a1.version).not.toBe(parser.version);
     expect(a1.version).not.toBe(override.version);
+  });
+
+  it("changes sourceKey and version when raw Cargo evidence changes despite identical revisions", async () => {
+    const snapshot = await fixture();
+    const reviewed = await overrides();
+    const changed = {
+      ...snapshot,
+      rawEvidence: snapshot.rawEvidence.map((item, index) => index === 0 ? { ...item, response: { ...item.response, changedCargoField: "changed" } } : item),
+    };
+    const originalBatch = await createLeaguepediaProvider({ loadSnapshot: async () => snapshot, overrides: reviewed }).stage({ mode: "sync-once" });
+    const changedBatch = await createLeaguepediaProvider({ loadSnapshot: async () => changed, overrides: reviewed }).stage({ mode: "sync-once" });
+    expect(changed.revisionIds).toEqual(snapshot.revisionIds);
+    expect(originalBatch.source.sourceKey).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(changedBatch.source.sourceKey).not.toBe(originalBatch.source.sourceKey);
+    expect(changedBatch.version).not.toBe(originalBatch.version);
+  });
+
+  it("rejects a player winner flag that contradicts the canonical game winner", async () => {
+    const snapshot = await fixture();
+    const reviewed = await overrides();
+    expect(() => normalizeLeaguepediaSnapshot({ ...snapshot, gamePlayers: snapshot.gamePlayers.map((item) => ({ ...item, playerWin: !item.playerWin })) }, reviewed)).toThrow(/winner flag/);
   });
 });

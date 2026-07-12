@@ -64,7 +64,7 @@ export interface LeaguepediaGame {
   winnerTeam: string | null;
 }
 
-export interface LeaguepediaGamePlayer { gameKey: string; playerKey: string; teamKey: string }
+export interface LeaguepediaGamePlayer { gameKey: string; playerKey: string; teamKey: string; playerWin: boolean }
 export interface LeaguepediaTournament { sourceKey: string; displayName: string; validFrom?: string | null; validTo?: string | null }
 export interface LeaguepediaMedia {
   sourceKey: string;
@@ -107,6 +107,7 @@ export interface LeaguepediaNormalizationResult {
   entities: readonly NormalizedLeaguepediaEntity[];
   entityIds: ReadonlyMap<string, string>;
   quarantine: readonly QuarantinedIdentity[];
+  quarantineAffectedGameKeys: readonly string[];
   dimensions: StagedDimensions;
   eraIds: ReadonlyMap<string, string>;
   facts: CanonicalFacts;

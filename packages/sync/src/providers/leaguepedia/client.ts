@@ -69,7 +69,13 @@ export class LeaguepediaClient {
   async #cargo(table: "Teams" | "Players" | "Tournaments" | "ScoreboardGames" | "ScoreboardPlayers", fields: string, orderBy: string, offset: number, where?: string): Promise<CargoPage> {
     nonNegativeInteger(offset, "offset");
     const result = await this.#request({ action: "cargoquery", tables: table, fields, order_by: orderBy, limit: String(CARGO_LIMIT), offset: String(offset), ...(where === undefined ? {} : { where }) });
-    return { rows: cargoRows(result.body), offset, rawEvidence: toRawEvidence(result, { action: "cargoquery", table, offset }) };
+    const rawEvidence = toRawEvidence(result, { action: "cargoquery", table, offset });
+    try {
+      return { rows: cargoRows(result.body), offset, rawEvidence };
+    } catch (error) {
+      const reason = error instanceof Error ? error : new Error(String(error));
+      throw new LeaguepediaCargoEnvelopeError(reason.message, rawEvidence, { cause: reason });
+    }
   }
 
   async #queryAll(parameters: Readonly<Record<string, string>>, allowedContinuation: ReadonlySet<string>): Promise<QueryEvidenceResult> {
@@ -127,6 +133,13 @@ export class LeaguepediaClient {
   }
 }
 
+export class LeaguepediaCargoEnvelopeError extends Error {
+  constructor(message: string, readonly rawEvidence: RawApiEvidence, options?: ErrorOptions) {
+    super(message, options);
+    this.name = "LeaguepediaCargoEnvelopeError";
+  }
+}
+
 interface RequestResult { body: Record<string, unknown>; url: string }
 
 function toRawEvidence(result: RequestResult, request: { action: "query" | "cargoquery"; table?: CargoPage["rawEvidence"]["table"]; offset?: number; continuation?: Readonly<Record<string, string>> }): RawApiEvidence {
@@ -144,10 +157,11 @@ function toRawEvidence(result: RequestResult, request: { action: "query" | "carg
 }
 
 function cargoRows(body: Record<string, unknown>): Record<string, unknown>[] {
-  if (!Array.isArray(body.cargoquery)) return [];
-  return body.cargoquery.flatMap((item) => {
-    if (!isRecord(item)) return [];
-    return [isRecord(item.title) ? item.title : item];
+  if (!Array.isArray(body.cargoquery)) throw new Error("Leaguepedia Cargo response must contain a cargoquery array.");
+  return body.cargoquery.map((item, index) => {
+    if (!isRecord(item)) throw new Error(`Leaguepedia Cargo item ${index} must be an object.`);
+    if (!isRecord(item.title)) throw new Error(`Leaguepedia Cargo item ${index} title must be an object.`);
+    return item.title;
   });
 }
 function cargoLiteral(value: string): string {

@@ -2,12 +2,13 @@ import { createHash } from "node:crypto";
 
 import type { ReviewedOverrides } from "../../overrides.js";
 import { RetainableStageError, type SyncProvider, type SyncRequest } from "../../types.js";
+import { LeaguepediaCargoEnvelopeError } from "./client.js";
 import { LeaguepediaSnapshotError } from "./fetch.js";
 import { parseLeaguepediaMedia } from "./media.js";
 import { deriveLeaguepediaCoverage, normalizeLeaguepediaSnapshot } from "./normalize.js";
 import type { LeaguepediaSnapshot } from "./types.js";
 
-export { LeaguepediaClient } from "./client.js";
+export { LeaguepediaCargoEnvelopeError, LeaguepediaClient } from "./client.js";
 export { fetchAllCargoPages, fetchLeaguepediaSnapshot, LeaguepediaSnapshotError } from "./fetch.js";
 export type { LeaguepediaReadClient, SnapshotRequest, SnapshotSliceRequest, TraversedRows } from "./fetch.js";
 export { parseLeaguepediaMedia } from "./media.js";
@@ -31,6 +32,7 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
       try {
         snapshot = await options.loadSnapshot(request);
       } catch (error) {
+        if (error instanceof LeaguepediaCargoEnvelopeError) throw retainableEvidenceError(error, [error.rawEvidence]);
         if (error instanceof LeaguepediaSnapshotError && error.rawEvidence.length > 0) {
           const bytes = new TextEncoder().encode(canonicalJson({ format: "riftversus-leaguepedia-raw-v1", evidence: error.rawEvidence }));
           const digest = createHash("sha256").update(bytes).digest("hex");
@@ -57,13 +59,14 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
       const coverage = requested.map(({ competition, seasonYear }) => {
         const slice = snapshot.slices.find((item) => item.competition === competition && item.seasonYear === seasonYear);
         const sliceGames = slice === undefined ? [] : snapshot.games.filter((game) => slice.gameSourceKeys.includes(game.sourceKey));
+        const affectedGames = slice === undefined ? 0 : normalized.quarantineAffectedGameKeys.filter((key) => slice.gameSourceKeys.includes(key)).length;
         const dates = sliceGames.map((game) => game.playedAt).sort();
         return deriveLeaguepediaCoverage({
           competition,
           seasonYear,
           observedRows: sliceGames.length,
           traversal: slice?.traversal ?? { requestedPages: 1, visitedPages: 0, complete: false },
-          unresolvedRows: (slice?.malformedOptionalRows ?? 0) + normalized.quarantine.length,
+          unresolvedRows: (slice?.malformedOptionalRows ?? 0) + affectedGames,
           earliestDate: dates[0]?.slice(0, 10) ?? null,
           latestDate: dates.at(-1)?.slice(0, 10) ?? null,
         });
@@ -72,7 +75,7 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
         version: `leaguepedia-${versionDigest}`,
         provenance: { sourceDigest: `sha256:${digest}`, parserVersion, overrideChecksums: Object.values(options.overrides.checksums).sort() as `sha256:${string}`[] },
         source: {
-          sourceKey: snapshot.revisionIds.length > 0 ? `revisions:${[...snapshot.revisionIds].sort((a, b) => a - b).join(",")}` : `sha256:${digest}`,
+          sourceKey: `sha256:${digest}`,
           sourceUrl: snapshot.rawEvidence[0]!.sourceUrl,
           bytes,
           contentType: "application/json",

@@ -177,10 +177,13 @@ function parseSeries(rows: readonly Record<string, unknown>[]): LeaguepediaSerie
 }
 
 function parseGamePlayer(row: Record<string, unknown>, index: number): LeaguepediaGamePlayer {
+  const playerWin = requiredInteger(row.PlayerWin, `ScoreboardPlayers row ${index} PlayerWin`);
+  if (playerWin !== 0 && playerWin !== 1) throw new Error(`ScoreboardPlayers row ${index} PlayerWin must be 0 or 1.`);
   return {
     gameKey: requiredString(row.GameId, `ScoreboardPlayers row ${index} GameId`),
     playerKey: requiredString(row.PlayerName, `ScoreboardPlayers row ${index} PlayerName`),
     teamKey: requiredString(row.Team, `ScoreboardPlayers row ${index} Team`),
+    playerWin: playerWin === 1,
   };
 }
 

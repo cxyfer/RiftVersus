@@ -69,9 +69,14 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
     return { id, provider: PROVIDER, sourceKey: item.sourceKey, name, aliases: unique([item.displayName, name]), category: override?.category ?? tournamentCategory(item.displayName), seasonYear, validFrom: item.validFrom ?? null, validTo: item.validTo ?? null };
   });
 
+  const quarantinedKeys = new Set(quarantine.map((item) => item.sourceKey));
+  const quarantinedSeriesKeys = new Set(snapshot.series.filter((item) => quarantinedKeys.has(item.sideATeam) || quarantinedKeys.has(item.sideBTeam)).map((item) => item.sourceKey));
+  const quarantineAffectedGameKeys = new Set(snapshot.games.filter((item) => quarantinedSeriesKeys.has(item.seriesKey) || quarantinedKeys.has(item.sideATeam) || quarantinedKeys.has(item.sideBTeam)).map((item) => item.sourceKey));
+  for (const item of snapshot.gamePlayers) if (quarantinedKeys.has(item.playerKey) || quarantinedKeys.has(item.teamKey)) quarantineAffectedGameKeys.add(item.gameKey);
+
   const seriesIds = new Map<string, string>();
   const seriesByKey = new Map(snapshot.series.map((item) => [item.sourceKey, item]));
-  const series: SeriesFactInput[] = snapshot.series.map((item) => {
+  const series: SeriesFactInput[] = snapshot.series.filter((item) => !quarantinedSeriesKeys.has(item.sourceKey)).map((item) => {
     const tournamentId = tournamentIds.get(item.tournamentKey);
     if (tournamentId === undefined) throw new Error(`Series ${item.sourceKey} references unknown tournament ${item.tournamentKey}.`);
     const sideATeamId = requiredEntityId(entityIds, item.sideATeam, item.sourceKey);
@@ -89,7 +94,7 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
   });
 
   const gameIds = new Map<string, string>();
-  const games: GameFactInput[] = snapshot.games.map((item) => {
+  const games: GameFactInput[] = snapshot.games.filter((item) => !quarantineAffectedGameKeys.has(item.sourceKey)).map((item) => {
     const seriesId = seriesIds.get(item.seriesKey);
     const sourceSeries = seriesByKey.get(item.seriesKey);
     if (seriesId === undefined || sourceSeries === undefined) throw new Error(`Game ${item.sourceKey} references an unknown explicit series.`);
@@ -111,7 +116,7 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
 
   const gamesById = new Map(games.map((game) => [game.id, game]));
   const playerFacts = new Set<string>();
-  const gamePlayers: GamePlayerInput[] = snapshot.gamePlayers.map((item) => {
+  const gamePlayers: GamePlayerInput[] = snapshot.gamePlayers.filter((item) => !quarantineAffectedGameKeys.has(item.gameKey)).map((item) => {
     const gameId = gameIds.get(item.gameKey);
     if (gameId === undefined) throw new Error(`Player fact references unknown game ${item.gameKey}.`);
     const game = gamesById.get(gameId)!;
@@ -119,6 +124,8 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
     const teamEntityId = requiredEntityId(entityIds, item.teamKey, item.gameKey);
     const side = teamEntityId === game.sideATeamId ? "a" : teamEntityId === game.sideBTeamId ? "b" : null;
     if (side === null) throw new Error(`Player ${item.playerKey} team does not match game ${item.gameKey}.`);
+    const expectedWin = teamEntityId === game.winnerTeamId;
+    if (item.playerWin !== expectedWin) throw new Error(`Player ${item.playerKey} winner flag contradicts game ${item.gameKey}.`);
     const factKey = `${gameId}:${playerEntityId}`;
     if (playerFacts.has(factKey)) throw new Error(`Duplicate player participation ${item.gameKey}:${item.playerKey}.`);
     playerFacts.add(factKey);
@@ -130,6 +137,7 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
     entityIds,
     eraIds,
     quarantine,
+    quarantineAffectedGameKeys: [...quarantineAffectedGameKeys],
     dimensions: { entities: [...entityDefinitions.values()], teamEras, regions: [...regionDefinitions.values()], tournaments },
     facts: { series, games, gamePlayers },
     rosterGameIds: [...new Set(gamePlayers.map((item) => item.gameId))],

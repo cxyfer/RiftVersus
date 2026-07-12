@@ -18,7 +18,7 @@ export type { S3ObjectStoreConfig } from "./storage.js";
 export { loadOverrides } from "./overrides.js";
 export type { IdentityOverride, OverridePaths, ReviewedOverrides, TournamentOverride } from "./overrides.js";
 export {
-  LeaguepediaClient, LeaguepediaSnapshotError, createLeaguepediaProvider, deriveLeaguepediaCoverage, fetchAllCargoPages, fetchLeaguepediaSnapshot,
+  LeaguepediaCargoEnvelopeError, LeaguepediaClient, LeaguepediaSnapshotError, createLeaguepediaProvider, deriveLeaguepediaCoverage, fetchAllCargoPages, fetchLeaguepediaSnapshot,
   normalizeLeaguepediaSnapshot, parseLeaguepediaMedia,
 } from "./providers/leaguepedia/index.js";
 export type * from "./providers/leaguepedia/types.js";
