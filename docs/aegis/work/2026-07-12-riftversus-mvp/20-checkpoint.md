@@ -216,3 +216,23 @@
 - New risk signals:
 - Leaguepedia Cargo schema drift and rate limits require fixtures, bounded live probes, and honest partial/missing coverage. PostgreSQL/Docker gates remain environment-unverified.
 - Advisory decision: continue
+
+## DriftCheckDraft
+
+- Scope status: Leaguepedia replacement Task 1 only: provider-neutral orchestration, immutable object retention, downloader, scheduler and lock ownership; no provider adapter, CLI wiring or Oracle retirement yet.
+- Compatibility status: runSync is the single publication owner; adapters remain staging-only. PostgreSQL advisory locks retain pinned-connection ownership and publication generation remains canonical.
+- Retirement status: No Oracle runtime fallback was added; planned Oracle source surfaces remain pending delete-first retirement in replacement Task 4.
+- New risk signals:
+- Real PostgreSQL advisory-lock execution, S3-compatible conditional writes and undici socket behavior remain environment-unverified; Task 2 must also defend against Leaguepedia schema drift and ambiguity.
+- Advisory decision: needs-verification
+
+## Checkpoint Update
+
+- Current todo: Execute Leaguepedia-primary replacement Task 2: hardened Leaguepedia adapter and identity overrides
+- Active slice: Leaguepedia Task 1 complete; Task 2 adapter preparation
+- Completed todos:
+- Replacement Task 1 provider-neutral sync runner, immutable storage, downloader, scheduler and pinned advisory-lock contract merged after spec and quality approval
+- Evidence refs:
+- merge 901f481; evidence artifact leaguepedia-task-01-sync-runner
+- Blocked on: No TEST_DATABASE_URL or Docker/S3 integration environment; does not block fixture-driven Leaguepedia adapter implementation.
+- Next step: Create a fresh Task 2 worktree from main and implement the strict Leaguepedia client, normalization, reviewed overrides, fixtures and bounded live probe.

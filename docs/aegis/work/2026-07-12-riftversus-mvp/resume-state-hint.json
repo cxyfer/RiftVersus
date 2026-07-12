@@ -2,9 +2,9 @@
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
   "lastCheckpointRef": "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json",
-  "resumeInstruction": "Use the Leaguepedia-primary plan as source authority. Keep one runSync publication owner; do not merge feat/task-09-leaguepedia or retain Oracle runtime fallback.",
+  "resumeInstruction": "Resume from docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md Task 2. Treat old branch d95c3a2 only as review evidence; do not merge it. Preserve runSync as the sole publication owner.",
   "knownPartialWork": [
-    "User approved Leaguepedia as MVP source; source design amendment and replacement implementation plan created"
+    "Replacement Task 1 provider-neutral sync runner, immutable storage, downloader, scheduler and pinned advisory-lock contract merged after spec and quality approval"
   ],
   "mustReadBeforeContinuing": [
     "docs/aegis/work/2026-07-12-riftversus-mvp/10-intent.md",
@@ -12,6 +12,6 @@
     "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json"
   ],
   "unsafeToAssume": [
-    "Do not treat the unmerged Task9 adapter, unit-only fixtures, or an approximate data-size estimate as acceptance evidence."
+    "Do not assume ambiguous Leaguepedia identities are canonical, zero rows imply complete coverage, Cargo schema is stable, or public query parameters may override action/format/table allowlists."
   ]
 }

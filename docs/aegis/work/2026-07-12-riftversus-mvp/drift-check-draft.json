@@ -3,13 +3,13 @@
   "taskId": "2026-07-12-riftversus-mvp",
   "taskIntentRef": "docs/aegis/work/2026-07-12-riftversus-mvp/task-intent-draft.json",
   "baselineRefs": [
-    "docs/aegis/specs/2026-07-12-leaguepedia-primary-mvp-design.md"
+    "docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md"
   ],
-  "scopeStatus": "Source architecture now uses Leaguepedia as the only MVP upstream; completed API/web/export work remains unchanged.",
-  "compatStatus": "One PostgreSQL generation and one runSync publication owner remain mandatory. Oracle is retired from MVP runtime rather than retained as a fallback.",
-  "retirementStatus": "Oracle planned manifest/CSV adapter/acceptance paths are delete-first code-retirement targets; no persistent Oracle state exists.",
+  "scopeStatus": "Leaguepedia replacement Task 1 only: provider-neutral orchestration, immutable object retention, downloader, scheduler and lock ownership; no provider adapter, CLI wiring or Oracle retirement yet.",
+  "compatStatus": "runSync is the single publication owner; adapters remain staging-only. PostgreSQL advisory locks retain pinned-connection ownership and publication generation remains canonical.",
+  "retirementStatus": "No Oracle runtime fallback was added; planned Oracle source surfaces remain pending delete-first retirement in replacement Task 4.",
   "newRiskSignals": [
-    "Leaguepedia Cargo schema drift and rate limits require fixtures, bounded live probes, and honest partial/missing coverage. PostgreSQL/Docker gates remain environment-unverified."
+    "Real PostgreSQL advisory-lock execution, S3-compatible conditional writes and undici socket behavior remain environment-unverified; Task 2 must also defend against Leaguepedia schema drift and ambiguity."
   ],
-  "decision": "continue"
+  "decision": "needs-verification"
 }

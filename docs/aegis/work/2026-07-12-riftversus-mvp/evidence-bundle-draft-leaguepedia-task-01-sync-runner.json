@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "leaguepedia-task-01-sync-runner",
+  "type": "verification",
+  "source": "merge 901f481; task commits 9b8254a,31dd9dc,428cafd,bd26fab",
+  "summary": "Provider-neutral runSync, immutable S3-compatible retention, bounded media downloader, scheduler and PostgreSQL advisory-lock callback contract passed controller verification: sync 44/44, server 30/30, root consumer/unit tests, typecheck, lint, build and diff check. Spec and independent quality reviews approved after lock ownership, fail-closed metadata and response-body cleanup fixes. Real PostgreSQL, S3-compatible storage and undici integration remain unverified in this environment.",
+  "verifier": "controller plus independent spec and quality reviewers"
+}

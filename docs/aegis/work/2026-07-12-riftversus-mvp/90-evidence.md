@@ -65,3 +65,11 @@ No evidence has been recorded yet.
 - Source: merge 77756f6; task commits e8848fb,8a0e55b,5b5de64
 - Summary: Task 11 browser-only PNG/ZIP export passed spec and quality reviews. Controller verification: web 38 tests, web production build, typecheck, lint, root consumer/unit tests and build. Elevated local loopback Playwright 3/3 verified the comparison journey, PNG signature, and ZIP entries with PNG signatures.
 - Verifier: controller plus independent spec and quality reviewers
+
+## EvidenceBundleDraft
+
+- Artifact key: leaguepedia-task-01-sync-runner
+- Type: verification
+- Source: merge 901f481; task commits 9b8254a,31dd9dc,428cafd,bd26fab
+- Summary: Provider-neutral runSync, immutable S3-compatible retention, bounded media downloader, scheduler and PostgreSQL advisory-lock callback contract passed controller verification: sync 44/44, server 30/30, root consumer/unit tests, typecheck, lint, build and diff check. Spec and independent quality reviews approved after lock ownership, fail-closed metadata and response-body cleanup fixes. Real PostgreSQL, S3-compatible storage and undici integration remain unverified in this environment.
+- Verifier: controller plus independent spec and quality reviewers
