@@ -343,7 +343,7 @@ describe("Leaguepedia fetching", () => {
     const at = (timestamp: string): LeaguepediaRawInput => ({ ...input, rawEvidence: input.rawEvidence.map((item) => item.table === "ScoreboardGames" ? {
       ...item, response: { cargoquery: (item.response.cargoquery as Array<{ title: Record<string, unknown> }>).map(({ title }) => ({ title: { ...title, DateTime_UTC: timestamp } })) },
     } : item) });
-    expect(parseLeaguepediaRawInput(at("2024-01-01T00:00:00Z")).games).toHaveLength(3);
+    expect(parseLeaguepediaRawInput(at("2024-01-01T00:00:00Z")).games).toHaveLength(5);
     expect(() => parseLeaguepediaRawInput(at("2025-01-01T00:00:00Z"))).toThrow(/outside \[2024-01-01, 2025-01-01\)/);
   });
 
@@ -459,9 +459,13 @@ describe("Leaguepedia normalization", () => {
   });
 
   it("normalizes explicit series, games and player facts with stable identifiers", async () => {
-    const result = normalizeLeaguepediaSnapshot(await fixture(), await overrides());
+    const snapshot = await fixture();
+    const result = normalizeLeaguepediaSnapshot(snapshot, await overrides());
     expect(result.facts.series).toHaveLength(1);
-    expect(result.facts.series?.[0]).toMatchObject({ sourceKey: "WORLD24-FINAL", bestOf: 5, completed: true, sideAScore: 3, sideBScore: 0 });
+    expect(result.facts.series?.[0]).toMatchObject({ sourceKey: "WORLD24-FINAL", bestOf: 5, completed: true, sideAScore: 3, sideBScore: 2 });
+    expect(result.facts.games?.map((game) => game.winnerTeamId === result.entityIds.get("T1") ? "T1" : "Bilibili Gaming")).toEqual(["Bilibili Gaming", "T1", "Bilibili Gaming", "T1", "T1"]);
+    expect(result.facts.gamePlayers).toHaveLength(50);
+    expect(new Set(result.facts.gamePlayers?.map((player) => snapshot.entities.find((entity) => result.entityIds.get(entity.sourceKey) === player.playerEntityId)?.sourceKey))).toEqual(new Set(["Zeus", "Oner", "Faker", "Gumayusi", "Keria", "Bin", "Xun", "knight", "Elk", "ON"]));
     expect(result.facts.games?.[0]).toMatchObject({ sourceKey: "WORLD24-FINAL-G1", gameNumber: 1 });
     expect(result.facts.gamePlayers?.[0]?.gameId).toBe(result.facts.games?.[0]?.id);
     expect(result.rosterGameIds).toEqual(result.facts.games?.map((game) => game.id));
@@ -631,14 +635,14 @@ describe("Leaguepedia coverage and provider", () => {
     expect(batch.coverage).toEqual([expect.objectContaining({
       competition: "Worlds", seasonYear: 2024, status: "partial", earliestDate: "2024-10-01", latestDate: "2024-11-02",
     })]);
-    expect(batch.facts.games).toHaveLength(4);
+    expect(batch.facts.games).toHaveLength(6);
   });
 
   it("deduplicates the same consistent GameId across logical source slices", async () => {
     const input = await duplicateGameWorldsInput();
     const batch = await createLeaguepediaProvider({ loadRawInput: async () => input, overrides: await overrides() }).stage({ mode: "backfill", years: [2024], competitions: ["Worlds"] });
-    expect(batch.facts.games).toHaveLength(3);
-    expect(batch.coverage).toEqual([expect.objectContaining({ status: "complete", detail: expect.stringContaining("Verified 3 rows") })]);
+    expect(batch.facts.games).toHaveLength(5);
+    expect(batch.coverage).toEqual([expect.objectContaining({ status: "complete", detail: expect.stringContaining("Verified 5 rows") })]);
   });
 
   it("marks coverage partial when a completed series is missing an expected game", async () => {

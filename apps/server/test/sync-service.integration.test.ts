@@ -34,7 +34,7 @@ describeWithDatabase("Leaguepedia PostgreSQL fixture composition", () => {
     expect(first.status).toBe("published"); expect(second).toEqual({ status: "unchanged", version: first.version });
     const count = async (table: keyof Database) => db.selectFrom(table).select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow();
     expect(await count("entities")).toMatchObject({ count: "14" });
-    expect(await count("series_facts")).toMatchObject({ count: "1" }); expect(await count("game_facts")).toMatchObject({ count: "3" }); expect(await count("game_players")).toMatchObject({ count: "30" });
+    expect(await count("series_facts")).toMatchObject({ count: "1" }); expect(await count("game_facts")).toMatchObject({ count: "5" }); expect(await count("game_players")).toMatchObject({ count: "50" });
     expect(await count("source_objects")).toMatchObject({ count: "1" }); expect(await count("media_objects")).toMatchObject({ count: "1" }); expect(await count("media_assets")).toMatchObject({ count: "1" });
     expect(await count("coverage_status")).toMatchObject({ count: "1" }); expect(await count("dataset_versions")).toMatchObject({ count: "1" }); expect(await count("override_application_runs")).toMatchObject({ count: "2" });
     const runs = await db.selectFrom("sync_runs").select(["status", "reused_dataset_version_id"]).orderBy("started_at").execute();
