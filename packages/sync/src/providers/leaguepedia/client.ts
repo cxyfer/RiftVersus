@@ -1,4 +1,6 @@
-import type { CargoPage, GamePlayersPageInput, GamesPageInput, LeaguepediaClientOptions, OffsetInput } from "./types.js";
+import { createHash } from "node:crypto";
+
+import type { CargoPage, GamePlayersPageInput, GamesPageInput, LeaguepediaClientOptions, OffsetInput, QueryEvidenceResult, RawApiEvidence } from "./types.js";
 
 const CARGO_LIMIT = 500;
 const MAX_RETRY_AFTER_MS = 30_000;
@@ -11,6 +13,7 @@ export class LeaguepediaClient {
   readonly #timeoutMs: number;
   readonly #maxRetries: number;
   readonly #sleep: (milliseconds: number) => Promise<void>;
+  readonly #now: () => number;
 
   constructor(options: LeaguepediaClientOptions) {
     const endpoint = new URL(options.endpoint);
@@ -22,18 +25,23 @@ export class LeaguepediaClient {
     this.#timeoutMs = positiveInteger(options.timeoutMs ?? 10_000, "timeoutMs");
     this.#maxRetries = nonNegativeInteger(options.maxRetries ?? 2, "maxRetries");
     this.#sleep = options.sleep ?? (async (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)));
+    this.#now = options.now ?? Date.now;
   }
 
-  fetchSiteInfo(): Promise<Record<string, unknown>> {
-    return this.#request({ action: "query", meta: "siteinfo", siprop: "general" });
+  async fetchSiteInfo(): Promise<Record<string, unknown>> {
+    return (await this.#request({ action: "query", meta: "siteinfo", siprop: "general" })).body;
   }
 
-  fetchKnownPage(title: string): Promise<Record<string, unknown>> {
+  async fetchKnownPage(title: string): Promise<Record<string, unknown>> {
     if (!title.trim() || title.includes("|")) throw new Error("Leaguepedia page title is invalid.");
-    return this.#request({ action: "query", prop: "info|revisions", rvprop: "ids|timestamp", titles: title.trim() });
+    return (await this.#request({ action: "query", prop: "info|revisions", rvprop: "ids|timestamp", titles: title.trim() })).body;
   }
 
-  fetchImageInfo(titles: readonly string[]): Promise<Record<string, unknown>> {
+  async fetchImageInfo(titles: readonly string[]): Promise<Record<string, unknown>> {
+    return (await this.fetchImageInfoWithEvidence(titles)).data;
+  }
+
+  fetchImageInfoWithEvidence(titles: readonly string[]): Promise<QueryEvidenceResult> {
     if (titles.length === 0 || titles.length > 50 || titles.some((title) => !title.trim() || title.includes("|"))) throw new Error("Leaguepedia image titles must contain 1 to 50 safe titles.");
     return this.#queryAll({ prop: "imageinfo", iiprop: "url|mime|sha1|extmetadata", titles: titles.map((title) => title.startsWith("File:") ? title : `File:${title}`).join("|") }, new Set(["continue", "iicontinue"]));
   }
@@ -42,7 +50,7 @@ export class LeaguepediaClient {
     return this.#cargo("Teams", "OverviewPage,Name,Aliases,Region,DateStart,DateEnd,Image", "OverviewPage ASC", input.offset);
   }
   fetchPlayersPage(input: OffsetInput): Promise<CargoPage> {
-    return this.#cargo("Players", "OverviewPage,ID,Name,Aliases,Team,Image", "OverviewPage ASC", input.offset);
+    return this.#cargo("Players", "OverviewPage,ID,Name,Aliases,Team,DateStart,DateEnd,Image", "OverviewPage ASC", input.offset);
   }
   fetchTournamentsPage(input: OffsetInput): Promise<CargoPage> {
     return this.#cargo("Tournaments", "OverviewPage,Name,Region,DateStart,DateEnd", "DateStart ASC,OverviewPage ASC", input.offset);
@@ -60,18 +68,21 @@ export class LeaguepediaClient {
 
   async #cargo(table: "Teams" | "Players" | "Tournaments" | "ScoreboardGames" | "ScoreboardPlayers", fields: string, orderBy: string, offset: number, where?: string): Promise<CargoPage> {
     nonNegativeInteger(offset, "offset");
-    const body = await this.#request({ action: "cargoquery", tables: table, fields, order_by: orderBy, limit: String(CARGO_LIMIT), offset: String(offset), ...(where === undefined ? {} : { where }) });
-    return { rows: cargoRows(body), offset };
+    const result = await this.#request({ action: "cargoquery", tables: table, fields, order_by: orderBy, limit: String(CARGO_LIMIT), offset: String(offset), ...(where === undefined ? {} : { where }) });
+    return { rows: cargoRows(result.body), offset, rawEvidence: toRawEvidence(result, { action: "cargoquery", table, offset }) };
   }
 
-  async #queryAll(parameters: Readonly<Record<string, string>>, allowedContinuation: ReadonlySet<string>): Promise<Record<string, unknown>> {
+  async #queryAll(parameters: Readonly<Record<string, string>>, allowedContinuation: ReadonlySet<string>): Promise<QueryEvidenceResult> {
     const pages: unknown[] = [];
+    const rawEvidence: RawApiEvidence[] = [];
     let continuation: Record<string, string> = {};
     for (let page = 0; page < 100; page += 1) {
-      const body = await this.#request({ ...parameters, ...continuation, action: "query" });
+      const result = await this.#request({ ...parameters, ...continuation, action: "query" });
+      const body = result.body;
+      rawEvidence.push(toRawEvidence(result, { action: "query", continuation }));
       const query = isRecord(body.query) ? body.query : {};
       if (Array.isArray(query.pages)) pages.push(...query.pages);
-      if (!isRecord(body.continue)) return { ...body, query: { ...query, pages } };
+      if (!isRecord(body.continue)) return { data: { ...body, query: { ...query, pages } }, rawEvidence };
       continuation = {};
       for (const [key, value] of Object.entries(body.continue)) {
         if (!allowedContinuation.has(key) || typeof value !== "string") throw new Error("Leaguepedia returned an unsupported continuation token.");
@@ -81,7 +92,7 @@ export class LeaguepediaClient {
     throw new Error("Leaguepedia query exceeded the continuation page limit.");
   }
 
-  async #request(parameters: Readonly<Record<string, string>>): Promise<Record<string, unknown>> {
+  async #request(parameters: Readonly<Record<string, string>>): Promise<RequestResult> {
     const action = parameters.action;
     if (action !== "query" && action !== "cargoquery") throw new Error("Unsupported Leaguepedia action.");
     const url = new URL(this.#endpoint);
@@ -96,13 +107,13 @@ export class LeaguepediaClient {
           const error = new Error(`Leaguepedia ${action} request failed (${response.status}).`);
           if (!retryableStatus(response.status) || attempt === this.#maxRetries) throw error;
           lastError = error;
-          await this.#sleep(retryDelay(response.headers.get("Retry-After"), attempt));
+          await this.#sleep(retryDelay(response.headers.get("Retry-After"), attempt, this.#now()));
           continue;
         }
         const body: unknown = await response.json();
         if (!isRecord(body)) throw new Error("Leaguepedia response must be a JSON object.");
         if (isRecord(body.error)) throw new Error("Leaguepedia returned an API error.");
-        return body;
+        return { body, url: url.toString() };
       } catch (error) {
         const reason = error instanceof Error ? error : new Error(String(error));
         if (attempt === this.#maxRetries || !retryableError(reason)) throw reason;
@@ -114,6 +125,22 @@ export class LeaguepediaClient {
     }
     throw lastError ?? new Error("Leaguepedia request failed.");
   }
+}
+
+interface RequestResult { body: Record<string, unknown>; url: string }
+
+function toRawEvidence(result: RequestResult, request: { action: "query" | "cargoquery"; table?: CargoPage["rawEvidence"]["table"]; offset?: number; continuation?: Readonly<Record<string, string>> }): RawApiEvidence {
+  const digest = createHash("sha256").update(result.url).digest("hex").slice(0, 16);
+  return {
+    requestId: `${request.action}:${request.table ?? "mediawiki"}:${request.offset ?? 0}:${digest}`,
+    action: request.action,
+    ...(request.table === undefined ? {} : { table: request.table }),
+    ...(request.offset === undefined ? {} : { offset: request.offset }),
+    ...(request.continuation === undefined || Object.keys(request.continuation).length === 0 ? {} : { continuation: { ...request.continuation } }),
+    sourceUrl: result.url,
+    response: result.body,
+    revisionIds: collectRevisionIds(result.body),
+  };
 }
 
 function cargoRows(body: Record<string, unknown>): Record<string, unknown>[] {
@@ -130,9 +157,26 @@ function cargoLiteral(value: string): string {
 }
 function retryableStatus(status: number): boolean { return status === 429 || status >= 500; }
 function retryableError(error: Error): boolean { return error.name === "AbortError" || error instanceof TypeError; }
-function retryDelay(header: string | null, attempt: number): number {
+function retryDelay(header: string | null, attempt: number, now: number): number {
   if (header !== null && /^\d+$/.test(header)) return Math.min(Number(header) * 1000, MAX_RETRY_AFTER_MS);
+  if (header !== null) {
+    const date = Date.parse(header);
+    if (!Number.isNaN(date)) return Math.min(Math.max(date - now, 0), MAX_RETRY_AFTER_MS);
+  }
   return 100 * 2 ** attempt;
+}
+function collectRevisionIds(value: unknown): number[] {
+  const result = new Set<number>();
+  const visit = (item: unknown): void => {
+    if (Array.isArray(item)) { for (const child of item) visit(child); return; }
+    if (!isRecord(item)) return;
+    for (const [key, child] of Object.entries(item)) {
+      if ((key === "revid" || key === "lastrevid") && typeof child === "number" && Number.isInteger(child)) result.add(child);
+      visit(child);
+    }
+  };
+  visit(value);
+  return [...result].sort((a, b) => a - b);
 }
 function positiveInteger(value: number, name: string): number { if (!Number.isInteger(value) || value <= 0) throw new Error(`${name} must be a positive integer.`); return value; }
 function nonNegativeInteger(value: number, name: string): number { if (!Number.isInteger(value) || value < 0) throw new Error(`${name} must be a non-negative integer.`); return value; }

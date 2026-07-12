@@ -7,6 +7,7 @@ import {
   packageName as syncPackageName,
   type LeaguepediaProviderOptions,
   type LeaguepediaSnapshot,
+  type StagedDimensions,
 } from "@riftversus/sync";
 
 const packageNames: readonly string[] = [
@@ -19,4 +20,4 @@ const packageNames: readonly string[] = [
 void packageNames;
 void createLeaguepediaProvider;
 void loadOverrides;
-void (undefined as LeaguepediaProviderOptions | LeaguepediaSnapshot | undefined);
+void (undefined as LeaguepediaProviderOptions | LeaguepediaSnapshot | StagedDimensions | undefined);

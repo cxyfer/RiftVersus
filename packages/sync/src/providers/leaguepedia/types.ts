@@ -1,5 +1,7 @@
 import type { CanonicalFacts, CoverageInput } from "@riftversus/database";
 
+import type { StagedDimensions } from "../../types.js";
+
 export const LEAGUEPEDIA_CARGO_TABLES = ["Teams", "Players", "Tournaments", "ScoreboardGames", "ScoreboardPlayers"] as const;
 export type LeaguepediaCargoTable = (typeof LEAGUEPEDIA_CARGO_TABLES)[number];
 
@@ -10,9 +12,21 @@ export interface LeaguepediaClientOptions {
   timeoutMs?: number;
   maxRetries?: number;
   sleep?: (milliseconds: number) => Promise<void>;
+  now?: () => number;
 }
 
-export interface CargoPage { rows: readonly Record<string, unknown>[]; offset: number }
+export interface RawApiEvidence {
+  requestId: string;
+  action: "query" | "cargoquery";
+  table?: LeaguepediaCargoTable;
+  offset?: number;
+  continuation?: Readonly<Record<string, string>>;
+  sourceUrl: string;
+  response: Record<string, unknown>;
+  revisionIds: readonly number[];
+}
+export interface CargoPage { rows: readonly Record<string, unknown>[]; offset: number; rawEvidence: RawApiEvidence }
+export interface QueryEvidenceResult { data: Record<string, unknown>; rawEvidence: readonly RawApiEvidence[] }
 export interface OffsetInput { offset: number }
 export interface GamesPageInput extends OffsetInput { from: string; to: string; competitions: readonly string[] }
 export interface GamePlayersPageInput extends OffsetInput { gameIds: readonly string[] }
@@ -51,6 +65,7 @@ export interface LeaguepediaGame {
 }
 
 export interface LeaguepediaGamePlayer { gameKey: string; playerKey: string; teamKey: string }
+export interface LeaguepediaTournament { sourceKey: string; displayName: string; validFrom?: string | null; validTo?: string | null }
 export interface LeaguepediaMedia {
   sourceKey: string;
   entityKey: string;
@@ -64,11 +79,22 @@ export interface LeaguepediaSnapshot {
   revisionIds: readonly number[];
   sourceUrl: string;
   entities: readonly LeaguepediaEntity[];
+  tournaments: readonly LeaguepediaTournament[];
   series: readonly LeaguepediaSeries[];
   games: readonly LeaguepediaGame[];
   gamePlayers: readonly LeaguepediaGamePlayer[];
   media: readonly LeaguepediaMedia[];
   traversal: TraversalEvidence;
+  slices: readonly LeaguepediaSliceEvidence[];
+  rawEvidence: readonly RawApiEvidence[];
+}
+
+export interface LeaguepediaSliceEvidence {
+  competition: string;
+  seasonYear: number;
+  gameSourceKeys: readonly string[];
+  traversal: TraversalEvidence;
+  malformedOptionalRows: number;
 }
 
 export interface NormalizedLeaguepediaEntity extends LeaguepediaEntity {
@@ -81,6 +107,8 @@ export interface LeaguepediaNormalizationResult {
   entities: readonly NormalizedLeaguepediaEntity[];
   entityIds: ReadonlyMap<string, string>;
   quarantine: readonly QuarantinedIdentity[];
+  dimensions: StagedDimensions;
+  eraIds: ReadonlyMap<string, string>;
   facts: CanonicalFacts;
   rosterGameIds: readonly string[];
 }
@@ -89,6 +117,7 @@ export interface LeaguepediaCoverageEvidence {
   seasonYear: number;
   observedRows: number;
   traversal: TraversalEvidence;
+  unresolvedRows?: number;
   earliestDate?: string | null;
   latestDate?: string | null;
 }

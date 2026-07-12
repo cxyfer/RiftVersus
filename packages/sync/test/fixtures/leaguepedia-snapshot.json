@@ -9,6 +9,9 @@
     { "kind": "player", "sourceKey": "Duplicate One", "displayName": "Rookie", "aliases": [] },
     { "kind": "player", "sourceKey": "Duplicate Two", "displayName": "Rookie", "aliases": [] }
   ],
+  "tournaments": [
+    { "sourceKey": "2024 Season World Championship", "displayName": "2024 Season World Championship", "validFrom": "2024-09-25", "validTo": "2024-11-02" }
+  ],
   "series": [
     { "sourceKey": "WORLD24-FINAL", "tournamentKey": "2024 Season World Championship", "playedAt": "2024-11-02T14:00:00Z", "bestOf": 5, "sideATeam": "T1", "sideBTeam": "Bilibili Gaming", "sideAScore": 3, "sideBScore": 2 }
   ],
@@ -22,5 +25,16 @@
     { "sourceKey": "T1 logo", "entityKey": "T1", "sourceUrl": "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/t1.png", "contentType": "image/png", "license": "CC BY-SA", "attribution": "Leaguepedia contributors" },
     { "sourceKey": "Faker portrait", "entityKey": "Faker", "sourceUrl": null, "contentType": null, "license": null, "attribution": null }
   ],
-  "traversal": { "requestedPages": 2, "visitedPages": 2, "complete": true }
+  "traversal": { "requestedPages": 5, "visitedPages": 5, "complete": true },
+  "slices": [
+    { "competition": "Worlds", "seasonYear": 2024, "gameSourceKeys": ["WORLD24-FINAL-G1"], "traversal": { "requestedPages": 1, "visitedPages": 1, "complete": true }, "malformedOptionalRows": 0 }
+  ],
+  "rawEvidence": [
+    { "requestId": "cargoquery:Teams:0:fixture", "action": "cargoquery", "table": "Teams", "offset": 0, "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=Teams&offset=0", "response": { "cargoquery": [{ "title": { "OverviewPage": "SK Telecom T1", "Name": "SK Telecom T1", "Aliases": "SKT", "Region": "Korea" } }, { "title": { "OverviewPage": "T1", "Name": "T1", "Aliases": "SKT", "Region": "Korea", "Image": "T1 logo" } }, { "title": { "OverviewPage": "Bilibili Gaming", "Name": "Bilibili Gaming", "Aliases": "BLG", "Region": "China" } }] }, "revisionIds": [] },
+    { "requestId": "cargoquery:Players:0:fixture", "action": "cargoquery", "table": "Players", "offset": 0, "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=Players&offset=0", "response": { "cargoquery": [{ "title": { "OverviewPage": "Faker", "Name": "Faker", "Aliases": "Hide on bush" } }, { "title": { "OverviewPage": "Duplicate One", "Name": "Rookie" } }, { "title": { "OverviewPage": "Duplicate Two", "Name": "Rookie" } }] }, "revisionIds": [] },
+    { "requestId": "cargoquery:Tournaments:0:fixture", "action": "cargoquery", "table": "Tournaments", "offset": 0, "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=Tournaments&offset=0", "response": { "cargoquery": [{ "title": { "OverviewPage": "2024 Season World Championship", "Name": "2024 Season World Championship", "DateStart": "2024-09-25", "DateEnd": "2024-11-02" } }] }, "revisionIds": [] },
+    { "requestId": "cargoquery:ScoreboardGames:0:fixture", "action": "cargoquery", "table": "ScoreboardGames", "offset": 0, "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=ScoreboardGames&offset=0", "response": { "cargoquery": [{ "title": { "GameId": "WORLD24-FINAL-G1", "MatchId": "WORLD24-FINAL", "Tournament": "2024 Season World Championship", "DateTime_UTC": "2024-11-02T14:00:00Z", "BestOf": 5, "N_GameInMatch": 1, "Team1": "T1", "Team2": "Bilibili Gaming", "Team1Score": 3, "Team2Score": 2, "Winner": 2 } }] }, "revisionIds": [] },
+    { "requestId": "cargoquery:ScoreboardPlayers:0:fixture", "action": "cargoquery", "table": "ScoreboardPlayers", "offset": 0, "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=ScoreboardPlayers&offset=0", "response": { "cargoquery": [{ "title": { "GameId": "WORLD24-FINAL-G1", "PlayerName": "Faker", "Team": "T1" } }] }, "revisionIds": [] },
+    { "requestId": "query:mediawiki:0:fixture", "action": "query", "sourceUrl": "https://lol.fandom.com/api.php?action=query&titles=T1_logo", "response": { "query": { "pages": [{ "pageid": 294322, "lastrevid": 1001, "revisions": [{ "revid": 1002 }], "title": "File:T1 logo", "imageinfo": [{ "url": "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/t1.png", "mime": "image/png", "extmetadata": { "LicenseShortName": { "value": "CC BY-SA" }, "Artist": { "value": "Leaguepedia contributors" } } }] }] } }, "revisionIds": [1001, 1002] }
+  ]
 }

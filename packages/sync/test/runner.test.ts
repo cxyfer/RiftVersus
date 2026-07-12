@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   mediaObjectKey,
+  RetainableStageError,
   runSync,
   scheduleSync,
   sourceObjectKey,
@@ -32,6 +33,8 @@ function createHarness(overrides: Partial<SyncDependencies> = {}) {
     beginRun: vi.fn(async () => { events.push("begin"); return { id: "run-1" }; }),
     failRun: vi.fn(async () => { events.push("fail"); }),
     recordSource: vi.fn(async (input) => { events.push(`source:${input.objectKey}`); return { id: "source-1" }; }),
+    findPublication: vi.fn(async () => { events.push("find-version"); return null; }),
+    completeUnchanged: vi.fn(async () => { events.push("unchanged"); }),
     publish: vi.fn(async () => { events.push("publish"); return { version: "fixture-v1" }; }),
   };
   const dependencies: SyncDependencies = {
@@ -51,6 +54,7 @@ function createHarness(overrides: Partial<SyncDependencies> = {}) {
       events.push("stage");
       return {
         version: "fixture-v1",
+        provenance: { sourceDigest: `sha256:${"a".repeat(64)}`, parserVersion: "fixture-1", overrideChecksums: [] },
         source: {
           sourceKey: "page:1",
           sourceUrl: "https://wiki.example.test/page/1",
@@ -62,6 +66,7 @@ function createHarness(overrides: Partial<SyncDependencies> = {}) {
           attribution: "Fixture Wiki",
         }],
         coverage: [],
+        dimensions: { entities: [], teamEras: [], regions: [], tournaments: [] },
         facts: {},
         rosterGameIds: [],
       };
@@ -87,6 +92,8 @@ describe("runSync", () => {
     expect(repository.publish).toHaveBeenCalledOnce();
     expect(repository.publish).toHaveBeenCalledWith(expect.objectContaining({
       sourceObjectId: "source-1",
+      dimensions: { entities: [], teamEras: [], regions: [], tournaments: [] },
+      provenance: expect.objectContaining({ parserVersion: "fixture-1" }),
       media: [expect.objectContaining({ objectKey: expect.stringMatching(/^media\/[a-f0-9]{64}\.png$/) })],
     }));
     expect(events).toEqual([
@@ -94,6 +101,7 @@ describe("runSync", () => {
       "begin",
       "stage",
       "validate",
+      "find-version",
       expect.stringMatching(/^store:sources\/fixture\/[a-f0-9]{64}$/),
       expect.stringMatching(/^source:sources\/fixture\/[a-f0-9]{64}$/),
       "download:https://wiki.example.test/media/logo.png",
@@ -103,11 +111,36 @@ describe("runSync", () => {
     ]);
   });
 
+  it("completes an unchanged run without retaining or publishing duplicate version state", async () => {
+    const { dependencies, events, provider, repository, store } = createHarness();
+    vi.mocked(repository.findPublication).mockImplementation(async () => { events.push("find-version"); return { version: "fixture-v1" }; });
+
+    await expect(runSync(provider, { mode: "sync-once" }, dependencies)).resolves.toEqual({ status: "unchanged", version: "fixture-v1" });
+
+    expect(repository.completeUnchanged).toHaveBeenCalledWith({ syncRunId: "run-1", version: "fixture-v1" });
+    expect(store.putImmutable).not.toHaveBeenCalled();
+    expect(repository.publish).not.toHaveBeenCalled();
+    expect(events).toEqual(["lock", "begin", "stage", "validate", "find-version", "unchanged", "unlock"]);
+  });
+
   it("does not begin a run when the provider lock is held", async () => {
     const { dependencies, provider, repository } = createHarness();
     vi.mocked(repository.withLock).mockResolvedValue("locked");
     await expect(runSync(provider, { mode: "sync" }, dependencies)).resolves.toEqual({ status: "locked" });
     expect(repository.beginRun).not.toHaveBeenCalled();
+  });
+
+  it("retains auditable raw evidence carried by a malformed provider stage error", async () => {
+    const { dependencies, events, provider, repository } = createHarness();
+    vi.mocked(provider.stage).mockImplementation(async () => {
+      events.push("stage");
+      throw new RetainableStageError("malformed row", { sourceKey: "failed:raw", sourceUrl: "https://wiki.example.test/api.php", bytes: sourceBytes, contentType: "application/json" });
+    });
+
+    await expect(runSync(provider, { mode: "sync-once" }, dependencies)).rejects.toThrow("malformed row");
+    expect(repository.recordSource).toHaveBeenCalledOnce();
+    expect(repository.failRun).toHaveBeenCalledWith({ syncRunId: "run-1", error: "malformed row" });
+    expect(events).toEqual(["lock", "begin", "stage", expect.stringMatching(/^store:sources\/fixture\//), expect.stringMatching(/^source:sources\/fixture\//), "fail", "unlock"]);
   });
 
   it("preserves both the primary operation failure and lock-release failure", async () => {
@@ -162,11 +195,11 @@ describe("runSync", () => {
     const expectedEvents: Record<typeof failure, string[]> = {
       provider: ["lock", "begin", "stage", "fail", "unlock"],
       validation: ["lock", "begin", "stage", "validate", "fail", "unlock"],
-      "source-storage": ["lock", "begin", "stage", "validate", "store:source", "fail", "unlock"],
-      "source-record": ["lock", "begin", "stage", "validate", "store:source", "record:source", "fail", "unlock"],
-      download: ["lock", "begin", "stage", "validate", "store:source", "record:source", "download:media", "fail", "unlock"],
-      "media-storage": ["lock", "begin", "stage", "validate", "store:source", "record:source", "download:media", "store:media", "fail", "unlock"],
-      publication: ["lock", "begin", "stage", "validate", "store:source", "record:source", "download:media", "store:media", "publish", "fail", "unlock"],
+      "source-storage": ["lock", "begin", "stage", "validate", "find-version", "store:source", "fail", "unlock"],
+      "source-record": ["lock", "begin", "stage", "validate", "find-version", "store:source", "record:source", "fail", "unlock"],
+      download: ["lock", "begin", "stage", "validate", "find-version", "store:source", "record:source", "download:media", "fail", "unlock"],
+      "media-storage": ["lock", "begin", "stage", "validate", "find-version", "store:source", "record:source", "download:media", "store:media", "fail", "unlock"],
+      publication: ["lock", "begin", "stage", "validate", "find-version", "store:source", "record:source", "download:media", "store:media", "publish", "fail", "unlock"],
     };
     expect(normalizedEvents).toEqual(expectedEvents[failure]);
     expect(repository.publish).toHaveBeenCalledTimes(failure === "publication" ? 1 : 0);
