@@ -29,10 +29,27 @@ describe("comparison workspace", () => {
     await user.click(input);
     await user.type(input, "Faker");
     await screen.findByText("Faker", {}, { timeout: 1_000 });
+    expect(input).toHaveAttribute("aria-activedescendant");
+    expect(document.getElementById(input.getAttribute("aria-activedescendant")!)).toHaveAttribute("role", "option");
     await user.keyboard("{ArrowDown}{Enter}");
     expect(window.location.search).not.toContain(`leftId=${SUBJECT_IDS.faker}`);
     await user.click(screen.getByRole("button", { name: "套用篩選" }));
     await waitFor(() => expect(window.location.search).toContain(`leftId=${SUBJECT_IDS.faker}`));
+  });
+
+  it("does not submit the comparison form when Enter has no search option", async () => {
+    const compare = vi.fn(mockApi.compare);
+    const user = userEvent.setup();
+    renderApp("", { ...mockApi, compare });
+    await screen.findAllByText("World Championship");
+    await user.click(screen.getByRole("button", { name: "Worlds" }));
+    const input = screen.getByRole("combobox", { name: "比較對象" });
+    await user.click(input);
+    await user.type(input, "no-match");
+    await screen.findByText("沒有符合的對象", {}, { timeout: 1_000 });
+    await user.keyboard("{Enter}");
+    expect(window.location.search).toContain("events=worlds");
+    expect(compare).not.toHaveBeenCalled();
   });
 
   it("swaps both URL subjects", async () => {

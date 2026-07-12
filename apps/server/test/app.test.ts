@@ -35,6 +35,7 @@ function createDependencies(overrides: Partial<Parameters<typeof buildApp>[0]> =
     listFilters: vi.fn(async () => ({ eventCategories: ["worlds" as const], tournaments: [], bestOf: [5 as const] })),
     compare: vi.fn(async () => comparison()),
     getDataset: vi.fn(async () => dataset),
+    getMedia: vi.fn(async () => null),
     ...overrides,
   };
 }
@@ -123,6 +124,22 @@ describe("HTTP API", () => {
     const response = await app.inject("/api/dataset");
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual(dataset);
+  });
+
+  it("delivers nested published media keys and rejects traversal encodings", async () => {
+    const { app, dependencies } = createApp({
+      getMedia: vi.fn(async (key: string) => key === "media/faker.png" ? {
+        objectKey: key, sourceUrl: "https://media.example.test/faker.png", contentType: "image/png", entityId: leftId, teamEraId: null,
+      } : null),
+    });
+    const media = await app.inject("/media/media/faker.png");
+    expect(media.statusCode).toBe(302);
+    expect(media.headers.location).toBe("https://media.example.test/faker.png");
+    expect(dependencies.getMedia).toHaveBeenCalledWith("media/faker.png");
+    for (const url of ["/media/media%2Ffaker.png", "/media/../faker.png", "/media/%2e%2e/faker.png", "/media/%252e%252e/faker.png"]) {
+      const response = await app.inject(url);
+      expect(response.statusCode).toBe(404);
+    }
   });
 
   it("reports liveness without dependencies and failed readiness as 503", async () => {

@@ -39,19 +39,20 @@ function EntityCombobox({ value, onPick, label, api }: { value: EntityOption; on
   useEffect(() => { const timer = window.setTimeout(() => setDebouncedTerm(term), 220); return () => window.clearTimeout(timer); }, [term]);
   const search = useQuery({ queryKey: ["entities", debouncedTerm], queryFn: () => api.searchEntities(debouncedTerm, []), enabled: open && debouncedTerm.trim().length > 0 });
   const options = search.data ?? [];
+  const activeOptionId = options[active] ? `${inputId}-option-${active}` : undefined;
   const pick = (option: EntityOption) => { onPick(option); setTerm(""); setDebouncedTerm(""); setOpen(false); setActive(0); };
   return <div className="entity-combobox">
     <label htmlFor={inputId}>{label}</label>
-    <div className="entity-input"><Avatar src={value.mediaUrl} name={value.displayName} /><input id={inputId} role="combobox" aria-expanded={open} aria-controls={`${inputId}-options`} value={open ? term : value.displayName} onFocus={() => { setOpen(true); setTerm(""); }} onChange={(event) => { setTerm(event.target.value); setOpen(true); setActive(0); }} onKeyDown={(event) => {
+    <div className="entity-input"><Avatar src={value.mediaUrl} name={value.displayName} /><input id={inputId} role="combobox" aria-expanded={open} aria-controls={`${inputId}-options`} aria-activedescendant={activeOptionId} value={open ? term : value.displayName} onFocus={() => { setOpen(true); setTerm(""); }} onChange={(event) => { setTerm(event.target.value); setOpen(true); setActive(0); }} onKeyDown={(event) => {
       if (!open) return;
       if (event.key === "ArrowDown") { event.preventDefault(); setActive((current) => Math.min(current + 1, Math.max(options.length - 1, 0))); }
       if (event.key === "ArrowUp") { event.preventDefault(); setActive((current) => Math.max(current - 1, 0)); }
-      if (event.key === "Enter" && options[active]) { event.preventDefault(); pick(options[active]); }
+      if (event.key === "Enter") { event.preventDefault(); if (options[active]) pick(options[active]); }
       if (event.key === "Escape") setOpen(false);
     }} /><Search aria-hidden="true" size={16} /></div>
     {open && <ul id={`${inputId}-options`} className="entity-options" role="listbox" aria-label={`${label} 搜尋結果`}>
       {search.isLoading && <li className="entity-empty">搜尋中</li>}
-      {!search.isLoading && debouncedTerm && options.map((option, index) => <li key={option.id} role="option" aria-selected={index === active} className={index === active ? "is-active" : ""}><button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => pick(option)}><Avatar src={option.mediaUrl} name={option.displayName} /><span><strong>{option.displayName}</strong><small>{option.subtitle} · {kindLabel[option.kind]}</small></span></button></li>)}
+      {!search.isLoading && debouncedTerm && options.map((option, index) => <li id={`${inputId}-option-${index}`} key={option.id} role="option" aria-selected={index === active} className={index === active ? "is-active" : ""}><button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => pick(option)}><Avatar src={option.mediaUrl} name={option.displayName} /><span><strong>{option.displayName}</strong><small>{option.subtitle} · {kindLabel[option.kind]}</small></span></button></li>)}
       {!search.isLoading && debouncedTerm && options.length === 0 && <li className="entity-empty">沒有符合的對象</li>}
     </ul>}
   </div>;
