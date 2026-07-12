@@ -38,18 +38,18 @@ function row(index: number): SeriesRow {
   };
 }
 
-function response(rows: SeriesRow[], nextCursor?: string): ComparisonResponse {
+function response(rows: SeriesRow[], nextCursor?: string, options?: { query?: ComparisonQuery; version?: string }): ComparisonResponse {
   return {
     subjects: {
       left: { kind: "team", id: query.left.id, displayName: "T1 / Unsafe" },
       right: { kind: "region", id: query.right.id, displayName: "LPL: Elite" },
     },
-    query,
+    query: options?.query ?? query,
     seriesSummary: { wins: rows.length, losses: 0, total: rows.length, winRate: rows.length ? 1 : 0 },
     gameSummary: { wins: rows.length * 3, losses: rows.length, total: rows.length * 4, winRate: rows.length ? 0.75 : 0 },
     rows,
     ...(nextCursor ? { nextCursor } : {}),
-    dataset: { version: "release/2026.07", lastSuccessfulSyncAt: "2026-07-12T00:00:00.000Z", coverage: { from: "2019-01-01", to: "2026-07-12" } },
+    dataset: { version: options?.version ?? "release/2026.07", lastSuccessfulSyncAt: "2026-07-12T00:00:00.000Z", coverage: { from: "2019-01-01", to: "2026-07-12" } },
     coverageWarnings: [],
     mediaUrls: { left: "/media/t1.svg", right: "/media/lpl.svg" },
   };
@@ -134,6 +134,32 @@ describe("browser comparison export", () => {
     expect(mocks.toPng).not.toHaveBeenCalled();
   });
 
+  it("does not mix pages from a different dataset publication", async () => {
+    const api = { compare: vi.fn(async () => response([row(2)], undefined, { version: "release/2026.08" })) };
+    await expect(exportComparison({ api, query, initial: response([row(1)], "next") })).rejects.toThrow(/資料集版本/);
+    expect(mocks.toPng).not.toHaveBeenCalled();
+  });
+
+  it("does not mix pages whose filter query changed", async () => {
+    const changedQuery: ComparisonQuery = { ...query, bestOf: [1] };
+    const api = { compare: vi.fn(async () => response([row(2)], undefined, { query: changedQuery })) };
+    await expect(exportComparison({ api, query, initial: response([row(1)], "next") })).rejects.toThrow(/篩選條件/);
+    expect(mocks.toPng).not.toHaveBeenCalled();
+  });
+
+  it("accepts equivalent filters with a different array order", async () => {
+    const initialQuery: ComparisonQuery = { ...query, eventCategories: ["worlds", "league"], bestOf: [5, 3] };
+    const reorderedQuery: ComparisonQuery = { ...initialQuery, eventCategories: ["league", "worlds"], bestOf: [3, 5] };
+    const api = { compare: vi.fn(async () => response([row(2)], undefined, { query: reorderedQuery })) };
+    await expect(exportComparison({ api, query: initialQuery, initial: response([row(1)], "next", { query: initialQuery }) })).resolves.toMatchObject({ rowCount: 2 });
+  });
+
+  it("rejects an empty page that attempts to advance its cursor", async () => {
+    const api = { compare: vi.fn(async () => response([], "another-cursor")) };
+    await expect(exportComparison({ api, query, initial: response([row(1)], "next") })).rejects.toThrow(/未傳回紀錄/);
+    expect(mocks.toPng).not.toHaveBeenCalled();
+  });
+
   it("waits for the fallback load before allowing the export image promise to resolve", async () => {
     const root = document.createElement("div");
     const image = document.createElement("img");
@@ -201,7 +227,8 @@ describe("browser comparison export", () => {
     expect(mocks.toPng).toHaveBeenCalledTimes(1);
   });
 
-  it("downloads through a temporary object URL and always revokes it", () => {
+  it("downloads through a temporary object URL and revokes it after the click tick", async () => {
+    vi.useFakeTimers();
     const create = vi.fn(() => "blob:temporary");
     const revoke = vi.fn();
     Object.assign(URL, { createObjectURL: create, revokeObjectURL: revoke });
@@ -211,8 +238,11 @@ describe("browser comparison export", () => {
 
     expect(create).toHaveBeenCalledTimes(1);
     expect(click).toHaveBeenCalledTimes(1);
-    expect(revoke).toHaveBeenCalledWith("blob:temporary");
     expect(document.querySelector('a[download="result.png"]')).toBeNull();
+    expect(revoke).not.toHaveBeenCalled();
+    await vi.runAllTimersAsync();
+    expect(revoke).toHaveBeenCalledWith("blob:temporary");
     click.mockRestore();
+    vi.useRealTimers();
   });
 });

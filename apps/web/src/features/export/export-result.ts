@@ -42,6 +42,29 @@ export function partitionSeries<T>(rows: T[], pageSize = EXPORT_PAGE_SIZE): T[][
   return pages;
 }
 
+function sameValues<T extends string | number>(left: readonly T[], right: readonly T[]): boolean {
+  const canonical = (values: readonly T[]) => [...new Set(values)].sort((a, b) => String(a).localeCompare(String(b)));
+  const leftValues = canonical(left);
+  const rightValues = canonical(right);
+  return leftValues.length === rightValues.length && leftValues.every((value, index) => value === rightValues[index]);
+}
+
+function sameComparisonQuery(left: ComparisonQuery, right: ComparisonQuery): boolean {
+  return left.left.kind === right.left.kind
+    && left.left.id === right.left.id
+    && left.left.teamEraId === right.left.teamEraId
+    && left.right.kind === right.right.kind
+    && left.right.id === right.right.id
+    && left.right.teamEraId === right.right.teamEraId
+    && left.from === right.from
+    && left.to === right.to
+    && left.limit === right.limit
+    && sameValues(left.eventCategories, right.eventCategories)
+    && sameValues(left.leagues, right.leagues)
+    && sameValues(left.bestOf, right.bestOf)
+    && sameValues(left.tournamentIds, right.tournamentIds);
+}
+
 function mediaLoadError(placeholder: boolean): Error {
   return new Error(placeholder ? "匯出圖片載入失敗，預設圖片也無法載入。" : "匯出圖片載入失敗。");
 }
@@ -197,6 +220,9 @@ async function fetchAllRows(input: ExportInput): Promise<SeriesRow[]> {
     if (visitedCursors.has(cursor)) throw new Error("匯出資料分頁重複，請稍後重試。");
     visitedCursors.add(cursor);
     const page = await input.api.compare({ ...input.query, cursor });
+    if (page.dataset.version !== input.initial.dataset.version) throw new Error("匯出資料集版本在分頁期間變更，請重新整理後重試。");
+    if (!sameComparisonQuery(input.initial.query, page.query)) throw new Error("匯出篩選條件在分頁期間不一致，請重新整理後重試。");
+    if (page.rows.length === 0 && page.nextCursor) throw new Error("匯出資料分頁未傳回紀錄卻要求繼續，請重新整理後重試。");
     rows.push(...page.rows);
     if (rows.length > EXPORT_ROW_CAP) throw new ExportLimitError();
     cursor = page.nextCursor;
@@ -259,6 +285,6 @@ export function downloadExportArtifact(artifact: ExportArtifact, document = wind
     anchor.click();
   } finally {
     anchor.remove();
-    URL.revokeObjectURL(url);
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
   }
 }

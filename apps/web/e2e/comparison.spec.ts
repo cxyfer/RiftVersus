@@ -43,4 +43,8 @@ test("exports a long fixture as a multi-page ZIP", async ({ page }) => {
     "riftversus-t1-vs-lpl-mock-2026-07-02.png",
     "riftversus-t1-vs-lpl-mock-2026-07-03.png",
   ]);
+  for (const entry of Object.values(archive.files)) {
+    const png = await entry.async("uint8array");
+    expect(Buffer.from(png).subarray(0, 8)).toEqual(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  }
 });
