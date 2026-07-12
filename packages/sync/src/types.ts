@@ -72,8 +72,7 @@ export interface SyncPublicationInput {
 }
 
 export interface SyncRepository {
-  acquireLock(provider: string): Promise<boolean>;
-  releaseLock(provider: string): Promise<void>;
+  withLock(provider: string, operation: () => Promise<void>): Promise<"ran" | "locked">;
   beginRun(input: { provider: string; mode: "sync" | "backfill"; parserVersion: string }): Promise<{ id: string }>;
   failRun(input: { syncRunId: string; error: string }): Promise<void>;
   recordSource(input: RetainedSourceRecord): Promise<{ id: string }>;

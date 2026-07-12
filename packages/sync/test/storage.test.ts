@@ -83,8 +83,18 @@ describe("S3 object store", () => {
   });
 
   it("refuses an existing object with the wrong checksum", async () => {
-    const store = createS3ObjectStore(config, { client: { send: vi.fn(async () => ({ Metadata: { sha256: "different" }, ContentLength: 2 })) } });
+    const store = createS3ObjectStore(config, { client: { send: vi.fn(async () => ({ Metadata: { sha256: "different" }, ContentLength: 2, ContentType: "application/json" })) } });
     await expect(store.putImmutable({ key: "sources/fixture/abc", bytes: new Uint8Array([1, 2]), checksum: "abc", contentType: "application/json" })).rejects.toThrow("checksum");
+  });
+
+  it.each(["checksum", "byteSize", "contentType"] as const)("fails closed when initial HEAD omits %s metadata", async (missing) => {
+    const response = {
+      Metadata: missing === "checksum" ? {} : { sha256: "abc" },
+      ...(missing === "byteSize" ? {} : { ContentLength: 2 }),
+      ...(missing === "contentType" ? {} : { ContentType: "application/json" }),
+    };
+    const store = createS3ObjectStore(config, { client: { send: vi.fn(async () => response) } });
+    await expect(store.putImmutable({ key: "sources/fixture/abc", bytes: new Uint8Array([1, 2]), checksum: "abc", contentType: "application/json" })).rejects.toThrow(/metadata|conflict/);
   });
 
   it("accepts a conditional-put race only after a matching re-HEAD", async () => {
@@ -117,5 +127,24 @@ describe("S3 object store", () => {
     const store = createS3ObjectStore(config, { client });
     await expect(store.putImmutable({ key: "sources/fixture/abc", bytes: new Uint8Array([1, 2]), checksum: "abc", contentType: "application/json" })).rejects.toThrow("checksum conflict");
     expect(heads).toBe(2);
+  });
+
+  it.each(["checksum", "byteSize", "contentType"] as const)("fails closed when a 412 re-HEAD omits %s metadata", async (missing) => {
+    let heads = 0;
+    const client = { send: vi.fn(async (command: unknown) => {
+      if (command instanceof HeadObjectCommand) {
+        heads += 1;
+        if (heads === 1) throw { name: "NotFound", $metadata: { httpStatusCode: 404 } };
+        return {
+          Metadata: missing === "checksum" ? {} : { sha256: "abc" },
+          ...(missing === "byteSize" ? {} : { ContentLength: 2 }),
+          ...(missing === "contentType" ? {} : { ContentType: "application/json" }),
+        };
+      }
+      if (command instanceof PutObjectCommand) throw { name: "PreconditionFailed", $metadata: { httpStatusCode: 412 } };
+      return {};
+    }) };
+    const store = createS3ObjectStore(config, { client });
+    await expect(store.putImmutable({ key: "sources/fixture/abc", bytes: new Uint8Array([1, 2]), checksum: "abc", contentType: "application/json" })).rejects.toThrow(/metadata|conflict/);
   });
 });

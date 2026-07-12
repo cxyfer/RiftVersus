@@ -47,4 +47,47 @@ describe("bounded downloader", () => {
     controller.abort(new Error("caller cancelled"));
     await expect(downloadBounded({ ...base, signal: controller.signal }, { fetch: never })).rejects.toThrow("caller cancelled");
   });
+
+  it.each([
+    { name: "redirect", response: { status: 302, headers: { location: base.url } }, request: { ...base, maxRedirects: 0 }, error: "redirects" },
+    { name: "HTTP error", response: { status: 500 }, request: base, error: "HTTP 500" },
+    { name: "content type", response: { status: 200, headers: { "content-type": "text/html" } }, request: base, error: "content type" },
+    { name: "Content-Length", response: { status: 200, headers: { "content-type": "application/json", "content-length": "9" } }, request: base, error: "maximum byte size" },
+  ])("cancels an unconsumed body after $name rejection", async ({ response, request, error }) => {
+    const cancel = vi.fn();
+    const body = new ReadableStream<Uint8Array>({ cancel });
+    const fetch = vi.fn(async () => new Response(body, response));
+    await expect(downloadBounded(request, { fetch })).rejects.toThrow(error);
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
+  it("does not cancel a fully consumed successful body", async () => {
+    const cancel = vi.fn();
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("fixture"));
+        controller.close();
+      },
+      cancel,
+    });
+    await expect(downloadBounded(base, { fetch: async () => new Response(body, { headers: { "content-type": "application/json" } }) })).resolves.toMatchObject({ contentType: "application/json" });
+    expect(cancel).not.toHaveBeenCalled();
+  });
+
+  it("cancels a body when streamed bytes exceed the limit", async () => {
+    const cancel = vi.fn();
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) { controller.enqueue(new TextEncoder().encode("123456789")); },
+      cancel,
+    });
+    await expect(downloadBounded(base, { fetch: async () => new Response(body, { headers: { "content-type": "application/json" } }) })).rejects.toThrow("maximum byte size");
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
+  it("cancels a stalled response body when the download times out", async () => {
+    const cancel = vi.fn();
+    const body = new ReadableStream<Uint8Array>({ cancel });
+    await expect(downloadBounded(base, { fetch: async () => new Response(body, { headers: { "content-type": "application/json" } }) })).rejects.toThrow(/timed out/i);
+    expect(cancel).toHaveBeenCalledOnce();
+  });
 });

@@ -58,9 +58,12 @@ export function createS3ObjectStore(config: S3ObjectStoreConfig, dependencies?: 
     }
   };
   const verifyExisting = (existing: StoredObjectMetadata, object: ImmutableObject): "existing" => {
+    if (existing.checksum.length === 0) throw new Error(`Immutable object is missing required checksum metadata for ${object.key}.`);
+    if (existing.byteSize === null) throw new Error(`Immutable object is missing required byte size metadata for ${object.key}.`);
+    if (existing.contentType === null || existing.contentType.length === 0) throw new Error(`Immutable object is missing required content type metadata for ${object.key}.`);
     if (existing.checksum !== object.checksum) throw new Error(`Immutable object checksum conflict for ${object.key}.`);
-    if (existing.byteSize !== null && existing.byteSize !== object.bytes.byteLength) throw new Error(`Immutable object byte size conflict for ${object.key}.`);
-    if (existing.contentType !== null && existing.contentType !== object.contentType) throw new Error(`Immutable object content type conflict for ${object.key}.`);
+    if (existing.byteSize !== object.bytes.byteLength) throw new Error(`Immutable object byte size conflict for ${object.key}.`);
+    if (existing.contentType !== object.contentType) throw new Error(`Immutable object content type conflict for ${object.key}.`);
     return "existing";
   };
   return {

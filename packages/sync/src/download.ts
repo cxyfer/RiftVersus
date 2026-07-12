@@ -51,7 +51,10 @@ function withAbort<T>(operation: Promise<T>, signal: AbortSignal): Promise<T> {
 
 async function readBounded(response: Response, maxBytes: number, signal: AbortSignal): Promise<Uint8Array> {
   const declaredLength = response.headers.get("content-length");
-  if (declaredLength !== null && Number(declaredLength) > maxBytes) throw new Error(`Download exceeds maximum byte size of ${maxBytes}.`);
+  if (declaredLength !== null && Number(declaredLength) > maxBytes) {
+    await response.body?.cancel().catch(() => undefined);
+    throw new Error(`Download exceeds maximum byte size of ${maxBytes}.`);
+  }
   if (response.body === null) return new Uint8Array();
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -62,11 +65,13 @@ async function readBounded(response: Response, maxBytes: number, signal: AbortSi
       if (result.done) break;
       total += result.value.byteLength;
       if (total > maxBytes) {
-        await reader.cancel("maximum byte size exceeded");
         throw new Error(`Download exceeds maximum byte size of ${maxBytes}.`);
       }
       chunks.push(result.value);
     }
+  } catch (error) {
+    await reader.cancel(error).catch(() => undefined);
+    throw error;
   } finally {
     reader.releaseLock();
   }
@@ -95,14 +100,21 @@ export async function downloadBounded(request: DownloadRequest, dependencies: Do
       const response = await withAbort(fetchImplementation(url, { redirect: "manual", signal: abort.signal }), abort.signal);
       if (response.status >= 300 && response.status < 400) {
         const location = response.headers.get("location");
+        await response.body?.cancel().catch(() => undefined);
         if (location === null) throw new Error("Redirect response has no Location header.");
         if (redirects >= maxRedirects) throw new Error(`Download exceeds maximum redirects of ${maxRedirects}.`);
         url = validateUrl(new URL(location, url).toString(), allowedHosts);
         continue;
       }
-      if (!response.ok) throw new Error(`Download failed with HTTP ${response.status}.`);
+      if (!response.ok) {
+        await response.body?.cancel().catch(() => undefined);
+        throw new Error(`Download failed with HTTP ${response.status}.`);
+      }
       const contentType = (response.headers.get("content-type") ?? "").split(";", 1)[0]!.trim().toLowerCase();
-      if (!allowedTypes.has(contentType)) throw new Error(`Download content type is not allowed: ${contentType || "missing"}`);
+      if (!allowedTypes.has(contentType)) {
+        await response.body?.cancel().catch(() => undefined);
+        throw new Error(`Download content type is not allowed: ${contentType || "missing"}`);
+      }
       const bytes = await readBounded(response, request.maxBytes, abort.signal);
       return { bytes, contentType, finalUrl: url.toString() };
     }

@@ -23,8 +23,12 @@ function createHarness(overrides: Partial<SyncDependencies> = {}) {
     putImmutable: vi.fn(async (object) => { events.push(`store:${object.key}`); return "inserted"; }),
   };
   const repository: SyncDependencies["repository"] = {
-    acquireLock: vi.fn(async () => { events.push("lock"); return true; }),
-    releaseLock: vi.fn(async () => { events.push("unlock"); }),
+    withLock: vi.fn(async (_provider, operation) => {
+      events.push("lock");
+      try { await operation(); }
+      finally { events.push("unlock"); }
+      return "ran";
+    }),
     beginRun: vi.fn(async () => { events.push("begin"); return { id: "run-1" }; }),
     failRun: vi.fn(async () => { events.push("fail"); }),
     recordSource: vi.fn(async (input) => { events.push(`source:${input.objectKey}`); return { id: "source-1" }; }),
@@ -101,10 +105,32 @@ describe("runSync", () => {
 
   it("does not begin a run when the provider lock is held", async () => {
     const { dependencies, provider, repository } = createHarness();
-    vi.mocked(repository.acquireLock).mockResolvedValue(false);
+    vi.mocked(repository.withLock).mockResolvedValue("locked");
     await expect(runSync(provider, { mode: "sync" }, dependencies)).resolves.toEqual({ status: "locked" });
     expect(repository.beginRun).not.toHaveBeenCalled();
-    expect(repository.releaseLock).not.toHaveBeenCalled();
+  });
+
+  it("preserves both the primary operation failure and lock-release failure", async () => {
+    const { dependencies, provider, repository, events } = createHarness();
+    const primary = new Error("provider failed");
+    const release = new Error("unlock failed");
+    vi.mocked(provider.stage).mockImplementation(async () => { events.push("stage"); throw primary; });
+    vi.mocked(repository.withLock).mockImplementation(async (_provider, operation) => {
+      events.push("lock");
+      try {
+        await operation();
+      } catch (operationError) {
+        events.push("unlock");
+        throw new AggregateError([operationError, release], "Operation and lock release failed.", { cause: operationError });
+      }
+      return "ran";
+    });
+
+    const failure = await runSync(provider, { mode: "sync-once" }, dependencies).catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(AggregateError);
+    expect((failure as AggregateError).errors).toEqual([primary, release]);
+    expect((failure as Error & { cause?: unknown }).cause).toBe(primary);
+    expect(events).toEqual(["lock", "begin", "stage", "fail", "unlock"]);
   });
 
   it.each(["provider", "validation", "source-storage", "source-record", "download", "media-storage", "publication"] as const)("stops at the %s failure boundary, records failure, and releases last", async (failure) => {
@@ -126,7 +152,6 @@ describe("runSync", () => {
     await expect(runSync(provider, { mode: "sync-once" }, dependencies)).rejects.toBe(error);
     expect(repository.failRun).toHaveBeenCalledWith({ syncRunId: "run-1", error: `${failure} failed` });
     expect(repository.failRun).toHaveBeenCalledOnce();
-    expect(repository.releaseLock).toHaveBeenCalledOnce();
     const normalizedEvents = events.map((event) => {
       if (event.startsWith("store:sources/")) return "store:source";
       if (event.startsWith("source:sources/")) return "record:source";
