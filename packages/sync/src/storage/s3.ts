@@ -13,8 +13,7 @@ type Signer = (client: S3Client, command: GetObjectCommand, options: { expiresIn
 
 function isMissingObject(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
-  const value = error as { name?: unknown; $metadata?: { httpStatusCode?: unknown } };
-  return value.name === "NoSuchKey" || value.name === "NotFound" || value.$metadata?.httpStatusCode === 404;
+  return (error as { name?: unknown }).name === "NoSuchKey";
 }
 
 function toNodeReadable(body: unknown): Readable | null {

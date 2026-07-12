@@ -36,10 +36,22 @@ describe("S3 object store", () => {
     expect(sign).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ input: { Bucket: config.bucket, Key: "media/faker.png" } }), { expiresIn: 300 });
   });
 
-  it("returns null only for missing objects and propagates provider failures", async () => {
+  it("returns null for an explicit S3 NoSuchKey error", async () => {
     const missing = createS3ObjectStore(config, { client: { send: vi.fn(async () => { throw { name: "NoSuchKey" }; }) } });
     await expect(missing.get("media/missing.png")).resolves.toBeNull();
+  });
 
+  it("propagates generic NotFound and bare 404 provider errors", async () => {
+    const notFound = Object.assign(new Error("not found"), { name: "NotFound" });
+    const genericNotFound = createS3ObjectStore(config, { client: { send: vi.fn(async () => { throw notFound; }) } });
+    await expect(genericNotFound.get("media/faker.png")).rejects.toBe(notFound);
+
+    const http404 = { $metadata: { httpStatusCode: 404 } };
+    const generic404 = createS3ObjectStore(config, { client: { send: vi.fn(async () => { throw http404; }) } });
+    await expect(generic404.get("media/faker.png")).rejects.toBe(http404);
+  });
+
+  it("propagates non-missing provider failures", async () => {
     const unavailable = createS3ObjectStore(config, { client: { send: vi.fn(async () => { throw new Error("storage offline"); }) } });
     await expect(unavailable.get("media/faker.png")).rejects.toThrow("storage offline");
   });
