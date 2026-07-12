@@ -47,13 +47,66 @@ const S3EndpointSchema = z.url().refine(
   "S3_ENDPOINT must be an HTTP(S) URL without userinfo, query parameters, or a fragment.",
 );
 
-const LeaguepediaEndpointSchema = z.url().refine(
-  (value) => {
+const EMAIL_CONTACT = /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/iu;
+
+function hasControlCharacters(value: string): boolean {
+  return [...value].some((character) => {
+    const code = character.codePointAt(0)!;
+    return code <= 31 || code === 127;
+  });
+}
+
+function validHostname(hostname: string): boolean {
+  if (hostname.length > 253 || !hostname.includes(".") || /^\d+(?:\.\d+){3}$/u.test(hostname)) return false;
+  return hostname.split(".").every((label) => label.length > 0 && label.length <= 63 && /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/iu.test(label));
+}
+
+function validContactUrl(token: string): boolean {
+  try {
+    const url = new URL(token);
+    return (url.protocol === "https:" || url.protocol === "http:") && url.username === "" && url.password === "" && validHostname(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function validEmailContact(token: string): boolean {
+  if (!EMAIL_CONTACT.test(token)) return false;
+  const localPart = token.slice(0, token.lastIndexOf("@"));
+  return !localPart.startsWith(".") && !localPart.endsWith(".") && !localPart.includes("..");
+}
+
+function hasValidContact(userAgent: string): boolean {
+  const tokens = userAgent.split(/[\s();,]+/u).filter(Boolean).map((token) => token.startsWith("+") ? token.slice(1) : token);
+  return tokens.some((token) => validEmailContact(token) || (/^https?:\/\//iu.test(token) && validContactUrl(token)));
+}
+
+const LeaguepediaEndpointSchema = z.string().min(1).superRefine((value, context) => {
+  if (value.trim() !== value || hasControlCharacters(value) || value.includes("?") || value.includes("#")) {
+    context.addIssue({ code: "custom", message: "LEAGUEPEDIA_ENDPOINT must not contain whitespace, control characters, a query delimiter, or a fragment delimiter." });
+    return;
+  }
+  try {
     const endpoint = new URL(value);
-    return endpoint.protocol === "https:" && endpoint.username === "" && endpoint.password === "" && endpoint.search === "" && endpoint.hash === "";
-  },
-  "LEAGUEPEDIA_ENDPOINT must be a clean HTTPS API URL without userinfo, query parameters, or a fragment.",
-);
+    if (
+      endpoint.protocol !== "https:"
+      || endpoint.username !== ""
+      || endpoint.password !== ""
+      || !validHostname(endpoint.hostname)
+      || !endpoint.pathname.endsWith("/api.php")
+    ) context.addIssue({ code: "custom", message: "LEAGUEPEDIA_ENDPOINT must be a clean HTTPS MediaWiki API URL with a valid hostname and /api.php path." });
+  } catch {
+    context.addIssue({ code: "custom", message: "LEAGUEPEDIA_ENDPOINT must be a valid HTTPS MediaWiki API URL." });
+  }
+});
+
+const LeaguepediaUserAgentSchema = z.string().min(12).superRefine((value, context) => {
+  if (hasControlCharacters(value)) {
+    context.addIssue({ code: "custom", message: "LEAGUEPEDIA_USER_AGENT must not contain control characters." });
+    return;
+  }
+  if (!hasValidContact(value)) context.addIssue({ code: "custom", message: "LEAGUEPEDIA_USER_AGENT must include a complete contact HTTP(S) URL or email token." });
+});
 
 const EnvironmentSchema = z
   .object({
@@ -70,7 +123,7 @@ const EnvironmentSchema = z
     SYNC_CRON: z.string().min(1).default("0 3 * * *"),
     SYNC_TIMEZONE: z.string().min(1).default("UTC"),
     LEAGUEPEDIA_ENDPOINT: LeaguepediaEndpointSchema,
-    LEAGUEPEDIA_USER_AGENT: z.string().min(12).refine((value) => /https?:\/\/|[\w.+-]+@[\w.-]+\.[a-z]{2,}/iu.test(value), "LEAGUEPEDIA_USER_AGENT must identify the deployment and include a contact URL or email."),
+    LEAGUEPEDIA_USER_AGENT: LeaguepediaUserAgentSchema,
     LEAGUEPEDIA_SYNC_YEARS: z.string().min(1).default("2023,2024"),
     LEAGUEPEDIA_SYNC_COMPETITIONS: z.string().min(1).default("Worlds"),
     LEAGUEPEDIA_COMPETITION_MAP: z.string().min(2).default('{"Worlds":{"2023":"2023 Season World Championship","2024":"2024 Season World Championship"}}'),

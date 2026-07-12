@@ -46,6 +46,38 @@ describe("loadConfig", () => {
     expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":"2024 Season World Championship"}' })).toThrow(/logical competition.*year/i);
   });
 
+  it.each([
+    "https://leaguepedia.example/api.php?",
+    "https://leaguepedia.example/api.php#",
+    "https://user:password@leaguepedia.example/api.php",
+    "https://localhost/api.php",
+    "https://leaguepedia.example/",
+    "https://leaguepedia.example/not-api",
+  ])("rejects unsafe or non-API Leaguepedia endpoint %s", (endpoint) => {
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_ENDPOINT: endpoint })).toThrow(/endpoint/i);
+  });
+
+  it.each([
+    "RiftVersus/0.1 (https://)",
+    "RiftVersus/0.1 (https://?)",
+    "RiftVersus/0.1 (https://localhost)",
+    "RiftVersus/0.1 .ops@riftversus.example",
+    "RiftVersus/0.1 ops..team@riftversus.example",
+    "RiftVersus/0.1 ops.@riftversus.example",
+    "RiftVersus/0.1 contact@example.invalid\r\nInjected: header",
+    "RiftVersus/0.1 contact@example.invalid\u0000",
+    "RiftVersus/0.1 contact@example.invalid\u007f",
+  ])("rejects unsafe or invalid Leaguepedia user agent", (userAgent) => {
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_USER_AGENT: userAgent })).toThrow(/user.agent/i);
+  });
+
+  it.each([
+    "RiftVersus/0.1 (+https://riftversus.example/contact)",
+    "RiftVersus/0.1 ops@riftversus.example",
+  ])("accepts a descriptive Leaguepedia user agent with a valid contact", (userAgent) => {
+    expect(loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_USER_AGENT: userAgent }).leaguepediaUserAgent).toBe(userAgent);
+  });
+
   it("rejects partial S3 configuration", () => {
     expect(() =>
       loadConfig({

@@ -1,62 +1,76 @@
-import { readdir, readFile } from "node:fs/promises";
-import { basename, extname, relative, resolve } from "node:path";
+import { execFile } from "node:child_process";
+import { lstat, readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 
 const retiredToken = ["ora", "cle"].join("");
-const retiredTokenPattern = new RegExp(retiredToken, "iu");
+const retiredDisplay = ["Ora", "cle"].join("");
+const retiredBarePattern = new RegExp(`\\b${retiredToken}\\b`, "iu");
+const retiredJoinedPattern = new RegExp(`\\b${retiredToken}[_.-]?(?:adapter|client|provider|manifest|parser|fixture|config|fallback|endpoint|download|source|url|csv|importer|ingestor|loader|sync|selixir)`, "iu");
 const retiredHostPattern = new RegExp(["oe", "data", "lisk", "io"].join("\\."), "iu");
 const retiredDownloadPattern = new RegExp(["match", "data"].join(""), "iu");
-
-const generatedOrVendorDirectories = new Set([".git", ".worktrees", "node_modules", "dist", "coverage"]);
-const textExtensions = new Set([
-  ".bash", ".cjs", ".css", ".cts", ".dockerfile", ".env", ".fish", ".html", ".js", ".json", ".jsonc", ".jsx",
-  ".md", ".mjs", ".mts", ".sh", ".sql", ".toml", ".ts", ".tsx", ".yaml", ".yml", ".zsh",
-]);
-const extensionlessTextFiles = new Set(["containerfile", "dockerfile", "makefile"]);
+const allowedOperatorPhrases = [
+  `${retiredDisplay} is not part of the MVP.`,
+  `${retiredDisplay} is excluded from the MVP deployment.`,
+  `${retiredDisplay} is not an MVP source`,
+];
 
 export interface SourceReferenceViolation {
   path: string;
-  reason: "retired-host" | "retired-download" | "retired-path" | "retired-content";
+  reason: "retired-host" | "retired-download" | "retired-path" | "retired-content" | "tracked-symlink" | "tracked-non-file";
   line?: number;
 }
 
+export type TrackedEntryType = "file" | "symlink" | "other";
+
 export function classifyActiveSourceFile(logicalPath: string, content: string): SourceReferenceViolation[] {
+  return classifyTrackedEntry(logicalPath, Buffer.from(content), "file");
+}
+
+export function classifyTrackedEntry(logicalPath: string, bytes: Buffer, entryType: TrackedEntryType): SourceReferenceViolation[] {
   const normalizedPath = logicalPath.replaceAll("\\", "/");
-  if (isExcluded(normalizedPath) || !isScannable(normalizedPath)) return [];
+  if (entryType === "symlink") return [{ path: normalizedPath, reason: "tracked-symlink" }];
+  if (entryType === "other") return [{ path: normalizedPath, reason: "tracked-non-file" }];
+  if (isAegisHistory(normalizedPath)) return [];
 
   const violations: SourceReferenceViolation[] = [];
-  if (retiredHostPattern.test(normalizedPath) || retiredHostPattern.test(content)) violations.push({ path: normalizedPath, reason: "retired-host" });
-  if (retiredDownloadPattern.test(normalizedPath) || retiredDownloadPattern.test(content)) violations.push({ path: normalizedPath, reason: "retired-download" });
-  if (retiredTokenPattern.test(normalizedPath)) violations.push({ path: normalizedPath, reason: "retired-path" });
+  if (retiredHostPattern.test(normalizedPath)) violations.push({ path: normalizedPath, reason: "retired-host" });
+  if (retiredDownloadPattern.test(normalizedPath)) violations.push({ path: normalizedPath, reason: "retired-download" });
+  if (hasRetiredToken(normalizedPath)) violations.push({ path: normalizedPath, reason: "retired-path" });
+  if (isBinary(bytes)) return violations;
 
+  const content = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  if (retiredHostPattern.test(content)) violations.push({ path: normalizedPath, reason: "retired-host" });
+  if (retiredDownloadPattern.test(content)) violations.push({ path: normalizedPath, reason: "retired-download" });
   const operatorDocument = isOperatorDocument(normalizedPath);
   for (const [index, line] of content.split(/\r?\n/u).entries()) {
-    if (!retiredTokenPattern.test(line)) continue;
-    if (operatorDocument && isAllowedPolicyLine(line)) continue;
-    violations.push({ path: normalizedPath, reason: "retired-content", line: index + 1 });
+    const inspected = operatorDocument ? removeAllowedPolicyPhrases(line) : line;
+    if (hasRetiredToken(inspected)) violations.push({ path: normalizedPath, reason: "retired-content", line: index + 1 });
   }
   return violations;
 }
 
 export async function collectActiveSourceViolations(root: string): Promise<SourceReferenceViolation[]> {
   const violations: SourceReferenceViolation[] = [];
-  for (const file of await activeFiles(root)) {
-    const logicalPath = relative(root, file).replaceAll("\\", "/");
-    violations.push(...classifyActiveSourceFile(logicalPath, await readFile(file, "utf8")));
+  for (const logicalPath of await trackedFiles(root)) {
+    const absolutePath = resolve(root, logicalPath);
+    const stats = await lstat(absolutePath);
+    if (stats.isSymbolicLink()) {
+      violations.push(...classifyTrackedEntry(logicalPath, Buffer.alloc(0), "symlink"));
+    } else if (!stats.isFile()) {
+      violations.push(...classifyTrackedEntry(logicalPath, Buffer.alloc(0), "other"));
+    } else {
+      violations.push(...classifyTrackedEntry(logicalPath, await readFile(absolutePath), "file"));
+    }
   }
   return violations;
 }
 
-function isExcluded(logicalPath: string): boolean {
-  const segments = logicalPath.split("/");
-  if (segments.some((segment) => generatedOrVendorDirectories.has(segment))) return true;
-  return logicalPath === "docs/aegis" || logicalPath.startsWith("docs/aegis/");
+function hasRetiredToken(value: string): boolean {
+  return retiredBarePattern.test(value) || retiredJoinedPattern.test(value);
 }
 
-function isScannable(logicalPath: string): boolean {
-  const name = basename(logicalPath).toLowerCase();
-  if (name.startsWith(".env") || name.startsWith("dockerfile.") || name.startsWith("containerfile.")) return true;
-  if (extensionlessTextFiles.has(name) || name.endsWith(".dockerfile")) return true;
-  return textExtensions.has(extname(name));
+function isAegisHistory(logicalPath: string): boolean {
+  return logicalPath === "docs/aegis" || logicalPath.startsWith("docs/aegis/");
 }
 
 function isOperatorDocument(logicalPath: string): boolean {
@@ -64,28 +78,30 @@ function isOperatorDocument(logicalPath: string): boolean {
   return lower === "readme.md" || (lower.startsWith("docs/") && lower.endsWith(".md"));
 }
 
-function isAllowedPolicyLine(line: string): boolean {
-  const normalized = line.normalize("NFKC");
-  const token = `\\b${retiredToken}\\b`;
-  const flags = "iu";
-  return (
-    new RegExp(`${token}.*\\b(?:is|remains)\\s+not\\b.*\\bmvp\\b`, flags).test(normalized)
-    || new RegExp(`${token}.*\\b(?:was|is|has been)\\s+retired\\b`, flags).test(normalized)
-    || new RegExp(`${token}.*\\bexcluded\\b.*\\b(?:mvp|deployment)\\b`, flags).test(normalized)
-    || new RegExp(`(?:\\breintroduc\\w*\\b.*${token}|${token}.*\\breintroduc\\w*\\b).*\\brequires?\\b.*\\bnew\\b.*\\breviewed\\b.*\\bdecision\\b.*\\bpublic(?:ly)?\\b.*\\bdirect\\b.*\\bevidence\\b`, flags).test(normalized)
-  );
+function removeAllowedPolicyPhrases(line: string): string {
+  return allowedOperatorPhrases.reduce((remaining, phrase) => remaining.replaceAll(phrase, ""), line.normalize("NFKC"));
 }
 
-async function activeFiles(root: string, directory = root): Promise<string[]> {
-  const output: string[] = [];
-  for (const entry of await readdir(directory, { withFileTypes: true })) {
-    const absolute = resolve(directory, entry.name);
-    const logicalPath = relative(root, absolute).replaceAll("\\", "/");
-    if (entry.isDirectory()) {
-      if (!isExcluded(logicalPath)) output.push(...await activeFiles(root, absolute));
-      continue;
-    }
-    if (isScannable(logicalPath)) output.push(absolute);
+function isBinary(bytes: Buffer): boolean {
+  if (bytes.includes(0)) return true;
+  const sample = bytes.subarray(0, Math.min(bytes.length, 8_192));
+  let controls = 0;
+  for (const byte of sample) if ((byte < 32 && byte !== 9 && byte !== 10 && byte !== 12 && byte !== 13) || byte === 127) controls += 1;
+  if (sample.length > 0 && controls / sample.length > 0.1) return true;
+  try {
+    new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    return false;
+  } catch {
+    return true;
   }
-  return output;
+}
+
+async function trackedFiles(root: string): Promise<string[]> {
+  const output = await new Promise<Buffer>((resolveOutput, reject) => {
+    execFile("git", ["ls-files", "-z", "--"], { cwd: root, encoding: "buffer", maxBuffer: 16 * 1024 * 1024 }, (error, stdout) => {
+      if (error !== null) reject(error);
+      else resolveOutput(Buffer.isBuffer(stdout) ? stdout : Buffer.from(stdout));
+    });
+  });
+  return output.toString("utf8").split("\0").filter(Boolean);
 }
