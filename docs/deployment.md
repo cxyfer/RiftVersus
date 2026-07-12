@@ -35,7 +35,8 @@ host, or an estimated dataset size.
 
 ## Source changes
 
-There is one MVP upstream and one publication owner. Oracle is excluded from the MVP deployment.
+There is one MVP upstream and one publication owner.
+Oracle is excluded from the MVP deployment.
 Adding or replacing a source requires a reviewed decision and
 a publicly verifiable direct-access evidence set; do not add a hidden alternate
 path to an existing image.

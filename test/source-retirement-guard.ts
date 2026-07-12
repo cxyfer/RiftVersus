@@ -7,7 +7,7 @@ const retiredDisplay = ["Ora", "cle"].join("");
 const retiredBarePattern = new RegExp(`\\b${retiredToken}\\b`, "iu");
 const retiredJoinedPattern = new RegExp(`\\b${retiredToken}[_.-]?(?:adapter|client|provider|manifest|parser|fixture|config|fallback|endpoint|download|source|url|csv|importer|ingestor|loader|sync|selixir)`, "iu");
 const retiredHostPattern = new RegExp(["oe", "data", "lisk", "io"].join("\\."), "iu");
-const retiredDownloadPattern = new RegExp(["match", "data"].join(""), "iu");
+const retiredDownloadPattern = new RegExp(`\\b${["match", "data"].join("")}\\b`, "iu");
 const allowedOperatorPhrases = [
   `${retiredDisplay} is not part of the MVP.`,
   `${retiredDisplay} is excluded from the MVP deployment.`,
@@ -43,8 +43,11 @@ export function classifyTrackedEntry(logicalPath: string, bytes: Buffer, entryTy
   if (retiredDownloadPattern.test(content)) violations.push({ path: normalizedPath, reason: "retired-download" });
   const operatorDocument = isOperatorDocument(normalizedPath);
   for (const [index, line] of content.split(/\r?\n/u).entries()) {
+    const containsRetiredToken = hasRetiredToken(line);
     const inspected = operatorDocument ? removeAllowedPolicyPhrases(line) : line;
-    if (hasRetiredToken(inspected)) violations.push({ path: normalizedPath, reason: "retired-content", line: index + 1 });
+    if (hasRetiredToken(inspected) || (operatorDocument && containsRetiredToken && !isPolicyOnlyResidue(inspected))) {
+      violations.push({ path: normalizedPath, reason: "retired-content", line: index + 1 });
+    }
   }
   return violations;
 }
@@ -80,6 +83,10 @@ function isOperatorDocument(logicalPath: string): boolean {
 
 function removeAllowedPolicyPhrases(line: string): string {
   return allowedOperatorPhrases.reduce((remaining, phrase) => remaining.replaceAll(phrase, ""), line.normalize("NFKC"));
+}
+
+function isPolicyOnlyResidue(value: string): boolean {
+  return /^[\s\p{P}*+>-]*$/u.test(value);
 }
 
 function isBinary(bytes: Buffer): boolean {

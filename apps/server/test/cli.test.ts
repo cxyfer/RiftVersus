@@ -9,9 +9,9 @@ import { loadConfig } from "../src/config.js";
 const store: ObjectStore = { get: async () => Readable.from([]), signedGetUrl: async () => "https://example.test", head: async () => null, putImmutable: async () => "inserted" };
 const config = loadConfig({
   DATABASE_URL: "postgresql://example.test/db",
-  LEAGUEPEDIA_ENDPOINT: "https://leaguepedia.example/api.php",
-  LEAGUEPEDIA_USER_AGENT: "RiftVersus/0.1 (+https://riftversus.example; ops@riftversus.example)",
-  LEAGUEPEDIA_MEDIA_HOSTS: "media.leaguepedia.example",
+  LEAGUEPEDIA_ENDPOINT: "https://leaguepedia.acme.org/api.php",
+  LEAGUEPEDIA_USER_AGENT: "RiftVersus/0.1 (+https://riftversus.acme.org; ops@acme.org)",
+  LEAGUEPEDIA_MEDIA_HOSTS: "static.acme.org",
 });
 
 function dependencies(): CommandDependencies {

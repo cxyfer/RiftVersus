@@ -43,6 +43,14 @@ describe("retired MVP source classifier", () => {
     expect(classifyActiveSourceFile("README.md", `${retiredToken} is not part of the MVP. Enable ${retiredToken}Adapter with SOURCE=1.`)).not.toEqual([]);
   });
 
+  it("rejects non-policy residue appended to an allowed phrase", () => {
+    expect(classifyActiveSourceFile("README.md", `${retiredToken} is not part of the MVP. Enable legacy provider with SOURCE=1.`)).not.toEqual([]);
+  });
+
+  it("allows a standalone policy sentence with markdown punctuation", () => {
+    expect(classifyActiveSourceFile("README.md", `- **${retiredToken} is not part of the MVP.**`)).toEqual([]);
+  });
+
   it("rejects a non-policy operator documentation line", () => {
     expect(classifyActiveSourceFile("README.md", `${retiredToken} can be enabled with a flag.`)).not.toEqual([]);
   });
@@ -61,6 +69,14 @@ describe("retired MVP source classifier", () => {
 
   it.each([["test", retiredToken].join(""), ["c", retiredToken.toLowerCase()].join("")])('does not treat "%s" as the retired identifier', (content) => {
     expect(classifyActiveSourceFile("packages/example.ts", content)).toEqual([]);
+  });
+
+  it.each([["match", "Database"].join(""), ["match", "Dataset"].join("")])('does not treat "%s" as the retired download path', (content) => {
+    expect(classifyActiveSourceFile("packages/example.ts", content)).toEqual([]);
+  });
+
+  it("rejects the retired download path with a URL path boundary", () => {
+    expect(classifyActiveSourceFile("packages/example.ts", `https://source.acme.org/${retiredDownloadPath}`)).not.toEqual([]);
   });
 
   it("skips binary content after checking its tracked path", () => {

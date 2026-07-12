@@ -48,6 +48,8 @@ const S3EndpointSchema = z.url().refine(
 );
 
 const EMAIL_CONTACT = /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/iu;
+const RESERVED_HOST_SUFFIXES = ["example", "invalid", "test", "localhost"] as const;
+const RESERVED_EXAMPLE_DOMAINS = ["example.com", "example.net", "example.org"] as const;
 
 function hasControlCharacters(value: string): boolean {
   return [...value].some((character) => {
@@ -61,10 +63,22 @@ function validHostname(hostname: string): boolean {
   return hostname.split(".").every((label) => label.length > 0 && label.length <= 63 && /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/iu.test(label));
 }
 
+function reservedHostname(hostname: string): boolean {
+  const lower = hostname.toLowerCase();
+  return (
+    RESERVED_HOST_SUFFIXES.some((suffix) => lower === suffix || lower.endsWith(`.${suffix}`))
+    || RESERVED_EXAMPLE_DOMAINS.some((domain) => lower === domain || lower.endsWith(`.${domain}`))
+  );
+}
+
+function validExternalHostname(hostname: string): boolean {
+  return validHostname(hostname) && !reservedHostname(hostname);
+}
+
 function validContactUrl(token: string): boolean {
   try {
     const url = new URL(token);
-    return (url.protocol === "https:" || url.protocol === "http:") && url.username === "" && url.password === "" && validHostname(url.hostname);
+    return (url.protocol === "https:" || url.protocol === "http:") && url.username === "" && url.password === "" && validExternalHostname(url.hostname);
   } catch {
     return false;
   }
@@ -73,7 +87,8 @@ function validContactUrl(token: string): boolean {
 function validEmailContact(token: string): boolean {
   if (!EMAIL_CONTACT.test(token)) return false;
   const localPart = token.slice(0, token.lastIndexOf("@"));
-  return !localPart.startsWith(".") && !localPart.endsWith(".") && !localPart.includes("..");
+  const domain = token.slice(token.lastIndexOf("@") + 1);
+  return !localPart.startsWith(".") && !localPart.endsWith(".") && !localPart.includes("..") && validExternalHostname(domain);
 }
 
 function hasValidContact(userAgent: string): boolean {
@@ -92,7 +107,7 @@ const LeaguepediaEndpointSchema = z.string().min(1).superRefine((value, context)
       endpoint.protocol !== "https:"
       || endpoint.username !== ""
       || endpoint.password !== ""
-      || !validHostname(endpoint.hostname)
+      || !validExternalHostname(endpoint.hostname)
       || !endpoint.pathname.endsWith("/api.php")
     ) context.addIssue({ code: "custom", message: "LEAGUEPEDIA_ENDPOINT must be a clean HTTPS MediaWiki API URL with a valid hostname and /api.php path." });
   } catch {
@@ -107,6 +122,14 @@ const LeaguepediaUserAgentSchema = z.string().min(12).superRefine((value, contex
   }
   if (!hasValidContact(value)) context.addIssue({ code: "custom", message: "LEAGUEPEDIA_USER_AGENT must include a complete contact HTTP(S) URL or email token." });
 });
+
+function mediaHosts(value: string): string[] {
+  const hosts = csv(value, "LEAGUEPEDIA_MEDIA_HOSTS").map((host) => host.toLowerCase());
+  if (new Set(hosts).size !== hosts.length || hosts.some((host) => !validExternalHostname(host))) {
+    throw new Error("LEAGUEPEDIA_MEDIA_HOSTS must contain unique, clean, non-reserved hostnames without schemes, ports, paths, or credentials.");
+  }
+  return hosts;
+}
 
 const EnvironmentSchema = z
   .object({
@@ -172,7 +195,7 @@ export function loadConfig(environment: Environment) {
       syncYears: years(parsed.LEAGUEPEDIA_SYNC_YEARS),
       syncCompetitions: csv(parsed.LEAGUEPEDIA_SYNC_COMPETITIONS, "LEAGUEPEDIA_SYNC_COMPETITIONS"),
       competitionMap: parsedCompetitionMap,
-      mediaHosts: csv(parsed.LEAGUEPEDIA_MEDIA_HOSTS, "LEAGUEPEDIA_MEDIA_HOSTS"),
+      mediaHosts: mediaHosts(parsed.LEAGUEPEDIA_MEDIA_HOSTS),
       overridesDir: parsed.LEAGUEPEDIA_OVERRIDES_DIR,
       fixturePath: parsed.LEAGUEPEDIA_FIXTURE_PATH,
       resourceLimits: { maxBytes: parsed.LEAGUEPEDIA_MAX_BYTES, maxPages: parsed.LEAGUEPEDIA_MAX_PAGES, maxRows: parsed.LEAGUEPEDIA_MAX_ROWS },

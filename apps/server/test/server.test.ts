@@ -10,9 +10,9 @@ const config: Config = {
   logLevel: "info",
   syncCron: "0 3 * * *",
   syncTimezone: "UTC",
-  leaguepediaEndpoint: "https://leaguepedia.example/api.php",
-  leaguepediaUserAgent: "RiftVersus/0.1 (+https://riftversus.example; ops@riftversus.example)",
-  leaguepedia: { endpoint: "https://leaguepedia.example/api.php", userAgent: "RiftVersus/0.1 (+https://riftversus.example; ops@riftversus.example)", syncYears: [2023, 2024], syncCompetitions: ["Worlds"], competitionMap: { Worlds: { "2023": "2023 Season World Championship", "2024": "2024 Season World Championship" } }, mediaHosts: ["media.leaguepedia.example"], overridesDir: "data/overrides", fixturePath: "data/fixtures/leaguepedia-small.json", resourceLimits: { maxBytes: 100_000_000, maxPages: 2_000, maxRows: 500_000 } },
+  leaguepediaEndpoint: "https://leaguepedia.acme.org/api.php",
+  leaguepediaUserAgent: "RiftVersus/0.1 (+https://riftversus.acme.org; ops@acme.org)",
+  leaguepedia: { endpoint: "https://leaguepedia.acme.org/api.php", userAgent: "RiftVersus/0.1 (+https://riftversus.acme.org; ops@acme.org)", syncYears: [2023, 2024], syncCompetitions: ["Worlds"], competitionMap: { Worlds: { "2023": "2023 Season World Championship", "2024": "2024 Season World Championship" } }, mediaHosts: ["static.acme.org"], overridesDir: "data/overrides", fixturePath: "data/fixtures/leaguepedia-small.json", resourceLimits: { maxBytes: 100_000_000, maxPages: 2_000, maxRows: 500_000 } },
   mediaDelivery: "proxy",
   s3: undefined,
 };

@@ -50,8 +50,8 @@ page's current license and attribution requirements before redistribution.
 
 ## Reconsidering another source
 
-Oracle is not an MVP source and no alternate source is kept as a dormant
-provider. Reconsideration requires a new reviewed architecture/source
+Oracle is not an MVP source.
+No alternate source is kept as a dormant provider. Reconsideration requires a new reviewed architecture/source
 decision plus, at minimum:
 
 1. a publicly verifiable direct source and stable access contract;

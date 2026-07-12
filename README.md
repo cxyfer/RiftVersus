@@ -13,7 +13,8 @@ objects; HTTP requests never call the upstream wiki.
 
 Copy `.env.example` to `.env`, replace every placeholder, and verify the
 configured Leaguepedia endpoint before running a live sync. The repository
-does not guess or pin an unreviewed wiki host.
+does not guess or pin an unreviewed wiki host. Reserved example domains are
+intentionally rejected, so an unchanged example file cannot start a sync.
 
 ```bash
 pnpm install --frozen-lockfile
@@ -21,6 +22,6 @@ pnpm build
 node apps/server/dist/cli.js --help
 ```
 
-Oracle is not part of the MVP. PostgreSQL provenance remains
-provider-neutral, but adding another upstream requires a new reviewed source
+Oracle is not part of the MVP.
+PostgreSQL provenance remains provider-neutral, but adding another upstream requires a new reviewed source
 and architecture decision.
