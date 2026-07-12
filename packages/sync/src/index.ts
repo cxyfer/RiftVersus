@@ -13,3 +13,12 @@ export type {
 export type { ImmutableObject, ObjectStore, StoredObjectMetadata } from "./storage.js";
 export { createS3ObjectStore } from "./storage/s3.js";
 export type { S3ObjectStoreConfig } from "./storage.js";
+export { loadOverrides } from "./overrides.js";
+export type { IdentityOverride, OverridePaths, ReviewedOverrides, TournamentOverride } from "./overrides.js";
+export {
+  LeaguepediaClient, createLeaguepediaProvider, deriveLeaguepediaCoverage, fetchAllCargoPages, fetchLeaguepediaSnapshot,
+  normalizeLeaguepediaSnapshot, parseLeaguepediaMedia,
+} from "./providers/leaguepedia/index.js";
+export type * from "./providers/leaguepedia/types.js";
+export type { LeaguepediaProviderOptions } from "./providers/leaguepedia/index.js";
+export type { LeaguepediaReadClient, SnapshotRequest, TraversedRows } from "./providers/leaguepedia/index.js";

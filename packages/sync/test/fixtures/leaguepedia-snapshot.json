@@ -1,0 +1,26 @@
+{
+  "revisionIds": [1001, 1002],
+  "sourceUrl": "https://lol.fandom.com/wiki/2024_Season_World_Championship/Match_History",
+  "entities": [
+    { "kind": "team", "sourceKey": "SK Telecom T1", "displayName": "SK Telecom T1", "aliases": ["SKT"], "region": "Korea" },
+    { "kind": "team", "sourceKey": "T1", "displayName": "T1", "aliases": ["SKT"], "region": "Korea" },
+    { "kind": "team", "sourceKey": "Bilibili Gaming", "displayName": "Bilibili Gaming", "aliases": ["BLG"], "region": "China" },
+    { "kind": "player", "sourceKey": "Faker", "displayName": "Faker", "aliases": ["Hide on bush"] },
+    { "kind": "player", "sourceKey": "Duplicate One", "displayName": "Rookie", "aliases": [] },
+    { "kind": "player", "sourceKey": "Duplicate Two", "displayName": "Rookie", "aliases": [] }
+  ],
+  "series": [
+    { "sourceKey": "WORLD24-FINAL", "tournamentKey": "2024 Season World Championship", "playedAt": "2024-11-02T14:00:00Z", "bestOf": 5, "sideATeam": "T1", "sideBTeam": "Bilibili Gaming", "sideAScore": 3, "sideBScore": 2 }
+  ],
+  "games": [
+    { "sourceKey": "WORLD24-FINAL-G1", "seriesKey": "WORLD24-FINAL", "gameNumber": 1, "playedAt": "2024-11-02T14:00:00Z", "sideATeam": "T1", "sideBTeam": "Bilibili Gaming", "winnerTeam": "Bilibili Gaming" }
+  ],
+  "gamePlayers": [
+    { "gameKey": "WORLD24-FINAL-G1", "playerKey": "Faker", "teamKey": "T1" }
+  ],
+  "media": [
+    { "sourceKey": "T1 logo", "entityKey": "T1", "sourceUrl": "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/t1.png", "contentType": "image/png", "license": "CC BY-SA", "attribution": "Leaguepedia contributors" },
+    { "sourceKey": "Faker portrait", "entityKey": "Faker", "sourceUrl": null, "contentType": null, "license": null, "attribution": null }
+  ],
+  "traversal": { "requestedPages": 2, "visitedPages": 2, "complete": true }
+}
