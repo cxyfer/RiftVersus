@@ -31,11 +31,14 @@ export const mockApi: ComparisonApi = {
     await new Promise((resolve) => setTimeout(resolve, 100));
     const left = resolved(query.left.id, "left");
     const right = resolved(query.right.id, "right");
-    const allRows = [
+    const baseRows = [
       { id: "88888888-8888-4888-8888-888888888881", date: "2025-11-02", event: { id: "99999999-9999-4999-8999-999999999991", name: "World Championship", category: "worlds" as const }, league: "lpl", bestOf: 5 as const, leftName: left.displayName, rightName: right.displayName, leftScore: 3, rightScore: 1, winner: "left" as const },
       { id: "88888888-8888-4888-8888-888888888882", date: "2024-10-27", event: { id: "99999999-9999-4999-8999-999999999992", name: "World Championship", category: "worlds" as const }, league: "lpl", bestOf: 5 as const, leftName: left.displayName, rightName: right.displayName, leftScore: 3, rightScore: 0, winner: "left" as const },
       { id: "88888888-8888-4888-8888-888888888883", date: "2023-11-19", event: { id: "99999999-9999-4999-8999-999999999993", name: "World Championship", category: "worlds" as const }, league: "lpl", bestOf: 5 as const, leftName: left.displayName, rightName: right.displayName, leftScore: 3, rightScore: 2, winner: "left" as const },
-    ].filter((row) => (query.eventCategories.length === 0 || query.eventCategories.includes(row.event.category)) && (query.leagues.length === 0 || query.leagues.includes(row.league as "lpl")) && (query.bestOf.length === 0 || query.bestOf.includes(row.bestOf)) && (query.from === undefined || row.date >= query.from) && (query.to === undefined || row.date <= query.to));
+    ];
+    const longFixture = typeof window !== "undefined" && window.localStorage.getItem("riftversus.playwright-fixture") === "long";
+    const fixtureRows = longFixture ? Array.from({ length: 101 }, (_, index) => ({ ...baseRows[index % baseRows.length]!, id: `88888888-8888-4888-8888-${String(index + 1).padStart(12, "0")}`, event: { ...baseRows[index % baseRows.length]!.event, id: `99999999-9999-4999-8999-${String(index + 1).padStart(12, "0")}`, name: `World Championship ${index + 1}` }, date: `2025-11-${String((index % 28) + 1).padStart(2, "0")}` })) : baseRows;
+    const allRows = fixtureRows.filter((row) => (query.eventCategories.length === 0 || query.eventCategories.includes(row.event.category)) && (query.leagues.length === 0 || query.leagues.includes(row.league as "lpl")) && (query.bestOf.length === 0 || query.bestOf.includes(row.bestOf)) && (query.from === undefined || row.date >= query.from) && (query.to === undefined || row.date <= query.to));
     const page = query.cursor ? allRows.slice(2) : allRows.slice(0, 2);
     return {
       subjects: { left, right }, query,
