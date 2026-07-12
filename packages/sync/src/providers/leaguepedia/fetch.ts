@@ -84,6 +84,7 @@ export async function fetchLeaguepediaRawInput(client: LeaguepediaReadClient, re
   const mediaResult = await fetchMedia(client, imageRequests, (item) => budget.consume(item, 0));
   rawEvidence.push(...mediaResult.rawEvidence);
   return {
+    provenance: { kind: "live" },
     sourceUrl: requireHttps(request.sourceUrl),
     slices,
     rawEvidence,
@@ -101,6 +102,7 @@ export async function fetchLeaguepediaSnapshot(client: LeaguepediaReadClient, re
 
 /** Deterministic replay parser. This is the only path from retained API envelopes to provider facts. */
 export function parseLeaguepediaRawInput(input: LeaguepediaRawInput): LeaguepediaSnapshot {
+  validateInputProvenance(input);
   validateEvidenceScopes(input);
   const rows = (table: RawApiEvidence["table"]): Record<string, unknown>[] => input.rawEvidence.filter((item) => item.table === table).flatMap(strictEvidenceRows);
   const teamRows = rows("Teams");
@@ -135,6 +137,7 @@ export function parseLeaguepediaRawInput(input: LeaguepediaRawInput): Leaguepedi
     return { sliceId, competition, sourceCompetition, seasonYear, from, to, gameSourceKeys, traversal: combineEvidence([...sharedTraversals, traversalFor(gameEvidence), playerTraversal]), malformedOptionalRows: 0 };
   });
   return {
+    provenance: input.provenance,
     revisionIds: uniqueNumbers(input.rawEvidence.flatMap((item) => item.revisionIds)),
     sourceUrl: requireHttps(input.sourceUrl),
     entities,
@@ -147,6 +150,12 @@ export function parseLeaguepediaRawInput(input: LeaguepediaRawInput): Leaguepedi
     slices,
     rawEvidence: input.rawEvidence,
   };
+}
+
+function validateInputProvenance(input: LeaguepediaRawInput): void {
+  if (input.provenance?.kind === "live") return;
+  if (input.provenance?.kind === "synthetic-fixture" && typeof input.provenance.name === "string" && input.provenance.name.length > 0) return;
+  throw new LeaguepediaSnapshotError("Leaguepedia raw input provenance is missing or invalid.", input.rawEvidence, input.sourceUrl);
 }
 
 function strictEvidenceRows(evidence: RawApiEvidence): Record<string, unknown>[] {

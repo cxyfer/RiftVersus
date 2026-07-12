@@ -1,5 +1,6 @@
 {
-  "sourceUrl": "https://lol.fandom.com/wiki/2024_Season_World_Championship/Match_History",
+  "provenance": { "kind": "synthetic-fixture", "name": "leaguepedia-small" },
+  "sourceUrl": "https://fixture.riftversus.invalid/dataset/leaguepedia-small",
   "slices": [
     {
       "sliceId": "Worlds:2024%20Season%20World%20Championship:2024:2024-01-01:2025-01-01",
@@ -16,7 +17,7 @@
       "action": "cargoquery",
       "table": "Teams",
       "offset": 0,
-      "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=Teams&offset=0",
+      "sourceUrl": "https://fixture.riftversus.invalid/raw/teams/page-0",
       "response": {
         "cargoquery": [
           {
@@ -53,7 +54,7 @@
       "action": "cargoquery",
       "table": "Players",
       "offset": 0,
-      "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=Players&offset=0",
+      "sourceUrl": "https://fixture.riftversus.invalid/raw/players/page-0",
       "response": {
         "cargoquery": [
           { "title": { "OverviewPage": "Zeus", "Name": "Zeus" } },
@@ -83,7 +84,7 @@
       "action": "cargoquery",
       "table": "Tournaments",
       "offset": 0,
-      "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=Tournaments&offset=0",
+      "sourceUrl": "https://fixture.riftversus.invalid/raw/tournaments/page-0",
       "response": {
         "cargoquery": [
           {
@@ -112,7 +113,7 @@
         "from": "2024-01-01",
         "to": "2025-01-01"
       },
-      "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=ScoreboardGames&offset=0",
+      "sourceUrl": "https://fixture.riftversus.invalid/raw/scoreboard-games/page-0",
       "response": {
         "cargoquery": [
           {
@@ -211,7 +212,7 @@
           "WORLD24-FINAL-G5"
         ]
       },
-      "sourceUrl": "https://lol.fandom.com/api.php?action=cargoquery&tables=ScoreboardPlayers&offset=0",
+      "sourceUrl": "https://fixture.riftversus.invalid/raw/scoreboard-players/page-0",
       "response": {
         "cargoquery": [
           {
@@ -621,18 +622,15 @@
     {
       "requestId": "query:mediawiki:0:fixture",
       "action": "query",
-      "sourceUrl": "https://lol.fandom.com/api.php?action=query&titles=T1_logo",
+      "sourceUrl": "https://fixture.riftversus.invalid/raw/media/t1-logo",
       "response": {
         "query": {
           "pages": [
             {
-              "pageid": 294322,
-              "lastrevid": 1001,
-              "revisions": [{ "revid": 1002 }],
               "title": "File:T1 logo",
               "imageinfo": [
                 {
-                  "url": "https://static.wikia.nocookie.net/lolesports_gamepedia_en/images/t1.png",
+                  "url": "https://fixture.riftversus.invalid/media/t1.png",
                   "mime": "image/png",
                   "extmetadata": {
                     "LicenseShortName": { "value": "CC BY-SA" },
@@ -644,7 +642,7 @@
           ]
         }
       },
-      "revisionIds": [1001, 1002]
+      "revisionIds": []
     }
   ]
 }

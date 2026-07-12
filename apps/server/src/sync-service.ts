@@ -49,7 +49,9 @@ export function buildLeaguepediaSlices(config: Config, request: SyncRequest) {
 }
 
 async function loadFixture(config: Config, rootDir: string): Promise<LeaguepediaRawInput> {
-  return JSON.parse(await readFile(resolve(rootDir, config.leaguepedia.fixturePath), "utf8")) as LeaguepediaRawInput;
+  const input = JSON.parse(await readFile(resolve(rootDir, config.leaguepedia.fixturePath), "utf8")) as LeaguepediaRawInput;
+  if (input.provenance?.kind !== "synthetic-fixture" || input.provenance.name !== "leaguepedia-small") throw new Error("Leaguepedia fixture path must contain leaguepedia-small synthetic fixture provenance.");
+  return input;
 }
 
 interface OpenRepository { repository: SyncRepository; close(): Promise<void> }
@@ -86,7 +88,11 @@ export async function executeLeaguepediaSync(input: {
       overrides,
       loadRawInput: input.fixture === "leaguepedia-small"
         ? () => loadFixture(input.config, rootDir)
-        : () => (dependencies.loadLive ?? fetchLeaguepediaRawInput)(client, liveRequest!),
+        : async () => {
+          const loaded = await (dependencies.loadLive ?? fetchLeaguepediaRawInput)(client, liveRequest!);
+          if (loaded.provenance?.kind !== "live") throw new Error("Leaguepedia live loader must return live provenance.");
+          return loaded;
+        },
     });
     return await runSync(provider, input.request, {
       objectStore: input.objectStore,
@@ -97,7 +103,7 @@ export async function executeLeaguepediaSync(input: {
         if (batch.coverage.some((item) => item.status === "complete" && item.earliestDate === null && item.latestDate === null)) throw new Error("Zero-row coverage cannot be complete.");
       },
       downloadMedia: input.fixture === "leaguepedia-small"
-        ? async () => ({ bytes: new Uint8Array(Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64")), contentType: "image/png", finalUrl: "fixture://leaguepedia-small/media.png" })
+        ? async () => ({ bytes: new Uint8Array(Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64")), contentType: "image/png", finalUrl: "https://fixture.riftversus.invalid/media/t1.png" })
         : (sourceUrl) => downloadBounded({ url: sourceUrl, allowedHosts: input.config.leaguepedia.mediaHosts, allowedContentTypes: ["image/png", "image/jpeg", "image/webp", "image/gif"], maxBytes: 10_000_000, timeoutMs: 20_000 }),
     });
   } finally {

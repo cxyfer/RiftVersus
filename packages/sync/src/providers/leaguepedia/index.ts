@@ -34,7 +34,7 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
       } catch (error) {
         if (error instanceof LeaguepediaCargoEnvelopeError || error instanceof LeaguepediaApiError) throw retainableEvidenceError(error, [error.rawEvidence]);
         if (error instanceof LeaguepediaSnapshotError && error.rawEvidence.length > 0) {
-          const bytes = new TextEncoder().encode(canonicalJson({ format: "riftversus-leaguepedia-raw-v1", evidence: error.rawEvidence }));
+          const bytes = new TextEncoder().encode(canonicalJson({ format: "riftversus-leaguepedia-raw-v1", provenance: { kind: "live" }, evidence: error.rawEvidence }));
           const digest = createHash("sha256").update(bytes).digest("hex");
           throw new RetainableStageError(error.message, { sourceKey: `failed:sha256:${digest}`, sourceUrl: error.rawEvidence[0]!.sourceUrl, bytes, contentType: "application/json" }, { cause: error });
         }
@@ -65,7 +65,7 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
         const sliceGames = snapshot.games.filter((game) => gameKeys.has(game.sourceKey));
         const unresolvedRows = slices.reduce((sum, slice) => sum + unresolvedForSlice(snapshot, normalized, slice), 0);
         const dates = sliceGames.map((game) => game.playedAt).sort();
-        return deriveLeaguepediaCoverage({
+        const derived = deriveLeaguepediaCoverage({
           competition,
           seasonYear,
           observedRows: sliceGames.length,
@@ -74,11 +74,13 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
           earliestDate: dates[0]?.slice(0, 10) ?? null,
           latestDate: dates.at(-1)?.slice(0, 10) ?? null,
         });
+        if (rawInput.provenance.kind !== "synthetic-fixture") return derived;
+        return { ...derived, status: derived.status === "complete" ? "partial" as const : derived.status, detail: `${derived.detail ?? ""} synthetic fixture is not source coverage.`.trim() };
       });
       const publicationScopes = snapshot.slices.map((slice) => {
         const unresolvedRows = unresolvedForSlice(snapshot, normalized, slice);
         const observedRows = slice.gameSourceKeys.length;
-        const status = observedRows === 0 ? "missing" as const : slice.traversal.complete && unresolvedRows === 0 ? "complete" as const : "partial" as const;
+        const status = observedRows === 0 ? "missing" as const : rawInput.provenance.kind === "synthetic-fixture" ? "partial" as const : slice.traversal.complete && unresolvedRows === 0 ? "complete" as const : "partial" as const;
         return { provider: "leaguepedia", tournamentSourceKey: slice.sourceCompetition, from: slice.from, to: slice.to, status, unresolvedRows };
       });
       return {
@@ -86,7 +88,7 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
         provenance: { sourceDigest: `sha256:${digest}`, parserVersion, overrideFiles: overrideFiles as { file: string; checksum: `sha256:${string}` }[] },
         source: {
           sourceKey: `sha256:${digest}`,
-          sourceUrl: snapshot.rawEvidence[0]!.sourceUrl,
+          sourceUrl: rawInput.sourceUrl,
           bytes,
           contentType: "application/json",
         },
@@ -153,7 +155,7 @@ function validateRawEvidence(snapshot: LeaguepediaSnapshot): void {
 
 function retainableEvidenceError(error: unknown, evidence: LeaguepediaSnapshot["rawEvidence"]): RetainableStageError {
   const reason = error instanceof Error ? error : new Error(String(error));
-  const bytes = new TextEncoder().encode(canonicalJson({ format: "riftversus-leaguepedia-raw-v1", evidence }));
+  const bytes = new TextEncoder().encode(canonicalJson({ format: "riftversus-leaguepedia-raw-v1", provenance: { kind: "live" }, evidence }));
   const digest = createHash("sha256").update(bytes).digest("hex");
   return new RetainableStageError(reason.message, { sourceKey: `failed:sha256:${digest}`, sourceUrl: evidence[0]!.sourceUrl, bytes, contentType: "application/json" }, { cause: reason });
 }

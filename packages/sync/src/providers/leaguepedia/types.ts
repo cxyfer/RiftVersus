@@ -86,6 +86,7 @@ export interface LeaguepediaMedia {
 }
 
 export interface LeaguepediaSnapshot {
+  provenance: LeaguepediaInputProvenance;
   revisionIds: readonly number[];
   sourceUrl: string;
   entities: readonly LeaguepediaEntity[];
@@ -100,10 +101,13 @@ export interface LeaguepediaSnapshot {
 }
 
 export interface LeaguepediaRawInput {
+  provenance: LeaguepediaInputProvenance;
   sourceUrl: string;
   slices: readonly { sliceId: string; competition: string; sourceCompetition: string; seasonYear: number; from: string; to: string }[];
   rawEvidence: readonly RawApiEvidence[];
 }
+
+export type LeaguepediaInputProvenance = { kind: "live" } | { kind: "synthetic-fixture"; name: string };
 
 export interface LeaguepediaSliceEvidence {
   sliceId: string;

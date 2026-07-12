@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { createDb, destroyDb, migrateToLatest, type Database } from "@riftversus/database";
 import type { Kysely } from "kysely";
-import type { ObjectStore, StoredObjectMetadata } from "@riftversus/sync";
+import type { ObjectStore, StagedSyncBatch, StoredObjectMetadata } from "@riftversus/sync";
 import { loadConfig } from "../src/config.js";
 import { createDatabaseSyncRepository, executeLeaguepediaSync } from "../src/sync-service.js";
 
@@ -23,13 +23,15 @@ describeWithDatabase("Leaguepedia PostgreSQL fixture composition", () => {
 
   it("publishes the deployable fixture once and records the unchanged replay", async () => {
     const objects = new Map<string, StoredObjectMetadata>();
+    const retainedBytes = new Map<string, Uint8Array>();
     const objectStore: ObjectStore = {
       get: async () => Readable.from([]), signedGetUrl: async () => "https://fixture.invalid/object", head: async (key) => objects.get(key) ?? null,
-      putImmutable: async (object) => { const existing = objects.get(object.key); if (existing) return "existing"; objects.set(object.key, { checksum: object.checksum, contentType: object.contentType, byteSize: object.bytes.byteLength }); return "inserted"; },
+      putImmutable: async (object) => { const existing = objects.get(object.key); if (existing) return "existing"; objects.set(object.key, { checksum: object.checksum, contentType: object.contentType, byteSize: object.bytes.byteLength }); retainedBytes.set(object.key, object.bytes); return "inserted"; },
     };
     const config = loadConfig({ DATABASE_URL: databaseUrl! });
     const input = { config, objectStore, request: { mode: "sync-once" as const }, fixture: "leaguepedia-small" as const };
-    const dependencies = { rootDir, openRepository: async () => ({ repository: createDatabaseSyncRepository(db), close: async () => undefined }) };
+    const batches: StagedSyncBatch[] = [];
+    const dependencies = { rootDir, openRepository: async () => ({ repository: createDatabaseSyncRepository(db), close: async () => undefined }), observeBatch: (batch: StagedSyncBatch) => batches.push(batch) };
     const first = await executeLeaguepediaSync(input, dependencies); const second = await executeLeaguepediaSync(input, dependencies);
     expect(first.status).toBe("published"); expect(second).toEqual({ status: "unchanged", version: first.version });
     const count = async (table: keyof Database) => db.selectFrom(table).select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow();
@@ -37,6 +39,11 @@ describeWithDatabase("Leaguepedia PostgreSQL fixture composition", () => {
     expect(await count("series_facts")).toMatchObject({ count: "1" }); expect(await count("game_facts")).toMatchObject({ count: "5" }); expect(await count("game_players")).toMatchObject({ count: "50" });
     expect(await count("source_objects")).toMatchObject({ count: "1" }); expect(await count("media_objects")).toMatchObject({ count: "1" }); expect(await count("media_assets")).toMatchObject({ count: "1" });
     expect(await count("coverage_status")).toMatchObject({ count: "1" }); expect(await count("dataset_versions")).toMatchObject({ count: "1" }); expect(await count("override_application_runs")).toMatchObject({ count: "2" });
+    expect(await db.selectFrom("coverage_status").select(["status", "detail"]).executeTakeFirstOrThrow()).toMatchObject({ status: "partial", detail: expect.stringContaining("synthetic fixture is not source coverage") });
+    const retained = await db.selectFrom("source_objects").select(["source_url", "object_key"]).executeTakeFirstOrThrow();
+    expect(retained.source_url).toBe("https://fixture.riftversus.invalid/dataset/leaguepedia-small");
+    expect(JSON.parse(new TextDecoder().decode(retainedBytes.get(retained.object_key)!))).toHaveProperty("input.provenance", { kind: "synthetic-fixture", name: "leaguepedia-small" });
+    expect(batches).toHaveLength(2); expect(batches.every((batch) => batch.publicationScopes.every((scope) => scope.status !== "complete"))).toBe(true);
     const runs = await db.selectFrom("sync_runs").select(["status", "reused_dataset_version_id"]).orderBy("started_at").execute();
     expect(runs).toEqual([{ status: "succeeded", reused_dataset_version_id: null }, { status: "succeeded", reused_dataset_version_id: expect.any(String) }]);
   });
