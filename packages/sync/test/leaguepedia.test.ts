@@ -47,10 +47,7 @@ function cargoPage(table: LeaguepediaCargoTable, offset: number, rows: readonly 
   return { offset, rows, rawEvidence: rawEvidence(table, offset, rows) };
 }
 function rawInput(snapshot: LeaguepediaSnapshot): LeaguepediaRawInput {
-  const slices = snapshot.rawEvidence.flatMap((item) => item.table === "ScoreboardGames" && item.scope?.sliceIds?.[0] && item.scope.competition && item.scope.seasonYear !== undefined && item.scope.from && item.scope.to
-    ? [{ sliceId: item.scope.sliceIds[0], competition: item.scope.competition, seasonYear: item.scope.seasonYear, from: item.scope.from, to: item.scope.to }]
-    : []);
-  return { sourceUrl: snapshot.sourceUrl, slices: [...new Map(slices.map((slice) => [slice.sliceId, slice])).values()], rawEvidence: snapshot.rawEvidence };
+  return { sourceUrl: snapshot.sourceUrl, slices: snapshot.slices.map(({ sliceId, competition, sourceCompetition, seasonYear, from, to }) => ({ sliceId, competition, sourceCompetition, seasonYear, from, to })), rawEvidence: snapshot.rawEvidence };
 }
 
 describe("LeaguepediaClient", () => {
@@ -285,18 +282,48 @@ describe("Leaguepedia fetching", () => {
     expect(() => parseLeaguepediaRawInput(broken)).toThrow(/expected offset 500, received 1000/);
   });
 
+  it("rejects game rows outside their retained slice date range", async () => {
+    const input = await rawFixture();
+    const outside: LeaguepediaRawInput = { ...input, rawEvidence: input.rawEvidence.map((item) => item.table === "ScoreboardGames" ? {
+      ...item, response: { cargoquery: (item.response.cargoquery as Array<{ title: Record<string, unknown> }>).map(({ title }) => ({ title: { ...title, DateTime_UTC: "2030-01-01T00:00:00Z" } })) },
+    } : item) };
+    const failure = (() => { try { parseLeaguepediaRawInput(outside); } catch (error) { return error; } return undefined; })();
+    expect(failure).toBeInstanceOf(LeaguepediaSnapshotError);
+    expect((failure as LeaguepediaSnapshotError).message).toMatch(/outside \[2024-01-01, 2025-01-01\)/);
+    expect((failure as LeaguepediaSnapshotError).rawEvidence[0]?.table).toBe("ScoreboardGames");
+    const staged = await createLeaguepediaProvider({ loadRawInput: async () => outside, overrides: await overrides() }).stage({ mode: "sync-once" }).catch((error: unknown) => error);
+    expect(staged).toBeInstanceOf(RetainableStageError);
+  });
+
+  it("rejects a game row from a different exact tournament source key", async () => {
+    const input = await rawFixture();
+    const wrong: LeaguepediaRawInput = { ...input, rawEvidence: input.rawEvidence.map((item) => item.table === "ScoreboardGames" ? {
+      ...item, response: { cargoquery: (item.response.cargoquery as Array<{ title: Record<string, unknown> }>).map(({ title }) => ({ title: { ...title, Tournament: "2024 Mid-Season Invitational" } })) },
+    } : item) };
+    expect(() => parseLeaguepediaRawInput(wrong)).toThrow(/does not match requested source key/);
+  });
+
+  it("treats slice from as inclusive and to as exclusive", async () => {
+    const input = await rawFixture();
+    const at = (timestamp: string): LeaguepediaRawInput => ({ ...input, rawEvidence: input.rawEvidence.map((item) => item.table === "ScoreboardGames" ? {
+      ...item, response: { cargoquery: (item.response.cargoquery as Array<{ title: Record<string, unknown> }>).map(({ title }) => ({ title: { ...title, DateTime_UTC: timestamp } })) },
+    } : item) });
+    expect(parseLeaguepediaRawInput(at("2024-01-01T00:00:00Z")).games).toHaveLength(1);
+    expect(() => parseLeaguepediaRawInput(at("2025-01-01T00:00:00Z"))).toThrow(/outside \[2024-01-01, 2025-01-01\)/);
+  });
+
   it("keeps an incomplete traversal isolated to its own slice", async () => {
     const input = await rawFixture();
     const gamePage = input.rawEvidence.find((item) => item.table === "ScoreboardGames")!;
     const original = (gamePage.response.cargoquery as Array<{ title: Record<string, unknown> }>)[0]!.title;
-    const sliceId = "Worlds:2025:2025-01-01:2026-01-01";
+    const sliceId = "Worlds:2024%20Season%20World%20Championship:2025:2025-01-01:2026-01-01";
     const title = { ...original, GameId: "WORLD25-G1", MatchId: "WORLD25-M1", DateTime_UTC: "2025-10-01T00:00:00Z" };
     const secondPage: RawApiEvidence = {
       ...gamePage, requestId: "games:2025:0", offset: 0,
-      scope: { sliceIds: [sliceId], competition: "Worlds", seasonYear: 2025, from: "2025-01-01", to: "2026-01-01" },
+      scope: { sliceIds: [sliceId], competition: "2024 Season World Championship", seasonYear: 2025, from: "2025-01-01", to: "2026-01-01" },
       response: { cargoquery: Array.from({ length: 500 }, () => ({ title })) },
     };
-    const multi: LeaguepediaRawInput = { ...input, slices: [...input.slices, { sliceId, competition: "Worlds", seasonYear: 2025, from: "2025-01-01", to: "2026-01-01" }], rawEvidence: [...input.rawEvidence, secondPage] };
+    const multi: LeaguepediaRawInput = { ...input, slices: [...input.slices, { sliceId, competition: "Worlds", sourceCompetition: "2024 Season World Championship", seasonYear: 2025, from: "2025-01-01", to: "2026-01-01" }], rawEvidence: [...input.rawEvidence, secondPage] };
     const batch = await createLeaguepediaProvider({ loadRawInput: async () => multi, overrides: await overrides() }).stage({ mode: "backfill", years: [2024, 2025], competitions: ["Worlds"] });
     expect(batch.coverage).toEqual([
       expect.objectContaining({ seasonYear: 2024, status: "complete" }),

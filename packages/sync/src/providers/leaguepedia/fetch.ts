@@ -41,7 +41,7 @@ export interface LeaguepediaReadClient {
   fetchImageInfoWithEvidence(titles: readonly string[]): Promise<QueryEvidenceResult>;
 }
 
-export interface SnapshotSliceRequest { competition: string; seasonYear: number; from: string; to: string }
+export interface SnapshotSliceRequest { competition: string; sourceCompetition?: string; seasonYear: number; from: string; to: string }
 export interface SnapshotResourceLimits { maxBytes: number; maxPages: number; maxRows: number }
 export interface SnapshotRequest { slices: readonly SnapshotSliceRequest[]; sourceUrl: string; resourceLimits?: Partial<SnapshotResourceLimits> }
 
@@ -55,12 +55,12 @@ export class LeaguepediaSnapshotError extends Error {
 export async function fetchLeaguepediaRawInput(client: LeaguepediaReadClient, request: SnapshotRequest): Promise<LeaguepediaRawInput> {
   if (request.slices.length === 0 || request.slices.length > 100) throw new Error("Leaguepedia snapshot requires between 1 and 100 bounded slices.");
   const budget = new SnapshotBudget(request.resourceLimits, request.sourceUrl);
-  const slices = request.slices.map((slice) => ({ ...slice, sliceId: stableSliceId(slice) }));
+  const slices = request.slices.map((slice) => { const sourceCompetition = slice.sourceCompetition ?? slice.competition; return { ...slice, sourceCompetition, sliceId: stableSliceId({ ...slice, sourceCompetition }) }; });
   const [teamPages, playerPages, tournamentPages, slicePages] = await Promise.all([
     fetchAllCargoPages((offset) => client.fetchTeamsPage({ offset }), 200, 100_000, (page) => budget.consume(page.rawEvidence, page.rows.length)),
     fetchAllCargoPages((offset) => client.fetchPlayersPage({ offset }), 200, 100_000, (page) => budget.consume(page.rawEvidence, page.rows.length)),
     fetchAllCargoPages((offset) => client.fetchTournamentsPage({ offset }), 200, 100_000, (page) => budget.consume(page.rawEvidence, page.rows.length)),
-    mapLimit(slices, 4, async (slice) => ({ slice, pages: await fetchAllCargoPages(async (offset) => withScope(await client.fetchGamesPage({ offset, from: slice.from, to: slice.to, competitions: [slice.competition] }), { sliceIds: [slice.sliceId], competition: slice.competition, seasonYear: slice.seasonYear, from: slice.from, to: slice.to }), 200, 100_000, (page) => budget.consume(page.rawEvidence, page.rows.length)) })),
+    mapLimit(slices, 4, async (slice) => ({ slice, pages: await fetchAllCargoPages(async (offset) => withScope(await client.fetchGamesPage({ offset, from: slice.from, to: slice.to, competitions: [slice.sourceCompetition] }), { sliceIds: [slice.sliceId], competition: slice.sourceCompetition, seasonYear: slice.seasonYear, from: slice.from, to: slice.to }), 200, 100_000, (page) => budget.consume(page.rawEvidence, page.rows.length)) })),
   ]);
   const rawEvidence: RawApiEvidence[] = [teamPages, playerPages, tournamentPages, ...slicePages.map(({ pages }) => pages)].flatMap((page) => page.rawEvidence);
   try {
@@ -116,10 +116,12 @@ export function parseLeaguepediaRawInput(input: LeaguepediaRawInput): Leaguepedi
   const media = parseMediaEvidence(input.rawEvidence, [...teamRows, ...playerRows]);
   const sharedTables = ["Teams", "Players", "Tournaments"] as const;
   const sharedTraversals = sharedTables.map((table) => traversalFor(input.rawEvidence.filter((item) => item.table === table)));
-  const slices = input.slices.map(({ sliceId, competition, seasonYear, from, to }): LeaguepediaSliceEvidence => {
-    if (sliceId !== stableSliceId({ competition, seasonYear, from, to })) throw new LeaguepediaSnapshotError(`Retained sliceId ${sliceId} is not canonical.`, input.rawEvidence, input.sourceUrl);
+  const slices = input.slices.map(({ sliceId, competition, sourceCompetition, seasonYear, from, to }): LeaguepediaSliceEvidence => {
+    validateSliceBounds(from, to, sliceId, input);
+    if (sliceId !== stableSliceId({ competition, sourceCompetition, seasonYear, from, to })) throw new LeaguepediaSnapshotError(`Retained sliceId ${sliceId} is not canonical.`, input.rawEvidence, input.sourceUrl);
     const gameEvidence = input.rawEvidence.filter((item) => item.table === "ScoreboardGames" && item.scope?.sliceIds?.includes(sliceId));
-    assertSliceScope(gameEvidence, { sliceId, competition, seasonYear, from, to });
+    assertSliceScope(gameEvidence, { sliceId, competition: sourceCompetition, seasonYear, from, to });
+    for (const item of gameEvidence) for (const row of strictEvidenceRows(item)) validateGameRowScope(row, { sourceCompetition, from, to }, item);
     const sliceGameRows = gameEvidence.flatMap(strictEvidenceRows);
     const gameSourceKeys = uniqueRows(sliceGameRows, "GameId").map((row, index) => parseGame(row, index).sourceKey);
     const playerEvidence = input.rawEvidence.filter((item) => item.table === "ScoreboardPlayers" && item.scope?.sliceIds?.includes(sliceId));
@@ -130,7 +132,7 @@ export function parseLeaguepediaRawInput(input: LeaguepediaRawInput): Leaguepedi
     const playerGroups = new Map<string, RawApiEvidence[]>();
     for (const item of playerEvidence) { const key = canonicalJson(item.scope?.gameIds ?? []); playerGroups.set(key, [...(playerGroups.get(key) ?? []), item]); }
     const playerTraversal = gameSourceKeys.length === 0 ? { requestedPages: 0, visitedPages: 0, complete: true } : playerGroups.size === 0 ? traversalFor([]) : combineEvidence([...playerGroups.values()].map(traversalFor));
-    return { competition, seasonYear, gameSourceKeys, traversal: combineEvidence([...sharedTraversals, traversalFor(gameEvidence), playerTraversal]), malformedOptionalRows: 0 };
+    return { sliceId, competition, sourceCompetition, seasonYear, from, to, gameSourceKeys, traversal: combineEvidence([...sharedTraversals, traversalFor(gameEvidence), playerTraversal]), malformedOptionalRows: 0 };
   });
   return {
     revisionIds: uniqueNumbers(input.rawEvidence.flatMap((item) => item.revisionIds)),
@@ -298,10 +300,22 @@ function uniqueRows(rows: readonly Record<string, unknown>[], key: string): Reco
   return [...output.values()];
 }
 function uniqueStrings(items: readonly string[]): string[] { return [...new Set(items)]; }
-function stableSliceId(slice: SnapshotSliceRequest): string { return `${encodeURIComponent(slice.competition)}:${slice.seasonYear}:${slice.from}:${slice.to}`; }
+function stableSliceId(slice: SnapshotSliceRequest & { sourceCompetition: string }): string { return `${encodeURIComponent(slice.competition)}:${encodeURIComponent(slice.sourceCompetition)}:${slice.seasonYear}:${slice.from}:${slice.to}`; }
 function withScope(page: CargoPage, scope: NonNullable<RawApiEvidence["scope"]>): CargoPage { return { ...page, rawEvidence: { ...page.rawEvidence, scope } }; }
 function assertSliceScope(evidence: readonly RawApiEvidence[], slice: SnapshotSliceRequest & { sliceId: string }): void {
   for (const item of evidence) if (item.scope?.competition !== slice.competition || item.scope.seasonYear !== slice.seasonYear || item.scope.from !== slice.from || item.scope.to !== slice.to) throw new LeaguepediaSnapshotError(`Retained Cargo evidence scope conflicts with slice ${slice.sliceId}.`, [item], item.sourceUrl);
+}
+function validateGameRowScope(row: Record<string, unknown>, scope: { sourceCompetition: string; from: string; to: string }, evidence: RawApiEvidence): void {
+  const tournament = requiredString(row.Tournament, "ScoreboardGames Tournament");
+  if (tournament !== scope.sourceCompetition) throw new LeaguepediaSnapshotError(`Retained game row tournament ${tournament} does not match requested source key ${scope.sourceCompetition}.`, [evidence], evidence.sourceUrl);
+  const timestamp = requiredTimestamp(row.DateTime_UTC, requiredString(row.GameId, "ScoreboardGames GameId"));
+  const playedAt = new Date(timestamp).valueOf(); const from = new Date(`${scope.from}T00:00:00Z`).valueOf(); const to = new Date(`${scope.to}T00:00:00Z`).valueOf();
+  if (playedAt < from || playedAt >= to) throw new LeaguepediaSnapshotError(`Retained game row timestamp ${timestamp} is outside [${scope.from}, ${scope.to}).`, [evidence], evidence.sourceUrl);
+}
+function validateSliceBounds(from: string, to: string, sliceId: string, input: LeaguepediaRawInput): void {
+  const format = /^\d{4}-\d{2}-\d{2}$/;
+  const fromTime = new Date(`${from}T00:00:00Z`).valueOf(); const toTime = new Date(`${to}T00:00:00Z`).valueOf();
+  if (!format.test(from) || !format.test(to) || !Number.isFinite(fromTime) || !Number.isFinite(toTime) || fromTime >= toTime) throw new LeaguepediaSnapshotError(`Retained slice ${sliceId} has invalid date bounds.`, input.rawEvidence, input.sourceUrl);
 }
 function validateEvidenceScopes(input: LeaguepediaRawInput): void {
   const declared = new Set(input.slices.map((slice) => slice.sliceId));

@@ -101,13 +101,17 @@ export interface LeaguepediaSnapshot {
 
 export interface LeaguepediaRawInput {
   sourceUrl: string;
-  slices: readonly { sliceId: string; competition: string; seasonYear: number; from: string; to: string }[];
+  slices: readonly { sliceId: string; competition: string; sourceCompetition: string; seasonYear: number; from: string; to: string }[];
   rawEvidence: readonly RawApiEvidence[];
 }
 
 export interface LeaguepediaSliceEvidence {
+  sliceId: string;
   competition: string;
+  sourceCompetition: string;
   seasonYear: number;
+  from: string;
+  to: string;
   gameSourceKeys: readonly string[];
   traversal: TraversalEvidence;
   malformedOptionalRows: number;
