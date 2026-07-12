@@ -8,6 +8,9 @@ describe("configured object storage", () => {
   it("constructs an object store for complete S3 redirect configuration", () => {
     const config = loadConfig({
       DATABASE_URL: "postgres://user:password@localhost:5432/riftversus",
+      LEAGUEPEDIA_ENDPOINT: "https://leaguepedia.acme.org/api.php",
+      LEAGUEPEDIA_USER_AGENT: "RiftVersus/0.1 (+https://riftversus.acme.org; ops@acme.org)",
+      LEAGUEPEDIA_MEDIA_HOSTS: "static.acme.org",
       MEDIA_DELIVERY: "redirect",
       S3_ENDPOINT: "https://storage.example.test",
       S3_REGION: "us-east-1",

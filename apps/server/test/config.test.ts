@@ -1,42 +1,127 @@
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { loadConfig, safeConfigSummary } from "../src/config.js";
 
 const databaseUrl = "postgresql://riftversus:password@localhost:5432/riftversus";
+const leaguepediaEnvironment = {
+  LEAGUEPEDIA_ENDPOINT: "https://leaguepedia.acme.org/api.php",
+  LEAGUEPEDIA_USER_AGENT: "RiftVersus/0.1 (+https://riftversus.acme.org; ops@acme.org)",
+  LEAGUEPEDIA_MEDIA_HOSTS: "static.acme.org",
+} as const;
+const reservedDomains = ["leaguepedia.example", "leaguepedia.invalid", "leaguepedia.test", "service.localhost", "example.com", "example.net", "example.org"];
+
+function exampleEnvironmentValue(name: string): string {
+  const contents = readFileSync(new URL("../../../.env.example", import.meta.url), "utf8");
+  const line = contents.split(/\r?\n/u).find((candidate) => candidate.startsWith(`${name}=`));
+  if (line === undefined) throw new Error(`Missing ${name} in .env.example.`);
+  return line.slice(name.length + 1);
+}
 
 describe("loadConfig", () => {
   it("requires DATABASE_URL", () => {
     expect(() => loadConfig({})).toThrow();
   });
 
+  it("requires explicitly reviewed Leaguepedia source settings", () => {
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl })).toThrow();
+    for (const missing of Object.keys(leaguepediaEnvironment)) {
+      const environment = { DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, [missing]: undefined };
+      expect(() => loadConfig(environment)).toThrow();
+    }
+  });
+
   it("applies production-safe defaults", () => {
-    expect(loadConfig({ DATABASE_URL: databaseUrl })).toMatchObject({
+    expect(loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment })).toMatchObject({
       databaseUrl,
       port: 3000,
       host: "0.0.0.0",
       logLevel: "info",
       syncCron: "0 3 * * *",
       syncTimezone: "UTC",
-      leaguepediaEndpoint: "https://lol.fandom.com/api.php",
-      leaguepediaUserAgent: "RiftVersus/0.1 (https://github.com/riftversus; contact@example.invalid)",
+      leaguepediaEndpoint: leaguepediaEnvironment.LEAGUEPEDIA_ENDPOINT,
+      leaguepediaUserAgent: leaguepediaEnvironment.LEAGUEPEDIA_USER_AGENT,
       mediaDelivery: "proxy",
       s3: undefined,
     });
   });
 
   it("validates bounded Leaguepedia sync settings", () => {
-    expect(() => loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_ENDPOINT: "http://lol.example/api.php" })).toThrow(/endpoint/i);
-    expect(() => loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_SYNC_YEARS: "" })).toThrow();
-    const config = loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_SYNC_YEARS: "2023,2024", LEAGUEPEDIA_SYNC_COMPETITIONS: "Worlds,MSI", LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":{"2023":"2023 Season World Championship","2024":"2024 Season World Championship"},"MSI":{"2023":"2023 Mid-Season Invitational","2024":"2024 Mid-Season Invitational"}}', LEAGUEPEDIA_MEDIA_HOSTS: "static.wikia.nocookie.net,images.example" });
-    expect(config.leaguepedia).toMatchObject({ syncYears: [2023, 2024], syncCompetitions: ["Worlds", "MSI"], mediaHosts: ["static.wikia.nocookie.net", "images.example"] });
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_ENDPOINT: "http://leaguepedia.acme.org/api.php" })).toThrow(/endpoint/i);
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_SYNC_YEARS: "" })).toThrow();
+    const config = loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_SYNC_YEARS: "2023,2024", LEAGUEPEDIA_SYNC_COMPETITIONS: "Worlds,MSI", LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":{"2023":"2023 Season World Championship","2024":"2024 Season World Championship"},"MSI":{"2023":"2023 Mid-Season Invitational","2024":"2024 Mid-Season Invitational"}}', LEAGUEPEDIA_MEDIA_HOSTS: "static.acme.org,images.acme.org" });
+    expect(config.leaguepedia).toMatchObject({ syncYears: [2023, 2024], syncCompetitions: ["Worlds", "MSI"], mediaHosts: ["static.acme.org", "images.acme.org"] });
     expect(config.leaguepedia.competitionMap.Worlds).toEqual({ "2023": "2023 Season World Championship", "2024": "2024 Season World Championship" });
-    expect(() => loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":"2024 Season World Championship"}' })).toThrow(/logical competition.*year/i);
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":"2024 Season World Championship"}' })).toThrow(/logical competition.*year/i);
+  });
+
+  it.each([
+    "https://leaguepedia.acme.org/api.php?",
+    "https://leaguepedia.acme.org/api.php#",
+    "https://user:password@leaguepedia.acme.org/api.php",
+    "https://localhost/api.php",
+    "https://leaguepedia.acme.org/",
+    "https://leaguepedia.acme.org/not-api",
+  ])("rejects unsafe or non-API Leaguepedia endpoint %s", (endpoint) => {
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_ENDPOINT: endpoint })).toThrow(/endpoint/i);
+  });
+
+  it.each([
+    "RiftVersus/0.1 (https://)",
+    "RiftVersus/0.1 (https://?)",
+    "RiftVersus/0.1 (https://localhost)",
+    "RiftVersus/0.1 .ops@acme.org",
+    "RiftVersus/0.1 ops..team@acme.org",
+    "RiftVersus/0.1 ops.@acme.org",
+    "RiftVersus/0.1 contact@acme.org\r\nInjected: header",
+    "RiftVersus/0.1 contact@acme.org\u0000",
+    "RiftVersus/0.1 contact@acme.org\u007f",
+  ])("rejects unsafe or invalid Leaguepedia user agent", (userAgent) => {
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_USER_AGENT: userAgent })).toThrow(/user.agent/i);
+  });
+
+  it.each([
+    "RiftVersus/0.1 (+https://riftversus.acme.org/contact)",
+    "RiftVersus/0.1 ops@acme.org",
+  ])("accepts a descriptive Leaguepedia user agent with a valid contact", (userAgent) => {
+    expect(loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_USER_AGENT: userAgent }).leaguepediaUserAgent).toBe(userAgent);
+  });
+
+  it.each(reservedDomains)("rejects reserved Leaguepedia endpoint host %s", (hostname) => {
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_ENDPOINT: `https://${hostname}/api.php` })).toThrow(/endpoint/i);
+  });
+
+  it.each(reservedDomains)("rejects reserved Leaguepedia user-agent URL host %s", (hostname) => {
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_USER_AGENT: `RiftVersus/0.1 (+https://${hostname}/contact)` })).toThrow(/user.agent/i);
+  });
+
+  it.each(reservedDomains)("rejects reserved Leaguepedia user-agent email domain %s", (hostname) => {
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_USER_AGENT: `RiftVersus/0.1 ops@${hostname}` })).toThrow(/user.agent/i);
+  });
+
+  it.each(reservedDomains)("rejects reserved Leaguepedia media host %s", (hostname) => {
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_MEDIA_HOSTS: `static.acme.org,${hostname}` })).toThrow(/media.host/i);
+  });
+
+  it.each(["https://static.acme.org", "static.acme.org/path", "static.acme.org:443", "user@static.acme.org", ".static.acme.org", "static..acme.org"])("rejects non-host Leaguepedia media value %s", (hostname) => {
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_MEDIA_HOSTS: hostname })).toThrow(/media.host/i);
+  });
+
+  it("rejects unedited Leaguepedia placeholders from .env.example", () => {
+    expect(() => loadConfig({
+      DATABASE_URL: databaseUrl,
+      LEAGUEPEDIA_ENDPOINT: exampleEnvironmentValue("LEAGUEPEDIA_ENDPOINT"),
+      LEAGUEPEDIA_USER_AGENT: exampleEnvironmentValue("LEAGUEPEDIA_USER_AGENT"),
+      LEAGUEPEDIA_MEDIA_HOSTS: exampleEnvironmentValue("LEAGUEPEDIA_MEDIA_HOSTS"),
+    })).toThrow();
   });
 
   it("rejects partial S3 configuration", () => {
     expect(() =>
       loadConfig({
         DATABASE_URL: databaseUrl,
+        ...leaguepediaEnvironment,
         S3_ENDPOINT: "http://localhost:9000",
         S3_ACCESS_KEY_ID: "access-key",
       }),
@@ -44,12 +129,13 @@ describe("loadConfig", () => {
   });
 
   it("requires complete S3 configuration for redirect media delivery", () => {
-    expect(() => loadConfig({ DATABASE_URL: databaseUrl, MEDIA_DELIVERY: "redirect" })).toThrow();
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, MEDIA_DELIVERY: "redirect" })).toThrow();
   });
 
   it("rejects S3 endpoints that could leak credentials or signed URL data", () => {
     const s3Config = {
       DATABASE_URL: databaseUrl,
+      ...leaguepediaEnvironment,
       S3_REGION: "us-east-1",
       S3_BUCKET: "riftversus",
       S3_ACCESS_KEY_ID: "access-key",
@@ -74,6 +160,7 @@ describe("loadConfig", () => {
     expect(
       loadConfig({
         DATABASE_URL: databaseUrl,
+        ...leaguepediaEnvironment,
         S3_ENDPOINT: "http://localhost:9000",
         S3_REGION: "us-east-1",
         S3_BUCKET: "riftversus",
@@ -98,6 +185,7 @@ describe("loadConfig", () => {
   it("never includes secrets in a safe config summary", () => {
     const config = loadConfig({
       DATABASE_URL: databaseUrl,
+      ...leaguepediaEnvironment,
       S3_ENDPOINT: "http://localhost:9000",
       S3_REGION: "us-east-1",
       S3_BUCKET: "riftversus",

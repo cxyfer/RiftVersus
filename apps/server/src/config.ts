@@ -47,6 +47,90 @@ const S3EndpointSchema = z.url().refine(
   "S3_ENDPOINT must be an HTTP(S) URL without userinfo, query parameters, or a fragment.",
 );
 
+const EMAIL_CONTACT = /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/iu;
+const RESERVED_HOST_SUFFIXES = ["example", "invalid", "test", "localhost"] as const;
+const RESERVED_EXAMPLE_DOMAINS = ["example.com", "example.net", "example.org"] as const;
+
+function hasControlCharacters(value: string): boolean {
+  return [...value].some((character) => {
+    const code = character.codePointAt(0)!;
+    return code <= 31 || code === 127;
+  });
+}
+
+function validHostname(hostname: string): boolean {
+  if (hostname.length > 253 || !hostname.includes(".") || /^\d+(?:\.\d+){3}$/u.test(hostname)) return false;
+  return hostname.split(".").every((label) => label.length > 0 && label.length <= 63 && /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/iu.test(label));
+}
+
+function reservedHostname(hostname: string): boolean {
+  const lower = hostname.toLowerCase();
+  return (
+    RESERVED_HOST_SUFFIXES.some((suffix) => lower === suffix || lower.endsWith(`.${suffix}`))
+    || RESERVED_EXAMPLE_DOMAINS.some((domain) => lower === domain || lower.endsWith(`.${domain}`))
+  );
+}
+
+function validExternalHostname(hostname: string): boolean {
+  return validHostname(hostname) && !reservedHostname(hostname);
+}
+
+function validContactUrl(token: string): boolean {
+  try {
+    const url = new URL(token);
+    return (url.protocol === "https:" || url.protocol === "http:") && url.username === "" && url.password === "" && validExternalHostname(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function validEmailContact(token: string): boolean {
+  if (!EMAIL_CONTACT.test(token)) return false;
+  const localPart = token.slice(0, token.lastIndexOf("@"));
+  const domain = token.slice(token.lastIndexOf("@") + 1);
+  return !localPart.startsWith(".") && !localPart.endsWith(".") && !localPart.includes("..") && validExternalHostname(domain);
+}
+
+function hasValidContact(userAgent: string): boolean {
+  const tokens = userAgent.split(/[\s();,]+/u).filter(Boolean).map((token) => token.startsWith("+") ? token.slice(1) : token);
+  return tokens.some((token) => validEmailContact(token) || (/^https?:\/\//iu.test(token) && validContactUrl(token)));
+}
+
+const LeaguepediaEndpointSchema = z.string().min(1).superRefine((value, context) => {
+  if (value.trim() !== value || hasControlCharacters(value) || value.includes("?") || value.includes("#")) {
+    context.addIssue({ code: "custom", message: "LEAGUEPEDIA_ENDPOINT must not contain whitespace, control characters, a query delimiter, or a fragment delimiter." });
+    return;
+  }
+  try {
+    const endpoint = new URL(value);
+    if (
+      endpoint.protocol !== "https:"
+      || endpoint.username !== ""
+      || endpoint.password !== ""
+      || !validExternalHostname(endpoint.hostname)
+      || !endpoint.pathname.endsWith("/api.php")
+    ) context.addIssue({ code: "custom", message: "LEAGUEPEDIA_ENDPOINT must be a clean HTTPS MediaWiki API URL with a valid hostname and /api.php path." });
+  } catch {
+    context.addIssue({ code: "custom", message: "LEAGUEPEDIA_ENDPOINT must be a valid HTTPS MediaWiki API URL." });
+  }
+});
+
+const LeaguepediaUserAgentSchema = z.string().min(12).superRefine((value, context) => {
+  if (hasControlCharacters(value)) {
+    context.addIssue({ code: "custom", message: "LEAGUEPEDIA_USER_AGENT must not contain control characters." });
+    return;
+  }
+  if (!hasValidContact(value)) context.addIssue({ code: "custom", message: "LEAGUEPEDIA_USER_AGENT must include a complete contact HTTP(S) URL or email token." });
+});
+
+function mediaHosts(value: string): string[] {
+  const hosts = csv(value, "LEAGUEPEDIA_MEDIA_HOSTS").map((host) => host.toLowerCase());
+  if (new Set(hosts).size !== hosts.length || hosts.some((host) => !validExternalHostname(host))) {
+    throw new Error("LEAGUEPEDIA_MEDIA_HOSTS must contain unique, clean, non-reserved hostnames without schemes, ports, paths, or credentials.");
+  }
+  return hosts;
+}
+
 const EnvironmentSchema = z
   .object({
     DATABASE_URL: z.string().min(1),
@@ -61,12 +145,12 @@ const EnvironmentSchema = z
     LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
     SYNC_CRON: z.string().min(1).default("0 3 * * *"),
     SYNC_TIMEZONE: z.string().min(1).default("UTC"),
-    LEAGUEPEDIA_ENDPOINT: z.url().refine((value) => new URL(value).protocol === "https:", "LEAGUEPEDIA_ENDPOINT must use HTTPS.").default("https://lol.fandom.com/api.php"),
-    LEAGUEPEDIA_USER_AGENT: z.string().min(12).default("RiftVersus/0.1 (https://github.com/riftversus; contact@example.invalid)"),
+    LEAGUEPEDIA_ENDPOINT: LeaguepediaEndpointSchema,
+    LEAGUEPEDIA_USER_AGENT: LeaguepediaUserAgentSchema,
     LEAGUEPEDIA_SYNC_YEARS: z.string().min(1).default("2023,2024"),
     LEAGUEPEDIA_SYNC_COMPETITIONS: z.string().min(1).default("Worlds"),
     LEAGUEPEDIA_COMPETITION_MAP: z.string().min(2).default('{"Worlds":{"2023":"2023 Season World Championship","2024":"2024 Season World Championship"}}'),
-    LEAGUEPEDIA_MEDIA_HOSTS: z.string().min(1).default("static.wikia.nocookie.net"),
+    LEAGUEPEDIA_MEDIA_HOSTS: z.string().min(1),
     LEAGUEPEDIA_OVERRIDES_DIR: z.string().min(1).default("data/overrides"),
     LEAGUEPEDIA_FIXTURE_PATH: z.string().min(1).default("data/fixtures/leaguepedia-small.json"),
     LEAGUEPEDIA_MAX_BYTES: z.coerce.number().int().positive().max(500_000_000).default(100_000_000),
@@ -111,7 +195,7 @@ export function loadConfig(environment: Environment) {
       syncYears: years(parsed.LEAGUEPEDIA_SYNC_YEARS),
       syncCompetitions: csv(parsed.LEAGUEPEDIA_SYNC_COMPETITIONS, "LEAGUEPEDIA_SYNC_COMPETITIONS"),
       competitionMap: parsedCompetitionMap,
-      mediaHosts: csv(parsed.LEAGUEPEDIA_MEDIA_HOSTS, "LEAGUEPEDIA_MEDIA_HOSTS"),
+      mediaHosts: mediaHosts(parsed.LEAGUEPEDIA_MEDIA_HOSTS),
       overridesDir: parsed.LEAGUEPEDIA_OVERRIDES_DIR,
       fixturePath: parsed.LEAGUEPEDIA_FIXTURE_PATH,
       resourceLimits: { maxBytes: parsed.LEAGUEPEDIA_MAX_BYTES, maxPages: parsed.LEAGUEPEDIA_MAX_PAGES, maxRows: parsed.LEAGUEPEDIA_MAX_ROWS },

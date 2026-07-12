@@ -8,7 +8,7 @@ import { beginSyncRun, compareHeadToHead, getDatasetStatus, getMediaByKey, listA
 import { createDb, destroyDb } from "../src/db.js";
 import { migrateToLatest } from "../src/migrator.js";
 import { buildComparisonQueryPlan } from "../src/repositories/comparison.js";
-import { comparisonOracleFixture, createTestSchemaName, seedComparisonFixture, seedIds } from "./fixtures/seed.js";
+import { comparisonReferenceFixture, createTestSchemaName, seedComparisonFixture, seedIds } from "./fixtures/seed.js";
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
 const describeWithDatabase = databaseUrl ? describe : describe.skip;
@@ -33,7 +33,7 @@ describeWithDatabase("comparison repositories", () => {
 
   const query = (left: { kind: "team" | "player" | "region"; id: string; teamEraId?: string }, right: { kind: "team" | "player" | "region"; id: string; teamEraId?: string }) => ({ left, right, eventCategories: [], leagues: [], bestOf: [], tournamentIds: [], limit: 50 });
 
-  it("matches the domain oracle for all nine subject-kind combinations", async () => {
+  it("matches the domain reference for all nine subject-kind combinations", async () => {
     const subjects = [
       { kind: "team" as const, id: seedIds.t1 },
       { kind: "player" as const, id: seedIds.faker },
@@ -46,7 +46,7 @@ describeWithDatabase("comparison repositories", () => {
     ];
     for (const left of subjects) for (const right of opponents) {
       const response = await compareHeadToHead(query(left, right), db);
-      const expected = summarizeComparison(query(left, right), comparisonOracleFixture());
+      const expected = summarizeComparison(query(left, right), comparisonReferenceFixture());
       expect(response.seriesSummary).toEqual(expected.series);
       expect(response.gameSummary).toEqual(expected.games);
     }
