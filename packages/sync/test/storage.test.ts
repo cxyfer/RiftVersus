@@ -1,4 +1,4 @@
-import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { Readable } from "node:stream";
 import { describe, expect, it, vi } from "vitest";
 
@@ -54,5 +54,36 @@ describe("S3 object store", () => {
   it("propagates non-missing provider failures", async () => {
     const unavailable = createS3ObjectStore(config, { client: { send: vi.fn(async () => { throw new Error("storage offline"); }) } });
     await expect(unavailable.get("media/faker.png")).rejects.toThrow("storage offline");
+  });
+
+  it("stores a missing immutable object and returns existing for a matching checksum", async () => {
+    const client = { send: vi.fn(async (command: unknown) => {
+      if (command instanceof HeadObjectCommand) throw { name: "NoSuchKey" };
+      if (command instanceof PutObjectCommand) return {};
+      return {};
+    }) };
+    const store = createS3ObjectStore(config, { client });
+    const object = { key: "sources/fixture/abc", bytes: new Uint8Array([1, 2]), checksum: "abc", contentType: "application/json" };
+    await expect(store.putImmutable(object)).resolves.toBe("inserted");
+    expect(client.send.mock.calls.some(([command]) => command instanceof PutObjectCommand)).toBe(true);
+
+    vi.mocked(client.send).mockResolvedValue({ Metadata: { sha256: "abc" }, ContentLength: 2, ContentType: "application/json" });
+    await expect(store.putImmutable(object)).resolves.toBe("existing");
+    expect(client.send.mock.calls.at(-1)?.[0]).toBeInstanceOf(HeadObjectCommand);
+  });
+
+  it("treats an S3 HeadObject 404 as a missing object without weakening GetObject errors", async () => {
+    const client = { send: vi.fn(async (command: unknown) => {
+      if (command instanceof HeadObjectCommand) throw { name: "NotFound", $metadata: { httpStatusCode: 404 } };
+      if (command instanceof PutObjectCommand) return {};
+      throw new Error("unexpected command");
+    }) };
+    const store = createS3ObjectStore(config, { client });
+    await expect(store.putImmutable({ key: "sources/fixture/new", bytes: new Uint8Array([1]), checksum: "new", contentType: "application/json" })).resolves.toBe("inserted");
+  });
+
+  it("refuses an existing object with the wrong checksum", async () => {
+    const store = createS3ObjectStore(config, { client: { send: vi.fn(async () => ({ Metadata: { sha256: "different" }, ContentLength: 2 })) } });
+    await expect(store.putImmutable({ key: "sources/fixture/abc", bytes: new Uint8Array([1, 2]), checksum: "abc", contentType: "application/json" })).rejects.toThrow("checksum");
   });
 });

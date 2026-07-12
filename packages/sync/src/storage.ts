@@ -4,6 +4,21 @@ import type { Readable } from "node:stream";
 export interface ObjectStore {
   get(key: string): Promise<Readable | null>;
   signedGetUrl(key: string, ttlSeconds: number): Promise<string>;
+  head(key: string): Promise<StoredObjectMetadata | null>;
+  putImmutable(object: ImmutableObject): Promise<"inserted" | "existing">;
+}
+
+export interface StoredObjectMetadata {
+  checksum: string;
+  contentType: string | null;
+  byteSize: number | null;
+}
+
+export interface ImmutableObject {
+  key: string;
+  bytes: Uint8Array;
+  checksum: string;
+  contentType: string;
 }
 
 export interface S3ObjectStoreConfig {
