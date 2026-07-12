@@ -1,4 +1,4 @@
-import { LEAGUEPEDIA_CARGO_LIMIT } from "./client.js";
+import { LEAGUEPEDIA_CARGO_LIMIT, LeaguepediaCargoEnvelopeError } from "./client.js";
 import type {
   CargoPage, GamePlayersPageInput, GamesPageInput, LeaguepediaEntity, LeaguepediaGame, LeaguepediaGamePlayer,
   LeaguepediaMedia, LeaguepediaSeries, LeaguepediaSliceEvidence, LeaguepediaSnapshot, LeaguepediaTournament,
@@ -100,7 +100,10 @@ export async function fetchLeaguepediaSnapshot(client: LeaguepediaReadClient, re
   };
   } catch (error) {
     const reason = error instanceof Error ? error : new Error(String(error));
-    throw new LeaguepediaSnapshotError(reason.message, rawEvidence, requireHttps(request.sourceUrl), { cause: reason });
+    const failureEvidence = error instanceof LeaguepediaCargoEnvelopeError
+      ? dedupeEvidence([...rawEvidence, error.rawEvidence])
+      : rawEvidence;
+    throw new LeaguepediaSnapshotError(reason.message, failureEvidence, requireHttps(request.sourceUrl), { cause: reason });
   }
 }
 
@@ -243,3 +246,4 @@ function requireHttps(value: string): string { const url = new URL(value); if (u
 function canonicalJson(value: unknown): string { return JSON.stringify(sortValue(value)); }
 function sortValue(value: unknown): unknown { if (Array.isArray(value)) return value.map(sortValue); if (!isRecord(value)) return value; return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [key, sortValue(item)])); }
 function uniqueNumbers(values: readonly number[]): number[] { return [...new Set(values)].sort((a, b) => a - b); }
+function dedupeEvidence(items: readonly RawApiEvidence[]): RawApiEvidence[] { return [...new Map(items.map((item) => [item.requestId, item])).values()]; }

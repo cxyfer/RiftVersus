@@ -207,6 +207,30 @@ describe("Leaguepedia fetching", () => {
     expect((failure as LeaguepediaSnapshotError).message).toMatch(/GameId/);
     expect((failure as LeaguepediaSnapshotError).rawEvidence.find((item) => item.table === "ScoreboardGames")?.response).toEqual(expect.objectContaining({ cargoquery: expect.any(Array) }));
   });
+
+  it("retains the late malformed ScoreboardPlayers response in the provider error envelope", async () => {
+    const malformedPlayersClient = new LeaguepediaClient({
+      endpoint: "https://lol.example/api.php",
+      userAgent: "RiftVersus/0.1 contact@example.com",
+      fetch: async () => Response.json({ cargoquery: [{}] }),
+    });
+    const loadSnapshot = () => fetchLeaguepediaSnapshot({
+      fetchTeamsPage: async ({ offset }) => cargoPage("Teams", offset, [{ OverviewPage: "T1", Name: "T1" }, { OverviewPage: "Bilibili Gaming", Name: "Bilibili Gaming" }]),
+      fetchPlayersPage: async ({ offset }) => cargoPage("Players", offset, [{ OverviewPage: "Faker", Name: "Faker" }]),
+      fetchTournamentsPage: async ({ offset }) => cargoPage("Tournaments", offset, [{ OverviewPage: "2024 Season World Championship", Name: "Worlds 2024" }]),
+      fetchGamesPage: async ({ offset }) => cargoPage("ScoreboardGames", offset, [{ GameId: "G1", MatchId: "M1", Tournament: "2024 Season World Championship", DateTime_UTC: "2024-11-02T14:00:00Z", BestOf: 5, N_GameInMatch: 1, Team1: "T1", Team2: "Bilibili Gaming", Team1Score: 3, Team2Score: 2, Winner: 1 }]),
+      fetchGamePlayersPage: (input) => malformedPlayersClient.fetchGamePlayersPage(input),
+      fetchImageInfoWithEvidence: async () => ({ data: {}, rawEvidence: [] }),
+    }, { slices: [{ competition: "Worlds", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" }], sourceUrl: "https://lol.fandom.com/wiki/Worlds" });
+    const provider = createLeaguepediaProvider({ loadSnapshot, overrides: await overrides() });
+
+    const failure = await provider.stage({ mode: "sync-once" }).catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(RetainableStageError);
+    const retained = JSON.parse(new TextDecoder().decode((failure as RetainableStageError).source.bytes)) as { evidence: RawApiEvidence[] };
+    const malformed = retained.evidence.find((item) => item.table === "ScoreboardPlayers");
+    expect(malformed?.response).toEqual({ cargoquery: [{}] });
+    expect(retained.evidence.filter((item) => item.requestId === malformed?.requestId)).toHaveLength(1);
+  });
 });
 
 describe("Leaguepedia normalization", () => {
