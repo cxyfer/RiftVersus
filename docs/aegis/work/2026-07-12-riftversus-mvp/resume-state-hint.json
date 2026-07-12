@@ -2,9 +2,9 @@
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
   "lastCheckpointRef": "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json",
-  "resumeInstruction": "Preserve API and repository boundaries. Keep provider URLs in reviewed manifests/config, not user input; retain Task 3/5 runtime verification gap.",
+  "resumeInstruction": "Keep facts and provider access separate from the API/UI; do not enable a guessed source URL. Continue independent planned work only when it does not claim Task 7 source proof.",
   "knownPartialWork": [
-    "Task 6 Fastify API, caching, health checks, static boundary and CLI serve merged after reviews"
+    "Task 10 comparison web experience and controlled media delivery merged after spec and security reviews"
   ],
   "mustReadBeforeContinuing": [
     "docs/aegis/work/2026-07-12-riftversus-mvp/10-intent.md",
@@ -12,6 +12,6 @@
     "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json"
   ],
   "unsafeToAssume": [
-    "Do not claim PostgreSQL integration evidence exists while TEST_DATABASE_URL is unavailable."
+    "Do not assume a downloads page is a stable machine-readable CSV source or that local/Docker/PostgreSQL/e2e verification is complete."
   ]
 }

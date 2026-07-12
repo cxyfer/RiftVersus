@@ -49,3 +49,11 @@ No evidence has been recorded yet.
 - Source: merge f9daac9; task commits 3f42f7e,c3d728f,b190ac2,c97df4c
 - Summary: Task 6 Fastify API passed controller verification: server tests 22, filtered server build, root consumer/unit tests, typecheck, lint, build, CLI help, spec and independent quality review.
 - Verifier: controller plus independent spec and quality reviewers
+
+## EvidenceBundleDraft
+
+- Artifact key: task-10-web-comparison
+- Type: verification
+- Source: merge b7946c1; task commits 69c4a90,d8b4b9a,d3903cb,7e8f4b2,038185a,25ad9a9
+- Summary: Task 10 comparison SPA, production HTTP client, URL query contract, local saved comparisons, controlled media delivery and S3-compatible ObjectStore passed controller and independent reviews. Controller verification: sync 4 tests, server 30 tests, web 18 tests, consumer/unit tests, typecheck, lint, build. Browser screenshots were inspected; Playwright runner produced no reliable final summary.
+- Verifier: controller plus independent spec, quality, media-security, and S3-security reviewers

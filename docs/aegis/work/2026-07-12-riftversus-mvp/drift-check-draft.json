@@ -3,13 +3,13 @@
   "taskId": "2026-07-12-riftversus-mvp",
   "taskIntentRef": "docs/aegis/work/2026-07-12-riftversus-mvp/task-intent-draft.json",
   "baselineRefs": [
-    "docs/aegis/BASELINE-GOVERNANCE.md"
+    "docs/aegis/plans/2026-07-12-riftversus-mvp.md Task 10 and Task 9 media boundary"
   ],
-  "scopeStatus": "Task 6 HTTP API, CLI, static fallback and tests only; no provider, sync, database schema, UI or Docker changes.",
-  "compatStatus": "Routes consume contracts/repositories through DI; no provider imports; API errors remain structured and media is reserved without proxying.",
-  "retirementStatus": "No legacy route owner or fallback introduced.",
+  "scopeStatus": "Task 10 delivered the comparison SPA plus the minimal cross-owner league filter and media storage boundary required for truthful filters and same-origin subject media; no provider adapter or export behavior was added.",
+  "compatStatus": "Public comparison URL remains canonical; leagues are now validated through contracts, HTTP normalization and PostgreSQL query planning. Server routes use injected ObjectStore, with sync as storage owner; no raw upstream media URL is served.",
+  "retirementStatus": "No D1, SQLite, Rust, runtime scraper, alternate API model, provider fallback, or direct upstream media proxy was introduced.",
   "newRiskSignals": [
-    "Task 3/5 PostgreSQL runtime integration remains unverified until TEST_DATABASE_URL is supplied."
+    "PostgreSQL integration tests remain unavailable without TEST_DATABASE_URL; Docker unavailable; Playwright runner created a journey but did not return a reliable final result."
   ],
-  "decision": "continue"
+  "decision": "needs-verification"
 }

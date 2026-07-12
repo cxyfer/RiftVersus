@@ -136,3 +136,23 @@
 - Task 6 merge f9daac9; evidence artifact task-06-http-api
 - Blocked on: No TEST_DATABASE_URL for PostgreSQL runtime evidence; does not block sync unit tests and source manifest proof.
 - Next step: Create Task 7 isolated worktree and implement sync runner, S3 boundary and reviewed source manifest.
+
+## DriftCheckDraft
+
+- Scope status: Task 10 delivered the comparison SPA plus the minimal cross-owner league filter and media storage boundary required for truthful filters and same-origin subject media; no provider adapter or export behavior was added.
+- Compatibility status: Public comparison URL remains canonical; leagues are now validated through contracts, HTTP normalization and PostgreSQL query planning. Server routes use injected ObjectStore, with sync as storage owner; no raw upstream media URL is served.
+- Retirement status: No D1, SQLite, Rust, runtime scraper, alternate API model, provider fallback, or direct upstream media proxy was introduced.
+- New risk signals:
+- PostgreSQL integration tests remain unavailable without TEST_DATABASE_URL; Docker unavailable; Playwright runner created a journey but did not return a reliable final result.
+- Advisory decision: needs-verification
+
+## Checkpoint Update
+
+- Current todo: Resolve Oracle public direct-download source access, then execute Task 7 sync orchestration and source manifest
+- Active slice: Task 10 complete; Task 7 source-access checkpoint
+- Completed todos:
+- Task 10 comparison web experience and controlled media delivery merged after spec and security reviews
+- Evidence refs:
+- Task 10 merge b7946c1; evidence artifact task-10-web-comparison
+- Blocked on: A publicly verifiable Oracle CSV direct URL/header proof is unavailable; the plan forbids guessing file identifiers or parsing the downloads-page HTML.
+- Next step: Obtain an approved public direct Oracle CSV URL or choose a different reviewed provider/source, then create the Task 7 worktree.
