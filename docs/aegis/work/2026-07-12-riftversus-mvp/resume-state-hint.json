@@ -2,9 +2,9 @@
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
   "lastCheckpointRef": "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json",
-  "resumeInstruction": "Resume from docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md Task 4. Preserve historical Aegis evidence, but remove Oracle from active runtime/operator-facing docs/config/tests. Then proceed to Docker/PostgreSQL acceptance.",
+  "resumeInstruction": "Resume from docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md Task 5. Do not mark complete until PostgreSQL migrations 001-007 and fixture import twice execute against a real database, and Docker stack/health/API acceptance has runtime evidence.",
   "knownPartialWork": [
-    "Replacement Task 3 PostgreSQL publication, shared media ownership, scope retirement, provenance, fixture and five-path CLI merged after final spec and quality approval"
+    "Replacement Task 4 retired active Oracle source surfaces, hardened source guards/config validation, and documented Leaguepedia operations/deployment after final reviews"
   ],
   "mustReadBeforeContinuing": [
     "docs/aegis/work/2026-07-12-riftversus-mvp/10-intent.md",
@@ -12,6 +12,6 @@
     "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json"
   ],
   "unsafeToAssume": [
-    "Do not treat historical Aegis mentions as active source paths, do not delete audit history, and do not claim PostgreSQL or Docker acceptance from skipped tests."
+    "Do not infer runtime PostgreSQL, S3-compatible storage, migrations, retirement, shared media, or Docker health from skipped integration tests or static compose validation alone."
   ]
 }

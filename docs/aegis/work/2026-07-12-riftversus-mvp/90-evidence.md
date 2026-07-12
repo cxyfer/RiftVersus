@@ -89,3 +89,11 @@ No evidence has been recorded yet.
 - Source: merge 6e93837; task commits f42af05,377b489,0ab7a56,1f2eb02,4e824e8,7c8373e,81b033e
 - Summary: Leaguepedia database publication and CLI composition passed controller verification: sync 103/103, server 46/46, root unit 3/3, consumer, typecheck, lint, build, CLI help and diff check. Spec and independent quality reviews approved after year-aware mapping, per-run override provenance, scope retirement, shared media objects, provider binding, migration downgrade guards and honest synthetic fixture provenance fixes. PostgreSQL integration suite loads 4 files/24 tests but all skip because TEST_DATABASE_URL is unset; Docker/S3 runtime acceptance remains open.
 - Verifier: controller plus independent spec and quality reviewers
+
+## EvidenceBundleDraft
+
+- Artifact key: leaguepedia-task-04-oracle-retirement
+- Type: verification
+- Source: merge af9b823; task commits 4a3e0c4,0ece7e4,dd21265,c218d60
+- Summary: Oracle MVP source retirement and Leaguepedia operator documentation passed controller verification: server 99/99, sync 103/103, root/guard 35/35, consumer, typecheck, lint, build, CLI help, Aegis workspace check and diff check. Spec and independent quality reviews approved after tracked-file scan authority, policy-line hardening, endpoint/User-Agent/media-host validation and placeholder rejection. Active runtime/config/package paths contain no retired provider/fallback; historical docs/aegis evidence remains preserved.
+- Verifier: controller plus independent spec and quality reviewers

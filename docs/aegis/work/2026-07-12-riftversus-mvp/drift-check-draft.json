@@ -5,11 +5,11 @@
   "baselineRefs": [
     "docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md"
   ],
-  "scopeStatus": "Leaguepedia replacement Task 3 integrated staged dimensions, facts, media, coverage, retirement and provenance into canonical PostgreSQL publication plus serve/migrate/sync/backfill CLI composition.",
-  "compatStatus": "runSync remains the sole publication caller; PostgreSQL commit is the visibility fence; unchanged runs reuse a dataset version without new generation. HTTP serve never schedules sync and media delivery remains controlled.",
-  "retirementStatus": "No Oracle runtime fallback was introduced. Oracle source-facing docs/config references remain pending delete-first cleanup in Task 4; historical Aegis evidence will be preserved.",
+  "scopeStatus": "Leaguepedia replacement Task 4 retired all active Oracle source surfaces and added operator-facing Leaguepedia source, attribution, operations and deployment documentation plus tracked-file guards.",
+  "compatStatus": "Runtime remains Leaguepedia-only with operator-supplied reviewed endpoint, User-Agent and media hosts. Existing API/UI contracts are unchanged; synthetic fixture remains explicitly partial and non-retiring.",
+  "retirementStatus": "Oracle is absent from active runtime/config/package/test/deployment paths. Only historical docs/aegis records and explicit operator policy about exclusion/reconsideration remain.",
   "newRiskSignals": [
-    "All 24 PostgreSQL integration tests are environment-skipped; migrations 004-007, retirement visibility, shared media objects and fixture import twice still require real PostgreSQL/S3/Docker runtime evidence. Synthetic fixture is intentionally partial and cannot retire facts."
+    "Guard scans Git tracked files and binary paths, not unstaged untracked content or binary payloads. Host validation cannot prove official ownership/connectivity; bounded live probes and operator review remain mandatory. PostgreSQL/Docker acceptance is still open."
   ],
   "decision": "needs-verification"
 }

@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "leaguepedia-task-04-oracle-retirement",
+  "type": "verification",
+  "source": "merge af9b823; task commits 4a3e0c4,0ece7e4,dd21265,c218d60",
+  "summary": "Oracle MVP source retirement and Leaguepedia operator documentation passed controller verification: server 99/99, sync 103/103, root/guard 35/35, consumer, typecheck, lint, build, CLI help, Aegis workspace check and diff check. Spec and independent quality reviews approved after tracked-file scan authority, policy-line hardening, endpoint/User-Agent/media-host validation and placeholder rejection. Active runtime/config/package paths contain no retired provider/fallback; historical docs/aegis evidence remains preserved.",
+  "verifier": "controller plus independent spec and quality reviewers"
+}

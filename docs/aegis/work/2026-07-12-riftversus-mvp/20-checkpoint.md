@@ -276,3 +276,23 @@
 - merge 6e93837; evidence artifact leaguepedia-task-03-publication-cli
 - Blocked on: No TEST_DATABASE_URL or Docker/S3 runtime environment; does not block Oracle source-facing cleanup and documentation.
 - Next step: Create a fresh Task 4 worktree, delete Oracle runtime/config/manifest/fixture references, update Leaguepedia source and operations documentation, and add lingering-reference verification.
+
+## DriftCheckDraft
+
+- Scope status: Leaguepedia replacement Task 4 retired all active Oracle source surfaces and added operator-facing Leaguepedia source, attribution, operations and deployment documentation plus tracked-file guards.
+- Compatibility status: Runtime remains Leaguepedia-only with operator-supplied reviewed endpoint, User-Agent and media hosts. Existing API/UI contracts are unchanged; synthetic fixture remains explicitly partial and non-retiring.
+- Retirement status: Oracle is absent from active runtime/config/package/test/deployment paths. Only historical docs/aegis records and explicit operator policy about exclusion/reconsideration remain.
+- New risk signals:
+- Guard scans Git tracked files and binary paths, not unstaged untracked content or binary payloads. Host validation cannot prove official ownership/connectivity; bounded live probes and operator review remain mandatory. PostgreSQL/Docker acceptance is still open.
+- Advisory decision: needs-verification
+
+## Checkpoint Update
+
+- Current todo: Execute Task 5 Docker/PostgreSQL historical acceptance and close environment-backed evidence gaps
+- Active slice: Leaguepedia Tasks 1-4 complete; Docker/PostgreSQL acceptance preparation
+- Completed todos:
+- Replacement Task 4 retired active Oracle source surfaces, hardened source guards/config validation, and documented Leaguepedia operations/deployment after final reviews
+- Evidence refs:
+- merge af9b823; evidence artifact leaguepedia-task-04-oracle-retirement
+- Blocked on: Docker CLI/daemon and TEST_DATABASE_URL are unavailable in the current environment; code/static Docker work can proceed but runtime acceptance cannot be claimed yet.
+- Next step: Inspect existing Docker stack and Task 5 plan, implement any missing container/health/fixture acceptance surfaces, then run all possible static gates and request or use a real Docker/PostgreSQL environment for final acceptance.
