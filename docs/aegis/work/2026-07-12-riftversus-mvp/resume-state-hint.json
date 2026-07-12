@@ -2,9 +2,9 @@
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
   "lastCheckpointRef": "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json",
-  "resumeInstruction": "Keep provider access in reviewed manifests and data ingestion separate from API/UI. Do not enable a guessed source URL. Preserve Task 11 browser-only export boundary.",
+  "resumeInstruction": "Do not merge feat/task-09-leaguepedia or create a second database/media publication pipeline. Start with source manifest proof, implement one Task 7 runner, then rebase/rework Task 9 against it.",
   "knownPartialWork": [
-    "Task 11 browser PNG/ZIP export merged after spec and quality reviews"
+    "Task 9 pure adapter branch was reviewed and intentionally withheld because it cannot safely integrate media cache/coverage without Task 7 runner"
   ],
   "mustReadBeforeContinuing": [
     "docs/aegis/work/2026-07-12-riftversus-mvp/10-intent.md",
@@ -12,6 +12,6 @@
     "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json"
   ],
   "unsafeToAssume": [
-    "Do not assume a downloads page is a stable machine-readable CSV source or that Docker/PostgreSQL acceptance evidence exists."
+    "Do not treat third-party file names, an accessible downloads page, a public wiki probe, or adapter fixtures as authorization to enable live Oracle ingestion or publish coverage."
   ]
 }

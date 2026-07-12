@@ -176,3 +176,23 @@
 - Task 11 merge 77756f6; evidence artifact task-11-browser-export
 - Blocked on: A publicly verifiable Oracle CSV direct URL/header proof is unavailable; the plan forbids guessing file identifiers or parsing the downloads-page HTML.
 - Next step: Obtain an approved public direct Oracle CSV URL or choose a different reviewed provider/source, then create or resume the Task 7 worktree.
+
+## Checkpoint Update
+
+- Current todo: Await a verified Oracle direct CSV source decision before Task 7; do not merge incomplete Task 9 branch
+- Active slice: Task 7/9 integration source-access gate
+- Completed todos:
+- Task 9 pure adapter branch was reviewed and intentionally withheld because it cannot safely integrate media cache/coverage without Task 7 runner
+- Evidence refs:
+- Task 9 branch d95c3a2 spec review found blocking runner/integration and client allowlist gaps; no merge
+- Blocked on: No official publicly verifiable Oracle CSV direct URL/header exists in available evidence. Task 7 plan prohibits guessing identifiers or parsing download-page HTML. Task 9 depends on Task 7 single runner for media caching, coverage persistence and atomic publication.
+- Next step: User must provide an official public Oracle CSV direct URL with header evidence, or explicitly approve a reviewed alternative source/provider; then finish Task 7 before reworking Task 9.
+
+## DriftCheckDraft
+
+- Scope status: No mainline code changes in this slice. Task 9 branch is deliberately unmerged because the plan requires Task 7 runner-owned media caching and coverage publication.
+- Compatibility status: Keeping Task9 unmerged preserves the single publication/visibility owner. It avoids an alternate direct provider-to-database/media path.
+- Retirement status: No live Oracle source, second sync runner, raw media proxy, D1, SQLite, Rust or provider fallback was introduced.
+- New risk signals:
+- Task9 review found public client parameters could override the action allowlist; branch remains unmerged and must be fixed after Task7 source decision.
+- Advisory decision: pause-for-user

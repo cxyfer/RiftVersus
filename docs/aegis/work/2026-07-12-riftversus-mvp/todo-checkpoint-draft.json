@@ -1,15 +1,15 @@
 {
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
-  "currentTodo": "Resolve Oracle public direct-download source access, then execute Task 7 sync orchestration and source manifest",
+  "currentTodo": "Await a verified Oracle direct CSV source decision before Task 7; do not merge incomplete Task 9 branch",
   "completedTodos": [
-    "Task 11 browser PNG/ZIP export merged after spec and quality reviews"
+    "Task 9 pure adapter branch was reviewed and intentionally withheld because it cannot safely integrate media cache/coverage without Task 7 runner"
   ],
-  "activeSlice": "Task 11 complete; Task 7 source-access checkpoint",
+  "activeSlice": "Task 7/9 integration source-access gate",
   "evidenceRefs": [
-    "Task 11 merge 77756f6; evidence artifact task-11-browser-export"
+    "Task 9 branch d95c3a2 spec review found blocking runner/integration and client allowlist gaps; no merge"
   ],
-  "blockedOn": "A publicly verifiable Oracle CSV direct URL/header proof is unavailable; the plan forbids guessing file identifiers or parsing the downloads-page HTML.",
-  "nextStep": "Obtain an approved public direct Oracle CSV URL or choose a different reviewed provider/source, then create or resume the Task 7 worktree.",
+  "blockedOn": "No official publicly verifiable Oracle CSV direct URL/header exists in available evidence. Task 7 plan prohibits guessing identifiers or parsing download-page HTML. Task 9 depends on Task 7 single runner for media caching, coverage persistence and atomic publication.",
+  "nextStep": "User must provide an official public Oracle CSV direct URL with header evidence, or explicitly approve a reviewed alternative source/provider; then finish Task 7 before reworking Task 9.",
   "updatedAt": "2026-07-12"
 }
