@@ -119,11 +119,12 @@ export class LeaguepediaClient {
           await this.#sleep(retryDelay(response.headers.get("Retry-After"), attempt, this.#now()));
           continue;
         }
-        const body: unknown = await readJsonBounded(response, this.#maxResponseBytes, url.toString());
+        const decoded = await readJsonBounded(response, this.#maxResponseBytes, url.toString());
+        const body: unknown = decoded.body;
         if (!isRecord(body)) throw new Error("Leaguepedia response must be a JSON object.");
         if (isRecord(body.error)) {
           const code = typeof body.error.code === "string" ? body.error.code : "unknown";
-          const result = { body, url: url.toString() };
+          const result = { body, url: url.toString(), responseBytes: decoded.responseBytes };
           const apiError = new LeaguepediaApiError(code, toRawEvidence(result, { action }));
           if ((code === "ratelimited" || code === "maxlag") && attempt < this.#maxRetries) {
             lastError = apiError;
@@ -133,7 +134,7 @@ export class LeaguepediaClient {
           }
           throw apiError;
         }
-        return { body, url: url.toString() };
+        return { body, url: url.toString(), responseBytes: decoded.responseBytes };
       } catch (error) {
         const reason = error instanceof Error ? error : new Error(String(error));
         if (attempt === this.#maxRetries || !retryableError(reason)) throw reason;
@@ -158,7 +159,7 @@ export class LeaguepediaApiError extends Error {
 }
 export class LeaguepediaResourceLimitError extends Error { constructor(readonly sourceUrl: string, readonly limit: number) { super(`Leaguepedia response exceeds the ${limit} byte limit.`); this.name = "LeaguepediaResourceLimitError"; } }
 
-interface RequestResult { body: Record<string, unknown>; url: string }
+interface RequestResult { body: Record<string, unknown>; url: string; responseBytes: number }
 
 function toRawEvidence(result: RequestResult, request: { action: "query" | "cargoquery"; table?: CargoPage["rawEvidence"]["table"]; offset?: number; continuation?: Readonly<Record<string, string>> }): RawApiEvidence {
   const digest = createHash("sha256").update(result.url).digest("hex").slice(0, 16);
@@ -170,6 +171,7 @@ function toRawEvidence(result: RequestResult, request: { action: "query" | "carg
     ...(request.continuation === undefined || Object.keys(request.continuation).length === 0 ? {} : { continuation: { ...request.continuation } }),
     sourceUrl: result.url,
     response: result.body,
+    responseBytes: result.responseBytes,
     revisionIds: collectRevisionIds(result.body),
   };
 }
@@ -197,7 +199,7 @@ function retryDelay(header: string | null, attempt: number, now: number): number
   }
   return 100 * 2 ** attempt;
 }
-async function readJsonBounded(response: Response, maxBytes: number, sourceUrl: string): Promise<unknown> { const bytes = await readBounded(response, maxBytes, sourceUrl); return JSON.parse(new TextDecoder().decode(bytes)) as unknown; }
+async function readJsonBounded(response: Response, maxBytes: number, sourceUrl: string): Promise<{ body: unknown; responseBytes: number }> { const bytes = await readBounded(response, maxBytes, sourceUrl); return { body: JSON.parse(new TextDecoder().decode(bytes)) as unknown, responseBytes: bytes.byteLength }; }
 async function consumeBounded(response: Response, maxBytes: number, sourceUrl: string): Promise<void> { try { await readBounded(response, maxBytes, sourceUrl); } catch { await response.body?.cancel().catch(() => undefined); } }
 async function readBounded(response: Response, maxBytes: number, sourceUrl: string): Promise<Uint8Array> {
   const declared = Number(response.headers.get("Content-Length"));

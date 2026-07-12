@@ -24,7 +24,16 @@ export interface RawApiEvidence {
   continuation?: Readonly<Record<string, string>>;
   sourceUrl: string;
   response: Record<string, unknown>;
+  responseBytes?: number;
   revisionIds: readonly number[];
+  scope?: {
+    sliceIds?: readonly string[];
+    competition?: string;
+    seasonYear?: number;
+    from?: string;
+    to?: string;
+    gameIds?: readonly string[];
+  };
 }
 export interface CargoPage { rows: readonly Record<string, unknown>[]; offset: number; rawEvidence: RawApiEvidence }
 export interface QueryEvidenceResult { data: Record<string, unknown>; rawEvidence: readonly RawApiEvidence[] }
@@ -92,7 +101,7 @@ export interface LeaguepediaSnapshot {
 
 export interface LeaguepediaRawInput {
   sourceUrl: string;
-  slices: readonly { competition: string; seasonYear: number }[];
+  slices: readonly { sliceId: string; competition: string; seasonYear: number; from: string; to: string }[];
   rawEvidence: readonly RawApiEvidence[];
 }
 

@@ -46,7 +46,12 @@ function rawEvidence(table: LeaguepediaCargoTable, offset: number, rows: readonl
 function cargoPage(table: LeaguepediaCargoTable, offset: number, rows: readonly Record<string, unknown>[]) {
   return { offset, rows, rawEvidence: rawEvidence(table, offset, rows) };
 }
-function rawInput(snapshot: LeaguepediaSnapshot): LeaguepediaRawInput { return { sourceUrl: snapshot.sourceUrl, slices: snapshot.slices.map(({ competition, seasonYear }) => ({ competition, seasonYear })), rawEvidence: snapshot.rawEvidence }; }
+function rawInput(snapshot: LeaguepediaSnapshot): LeaguepediaRawInput {
+  const slices = snapshot.rawEvidence.flatMap((item) => item.table === "ScoreboardGames" && item.scope?.sliceIds?.[0] && item.scope.competition && item.scope.seasonYear !== undefined && item.scope.from && item.scope.to
+    ? [{ sliceId: item.scope.sliceIds[0], competition: item.scope.competition, seasonYear: item.scope.seasonYear, from: item.scope.from, to: item.scope.to }]
+    : []);
+  return { sourceUrl: snapshot.sourceUrl, slices: [...new Map(slices.map((slice) => [slice.sliceId, slice])).values()], rawEvidence: snapshot.rawEvidence };
+}
 
 describe("LeaguepediaClient", () => {
   it("fixes endpoint, action, format, fields and table in typed methods", async () => {
@@ -216,7 +221,7 @@ describe("Leaguepedia fetching", () => {
       fetchTournamentsPage: async ({ offset }: { offset: number }) => cargoPage("Tournaments", offset, []), fetchGamesPage: async ({ offset }: { offset: number }) => cargoPage("ScoreboardGames", offset, []),
       fetchGamePlayersPage: async ({ offset }: { offset: number }) => cargoPage("ScoreboardPlayers", offset, []), fetchImageInfoWithEvidence: async () => ({ data: {}, rawEvidence: [] }),
     };
-    await expect(fetchLeaguepediaRawInput(client, { sourceUrl: "https://lol.example/wiki", slices: Array.from({ length: 1001 }, (_, seasonYear) => ({ competition: "Worlds", seasonYear, from: "2024-01-01", to: "2025-01-01" })) })).rejects.toThrow(/1000/);
+    await expect(fetchLeaguepediaRawInput(client, { sourceUrl: "https://lol.example/wiki", slices: Array.from({ length: 101 }, (_, seasonYear) => ({ competition: "Worlds", seasonYear, from: "2024-01-01", to: "2025-01-01" })) })).rejects.toThrow(/100/);
   });
 
   it("limits concurrent slice requests to four", async () => {
@@ -229,6 +234,85 @@ describe("Leaguepedia fetching", () => {
     };
     await fetchLeaguepediaRawInput(client, { sourceUrl: "https://lol.example/wiki", slices: Array.from({ length: 12 }, (_, index) => ({ competition: `C${index}`, seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" })) });
     expect(maximum).toBeLessThanOrEqual(4);
+  });
+
+  it("limits concurrent player chunk traversals to four", async () => {
+    let active = 0; let maximum = 0;
+    const gameRows = Array.from({ length: 401 }, (_, index) => ({
+      GameId: `G${index}`, MatchId: `M${index}`, Tournament: "Worlds", DateTime_UTC: "2024-10-01T00:00:00Z",
+      BestOf: 1, N_GameInMatch: 1, Team1: "T1", Team2: "BLG", Team1Score: 1, Team2Score: 0, Winner: 1,
+    }));
+    const client = {
+      fetchTeamsPage: async ({ offset }: { offset: number }) => cargoPage("Teams", offset, []), fetchPlayersPage: async ({ offset }: { offset: number }) => cargoPage("Players", offset, []),
+      fetchTournamentsPage: async ({ offset }: { offset: number }) => cargoPage("Tournaments", offset, []), fetchGamesPage: async ({ offset }: { offset: number }) => cargoPage("ScoreboardGames", offset, gameRows),
+      fetchGamePlayersPage: async ({ offset }: { offset: number }) => { active += 1; maximum = Math.max(maximum, active); await new Promise((resolve) => setTimeout(resolve, 1)); active -= 1; return cargoPage("ScoreboardPlayers", offset, []); },
+      fetchImageInfoWithEvidence: async () => ({ data: {}, rawEvidence: [] }),
+    };
+    await fetchLeaguepediaRawInput(client, { sourceUrl: "https://lol.example/wiki", slices: [{ competition: "Worlds", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" }] });
+    expect(maximum).toBeLessThanOrEqual(4);
+    expect(maximum).toBeGreaterThan(1);
+  });
+
+  it("enforces one aggregate snapshot budget across concurrent slices", async () => {
+    const client = {
+      fetchTeamsPage: async ({ offset }: { offset: number }) => cargoPage("Teams", offset, []), fetchPlayersPage: async ({ offset }: { offset: number }) => cargoPage("Players", offset, []),
+      fetchTournamentsPage: async ({ offset }: { offset: number }) => cargoPage("Tournaments", offset, []), fetchGamesPage: async ({ offset }: { offset: number }) => cargoPage("ScoreboardGames", offset, []),
+      fetchGamePlayersPage: async ({ offset }: { offset: number }) => cargoPage("ScoreboardPlayers", offset, []), fetchImageInfoWithEvidence: async () => ({ data: {}, rawEvidence: [] }),
+    };
+    const failure = await fetchLeaguepediaRawInput(client, {
+      sourceUrl: "https://lol.example/wiki", resourceLimits: { maxPages: 4, maxRows: 100, maxBytes: 100_000 },
+      slices: [
+        { competition: "Worlds", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" },
+        { competition: "MSI", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" },
+      ],
+    }).catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(LeaguepediaSnapshotError);
+    expect((failure as LeaguepediaSnapshotError).message).toMatch(/global resource budget/);
+    expect((failure as LeaguepediaSnapshotError).rawEvidence.length).toBeGreaterThan(4);
+  });
+
+  it("rejects retained pagination with a missing middle offset", async () => {
+    const input = await rawFixture();
+    const gamePage = input.rawEvidence.find((item) => item.table === "ScoreboardGames")!;
+    const title = (gamePage.response.cargoquery as Array<{ title: Record<string, unknown> }>)[0]!.title;
+    const broken: LeaguepediaRawInput = {
+      ...input,
+      rawEvidence: input.rawEvidence.flatMap((item) => item.table !== "ScoreboardGames" ? [item] : [
+        { ...item, requestId: "games:0", offset: 0, response: { cargoquery: Array.from({ length: 500 }, () => ({ title })) } },
+        { ...item, requestId: "games:1000", offset: 1000, response: { cargoquery: [] } },
+      ]),
+    };
+    expect(() => parseLeaguepediaRawInput(broken)).toThrow(/expected offset 500, received 1000/);
+  });
+
+  it("keeps an incomplete traversal isolated to its own slice", async () => {
+    const input = await rawFixture();
+    const gamePage = input.rawEvidence.find((item) => item.table === "ScoreboardGames")!;
+    const original = (gamePage.response.cargoquery as Array<{ title: Record<string, unknown> }>)[0]!.title;
+    const sliceId = "Worlds:2025:2025-01-01:2026-01-01";
+    const title = { ...original, GameId: "WORLD25-G1", MatchId: "WORLD25-M1", DateTime_UTC: "2025-10-01T00:00:00Z" };
+    const secondPage: RawApiEvidence = {
+      ...gamePage, requestId: "games:2025:0", offset: 0,
+      scope: { sliceIds: [sliceId], competition: "Worlds", seasonYear: 2025, from: "2025-01-01", to: "2026-01-01" },
+      response: { cargoquery: Array.from({ length: 500 }, () => ({ title })) },
+    };
+    const multi: LeaguepediaRawInput = { ...input, slices: [...input.slices, { sliceId, competition: "Worlds", seasonYear: 2025, from: "2025-01-01", to: "2026-01-01" }], rawEvidence: [...input.rawEvidence, secondPage] };
+    const batch = await createLeaguepediaProvider({ loadRawInput: async () => multi, overrides: await overrides() }).stage({ mode: "backfill", years: [2024, 2025], competitions: ["Worlds"] });
+    expect(batch.coverage).toEqual([
+      expect.objectContaining({ seasonYear: 2024, status: "complete" }),
+      expect.objectContaining({ seasonYear: 2025, status: "partial" }),
+    ]);
+  });
+
+  it("parses a large retained game page without repeated series scans", async () => {
+    const input = await rawFixture();
+    const gamePage = input.rawEvidence.find((item) => item.table === "ScoreboardGames")!;
+    const original = (gamePage.response.cargoquery as Array<{ title: Record<string, unknown> }>)[0]!.title;
+    const rows = Array.from({ length: 400 }, (_, index) => ({ title: { ...original, GameId: `G${index}`, MatchId: `M${index}` } }));
+    const large = { ...input, rawEvidence: input.rawEvidence.map((item) => item === gamePage ? { ...item, response: { cargoquery: rows } } : item) };
+    const started = performance.now();
+    expect(parseLeaguepediaRawInput(large).series).toHaveLength(400);
+    expect(performance.now() - started).toBeLessThan(5_000);
   });
 
   it("converts typed Cargo pages into explicit series, games, players and media", async () => {
@@ -256,6 +340,8 @@ describe("Leaguepedia fetching", () => {
     expect(snapshot.tournaments).toEqual([expect.objectContaining({ sourceKey: "2024 Season World Championship" })]);
     expect(snapshot.slices[0]).toMatchObject({ competition: "2024 Season World Championship", seasonYear: 2024, gameSourceKeys: ["G1"] });
     expect(snapshot.rawEvidence.map((item) => item.table)).toEqual(expect.arrayContaining(["Teams", "Players", "Tournaments", "ScoreboardGames", "ScoreboardPlayers"]));
+    expect(snapshot.rawEvidence.find((item) => item.table === "ScoreboardGames")?.scope).toMatchObject({ competition: "2024 Season World Championship", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01", sliceIds: [expect.any(String)] });
+    expect(snapshot.rawEvidence.find((item) => item.table === "ScoreboardPlayers")?.scope).toMatchObject({ gameIds: ["G1"], sliceIds: [expect.any(String)] });
     expect(snapshot.revisionIds).toEqual([77]);
     expect(snapshot.traversal.complete).toBe(true);
   });
@@ -336,6 +422,17 @@ describe("Leaguepedia normalization", () => {
     const sktEra = result.dimensions.teamEras.find((era) => era.sourceKey === "SK Telecom T1")!;
     const t1Era = result.dimensions.teamEras.find((era) => era.sourceKey === "T1")!;
     expect(result.facts.series?.map((item) => item.sideAEraId)).toEqual([sktEra.id, t1Era.id]);
+  });
+
+  it("takes era and region from the same playedAt-selected definition", async () => {
+    const snapshot = await fixture();
+    const entities = snapshot.entities.map((entity) => entity.sourceKey === "SK Telecom T1" ? { ...entity, region: "Old Korea" } : entity.sourceKey === "T1" ? { ...entity, region: "New Korea" } : entity);
+    const series = [{ ...snapshot.series[0]!, playedAt: "2020-10-01T00:00:00Z", sideATeam: "SK Telecom T1" }];
+    const games = [{ ...snapshot.games[0]!, playedAt: series[0]!.playedAt, sideATeam: "SK Telecom T1" }];
+    const result = normalizeLeaguepediaSnapshot({ ...snapshot, entities, series, games, gamePlayers: [], slices: [] }, await overrides());
+    const t1Era = result.dimensions.teamEras.find((era) => era.sourceKey === "T1")!;
+    expect(result.facts.series?.[0]).toMatchObject({ sideAEraId: t1Era.id, sideARegionId: t1Era.regionId });
+    expect(t1Era.regionId).toBe(result.dimensions.regions.find((region) => region.name === "New Korea")?.id);
   });
 
   it("override checksums are deterministic and reviewed precedence wins", async () => {
@@ -494,5 +591,11 @@ describe("Leaguepedia coverage and provider", () => {
     const snapshot = await fixture();
     const reviewed = await overrides();
     expect(() => normalizeLeaguepediaSnapshot({ ...snapshot, gamePlayers: snapshot.gamePlayers.map((item) => ({ ...item, playerWin: !item.playerWin })) }, reviewed)).toThrow(/winner flag/);
+  });
+
+  it("rejects player facts whose game key is absent before slice coverage is derived", async () => {
+    const snapshot = await fixture();
+    const reviewed = await overrides();
+    expect(() => normalizeLeaguepediaSnapshot({ ...snapshot, gamePlayers: [{ ...snapshot.gamePlayers[0]!, gameKey: "UNKNOWN" }] }, reviewed)).toThrow(/unknown game UNKNOWN/);
   });
 });

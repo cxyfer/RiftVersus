@@ -23,4 +23,4 @@ export {
 } from "./providers/leaguepedia/index.js";
 export type * from "./providers/leaguepedia/types.js";
 export type { LeaguepediaProviderOptions } from "./providers/leaguepedia/index.js";
-export type { LeaguepediaReadClient, SnapshotRequest, SnapshotSliceRequest, TraversedRows } from "./providers/leaguepedia/index.js";
+export type { LeaguepediaReadClient, SnapshotRequest, SnapshotResourceLimits, SnapshotSliceRequest, TraversedRows } from "./providers/leaguepedia/index.js";

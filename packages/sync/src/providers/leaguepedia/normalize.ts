@@ -12,6 +12,8 @@ import type {
 const PROVIDER = "leaguepedia";
 
 export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, overrides: ReviewedOverrides): LeaguepediaNormalizationResult {
+  const sourceGameKeys = new Set(snapshot.games.map((game) => game.sourceKey));
+  for (const player of snapshot.gamePlayers) if (!sourceGameKeys.has(player.gameKey)) throw new Error(`Player fact references unknown game ${player.gameKey}.`);
   const collisionKeys = ambiguousKeys(snapshot);
   const entities: NormalizedLeaguepediaEntity[] = [];
   const entityIds = new Map<string, string>();
@@ -84,11 +86,13 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
     if (sideATeamId === sideBTeamId) throw new Error(`Series ${item.sourceKey} has identical canonical sides.`);
     const scores = completedScores(item.bestOf, item.sideAScore, item.sideBScore, item.sourceKey);
     const id = stableUuid(`series:${item.sourceKey}`);
+    const sideAEra = selectEra(teamEras, sideATeamId, item.playedAt, item.sourceKey);
+    const sideBEra = selectEra(teamEras, sideBTeamId, item.playedAt, item.sourceKey);
     seriesIds.set(item.sourceKey, id);
     return {
       id, provider: PROVIDER, sourceKey: item.sourceKey, tournamentId, playedAt: validDate(item.playedAt, item.sourceKey),
-      bestOf: item.bestOf, completed: true, sideATeamId, sideAEraId: selectEra(teamEras, sideATeamId, item.playedAt, item.sourceKey), sideARegionId: regionId(snapshot, item.sideATeam),
-      sideBTeamId, sideBEraId: selectEra(teamEras, sideBTeamId, item.playedAt, item.sourceKey), sideBRegionId: regionId(snapshot, item.sideBTeam),
+      bestOf: item.bestOf, completed: true, sideATeamId, sideAEraId: sideAEra.id, sideARegionId: sideAEra.regionId ?? null,
+      sideBTeamId, sideBEraId: sideBEra.id, sideBRegionId: sideBEra.regionId ?? null,
       sideAScore: scores.a, sideBScore: scores.b, winnerTeamId: scores.a > scores.b ? sideATeamId : sideBTeamId,
     };
   });
@@ -106,11 +110,13 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
     const playedAt = validDate(item.playedAt, item.sourceKey);
     if (playedAt < validDate(sourceSeries.playedAt, sourceSeries.sourceKey)) throw new Error(`Game ${item.sourceKey} precedes its series.`);
     const id = stableUuid(`game:${item.sourceKey}`);
+    const sideAEra = selectEra(teamEras, sideATeamId, item.playedAt, item.sourceKey);
+    const sideBEra = selectEra(teamEras, sideBTeamId, item.playedAt, item.sourceKey);
     gameIds.set(item.sourceKey, id);
     return {
       id, provider: PROVIDER, sourceKey: item.sourceKey, seriesId, gameNumber: positiveInteger(item.gameNumber, item.sourceKey), playedAt,
-      sideATeamId, sideAEraId: selectEra(teamEras, sideATeamId, item.playedAt, item.sourceKey), sideARegionId: regionId(snapshot, item.sideATeam),
-      sideBTeamId, sideBEraId: selectEra(teamEras, sideBTeamId, item.playedAt, item.sourceKey), sideBRegionId: regionId(snapshot, item.sideBTeam), winnerTeamId,
+      sideATeamId, sideAEraId: sideAEra.id, sideARegionId: sideAEra.regionId ?? null,
+      sideBTeamId, sideBEraId: sideBEra.id, sideBRegionId: sideBEra.regionId ?? null, winnerTeamId,
     };
   });
 
@@ -169,8 +175,7 @@ export function deriveLeaguepediaCoverage(evidence: LeaguepediaCoverageEvidence)
 
 function ambiguousKeys(snapshot: LeaguepediaSnapshot): Set<string> { const owners = new Map<string, Set<string>>(); for (const entity of snapshot.entities) for (const name of [entity.displayName, ...entity.aliases]) { const key = name.trim().toLocaleLowerCase(); if (key) owners.set(key, new Set([...(owners.get(key) ?? []), entity.sourceKey])); } return new Set([...owners.values()].filter((values) => values.size > 1).flatMap((values) => [...values])); }
 function requiredEntityId(ids: ReadonlyMap<string, string>, key: string, factKey: string): string { const id = ids.get(key); if (id === undefined) throw new Error(`Fact ${factKey} references unresolved or quarantined identity ${key}.`); return id; }
-function selectEra(eras: readonly StagedTeamEraDefinition[], teamEntityId: string, playedAt: string, factKey: string): string { const day = playedAt.slice(0, 10); const candidates = eras.filter((era) => era.teamEntityId === teamEntityId && (!era.validFrom || era.validFrom <= day) && (!era.validTo || era.validTo >= day)); if (candidates.length !== 1) throw new Error(`Fact ${factKey} requires exactly one team era at ${day}; found ${candidates.length}.`); return candidates[0]!.id; }
-function regionId(snapshot: LeaguepediaSnapshot, teamKey: string): string | null { const region = snapshot.entities.find((entity) => entity.kind === "team" && entity.sourceKey === teamKey)?.region; return region ? stableUuid(`region:${region}`) : null; }
+function selectEra(eras: readonly StagedTeamEraDefinition[], teamEntityId: string, playedAt: string, factKey: string): StagedTeamEraDefinition { const day = playedAt.slice(0, 10); const candidates = eras.filter((era) => era.teamEntityId === teamEntityId && (!era.validFrom || era.validFrom <= day) && (!era.validTo || era.validTo >= day)); if (candidates.length !== 1) throw new Error(`Fact ${factKey} requires exactly one team era at ${day}; found ${candidates.length}.`); return candidates[0]!; }
 function completedScores(bestOf: 1 | 3 | 5, a: number | null, b: number | null, key: string): { a: number; b: number } { if (a === null || b === null || !Number.isInteger(a) || !Number.isInteger(b) || a < 0 || b < 0) throw new Error(`Series ${key} scores are invalid.`); const target = Math.floor(bestOf / 2) + 1; if (!((a === target && b < target) || (b === target && a < target))) throw new Error(`Series ${key} score is inconsistent with BestOf ${bestOf}.`); return { a, b }; }
 function validDate(value: string, key: string): Date { const date = new Date(value); if (Number.isNaN(date.valueOf())) throw new Error(`Invalid date for ${key}.`); return date; }
 function positiveInteger(value: number, key: string): number { if (!Number.isInteger(value) || value <= 0) throw new Error(`Invalid game number for ${key}.`); return value; }

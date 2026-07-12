@@ -11,7 +11,7 @@ export interface TraversedRows {
   rawEvidence: readonly RawApiEvidence[];
 }
 
-export async function fetchAllCargoPages(fetchPage: (offset: number) => Promise<CargoPage>, maximumPages = 200, maximumRows = 100_000): Promise<TraversedRows> {
+export async function fetchAllCargoPages(fetchPage: (offset: number) => Promise<CargoPage>, maximumPages = 200, maximumRows = 100_000, consumePage?: (page: CargoPage) => void): Promise<TraversedRows> {
   if (!Number.isInteger(maximumPages) || maximumPages <= 0) throw new Error("maximumPages must be a positive integer.");
   const rows: Record<string, unknown>[] = [];
   const rawEvidence: RawApiEvidence[] = [];
@@ -20,6 +20,7 @@ export async function fetchAllCargoPages(fetchPage: (offset: number) => Promise<
   while (pages < maximumPages) {
     const page = await fetchPage(offset);
     if (page.offset !== offset) throw new Error("Leaguepedia Cargo page offset did not match the requested offset.");
+    consumePage?.(page);
     pages += 1;
     rows.push(...page.rows);
     if (page.rows.length > LEAGUEPEDIA_CARGO_LIMIT) throw new LeaguepediaSnapshotError("Leaguepedia Cargo page exceeds 500 rows.", rawEvidence, page.rawEvidence.sourceUrl);
@@ -41,7 +42,8 @@ export interface LeaguepediaReadClient {
 }
 
 export interface SnapshotSliceRequest { competition: string; seasonYear: number; from: string; to: string }
-export interface SnapshotRequest { slices: readonly SnapshotSliceRequest[]; sourceUrl: string }
+export interface SnapshotResourceLimits { maxBytes: number; maxPages: number; maxRows: number }
+export interface SnapshotRequest { slices: readonly SnapshotSliceRequest[]; sourceUrl: string; resourceLimits?: Partial<SnapshotResourceLimits> }
 
 export class LeaguepediaSnapshotError extends Error {
   constructor(message: string, readonly rawEvidence: readonly RawApiEvidence[], readonly sourceUrl: string, options?: ErrorOptions) {
@@ -51,29 +53,39 @@ export class LeaguepediaSnapshotError extends Error {
 }
 
 export async function fetchLeaguepediaRawInput(client: LeaguepediaReadClient, request: SnapshotRequest): Promise<LeaguepediaRawInput> {
-  if (request.slices.length === 0 || request.slices.length > 1000) throw new Error("Leaguepedia snapshot requires between 1 and 1000 bounded slices.");
+  if (request.slices.length === 0 || request.slices.length > 100) throw new Error("Leaguepedia snapshot requires between 1 and 100 bounded slices.");
+  const budget = new SnapshotBudget(request.resourceLimits, request.sourceUrl);
+  const slices = request.slices.map((slice) => ({ ...slice, sliceId: stableSliceId(slice) }));
   const [teamPages, playerPages, tournamentPages, slicePages] = await Promise.all([
-    fetchAllCargoPages((offset) => client.fetchTeamsPage({ offset })),
-    fetchAllCargoPages((offset) => client.fetchPlayersPage({ offset })),
-    fetchAllCargoPages((offset) => client.fetchTournamentsPage({ offset })),
-    mapLimit(request.slices, 4, async (slice) => ({ slice, pages: await fetchAllCargoPages((offset) => client.fetchGamesPage({ offset, from: slice.from, to: slice.to, competitions: [slice.competition] })) })),
+    fetchAllCargoPages((offset) => client.fetchTeamsPage({ offset }), 200, 100_000, (page) => budget.consume(page.rawEvidence, page.rows.length)),
+    fetchAllCargoPages((offset) => client.fetchPlayersPage({ offset }), 200, 100_000, (page) => budget.consume(page.rawEvidence, page.rows.length)),
+    fetchAllCargoPages((offset) => client.fetchTournamentsPage({ offset }), 200, 100_000, (page) => budget.consume(page.rawEvidence, page.rows.length)),
+    mapLimit(slices, 4, async (slice) => ({ slice, pages: await fetchAllCargoPages(async (offset) => withScope(await client.fetchGamesPage({ offset, from: slice.from, to: slice.to, competitions: [slice.competition] }), { sliceIds: [slice.sliceId], competition: slice.competition, seasonYear: slice.seasonYear, from: slice.from, to: slice.to }), 200, 100_000, (page) => budget.consume(page.rawEvidence, page.rows.length)) })),
   ]);
   const rawEvidence: RawApiEvidence[] = [teamPages, playerPages, tournamentPages, ...slicePages.map(({ pages }) => pages)].flatMap((page) => page.rawEvidence);
   try {
   const gameRows = uniqueRows(slicePages.flatMap(({ pages }) => pages.rows), "GameId");
   const games = gameRows.map(parseGame);
-  const playerPagesByChunk = await mapLimit(chunks(games.map((game) => game.sourceKey), 100), 4, async (gameIds) => fetchAllCargoPages((offset) => client.fetchGamePlayersPage({ offset, gameIds })));
+  const sliceIdsByGame = new Map<string, Set<string>>();
+  for (const { slice, pages } of slicePages) for (const row of pages.rows) {
+    const gameId = requiredString(row.GameId, "ScoreboardGames GameId");
+    sliceIdsByGame.set(gameId, new Set([...(sliceIdsByGame.get(gameId) ?? []), slice.sliceId]));
+  }
+  const playerPagesByChunk = await mapLimit(chunks(games.map((game) => game.sourceKey), 100), 4, async (gameIds) => {
+    const sliceIds = uniqueStrings(gameIds.flatMap((gameId) => [...(sliceIdsByGame.get(gameId) ?? [])]));
+    return fetchAllCargoPages(async (offset) => withScope(await client.fetchGamePlayersPage({ offset, gameIds }), { sliceIds, gameIds }), 200, 100_000, (page) => budget.consume(page.rawEvidence, page.rows.length));
+  });
   rawEvidence.push(...playerPagesByChunk.flatMap((page) => page.rawEvidence));
   const imageRequests = [...teamPages.rows, ...playerPages.rows].flatMap((row) => {
     const sourceKey = stringValue(row.OverviewPage) ?? stringValue(row.ID) ?? stringValue(row.Name);
     const title = stringValue(row.Image);
     return sourceKey === null || title === null ? [] : [{ sourceKey, title }];
   });
-  const mediaResult = await fetchMedia(client, imageRequests);
+  const mediaResult = await fetchMedia(client, imageRequests, (item) => budget.consume(item, 0));
   rawEvidence.push(...mediaResult.rawEvidence);
   return {
     sourceUrl: requireHttps(request.sourceUrl),
-    slices: request.slices.map(({ competition, seasonYear }) => ({ competition, seasonYear })),
+    slices,
     rawEvidence,
   };
   } catch (error) {
@@ -89,6 +101,7 @@ export async function fetchLeaguepediaSnapshot(client: LeaguepediaReadClient, re
 
 /** Deterministic replay parser. This is the only path from retained API envelopes to provider facts. */
 export function parseLeaguepediaRawInput(input: LeaguepediaRawInput): LeaguepediaSnapshot {
+  validateEvidenceScopes(input);
   const rows = (table: RawApiEvidence["table"]): Record<string, unknown>[] => input.rawEvidence.filter((item) => item.table === table).flatMap(strictEvidenceRows);
   const teamRows = rows("Teams");
   const playerRows = rows("Players");
@@ -97,26 +110,38 @@ export function parseLeaguepediaRawInput(input: LeaguepediaRawInput): Leaguepedi
   const playerFactRows = rows("ScoreboardPlayers");
   const entities = [...teamRows.map((row, index) => parseEntity("team", row, index)), ...playerRows.map((row, index) => parseEntity("player", row, index))];
   const games = gameRows.map(parseGame);
+  const series = parseSeries(gameRows);
+  const seriesByKey = new Map(series.map((item) => [item.sourceKey, item]));
+  for (const game of games) if (!seriesByKey.has(game.seriesKey)) throw new LeaguepediaSnapshotError(`Game ${game.sourceKey} references unknown series ${game.seriesKey}.`, input.rawEvidence, input.sourceUrl);
   const media = parseMediaEvidence(input.rawEvidence, [...teamRows, ...playerRows]);
-  const requiredTraversals = ["Teams", "Players", "Tournaments", "ScoreboardGames", "ScoreboardPlayers"] as const;
-  const traversalByTable = new Map(requiredTraversals.map((table) => [table, traversalFor(input.rawEvidence.filter((item) => item.table === table))]));
-  const slices = input.slices.map(({ competition, seasonYear }): LeaguepediaSliceEvidence => {
-    const gameSourceKeys = games.filter((game) => {
-      const series = parseSeries(gameRows).find((item) => item.sourceKey === game.seriesKey);
-      return series !== undefined && new Date(game.playedAt).getUTCFullYear() === seasonYear && (series.tournamentKey === competition || (competition.toLowerCase() === "worlds" && /world championship/i.test(series.tournamentKey)));
-    }).map((game) => game.sourceKey);
-    return { competition, seasonYear, gameSourceKeys, traversal: combineEvidence(requiredTraversals.map((table) => traversalByTable.get(table)!)), malformedOptionalRows: 0 };
+  const sharedTables = ["Teams", "Players", "Tournaments"] as const;
+  const sharedTraversals = sharedTables.map((table) => traversalFor(input.rawEvidence.filter((item) => item.table === table)));
+  const slices = input.slices.map(({ sliceId, competition, seasonYear, from, to }): LeaguepediaSliceEvidence => {
+    if (sliceId !== stableSliceId({ competition, seasonYear, from, to })) throw new LeaguepediaSnapshotError(`Retained sliceId ${sliceId} is not canonical.`, input.rawEvidence, input.sourceUrl);
+    const gameEvidence = input.rawEvidence.filter((item) => item.table === "ScoreboardGames" && item.scope?.sliceIds?.includes(sliceId));
+    assertSliceScope(gameEvidence, { sliceId, competition, seasonYear, from, to });
+    const sliceGameRows = gameEvidence.flatMap(strictEvidenceRows);
+    const gameSourceKeys = uniqueRows(sliceGameRows, "GameId").map((row, index) => parseGame(row, index).sourceKey);
+    const playerEvidence = input.rawEvidence.filter((item) => item.table === "ScoreboardPlayers" && item.scope?.sliceIds?.includes(sliceId));
+    for (const item of playerEvidence) {
+      const scopedGameIds = new Set(item.scope?.gameIds ?? []);
+      if (scopedGameIds.size === 0 || strictEvidenceRows(item).some((row) => !scopedGameIds.has(requiredString(row.GameId, "ScoreboardPlayers GameId")))) throw new LeaguepediaSnapshotError(`Retained player evidence ${item.requestId} conflicts with its game scope.`, [item], item.sourceUrl);
+    }
+    const playerGroups = new Map<string, RawApiEvidence[]>();
+    for (const item of playerEvidence) { const key = canonicalJson(item.scope?.gameIds ?? []); playerGroups.set(key, [...(playerGroups.get(key) ?? []), item]); }
+    const playerTraversal = gameSourceKeys.length === 0 ? { requestedPages: 0, visitedPages: 0, complete: true } : playerGroups.size === 0 ? traversalFor([]) : combineEvidence([...playerGroups.values()].map(traversalFor));
+    return { competition, seasonYear, gameSourceKeys, traversal: combineEvidence([...sharedTraversals, traversalFor(gameEvidence), playerTraversal]), malformedOptionalRows: 0 };
   });
   return {
     revisionIds: uniqueNumbers(input.rawEvidence.flatMap((item) => item.revisionIds)),
     sourceUrl: requireHttps(input.sourceUrl),
     entities,
     tournaments: tournamentRows.map(parseTournament),
-    series: parseSeries(gameRows),
+    series,
     games,
     gamePlayers: playerFactRows.map(parseGamePlayer),
     media,
-    traversal: combineEvidence(requiredTraversals.map((table) => traversalByTable.get(table)!)),
+    traversal: combineEvidence(slices.map((slice) => slice.traversal)),
     slices,
     rawEvidence: input.rawEvidence,
   };
@@ -134,9 +159,13 @@ function strictEvidenceRows(evidence: RawApiEvidence): Record<string, unknown>[]
 
 function traversalFor(evidence: readonly RawApiEvidence[]): TraversalEvidence {
   if (evidence.length === 0) return { requestedPages: 1, visitedPages: 0, complete: false };
-  const ordered = [...evidence].sort((a, b) => (a.offset ?? 0) - (b.offset ?? 0));
-  const lastRows = strictEvidenceRows(ordered.at(-1)!).length;
-  return { requestedPages: ordered.length, visitedPages: ordered.length, complete: lastRows < LEAGUEPEDIA_CARGO_LIMIT };
+  let expectedOffset = 0;
+  for (const item of evidence) {
+    if (item.offset !== expectedOffset) throw new LeaguepediaSnapshotError(`Retained Cargo traversal expected offset ${expectedOffset}, received ${item.offset ?? "missing"}.`, evidence, item.sourceUrl);
+    expectedOffset += strictEvidenceRows(item).length;
+  }
+  const lastRows = strictEvidenceRows(evidence.at(-1)!).length;
+  return { requestedPages: evidence.length + (lastRows === LEAGUEPEDIA_CARGO_LIMIT ? 1 : 0), visitedPages: evidence.length, complete: lastRows < LEAGUEPEDIA_CARGO_LIMIT };
 }
 
 function parseMediaEvidence(evidence: readonly RawApiEvidence[], entityRows: readonly Record<string, unknown>[]): LeaguepediaMedia[] {
@@ -233,11 +262,12 @@ function parseGamePlayer(row: Record<string, unknown>, index: number): Leagueped
   };
 }
 
-async function fetchMedia(client: LeaguepediaReadClient, requests: readonly { sourceKey: string; title: string }[]): Promise<{ media: LeaguepediaMedia[]; rawEvidence: RawApiEvidence[] }> {
+async function fetchMedia(client: LeaguepediaReadClient, requests: readonly { sourceKey: string; title: string }[], consume?: (evidence: RawApiEvidence) => void): Promise<{ media: LeaguepediaMedia[]; rawEvidence: RawApiEvidence[] }> {
   const output: LeaguepediaMedia[] = [];
   const rawEvidence: RawApiEvidence[] = [];
   for (const batch of chunks(requests, 50)) {
     const result = await client.fetchImageInfoWithEvidence(batch.map((item) => item.title));
+    for (const item of result.rawEvidence) consume?.(item);
     rawEvidence.push(...result.rawEvidence);
     const pages = isRecord(result.data.query) && Array.isArray(result.data.query.pages) ? result.data.query.pages.filter(isRecord) : [];
     for (const request of batch) {
@@ -267,6 +297,33 @@ function uniqueRows(rows: readonly Record<string, unknown>[], key: string): Reco
   }
   return [...output.values()];
 }
+function uniqueStrings(items: readonly string[]): string[] { return [...new Set(items)]; }
+function stableSliceId(slice: SnapshotSliceRequest): string { return `${encodeURIComponent(slice.competition)}:${slice.seasonYear}:${slice.from}:${slice.to}`; }
+function withScope(page: CargoPage, scope: NonNullable<RawApiEvidence["scope"]>): CargoPage { return { ...page, rawEvidence: { ...page.rawEvidence, scope } }; }
+function assertSliceScope(evidence: readonly RawApiEvidence[], slice: SnapshotSliceRequest & { sliceId: string }): void {
+  for (const item of evidence) if (item.scope?.competition !== slice.competition || item.scope.seasonYear !== slice.seasonYear || item.scope.from !== slice.from || item.scope.to !== slice.to) throw new LeaguepediaSnapshotError(`Retained Cargo evidence scope conflicts with slice ${slice.sliceId}.`, [item], item.sourceUrl);
+}
+function validateEvidenceScopes(input: LeaguepediaRawInput): void {
+  const declared = new Set(input.slices.map((slice) => slice.sliceId));
+  if (declared.size !== input.slices.length) throw new LeaguepediaSnapshotError("Retained input contains duplicate sliceIds.", input.rawEvidence, input.sourceUrl);
+  for (const item of input.rawEvidence) if (item.table === "ScoreboardGames" || item.table === "ScoreboardPlayers") {
+    const sliceIds = item.scope?.sliceIds ?? [];
+    if (sliceIds.length === 0 || sliceIds.some((sliceId) => !declared.has(sliceId))) throw new LeaguepediaSnapshotError(`Retained evidence ${item.requestId} has an unknown or missing slice scope.`, [item], item.sourceUrl);
+  }
+}
+class SnapshotBudget {
+  readonly #limits: SnapshotResourceLimits;
+  readonly #evidence: RawApiEvidence[] = [];
+  #bytes = 0; #pages = 0; #rows = 0;
+  constructor(limits: Partial<SnapshotResourceLimits> | undefined, readonly sourceUrl: string) {
+    this.#limits = { maxBytes: positiveLimit(limits?.maxBytes ?? 100_000_000, "maxBytes"), maxPages: positiveLimit(limits?.maxPages ?? 2_000, "maxPages"), maxRows: positiveLimit(limits?.maxRows ?? 500_000, "maxRows") };
+  }
+  consume(evidence: RawApiEvidence, rows: number): void {
+    this.#evidence.push(evidence); this.#pages += 1; this.#rows += rows; this.#bytes += evidence.responseBytes ?? new TextEncoder().encode(JSON.stringify(evidence.response)).byteLength;
+    if (this.#bytes > this.#limits.maxBytes || this.#pages > this.#limits.maxPages || this.#rows > this.#limits.maxRows) throw new LeaguepediaSnapshotError(`Leaguepedia snapshot exceeds its global resource budget (${this.#bytes} bytes, ${this.#pages} pages, ${this.#rows} rows).`, [...this.#evidence], this.sourceUrl);
+  }
+}
+function positiveLimit(value: number, name: string): number { if (!Number.isInteger(value) || value <= 0) throw new Error(`${name} must be a positive integer.`); return value; }
 function validateCompletedScore(bestOf: 1 | 3 | 5, a: number, b: number, sourceKey: string): void { const target = Math.floor(bestOf / 2) + 1; if (!((a === target && b < target) || (b === target && a < target))) throw new Error(`Series ${sourceKey} score is inconsistent with BestOf ${bestOf}.`); }
 function combineEvidence(items: readonly TraversalEvidence[]): TraversalEvidence { return { requestedPages: items.reduce((sum, item) => sum + item.requestedPages, 0), visitedPages: items.reduce((sum, item) => sum + item.visitedPages, 0), complete: items.every((item) => item.complete) }; }
 function chunks<T>(items: readonly T[], size: number): T[][] { const result: T[][] = []; for (let index = 0; index < items.length; index += size) result.push(items.slice(index, index + size)); return result; }
