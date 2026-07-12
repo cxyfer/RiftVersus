@@ -68,15 +68,18 @@ function apiFor(rows: SeriesRow[]) {
 
 describe("browser comparison export", () => {
   const completeDescriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "complete");
+  const naturalWidthDescriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "naturalWidth");
 
   beforeEach(() => {
     Object.defineProperty(HTMLImageElement.prototype, "complete", { configurable: true, get: () => true });
+    Object.defineProperty(HTMLImageElement.prototype, "naturalWidth", { configurable: true, get: () => 100 });
   });
 
   afterEach(() => {
     vi.clearAllMocks();
     document.querySelectorAll(".export-sheet").forEach((node) => node.remove());
     if (completeDescriptor) Object.defineProperty(HTMLImageElement.prototype, "complete", completeDescriptor);
+    if (naturalWidthDescriptor) Object.defineProperty(HTMLImageElement.prototype, "naturalWidth", naturalWidthDescriptor);
   });
 
   it("partitions series rows at the requested page size without reordering", () => {
@@ -131,15 +134,71 @@ describe("browser comparison export", () => {
     expect(mocks.toPng).not.toHaveBeenCalled();
   });
 
-  it("waits for export images and replaces a failed image with the neutral placeholder", async () => {
+  it("waits for the fallback load before allowing the export image promise to resolve", async () => {
     const root = document.createElement("div");
     const image = document.createElement("img");
     Object.defineProperty(image, "complete", { configurable: true, value: false });
     root.append(image);
     const waiting = waitForExportImages(root);
     image.dispatchEvent(new Event("error"));
+    await vi.waitFor(() => expect(image.getAttribute("src")).toBe("/media-placeholder.svg"));
+    let settled = false;
+    void waiting.then(() => { settled = true; });
+    await Promise.resolve();
+    expect(settled).toBe(false);
+    image.dispatchEvent(new Event("load"));
     await waiting;
+  });
+
+  it("replaces an already complete but broken image with the neutral placeholder", async () => {
+    const root = document.createElement("div");
+    const image = document.createElement("img");
+    image.setAttribute("src", "/media/broken.svg");
+    Object.defineProperty(image, "complete", { configurable: true, get: () => image.getAttribute("src") !== "/media-placeholder.svg" });
+    Object.defineProperty(image, "naturalWidth", { configurable: true, get: () => image.getAttribute("src") === "/media-placeholder.svg" ? 100 : 0 });
+    root.append(image);
+    const waiting = waitForExportImages(root);
+    await Promise.resolve();
     expect(image.getAttribute("src")).toBe("/media-placeholder.svg");
+    image.dispatchEvent(new Event("load"));
+    await waiting;
+  });
+
+  it("rejects when the placeholder itself cannot load", async () => {
+    const root = document.createElement("div");
+    const image = document.createElement("img");
+    Object.defineProperty(image, "complete", { configurable: true, value: false });
+    root.append(image);
+    const waiting = waitForExportImages(root);
+    image.dispatchEvent(new Event("error"));
+    await vi.waitFor(() => expect(image.getAttribute("src")).toBe("/media-placeholder.svg"));
+    image.dispatchEvent(new Event("error"));
+    await expect(waiting).rejects.toThrow(/預設圖片/);
+  });
+
+  it("rejects when placeholder decoding fails after the original image error", async () => {
+    const root = document.createElement("div");
+    const image = document.createElement("img");
+    Object.defineProperty(image, "complete", { configurable: true, get: () => image.getAttribute("src") === "/media-placeholder.svg" });
+    Object.defineProperty(image, "naturalWidth", { configurable: true, get: () => 100 });
+    image.decode = vi.fn(async () => { throw new Error("placeholder decode failed"); });
+    root.append(image);
+    const waiting = waitForExportImages(root);
+    image.dispatchEvent(new Event("error"));
+    await expect(waiting).rejects.toThrow(/預設圖片/);
+  });
+
+  it("does not call toPng until failed export media has loaded its placeholder", async () => {
+    Object.defineProperty(HTMLImageElement.prototype, "complete", { configurable: true, get: () => false });
+    const exportPromise = exportComparison({ api: apiFor([row(1)]), query, initial: response([row(1)]) });
+    await vi.waitFor(() => expect(document.querySelectorAll(".export-sheet img")).toHaveLength(2));
+    const images = Array.from(document.querySelectorAll<HTMLImageElement>(".export-sheet img"));
+    images.forEach((image) => image.dispatchEvent(new Event("error")));
+    await vi.waitFor(() => expect(images.every((image) => image.getAttribute("src") === "/media-placeholder.svg")).toBe(true));
+    expect(mocks.toPng).not.toHaveBeenCalled();
+    images.forEach((image) => image.dispatchEvent(new Event("load")));
+    await exportPromise;
+    expect(mocks.toPng).toHaveBeenCalledTimes(1);
   });
 
   it("downloads through a temporary object URL and always revokes it", () => {

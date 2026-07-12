@@ -42,38 +42,40 @@ export function partitionSeries<T>(rows: T[], pageSize = EXPORT_PAGE_SIZE): T[][
   return pages;
 }
 
-function once(image: HTMLImageElement): Promise<"load" | "error"> {
-  return new Promise((resolve) => {
-    image.addEventListener("load", () => resolve("load"), { once: true });
-    image.addEventListener("error", () => resolve("error"), { once: true });
+function mediaLoadError(placeholder: boolean): Error {
+  return new Error(placeholder ? "匯出圖片載入失敗，預設圖片也無法載入。" : "匯出圖片載入失敗。");
+}
+
+async function waitForLoadedImage(image: HTMLImageElement, placeholder: boolean): Promise<void> {
+  if (image.complete) {
+    if (image.naturalWidth === 0) throw mediaLoadError(placeholder);
+    if (typeof image.decode === "function") await image.decode();
+    return;
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    image.addEventListener("load", () => resolve(), { once: true });
+    image.addEventListener("error", () => reject(mediaLoadError(placeholder)), { once: true });
   });
 }
 
-async function decodeIfAvailable(image: HTMLImageElement): Promise<void> {
-  if (typeof image.decode !== "function") return;
+async function waitForImage(image: HTMLImageElement): Promise<void> {
   try {
-    await image.decode();
+    await waitForLoadedImage(image, image.getAttribute("src") === PLACEHOLDER_MEDIA);
   } catch {
-    // A broken media image is replaced below; decoding a placeholder is optional.
+    if (image.getAttribute("src") === PLACEHOLDER_MEDIA) throw mediaLoadError(true);
+    image.setAttribute("src", PLACEHOLDER_MEDIA);
+    try {
+      await waitForLoadedImage(image, true);
+    } catch {
+      throw mediaLoadError(true);
+    }
   }
 }
 
 export async function waitForExportImages(root: HTMLElement): Promise<void> {
   const images = Array.from(root.querySelectorAll("img"));
-  await Promise.all(images.map(async (image) => {
-    if (!image.complete) {
-      const result = await once(image);
-      if (result === "error" && image.getAttribute("src") !== PLACEHOLDER_MEDIA) image.setAttribute("src", PLACEHOLDER_MEDIA);
-    }
-
-    if (image.getAttribute("src") === PLACEHOLDER_MEDIA || image.complete) {
-      await decodeIfAvailable(image);
-      return;
-    }
-
-    image.setAttribute("src", PLACEHOLDER_MEDIA);
-    await decodeIfAvailable(image);
-  }));
+  await Promise.all(images.map(waitForImage));
 }
 
 function safeFilenamePart(value: string): string {
@@ -131,7 +133,6 @@ function createMedia(document: Document, src: string, alt: string): HTMLImageEle
   const image = document.createElement("img");
   image.src = src;
   image.alt = alt;
-  image.addEventListener("error", () => { if (image.getAttribute("src") !== PLACEHOLDER_MEDIA) image.setAttribute("src", PLACEHOLDER_MEDIA); });
   return image;
 }
 
