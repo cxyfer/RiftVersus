@@ -15,5 +15,10 @@
     "@riftversus/sync": "workspace:*",
     "fastify": "5.10.0",
     "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/pg": "8.20.0",
+    "kysely": "0.29.3",
+    "pg": "8.22.0"
   }
 }

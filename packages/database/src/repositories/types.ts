@@ -79,6 +79,7 @@ export interface StagedTournamentInput { id: string; provider: string; sourceKey
 export interface StagedDimensionsInput { entities: readonly StagedEntityInput[]; teamEras: readonly StagedTeamEraInput[]; regions: readonly StagedRegionInput[]; tournaments: readonly StagedTournamentInput[] }
 export interface PublishedMediaInput { provider: string; sourceUrl: string; objectKey: string; checksum: string; contentType: string; byteSize: string; attribution: string; entityId?: string | null; teamEraId?: string | null; license?: string | null }
 export interface OverrideApplicationInput { overrideFile: string; checksum: string }
+export interface PublicationScopeInput { provider: string; tournamentSourceKey: string; from: string; to: string; status: "complete" | "partial" | "missing"; unresolvedRows: number }
 
 export interface CoverageInput {
   provider: string;
@@ -101,6 +102,7 @@ export interface PublishDatasetInput {
   dimensions?: StagedDimensionsInput;
   media?: readonly PublishedMediaInput[];
   overrideApplications?: readonly OverrideApplicationInput[];
+  publicationScopes?: readonly PublicationScopeInput[];
 }
 
 export interface CompleteUnchangedSyncRunInput { syncRunId: string; version: string }

@@ -74,8 +74,8 @@ async function resolveSubject(subject: SubjectRef, db: Kysely<Database>): Promis
     .select(["entity.id", "entity.kind", "entity.canonical_name", "era.display_name as era_label", "media.object_key as media_key"])
     .where("entity.id", "=", subject.id)
     .where(sql<boolean>`(
-      exists (select 1 from series_facts series where series.publication_generation <= ${latestPublicationGeneration} and ${subject.id} in (series.side_a_team_id, series.side_b_team_id, series.side_a_region_id, series.side_b_region_id))
-      or exists (select 1 from game_players player join game_facts game on game.id = player.game_id where game.publication_generation <= ${latestPublicationGeneration} and player.player_entity_id = ${subject.id})
+      exists (select 1 from series_facts series where series.publication_generation <= ${latestPublicationGeneration} and (series.retired_generation is null or series.retired_generation > ${latestPublicationGeneration}) and ${subject.id} in (series.side_a_team_id, series.side_b_team_id, series.side_a_region_id, series.side_b_region_id))
+      or exists (select 1 from game_players player join game_facts game on game.id = player.game_id where game.publication_generation <= ${latestPublicationGeneration} and (game.retired_generation is null or game.retired_generation > ${latestPublicationGeneration}) and player.player_entity_id = ${subject.id})
     )`)
     .executeTakeFirst();
   if (row === undefined || row.kind !== subject.kind) throw new Error(`Unknown ${subject.kind} subject: ${subject.id}`);
@@ -104,7 +104,7 @@ export function buildComparisonQueryPlan(query: ComparisonQuery) {
   const candidateMatch = requiresDirectGame ? sql<boolean>`exists (select 1 from game_facts g where g.series_id = s.id and ${directAssignment})` : candidateAssignment;
   const cursor = decodeCursor(query.cursor);
   const filters = [
-    sql<boolean>`s.publication_generation <= ${latestPublicationGeneration} and s.completed = true and s.winner_team_id is not null and s.side_a_score is not null and s.side_b_score is not null`, candidateMatch,
+    sql<boolean>`s.publication_generation <= ${latestPublicationGeneration} and (s.retired_generation is null or s.retired_generation > ${latestPublicationGeneration}) and s.completed = true and s.winner_team_id is not null and s.side_a_score is not null and s.side_b_score is not null`, candidateMatch,
     query.from === undefined ? sql<boolean>`true` : sql<boolean>`s.played_at::date >= ${query.from}`,
     query.to === undefined ? sql<boolean>`true` : sql<boolean>`s.played_at::date <= ${query.to}`,
     query.eventCategories.length === 0 ? sql<boolean>`true` : sql<boolean>`t.category = any(${sql.val(query.eventCategories)}::text[])`,
@@ -116,7 +116,7 @@ export function buildComparisonQueryPlan(query: ComparisonQuery) {
   const summaryFilters = filters.slice(0, 8);
   const candidateSql = sql<CandidateRow>`with candidate_series as (select s.id, s.played_at, s.tournament_id, t.name as tournament_name, t.category, s.best_of, s.side_a_team_id, s.side_a_era_id, s.side_a_region_id, s.side_b_team_id, s.side_b_era_id, s.side_b_region_id, s.side_a_score, s.side_b_score, s.winner_team_id from series_facts s join tournaments t on t.id = s.tournament_id where ${sql.join(filters, sql` and `)}) select * from candidate_series order by played_at desc, id desc limit ${query.limit + 1}`;
   const summarySql = sql<CandidateRow>`with candidate_series as (select s.id, s.played_at, s.tournament_id, t.name as tournament_name, t.category, s.best_of, s.side_a_team_id, s.side_a_era_id, s.side_a_region_id, s.side_b_team_id, s.side_b_era_id, s.side_b_region_id, s.side_a_score, s.side_b_score, s.winner_team_id from series_facts s join tournaments t on t.id = s.tournament_id where ${sql.join(summaryFilters, sql` and `)}) select * from candidate_series`;
-  const directSql = sql<DirectGameRow>`with candidate_series as (select s.id from series_facts s join tournaments t on t.id = s.tournament_id where ${sql.join(summaryFilters, sql` and `)}), direct_games as (select distinct g.id, g.series_id, g.played_at, g.winner_team_id, case when ${sideMatch(query.left, "g", "a")} and ${sideMatch(query.right, "g", "b")} then g.side_a_team_id else g.side_b_team_id end as left_team_id from game_facts g join candidate_series candidate on candidate.id = g.series_id where g.publication_generation <= ${latestPublicationGeneration} and ${directAssignment}) select * from direct_games`;
+  const directSql = sql<DirectGameRow>`with candidate_series as (select s.id from series_facts s join tournaments t on t.id = s.tournament_id where ${sql.join(summaryFilters, sql` and `)}), direct_games as (select distinct g.id, g.series_id, g.played_at, g.winner_team_id, case when ${sideMatch(query.left, "g", "a")} and ${sideMatch(query.right, "g", "b")} then g.side_a_team_id else g.side_b_team_id end as left_team_id from game_facts g join candidate_series candidate on candidate.id = g.series_id where g.publication_generation <= ${latestPublicationGeneration} and (g.retired_generation is null or g.retired_generation > ${latestPublicationGeneration}) and ${directAssignment}) select * from direct_games`;
   return { candidateSql, summarySql, directSql };
 }
 

@@ -36,6 +36,8 @@ describeWithDatabase("initial schema migration", () => {
         expect.objectContaining({ migrationName: "003_dataset_versions_append_only", status: "Success" }),
         expect.objectContaining({ migrationName: "004_media_provenance", status: "Success" }),
         expect.objectContaining({ migrationName: "005_override_run_provenance", status: "Success" }),
+        expect.objectContaining({ migrationName: "006_fact_retirement", status: "Success" }),
+        expect.objectContaining({ migrationName: "007_shared_media_objects", status: "Success" }),
       ]));
 
       const secondRun = await migrateToLatest(db, { schema });
@@ -51,6 +53,7 @@ describeWithDatabase("initial schema migration", () => {
           "entity_aliases",
           "team_eras",
           "media_assets",
+          "media_objects",
           "override_applications",
           "override_application_runs",
           "tournaments",
@@ -95,6 +98,9 @@ describeWithDatabase("initial schema migration", () => {
           "game_players_game_player_lookup",
           "team_region_history_lookup",
           "fact_mutation_audits_fact_lookup",
+          "series_facts_retirement_visibility",
+          "game_facts_retirement_visibility",
+          "media_assets_object_owners",
         ]),
       );
       expect(indexes.rows.find((index) => index.indexname === "media_assets_current_entity_kind_unique")?.indexdef).toContain(
@@ -484,6 +490,8 @@ describeWithDatabase("override provenance migration downgrade", () => {
     await adminPool.query(`create schema ${schema}`);
     const db = createDb({ databaseUrl: databaseUrl!, schema });
     await migrateToLatest(db, { schema });
+    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
+    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
     const applicationId = randomUUID(); const firstRunId = randomUUID(); const secondRunId = randomUUID();
     await db.insertInto("sync_runs").values([
       { id: firstRunId, provider: "leaguepedia", mode: "sync", status: "running", parser_version: "test" },
@@ -523,6 +531,53 @@ describeWithDatabase("override provenance migration downgrade", () => {
       expect(legacy.rows).toEqual([{ sync_run_id: context.firstRunId }]);
       const table = await sql<{ exists: boolean }>`select to_regclass(${`${context.schema}.override_application_runs`}) is not null as exists`.execute(context.db);
       expect(table.rows).toEqual([{ exists: false }]);
+    } finally { await cleanup(context.schema, context.db); }
+  });
+});
+
+describeWithDatabase("shared media objects migration downgrade", () => {
+  const adminPool = new Pool({ connectionString: databaseUrl });
+  afterAll(async () => { await adminPool.end(); });
+
+  async function setup(ownerCount: 1 | 2) {
+    const schema = createTestSchemaName();
+    await adminPool.query(`create schema ${schema}`);
+    const db = createDb({ databaseUrl: databaseUrl!, schema });
+    await migrateToLatest(db, { schema });
+    const entityIds = [randomUUID(), randomUUID()];
+    await db.insertInto("entities").values(entityIds.slice(0, ownerCount).map((id, index) => ({ id, kind: "team" as const, canonical_name: `Media Owner ${index}`, slug: `media-owner-${index}` }))).execute();
+    await db.insertInto("media_objects").values({ object_key: "media/shared.png", checksum: "sha256:shared", content_type: "image/png", byte_size: "42" }).execute();
+    await db.insertInto("media_assets").values(entityIds.slice(0, ownerCount).map((entityId) => ({ id: randomUUID(), entity_id: entityId, team_era_id: null, kind: "logo" as const, provider: "leaguepedia", source_url: "https://example.test/shared.png", object_key: "media/shared.png", attribution: "fixture", license: null, is_current: true }))).execute();
+    return { schema, db };
+  }
+
+  async function cleanup(schema: string, db: ReturnType<typeof createDb>) {
+    await destroyDb(db);
+    await adminPool.query(`drop schema if exists ${schema} cascade`);
+  }
+
+  it("refuses a lossy downgrade when one immutable object has multiple owners", async () => {
+    const context = await setup(2);
+    try {
+      const result = await createMigrator(context.db, { schema: context.schema }).migrateDown();
+      expect(result.error).toBeInstanceOf(Error);
+      expect(String((result.error as Error).message)).toMatch(/cannot losslessly downgrade/i);
+      expect(await context.db.selectFrom("media_assets").select("object_key").execute()).toHaveLength(2);
+      expect(await context.db.selectFrom("media_objects").select("object_key").execute()).toEqual([{ object_key: "media/shared.png" }]);
+    } finally { await cleanup(context.schema, context.db); }
+  });
+
+  it("restores immutable metadata to a sole legacy owner", async () => {
+    const context = await setup(1);
+    try {
+      const result = await createMigrator(context.db, { schema: context.schema }).migrateDown();
+      expect(result.error).toBeUndefined();
+      const legacy = await sql<{ object_key: string; checksum: string; content_type: string; byte_size: string }>`
+        select object_key, checksum, content_type, byte_size from ${sql.table(`${context.schema}.media_assets`)}
+      `.execute(context.db);
+      expect(legacy.rows).toEqual([{ object_key: "media/shared.png", checksum: "sha256:shared", content_type: "image/png", byte_size: "42" }]);
+      const objectTable = await sql<{ exists: boolean }>`select to_regclass(${`${context.schema}.media_objects`}) is not null as exists`.execute(context.db);
+      expect(objectTable.rows).toEqual([{ exists: false }]);
     } finally { await cleanup(context.schema, context.db); }
   });
 });

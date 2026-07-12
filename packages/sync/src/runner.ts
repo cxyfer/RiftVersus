@@ -48,6 +48,7 @@ export async function runSync(provider: SyncProvider, requestInput: SyncRequest,
         dimensions: batch.dimensions,
         facts: batch.facts,
         rosterGameIds: batch.rosterGameIds,
+        publicationScopes: batch.publicationScopes,
       });
       result = { status: "published", version: published.version };
     } catch (error) {

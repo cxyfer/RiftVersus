@@ -48,9 +48,10 @@ describe("Leaguepedia sync composition", () => {
     expect(loadLive).not.toHaveBeenCalled(); expect(published).toHaveLength(1); expect(publications.size).toBe(1); expect(unchanged).toBe(1); expect(retained).toHaveLength(1); expect(objects).toHaveLength(2);
     expect(batchCounts).toHaveLength(2); expect(batchCounts[1]).toEqual(batchCounts[0]);
     expect(published[0]!.dimensions.entities.length).toBeGreaterThan(2);
-    expect(published[0]!.facts.series).toHaveLength(1); expect(published[0]!.facts.games).toHaveLength(1); expect(published[0]!.facts.gamePlayers).toHaveLength(10);
+    expect(published[0]!.facts.series).toHaveLength(1); expect(published[0]!.facts.games).toHaveLength(3); expect(published[0]!.facts.gamePlayers).toHaveLength(30);
     expect(published[0]!.media).toEqual([expect.objectContaining({ objectKey: expect.stringMatching(/^media\/[a-f0-9]{64}\.png$/), checksum: expect.stringMatching(/^[a-f0-9]{64}$/), contentType: "image/png", byteSize: "68" })]);
     expect(published[0]!.coverage).toEqual([expect.objectContaining({ competition: "Worlds", seasonYear: 2024, status: "complete" })]);
+    expect(published[0]!.publicationScopes).toEqual([expect.objectContaining({ tournamentSourceKey: "2024 Season World Championship", status: "complete", unresolvedRows: 0 })]);
     expect(published[0]!.provenance.overrideFiles.map((item) => item.file)).toEqual(["data/overrides/identities.yaml", "data/overrides/tournaments.yaml"]);
   });
 

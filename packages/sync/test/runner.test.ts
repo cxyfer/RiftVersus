@@ -69,6 +69,7 @@ function createHarness(overrides: Partial<SyncDependencies> = {}) {
         dimensions: { entities: [], teamEras: [], regions: [], tournaments: [] },
         facts: {},
         rosterGameIds: [],
+        publicationScopes: [],
       };
     }),
   };

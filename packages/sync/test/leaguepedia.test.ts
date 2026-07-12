@@ -25,7 +25,7 @@ import {
 import { RetainableStageError } from "../src/types.js";
 
 const root = fileURLToPath(new URL("../../..", import.meta.url));
-const fixturePath = fileURLToPath(new URL("./fixtures/leaguepedia-snapshot.json", import.meta.url));
+const fixturePath = `${root}/data/fixtures/leaguepedia-small.json`;
 
 async function fixture(): Promise<LeaguepediaSnapshot> {
   return parseLeaguepediaRawInput(await rawFixture());
@@ -343,7 +343,7 @@ describe("Leaguepedia fetching", () => {
     const at = (timestamp: string): LeaguepediaRawInput => ({ ...input, rawEvidence: input.rawEvidence.map((item) => item.table === "ScoreboardGames" ? {
       ...item, response: { cargoquery: (item.response.cargoquery as Array<{ title: Record<string, unknown> }>).map(({ title }) => ({ title: { ...title, DateTime_UTC: timestamp } })) },
     } : item) });
-    expect(parseLeaguepediaRawInput(at("2024-01-01T00:00:00Z")).games).toHaveLength(1);
+    expect(parseLeaguepediaRawInput(at("2024-01-01T00:00:00Z")).games).toHaveLength(3);
     expect(() => parseLeaguepediaRawInput(at("2025-01-01T00:00:00Z"))).toThrow(/outside \[2024-01-01, 2025-01-01\)/);
   });
 
@@ -461,10 +461,10 @@ describe("Leaguepedia normalization", () => {
   it("normalizes explicit series, games and player facts with stable identifiers", async () => {
     const result = normalizeLeaguepediaSnapshot(await fixture(), await overrides());
     expect(result.facts.series).toHaveLength(1);
-    expect(result.facts.series?.[0]).toMatchObject({ sourceKey: "WORLD24-FINAL", bestOf: 5, completed: true, sideAScore: 3, sideBScore: 2 });
+    expect(result.facts.series?.[0]).toMatchObject({ sourceKey: "WORLD24-FINAL", bestOf: 5, completed: true, sideAScore: 3, sideBScore: 0 });
     expect(result.facts.games?.[0]).toMatchObject({ sourceKey: "WORLD24-FINAL-G1", gameNumber: 1 });
     expect(result.facts.gamePlayers?.[0]?.gameId).toBe(result.facts.games?.[0]?.id);
-    expect(result.rosterGameIds).toEqual([result.facts.games?.[0]?.id]);
+    expect(result.rosterGameIds).toEqual(result.facts.games?.map((game) => game.id));
     expect(result.dimensions.entities.find((entity) => entity.canonicalName === "T1")?.sourceKeys).toEqual(["SK Telecom T1", "T1"]);
     const t1Eras = result.dimensions.teamEras.filter((era) => era.teamEntityId === result.entityIds.get("T1"));
     expect(t1Eras).toHaveLength(2);
@@ -631,14 +631,25 @@ describe("Leaguepedia coverage and provider", () => {
     expect(batch.coverage).toEqual([expect.objectContaining({
       competition: "Worlds", seasonYear: 2024, status: "partial", earliestDate: "2024-10-01", latestDate: "2024-11-02",
     })]);
-    expect(batch.facts.games).toHaveLength(2);
+    expect(batch.facts.games).toHaveLength(4);
   });
 
   it("deduplicates the same consistent GameId across logical source slices", async () => {
     const input = await duplicateGameWorldsInput();
     const batch = await createLeaguepediaProvider({ loadRawInput: async () => input, overrides: await overrides() }).stage({ mode: "backfill", years: [2024], competitions: ["Worlds"] });
-    expect(batch.facts.games).toHaveLength(1);
-    expect(batch.coverage).toEqual([expect.objectContaining({ status: "complete", detail: expect.stringContaining("Verified 1 rows") })]);
+    expect(batch.facts.games).toHaveLength(3);
+    expect(batch.coverage).toEqual([expect.objectContaining({ status: "complete", detail: expect.stringContaining("Verified 3 rows") })]);
+  });
+
+  it("marks coverage partial when a completed series is missing an expected game", async () => {
+    const input = await rawFixture();
+    const missing: LeaguepediaRawInput = { ...input, rawEvidence: input.rawEvidence.map((item) => {
+      if (item.table !== "ScoreboardGames" && item.table !== "ScoreboardPlayers") return item;
+      return { ...item, response: { cargoquery: (item.response.cargoquery as Array<{ title: Record<string, unknown> }>).filter(({ title }) => title.GameId !== "WORLD24-FINAL-G3") } };
+    }) };
+    const batch = await createLeaguepediaProvider({ loadRawInput: async () => missing, overrides: await overrides() }).stage({ mode: "sync-once" });
+    expect(batch.coverage).toEqual([expect.objectContaining({ status: "partial", detail: expect.stringContaining("provider rows") })]);
+    expect(batch.publicationScopes).toEqual([expect.objectContaining({ status: "partial", unresolvedRows: 1 })]);
   });
 
   it("emits one inferred coverage row per logical competition and year", async () => {

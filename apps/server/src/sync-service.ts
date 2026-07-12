@@ -32,6 +32,7 @@ export function createDatabaseSyncRepository(db: ReturnType<typeof createDb>): S
       media: input.media,
       facts: input.facts,
       rosterGameIds: input.rosterGameIds,
+      publicationScopes: input.publicationScopes,
       overrideApplications: input.provenance.overrideFiles.map(({ file, checksum }) => ({ overrideFile: file, checksum })),
     }, db),
   };

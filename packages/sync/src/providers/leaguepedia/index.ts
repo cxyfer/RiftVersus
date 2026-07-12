@@ -63,17 +63,23 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
         const slices = snapshot.slices.filter((item) => item.competition === competition && item.seasonYear === seasonYear);
         const gameKeys = new Set(slices.flatMap((slice) => slice.gameSourceKeys));
         const sliceGames = snapshot.games.filter((game) => gameKeys.has(game.sourceKey));
-        const unresolvedGameKeys = new Set([...normalized.quarantineAffectedGameKeys, ...normalized.rosterIncompleteGameKeys].filter((key) => gameKeys.has(key)));
+        const unresolvedRows = slices.reduce((sum, slice) => sum + unresolvedForSlice(snapshot, normalized, slice), 0);
         const dates = sliceGames.map((game) => game.playedAt).sort();
         return deriveLeaguepediaCoverage({
           competition,
           seasonYear,
           observedRows: sliceGames.length,
           traversal: slices.length === 0 ? { requestedPages: 1, visitedPages: 0, complete: false } : combineTraversal(slices.map((slice) => slice.traversal)),
-          unresolvedRows: slices.reduce((sum, slice) => sum + slice.malformedOptionalRows, 0) + unresolvedGameKeys.size,
+          unresolvedRows,
           earliestDate: dates[0]?.slice(0, 10) ?? null,
           latestDate: dates.at(-1)?.slice(0, 10) ?? null,
         });
+      });
+      const publicationScopes = snapshot.slices.map((slice) => {
+        const unresolvedRows = unresolvedForSlice(snapshot, normalized, slice);
+        const observedRows = slice.gameSourceKeys.length;
+        const status = observedRows === 0 ? "missing" as const : slice.traversal.complete && unresolvedRows === 0 ? "complete" as const : "partial" as const;
+        return { provider: "leaguepedia", tournamentSourceKey: slice.sourceCompetition, from: slice.from, to: slice.to, status, unresolvedRows };
       });
       return {
         version: `leaguepedia-${versionDigest}`,
@@ -89,6 +95,7 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
         dimensions: normalized.dimensions,
         facts: normalized.facts,
         rosterGameIds: normalized.rosterGameIds,
+        publicationScopes,
       };
     },
   };
@@ -98,6 +105,22 @@ function inferredCoverage(snapshot: LeaguepediaSnapshot): { competition: string;
   return uniqueCoverageKeys(snapshot.slices.map(({ competition, seasonYear }) => ({ competition, seasonYear })));
 }
 function uniqueCoverageKeys(items: readonly { competition: string; seasonYear: number }[]): { competition: string; seasonYear: number }[] { return [...new Map(items.map((item) => [JSON.stringify([item.competition, item.seasonYear]), item])).values()]; }
+function unresolvedForSlice(snapshot: LeaguepediaSnapshot, normalized: ReturnType<typeof normalizeLeaguepediaSnapshot>, slice: LeaguepediaSnapshot["slices"][number]): number {
+  const gameKeys = new Set(slice.gameSourceKeys);
+  const unresolvedGames = new Set([...normalized.quarantineAffectedGameKeys, ...normalized.rosterIncompleteGameKeys].filter((key) => gameKeys.has(key)));
+  const games = snapshot.games.filter((game) => gameKeys.has(game.sourceKey));
+  const seriesKeys = new Set(games.map((game) => game.seriesKey));
+  let incompleteSeries = 0;
+  for (const seriesKey of seriesKeys) {
+    const series = snapshot.series.find((item) => item.sourceKey === seriesKey);
+    if (series === undefined || series.sideAScore === null || series.sideBScore === null) { incompleteSeries += 1; continue; }
+    const seriesGames = games.filter((game) => game.seriesKey === seriesKey);
+    const expected = series.sideAScore + series.sideBScore;
+    const numbers = seriesGames.map((game) => game.gameNumber);
+    if (expected <= 0 || numbers.length !== expected || new Set(numbers).size !== numbers.length || numbers.some((number) => number < 1 || number > expected) || !Array.from({ length: expected }, (_, index) => index + 1).every((number) => numbers.includes(number))) incompleteSeries += 1;
+  }
+  return slice.malformedOptionalRows + unresolvedGames.size + incompleteSeries;
+}
 function reviewedOverrideFiles(checksums: Readonly<Record<string, string>>): { file: string; checksum: `sha256:${string}` }[] {
   return Object.entries(checksums).map(([file, checksum]) => {
     if (file.startsWith("/") || file.includes("\\") || file.split("/").includes("..") || !file.includes("/")) throw new Error(`Reviewed override file identity must be a stable repository-relative path: ${file}`);
