@@ -17,9 +17,18 @@ describe("loadConfig", () => {
       logLevel: "info",
       syncCron: "0 3 * * *",
       syncTimezone: "UTC",
+      leaguepediaEndpoint: "https://lol.fandom.com/api.php",
+      leaguepediaUserAgent: "RiftVersus/0.1 (https://github.com/riftversus; contact@example.invalid)",
       mediaDelivery: "proxy",
       s3: undefined,
     });
+  });
+
+  it("validates bounded Leaguepedia sync settings", () => {
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_ENDPOINT: "http://lol.example/api.php" })).toThrow(/endpoint/i);
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_SYNC_YEARS: "" })).toThrow();
+    const config = loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_SYNC_YEARS: "2023,2024", LEAGUEPEDIA_SYNC_COMPETITIONS: "Worlds,MSI", LEAGUEPEDIA_MEDIA_HOSTS: "static.wikia.nocookie.net,images.example" });
+    expect(config.leaguepedia).toMatchObject({ syncYears: [2023, 2024], syncCompetitions: ["Worlds", "MSI"], mediaHosts: ["static.wikia.nocookie.net", "images.example"] });
   });
 
   it("rejects partial S3 configuration", () => {

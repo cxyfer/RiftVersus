@@ -44,10 +44,12 @@ export interface MediaAssetsTable {
   entity_id: string | null;
   team_era_id: string | null;
   kind: string;
+  provider: string | null;
   source_url: string;
   object_key: string;
   checksum: string | null;
   content_type: string | null;
+  byte_size: string | null;
   attribution: string | null;
   license: string | null;
   is_current: Generated<boolean>;

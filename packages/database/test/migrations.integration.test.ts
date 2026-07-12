@@ -34,6 +34,7 @@ describeWithDatabase("initial schema migration", () => {
         expect.objectContaining({ migrationName: "001_initial", status: "Success" }),
         expect.objectContaining({ migrationName: "002_publication_generation", status: "Success" }),
         expect.objectContaining({ migrationName: "003_dataset_versions_append_only", status: "Success" }),
+        expect.objectContaining({ migrationName: "004_media_provenance", status: "Success" }),
       ]));
 
       const secondRun = await migrateToLatest(db, { schema });
