@@ -398,9 +398,9 @@ describe("Leaguepedia fetching", () => {
       }]),
       fetchGamePlayersPage: async ({ offset }) => cargoPage("ScoreboardPlayers", offset, [{ GameId: "G1", PlayerName: "Faker", Team: "T1", PlayerWin: 1 }]),
       fetchImageInfoWithEvidence: async () => ({ data: { query: { pages: [{ title: "File:T1.png", imageinfo: [{
-        url: "https://static.wikia.nocookie.net/t1.png", mime: "image/png", extmetadata: { LicenseShortName: { value: "CC BY-SA" }, Artist: { value: "Leaguepedia contributors" } },
-      }] }] } }, rawEvidence: [{ requestId: "query:image:0", action: "query", sourceUrl: "https://lol.example/api.php?action=query&titles=T1.png", response: { query: { pages: [{ title: "File:T1.png", imageinfo: [{ url: "https://static.wikia.nocookie.net/t1.png", mime: "image/png", extmetadata: { LicenseShortName: { value: "CC BY-SA" }, Artist: { value: "Leaguepedia contributors" } } }] }] } }, revisionIds: [77] }] }),
-    }, { slices: [{ competition: "2024 Season World Championship", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" }], sourceUrl: "https://lol.fandom.com/wiki/T1" });
+        url: "https://media.leaguepedia.example/t1.png", mime: "image/png", extmetadata: { LicenseShortName: { value: "CC BY-SA" }, Artist: { value: "Leaguepedia contributors" } },
+      }] }] } }, rawEvidence: [{ requestId: "query:image:0", action: "query", sourceUrl: "https://lol.example/api.php?action=query&titles=T1.png", response: { query: { pages: [{ title: "File:T1.png", imageinfo: [{ url: "https://media.leaguepedia.example/t1.png", mime: "image/png", extmetadata: { LicenseShortName: { value: "CC BY-SA" }, Artist: { value: "Leaguepedia contributors" } } }] }] } }, revisionIds: [77] }] }),
+    }, { slices: [{ competition: "2024 Season World Championship", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" }], sourceUrl: "https://leaguepedia.example/wiki/T1" });
 
     expect(snapshot.series).toEqual([expect.objectContaining({ sourceKey: "M1", bestOf: 5 })]);
     expect(snapshot.games).toEqual([expect.objectContaining({ sourceKey: "G1", seriesKey: "M1", winnerTeam: "T1" })]);
@@ -425,7 +425,7 @@ describe("Leaguepedia fetching", () => {
       fetchGamesPage: async ({ offset }) => cargoPage("ScoreboardGames", offset, [{ MatchId: "M1", Tournament: "Worlds", DateTime_UTC: "2024-01-01T00:00:00Z", BestOf: 5, N_GameInMatch: 1, Team1: "T1", Team2: "BLG", Team1Score: 3, Team2Score: 0, Winner: 1 }]),
       fetchGamePlayersPage: async ({ offset }) => empty("ScoreboardPlayers", offset),
       fetchImageInfoWithEvidence: async () => ({ data: {}, rawEvidence: [] }),
-    }, { slices: [{ competition: "Worlds", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" }], sourceUrl: "https://lol.fandom.com/wiki/Worlds" }).catch((error: unknown) => error);
+    }, { slices: [{ competition: "Worlds", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" }], sourceUrl: "https://leaguepedia.example/wiki/Worlds" }).catch((error: unknown) => error);
     expect(failure).toBeInstanceOf(LeaguepediaSnapshotError);
     expect((failure as LeaguepediaSnapshotError).message).toMatch(/GameId/);
     expect((failure as LeaguepediaSnapshotError).rawEvidence.find((item) => item.table === "ScoreboardGames")?.response).toEqual(expect.objectContaining({ cargoquery: expect.any(Array) }));
@@ -444,7 +444,7 @@ describe("Leaguepedia fetching", () => {
       fetchGamesPage: async ({ offset }) => cargoPage("ScoreboardGames", offset, [{ GameId: "G1", MatchId: "M1", Tournament: "2024 Season World Championship", DateTime_UTC: "2024-11-02T14:00:00Z", BestOf: 5, N_GameInMatch: 1, Team1: "T1", Team2: "Bilibili Gaming", Team1Score: 3, Team2Score: 2, Winner: 1 }]),
       fetchGamePlayersPage: (input) => malformedPlayersClient.fetchGamePlayersPage(input),
       fetchImageInfoWithEvidence: async () => ({ data: {}, rawEvidence: [] }),
-    }, { slices: [{ competition: "Worlds", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" }], sourceUrl: "https://lol.fandom.com/wiki/Worlds" });
+    }, { slices: [{ competition: "Worlds", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" }], sourceUrl: "https://leaguepedia.example/wiki/Worlds" });
     const provider = createLeaguepediaProvider({ loadRawInput, overrides: await overrides() });
 
     const failure = await provider.stage({ mode: "sync-once" }).catch((error: unknown) => error);

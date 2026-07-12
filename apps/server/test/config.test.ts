@@ -3,40 +3,54 @@ import { describe, expect, it } from "vitest";
 import { loadConfig, safeConfigSummary } from "../src/config.js";
 
 const databaseUrl = "postgresql://riftversus:password@localhost:5432/riftversus";
+const leaguepediaEnvironment = {
+  LEAGUEPEDIA_ENDPOINT: "https://leaguepedia.example/api.php",
+  LEAGUEPEDIA_USER_AGENT: "RiftVersus/0.1 (+https://riftversus.example; ops@riftversus.example)",
+  LEAGUEPEDIA_MEDIA_HOSTS: "media.leaguepedia.example",
+} as const;
 
 describe("loadConfig", () => {
   it("requires DATABASE_URL", () => {
     expect(() => loadConfig({})).toThrow();
   });
 
+  it("requires explicitly reviewed Leaguepedia source settings", () => {
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl })).toThrow();
+    for (const missing of Object.keys(leaguepediaEnvironment)) {
+      const environment = { DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, [missing]: undefined };
+      expect(() => loadConfig(environment)).toThrow();
+    }
+  });
+
   it("applies production-safe defaults", () => {
-    expect(loadConfig({ DATABASE_URL: databaseUrl })).toMatchObject({
+    expect(loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment })).toMatchObject({
       databaseUrl,
       port: 3000,
       host: "0.0.0.0",
       logLevel: "info",
       syncCron: "0 3 * * *",
       syncTimezone: "UTC",
-      leaguepediaEndpoint: "https://lol.fandom.com/api.php",
-      leaguepediaUserAgent: "RiftVersus/0.1 (https://github.com/riftversus; contact@example.invalid)",
+      leaguepediaEndpoint: leaguepediaEnvironment.LEAGUEPEDIA_ENDPOINT,
+      leaguepediaUserAgent: leaguepediaEnvironment.LEAGUEPEDIA_USER_AGENT,
       mediaDelivery: "proxy",
       s3: undefined,
     });
   });
 
   it("validates bounded Leaguepedia sync settings", () => {
-    expect(() => loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_ENDPOINT: "http://lol.example/api.php" })).toThrow(/endpoint/i);
-    expect(() => loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_SYNC_YEARS: "" })).toThrow();
-    const config = loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_SYNC_YEARS: "2023,2024", LEAGUEPEDIA_SYNC_COMPETITIONS: "Worlds,MSI", LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":{"2023":"2023 Season World Championship","2024":"2024 Season World Championship"},"MSI":{"2023":"2023 Mid-Season Invitational","2024":"2024 Mid-Season Invitational"}}', LEAGUEPEDIA_MEDIA_HOSTS: "static.wikia.nocookie.net,images.example" });
-    expect(config.leaguepedia).toMatchObject({ syncYears: [2023, 2024], syncCompetitions: ["Worlds", "MSI"], mediaHosts: ["static.wikia.nocookie.net", "images.example"] });
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_ENDPOINT: "http://lol.example/api.php" })).toThrow(/endpoint/i);
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_SYNC_YEARS: "" })).toThrow();
+    const config = loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_SYNC_YEARS: "2023,2024", LEAGUEPEDIA_SYNC_COMPETITIONS: "Worlds,MSI", LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":{"2023":"2023 Season World Championship","2024":"2024 Season World Championship"},"MSI":{"2023":"2023 Mid-Season Invitational","2024":"2024 Mid-Season Invitational"}}', LEAGUEPEDIA_MEDIA_HOSTS: "media.leaguepedia.example,images.example" });
+    expect(config.leaguepedia).toMatchObject({ syncYears: [2023, 2024], syncCompetitions: ["Worlds", "MSI"], mediaHosts: ["media.leaguepedia.example", "images.example"] });
     expect(config.leaguepedia.competitionMap.Worlds).toEqual({ "2023": "2023 Season World Championship", "2024": "2024 Season World Championship" });
-    expect(() => loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":"2024 Season World Championship"}' })).toThrow(/logical competition.*year/i);
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":"2024 Season World Championship"}' })).toThrow(/logical competition.*year/i);
   });
 
   it("rejects partial S3 configuration", () => {
     expect(() =>
       loadConfig({
         DATABASE_URL: databaseUrl,
+        ...leaguepediaEnvironment,
         S3_ENDPOINT: "http://localhost:9000",
         S3_ACCESS_KEY_ID: "access-key",
       }),
@@ -44,12 +58,13 @@ describe("loadConfig", () => {
   });
 
   it("requires complete S3 configuration for redirect media delivery", () => {
-    expect(() => loadConfig({ DATABASE_URL: databaseUrl, MEDIA_DELIVERY: "redirect" })).toThrow();
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, MEDIA_DELIVERY: "redirect" })).toThrow();
   });
 
   it("rejects S3 endpoints that could leak credentials or signed URL data", () => {
     const s3Config = {
       DATABASE_URL: databaseUrl,
+      ...leaguepediaEnvironment,
       S3_REGION: "us-east-1",
       S3_BUCKET: "riftversus",
       S3_ACCESS_KEY_ID: "access-key",
@@ -74,6 +89,7 @@ describe("loadConfig", () => {
     expect(
       loadConfig({
         DATABASE_URL: databaseUrl,
+        ...leaguepediaEnvironment,
         S3_ENDPOINT: "http://localhost:9000",
         S3_REGION: "us-east-1",
         S3_BUCKET: "riftversus",
@@ -98,6 +114,7 @@ describe("loadConfig", () => {
   it("never includes secrets in a safe config summary", () => {
     const config = loadConfig({
       DATABASE_URL: databaseUrl,
+      ...leaguepediaEnvironment,
       S3_ENDPOINT: "http://localhost:9000",
       S3_REGION: "us-east-1",
       S3_BUCKET: "riftversus",

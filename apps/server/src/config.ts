@@ -47,6 +47,14 @@ const S3EndpointSchema = z.url().refine(
   "S3_ENDPOINT must be an HTTP(S) URL without userinfo, query parameters, or a fragment.",
 );
 
+const LeaguepediaEndpointSchema = z.url().refine(
+  (value) => {
+    const endpoint = new URL(value);
+    return endpoint.protocol === "https:" && endpoint.username === "" && endpoint.password === "" && endpoint.search === "" && endpoint.hash === "";
+  },
+  "LEAGUEPEDIA_ENDPOINT must be a clean HTTPS API URL without userinfo, query parameters, or a fragment.",
+);
+
 const EnvironmentSchema = z
   .object({
     DATABASE_URL: z.string().min(1),
@@ -61,12 +69,12 @@ const EnvironmentSchema = z
     LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
     SYNC_CRON: z.string().min(1).default("0 3 * * *"),
     SYNC_TIMEZONE: z.string().min(1).default("UTC"),
-    LEAGUEPEDIA_ENDPOINT: z.url().refine((value) => new URL(value).protocol === "https:", "LEAGUEPEDIA_ENDPOINT must use HTTPS.").default("https://lol.fandom.com/api.php"),
-    LEAGUEPEDIA_USER_AGENT: z.string().min(12).default("RiftVersus/0.1 (https://github.com/riftversus; contact@example.invalid)"),
+    LEAGUEPEDIA_ENDPOINT: LeaguepediaEndpointSchema,
+    LEAGUEPEDIA_USER_AGENT: z.string().min(12).refine((value) => /https?:\/\/|[\w.+-]+@[\w.-]+\.[a-z]{2,}/iu.test(value), "LEAGUEPEDIA_USER_AGENT must identify the deployment and include a contact URL or email."),
     LEAGUEPEDIA_SYNC_YEARS: z.string().min(1).default("2023,2024"),
     LEAGUEPEDIA_SYNC_COMPETITIONS: z.string().min(1).default("Worlds"),
     LEAGUEPEDIA_COMPETITION_MAP: z.string().min(2).default('{"Worlds":{"2023":"2023 Season World Championship","2024":"2024 Season World Championship"}}'),
-    LEAGUEPEDIA_MEDIA_HOSTS: z.string().min(1).default("static.wikia.nocookie.net"),
+    LEAGUEPEDIA_MEDIA_HOSTS: z.string().min(1),
     LEAGUEPEDIA_OVERRIDES_DIR: z.string().min(1).default("data/overrides"),
     LEAGUEPEDIA_FIXTURE_PATH: z.string().min(1).default("data/fixtures/leaguepedia-small.json"),
     LEAGUEPEDIA_MAX_BYTES: z.coerce.number().int().positive().max(500_000_000).default(100_000_000),

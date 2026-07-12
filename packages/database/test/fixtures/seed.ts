@@ -44,7 +44,7 @@ export function createTestSchemaName() {
 const gameId = (value: number) => `77777777-7777-4777-8777-${String(value).padStart(12, "0")}`;
 const mediaId = (value: number) => `88888888-8888-4888-8888-${String(value).padStart(12, "0")}`;
 
-export function comparisonOracleFixture(): DomainSeries[] {
+export function comparisonReferenceFixture(): DomainSeries[] {
   const side = (teamId: string, eraId: string | null, regionId: string | null, playerIds: string[]) => ({ teamId, eraId, regionId, playerIds });
   const t1 = (eraId: string, regionId: string, players: string[] = [seedIds.faker]) => side(seedIds.t1, eraId, regionId, players);
   const weibo = (players: string[] = [seedIds.xiaohu]) => side(seedIds.weibo, null, seedIds.lpl, players);

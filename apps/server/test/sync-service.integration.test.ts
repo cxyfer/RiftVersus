@@ -28,7 +28,12 @@ describeWithDatabase("Leaguepedia PostgreSQL fixture composition", () => {
       get: async () => Readable.from([]), signedGetUrl: async () => "https://fixture.invalid/object", head: async (key) => objects.get(key) ?? null,
       putImmutable: async (object) => { const existing = objects.get(object.key); if (existing) return "existing"; objects.set(object.key, { checksum: object.checksum, contentType: object.contentType, byteSize: object.bytes.byteLength }); retainedBytes.set(object.key, object.bytes); return "inserted"; },
     };
-    const config = loadConfig({ DATABASE_URL: databaseUrl! });
+    const config = loadConfig({
+      DATABASE_URL: databaseUrl!,
+      LEAGUEPEDIA_ENDPOINT: "https://leaguepedia.example/api.php",
+      LEAGUEPEDIA_USER_AGENT: "RiftVersus/0.1 (+https://riftversus.example; ops@riftversus.example)",
+      LEAGUEPEDIA_MEDIA_HOSTS: "media.leaguepedia.example",
+    });
     const input = { config, objectStore, request: { mode: "sync-once" as const }, fixture: "leaguepedia-small" as const };
     const batches: StagedSyncBatch[] = [];
     const dependencies = { rootDir, openRepository: async () => ({ repository: createDatabaseSyncRepository(db), close: async () => undefined }), observeBatch: (batch: StagedSyncBatch) => batches.push(batch) };

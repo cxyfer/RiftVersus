@@ -11,7 +11,13 @@ import { buildLeaguepediaSlices, executeLeaguepediaSync } from "../src/sync-serv
 const rootDir = fileURLToPath(new URL("../../..", import.meta.url));
 
 function config() {
-  return loadConfig({ DATABASE_URL: "postgresql://fixture.invalid/riftversus", LEAGUEPEDIA_SYNC_YEARS: "2023,2024" });
+  return loadConfig({
+    DATABASE_URL: "postgresql://fixture.invalid/riftversus",
+    LEAGUEPEDIA_ENDPOINT: "https://leaguepedia.example/api.php",
+    LEAGUEPEDIA_USER_AGENT: "RiftVersus/0.1 (+https://riftversus.example; ops@riftversus.example)",
+    LEAGUEPEDIA_MEDIA_HOSTS: "media.leaguepedia.example",
+    LEAGUEPEDIA_SYNC_YEARS: "2023,2024",
+  });
 }
 
 describe("Leaguepedia sync composition", () => {
