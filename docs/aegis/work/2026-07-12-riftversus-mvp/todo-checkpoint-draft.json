@@ -1,15 +1,15 @@
 {
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
-  "currentTodo": "Execute Leaguepedia-primary replacement Task 3: persist dimensions/media/coverage and compose CLI sync paths",
+  "currentTodo": "Execute Leaguepedia-primary replacement Task 4: retire Oracle MVP source surfaces and refresh operator documentation",
   "completedTodos": [
-    "Replacement Task 2 hardened Leaguepedia client, raw replay adapter, reviewed overrides, canonical staged dimensions/facts/media and coverage merged after final spec and quality approval"
+    "Replacement Task 3 PostgreSQL publication, shared media ownership, scope retirement, provenance, fixture and five-path CLI merged after final spec and quality approval"
   ],
-  "activeSlice": "Leaguepedia Task 2 complete; Task 3 integration preparation",
+  "activeSlice": "Leaguepedia Task 3 complete with PostgreSQL runtime gap; Task 4 source retirement preparation",
   "evidenceRefs": [
-    "merge b442e4b; evidence artifact leaguepedia-task-02-provider-adapter; bounded official siteinfo/T1 probes"
+    "merge 6e93837; evidence artifact leaguepedia-task-03-publication-cli"
   ],
-  "blockedOn": "No TEST_DATABASE_URL or Docker/S3 integration environment; Task 3 code and unit composition can proceed, but publication acceptance remains environment-gated.",
-  "nextStep": "Create a fresh Task 3 worktree from main; implement repository persistence for staged dimensions/media/unchanged runs and compose sync/backfill/fixture CLI through the single runner.",
+  "blockedOn": "No TEST_DATABASE_URL or Docker/S3 runtime environment; does not block Oracle source-facing cleanup and documentation.",
+  "nextStep": "Create a fresh Task 4 worktree, delete Oracle runtime/config/manifest/fixture references, update Leaguepedia source and operations documentation, and add lingering-reference verification.",
   "updatedAt": "2026-07-12"
 }

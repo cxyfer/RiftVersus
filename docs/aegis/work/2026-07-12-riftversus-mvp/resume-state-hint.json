@@ -2,9 +2,9 @@
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
   "lastCheckpointRef": "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json",
-  "resumeInstruction": "Resume from docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md Task 3. Use the staged dimensions/provenance/raw-input contracts merged in b442e4b. Do not import provider parsing into HTTP routes or create a second publication path.",
+  "resumeInstruction": "Resume from docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md Task 4. Preserve historical Aegis evidence, but remove Oracle from active runtime/operator-facing docs/config/tests. Then proceed to Docker/PostgreSQL acceptance.",
   "knownPartialWork": [
-    "Replacement Task 2 hardened Leaguepedia client, raw replay adapter, reviewed overrides, canonical staged dimensions/facts/media and coverage merged after final spec and quality approval"
+    "Replacement Task 3 PostgreSQL publication, shared media ownership, scope retirement, provenance, fixture and five-path CLI merged after final spec and quality approval"
   ],
   "mustReadBeforeContinuing": [
     "docs/aegis/work/2026-07-12-riftversus-mvp/10-intent.md",
@@ -12,6 +12,6 @@
     "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json"
   ],
   "unsafeToAssume": [
-    "Do not assume PostgreSQL dimension upserts are idempotent, media writes are atomic with publication, 100 MB fits all historical slices, a live Cargo schema is unchanged, or skipped integration tests prove runtime behavior."
+    "Do not treat historical Aegis mentions as active source paths, do not delete audit history, and do not claim PostgreSQL or Docker acceptance from skipped tests."
   ]
 }

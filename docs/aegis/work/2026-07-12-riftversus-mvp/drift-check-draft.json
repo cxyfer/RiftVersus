@@ -5,11 +5,11 @@
   "baselineRefs": [
     "docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md"
   ],
-  "scopeStatus": "Leaguepedia replacement Task 2: strict source client, raw-only deterministic replay, reviewed overrides, staged dimensions/facts/media requests and honest logical coverage; no SQL persistence or CLI composition.",
-  "compatStatus": "Adapter remains staging-only and runSync remains the single publication owner. Dataset versions include raw source, parser and override provenance; unchanged runs use the provider-neutral repository contract.",
-  "retirementStatus": "No Oracle fallback or alternate provider path was added. Oracle planned surfaces remain pending delete-first cleanup in replacement Task 4.",
+  "scopeStatus": "Leaguepedia replacement Task 3 integrated staged dimensions, facts, media, coverage, retirement and provenance into canonical PostgreSQL publication plus serve/migrate/sync/backfill CLI composition.",
+  "compatStatus": "runSync remains the sole publication caller; PostgreSQL commit is the visibility fence; unchanged runs reuse a dataset version without new generation. HTTP serve never schedules sync and media delivery remains controlled.",
+  "retirementStatus": "No Oracle runtime fallback was introduced. Oracle source-facing docs/config references remain pending delete-first cleanup in Task 4; historical Aegis evidence will be preserved.",
   "newRiskSignals": [
-    "Default 100 MB snapshot budget requires historical backfill tuning; shared traversal counts may repeat in human-readable coverage detail. PostgreSQL publication, successful Cargo live envelope, CLI composition and Docker remain unverified."
+    "All 24 PostgreSQL integration tests are environment-skipped; migrations 004-007, retirement visibility, shared media objects and fixture import twice still require real PostgreSQL/S3/Docker runtime evidence. Synthetic fixture is intentionally partial and cannot retire facts."
   ],
   "decision": "needs-verification"
 }

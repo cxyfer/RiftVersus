@@ -256,3 +256,23 @@
 - merge b442e4b; evidence artifact leaguepedia-task-02-provider-adapter; bounded official siteinfo/T1 probes
 - Blocked on: No TEST_DATABASE_URL or Docker/S3 integration environment; Task 3 code and unit composition can proceed, but publication acceptance remains environment-gated.
 - Next step: Create a fresh Task 3 worktree from main; implement repository persistence for staged dimensions/media/unchanged runs and compose sync/backfill/fixture CLI through the single runner.
+
+## DriftCheckDraft
+
+- Scope status: Leaguepedia replacement Task 3 integrated staged dimensions, facts, media, coverage, retirement and provenance into canonical PostgreSQL publication plus serve/migrate/sync/backfill CLI composition.
+- Compatibility status: runSync remains the sole publication caller; PostgreSQL commit is the visibility fence; unchanged runs reuse a dataset version without new generation. HTTP serve never schedules sync and media delivery remains controlled.
+- Retirement status: No Oracle runtime fallback was introduced. Oracle source-facing docs/config references remain pending delete-first cleanup in Task 4; historical Aegis evidence will be preserved.
+- New risk signals:
+- All 24 PostgreSQL integration tests are environment-skipped; migrations 004-007, retirement visibility, shared media objects and fixture import twice still require real PostgreSQL/S3/Docker runtime evidence. Synthetic fixture is intentionally partial and cannot retire facts.
+- Advisory decision: needs-verification
+
+## Checkpoint Update
+
+- Current todo: Execute Leaguepedia-primary replacement Task 4: retire Oracle MVP source surfaces and refresh operator documentation
+- Active slice: Leaguepedia Task 3 complete with PostgreSQL runtime gap; Task 4 source retirement preparation
+- Completed todos:
+- Replacement Task 3 PostgreSQL publication, shared media ownership, scope retirement, provenance, fixture and five-path CLI merged after final spec and quality approval
+- Evidence refs:
+- merge 6e93837; evidence artifact leaguepedia-task-03-publication-cli
+- Blocked on: No TEST_DATABASE_URL or Docker/S3 runtime environment; does not block Oracle source-facing cleanup and documentation.
+- Next step: Create a fresh Task 4 worktree, delete Oracle runtime/config/manifest/fixture references, update Leaguepedia source and operations documentation, and add lingering-reference verification.

@@ -30,3 +30,4 @@ Entries are workspace records, not authoritative runtime decisions.
 | 2026-07-12 | plan | docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md | Leaguepedia-Primary MVP Implementation Plan |
 | 2026-07-12 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-leaguepedia-task-01-sync-runner.json | 2026-07-12-riftversus-mvp evidence leaguepedia-task-01-sync-runner |
 | 2026-07-12 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-leaguepedia-task-02-provider-adapter.json | 2026-07-12-riftversus-mvp evidence leaguepedia-task-02-provider-adapter |
+| 2026-07-13 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-leaguepedia-task-03-publication-cli.json | 2026-07-12-riftversus-mvp evidence leaguepedia-task-03-publication-cli |

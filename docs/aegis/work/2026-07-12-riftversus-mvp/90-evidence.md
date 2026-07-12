@@ -81,3 +81,11 @@ No evidence has been recorded yet.
 - Source: merge b442e4b; task commits 1cce867,ffdd239,5344b8d,eeb9f0b,4220a19,d4ba40b,93b017b,3085b1a
 - Summary: Hardened Leaguepedia provider passed controller verification: sync 99/99, server 30/30, root consumer/unit, typecheck, lint, build and diff check. Final spec regression and independent quality review approved after raw-only replay, staged dimensions, strict roster authority, rate-limit retry, resource budgets, era/region selection and per-logical coverage aggregation fixes. Bounded official siteinfo and T1 page probes succeeded after approved network retry; no bulk Cargo assertion was used.
 - Verifier: controller plus independent spec and quality reviewers; bounded official Leaguepedia API probe
+
+## EvidenceBundleDraft
+
+- Artifact key: leaguepedia-task-03-publication-cli
+- Type: verification
+- Source: merge 6e93837; task commits f42af05,377b489,0ab7a56,1f2eb02,4e824e8,7c8373e,81b033e
+- Summary: Leaguepedia database publication and CLI composition passed controller verification: sync 103/103, server 46/46, root unit 3/3, consumer, typecheck, lint, build, CLI help and diff check. Spec and independent quality reviews approved after year-aware mapping, per-run override provenance, scope retirement, shared media objects, provider binding, migration downgrade guards and honest synthetic fixture provenance fixes. PostgreSQL integration suite loads 4 files/24 tests but all skip because TEST_DATABASE_URL is unset; Docker/S3 runtime acceptance remains open.
+- Verifier: controller plus independent spec and quality reviewers
