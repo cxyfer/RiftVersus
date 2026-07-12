@@ -1,53 +1,55 @@
-import { readdir, readFile } from "node:fs/promises";
-import { extname, relative, resolve } from "node:path";
+import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { classifyActiveSourceFile, collectActiveSourceViolations } from "./source-retirement-guard.js";
+
 const root = resolve(import.meta.dirname, "..");
-const retiredSource = ["ora", "cle"].join("");
-const retiredBrand = new RegExp(`${retiredSource}(?:['’]s)?\\s+elixir`, "iu");
-const retiredHost = new RegExp(["oe", "data", "lisk", "io"].join("\\."), "iu");
-const retiredJoinedName = new RegExp(`${retiredSource}(?:['’]s)?[_.-]*(?:selixir|csv|manifest|parser|fixture|config|fallback|endpoint|download|provider|source|url)|(?:csv|manifest|parser|fixture|config|fallback|endpoint|download|provider|source|url)[_.-]*${retiredSource}`, "iu");
-const retiredTechnicalPhrase = new RegExp(`${retiredSource}(?:['’]s)?\\s+(?:csv|manifest|parser|fixture|config|fallback|endpoint|download|provider|source|url)`, "iu");
-const retiredCsvSurface = new RegExp(`${["c", "sv"].join("")}[\\s_.-]*(?:manifest|parser|fixture|download)`, "iu");
-const retiredDownloadPath = new RegExp(["match", "data"].join(""), "iu");
+const retiredToken = ["Ora", "cle"].join("");
+const retiredHost = ["oe", "data", "lisk", "io"].join(".");
+const retiredDownloadPath = ["match", "Data"].join("");
 
-const ignoredDirectories = new Set([".git", ".worktrees", "dist", "node_modules", "coverage", "docs/aegis"]);
-const textExtensions = new Set([".cjs", ".env", ".js", ".json", ".jsonc", ".md", ".mjs", ".mts", ".ts", ".tsx", ".yaml", ".yml"]);
-const rootFiles = new Set([".env.example", "package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]);
+describe("retired MVP source classifier", () => {
+  it.each([
+    ["packages/sync/src/adapter.ts", `export class ${retiredToken}Adapter {}`],
+    ["packages/sync/src/client.ts", `const client = new ${retiredToken.toLowerCase()}Client()`],
+    ["packages/sync/src/provider.ts", `const source = "${retiredToken}'s Elixir"`],
+    ["packages/sync/src/provider.ts", `const source = "${retiredToken}’s Elixir"`],
+    ["Dockerfile", `ENV DATA_SOURCE=${retiredToken}`],
+    ["containers/sync.dockerfile", `ENV DATA_SOURCE=${retiredToken}`],
+    ["scripts/sync.sh", `SOURCE=${retiredToken.toLowerCase()}`],
+    ["CHANGELOG.md", `- retire ${retiredToken} provider`],
+    [`packages/sync/src/${retiredToken.toLowerCase()}-adapter.ts`, "export {}"],
+    ["packages/sync/src/provider.ts", `const endpoint = "https://${retiredHost}"`],
+    ["packages/sync/src/provider.ts", `const path = "${retiredDownloadPath}"`],
+  ])("rejects retired source surface in %s", (logicalPath, content) => {
+    expect(classifyActiveSourceFile(logicalPath, content)).not.toEqual([]);
+  });
 
-async function activeFiles(directory = root): Promise<string[]> {
-  const output: string[] = [];
-  for (const entry of await readdir(directory, { withFileTypes: true })) {
-    const absolute = resolve(directory, entry.name);
-    const logical = relative(root, absolute).replaceAll("\\", "/");
-    if (entry.isDirectory()) {
-      if (!ignoredDirectories.has(logical) && !ignoredDirectories.has(entry.name)) output.push(...await activeFiles(absolute));
-      continue;
-    }
-    if (logical === "CHANGELOG.md") continue;
-    if (textExtensions.has(extname(entry.name)) || rootFiles.has(logical)) output.push(absolute);
-  }
-  return output;
-}
+  it("allows unrelated CSV parsing", () => {
+    expect(classifyActiveSourceFile("packages/export/src/csv-parser.ts", "export class CsvParser {}" )).toEqual([]);
+  });
+
+  it.each([
+    `${retiredToken} is not part of the MVP.`,
+    `${retiredToken} is not an MVP source.`,
+    `${retiredToken} was retired.`,
+    `Reintroduction of ${retiredToken} requires a new reviewed decision and publicly verifiable direct evidence.`,
+  ])("allows an explicit operator policy line", (line) => {
+    expect(classifyActiveSourceFile("docs/source-policy.md", line)).toEqual([]);
+  });
+
+  it("rejects a non-policy operator documentation line", () => {
+    expect(classifyActiveSourceFile("README.md", `${retiredToken} can be enabled with a flag.`)).not.toEqual([]);
+  });
+
+  it("allows historical Aegis records only", () => {
+    expect(classifyActiveSourceFile("docs/aegis/specs/history.md", `${retiredToken}Adapter`)).toEqual([]);
+  });
+});
 
 describe("retired MVP source guard", () => {
-  it("keeps active source ownership Leaguepedia-only", async () => {
-    const violations: string[] = [];
-    for (const file of await activeFiles()) {
-      const logical = relative(root, file).replaceAll("\\", "/");
-      const content = await readFile(file, "utf8");
-      if (
-        retiredBrand.test(content)
-        || retiredHost.test(content)
-        || retiredJoinedName.test(content)
-        || retiredTechnicalPhrase.test(content)
-        || retiredCsvSurface.test(content)
-        || retiredDownloadPath.test(content)
-        || retiredJoinedName.test(logical)
-      ) violations.push(logical);
-    }
-
-    expect(violations).toEqual([]);
+  it("keeps the active tree Leaguepedia-only", async () => {
+    expect(await collectActiveSourceViolations(root)).toEqual([]);
   });
 });
