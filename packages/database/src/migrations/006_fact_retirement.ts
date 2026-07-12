@@ -12,6 +12,12 @@ export const factRetirementMigration: Migration = {
   },
   async down(db) {
     await sql.raw(`
+      do $$ begin
+        if exists (select 1 from series_facts where retired_generation is not null)
+          or exists (select 1 from game_facts where retired_generation is not null) then
+          raise exception 'Cannot losslessly downgrade fact retirement: at least one canonical fact has retirement metadata.';
+        end if;
+      end $$;
       drop index if exists game_facts_retirement_visibility;
       drop index if exists series_facts_retirement_visibility;
       alter table game_facts drop column if exists retired_generation;

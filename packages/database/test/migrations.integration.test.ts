@@ -580,4 +580,69 @@ describeWithDatabase("shared media objects migration downgrade", () => {
       expect(objectTable.rows).toEqual([{ exists: false }]);
     } finally { await cleanup(context.schema, context.db); }
   });
+
+  it("rejects direct immutable metadata updates and deletion", async () => {
+    const context = await setup(1);
+    try {
+      await expect(context.db.updateTable("media_objects").set({ checksum: "sha256:changed" }).where("object_key", "=", "media/shared.png").execute()).rejects.toThrow(/append-only/i);
+      await expect(context.db.updateTable("media_objects").set({ content_type: "image/webp" }).where("object_key", "=", "media/shared.png").execute()).rejects.toThrow(/append-only/i);
+      await expect(context.db.updateTable("media_objects").set({ byte_size: "43" }).where("object_key", "=", "media/shared.png").execute()).rejects.toThrow(/append-only/i);
+      await expect(context.db.deleteFrom("media_objects").where("object_key", "=", "media/shared.png").execute()).rejects.toThrow(/append-only/i);
+      expect(await context.db.selectFrom("media_objects").selectAll().where("object_key", "=", "media/shared.png").executeTakeFirstOrThrow()).toEqual({ object_key: "media/shared.png", checksum: "sha256:shared", content_type: "image/png", byte_size: "42" });
+    } finally { await cleanup(context.schema, context.db); }
+  });
+});
+
+describeWithDatabase("fact retirement migration downgrade", () => {
+  const adminPool = new Pool({ connectionString: databaseUrl });
+  afterAll(async () => { await adminPool.end(); });
+
+  async function setup() {
+    const schema = createTestSchemaName();
+    await adminPool.query(`create schema ${schema}`);
+    const db = createDb({ databaseUrl: databaseUrl!, schema });
+    await migrateToLatest(db, { schema });
+    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
+    return { schema, db };
+  }
+
+  async function cleanup(schema: string, db: ReturnType<typeof createDb>) {
+    await destroyDb(db);
+    await adminPool.query(`drop schema if exists ${schema} cascade`);
+  }
+
+  it.each(["series", "game"] as const)("refuses a lossy downgrade for retired %s facts and preserves migration metadata, column, and value", async (factKind) => {
+    const context = await setup();
+    try {
+      const teamA = randomUUID(); const teamB = randomUUID(); const tournament = randomUUID(); const series = randomUUID(); const game = randomUUID();
+      await context.db.insertInto("entities").values([
+        { id: teamA, kind: "team", canonical_name: "Retirement A", slug: "retirement-a" },
+        { id: teamB, kind: "team", canonical_name: "Retirement B", slug: "retirement-b" },
+      ]).execute();
+      await context.db.insertInto("tournaments").values({ id: tournament, provider: "fixture", source_key: "retirement", name: "Retirement", category: "worlds" }).execute();
+      await context.db.insertInto("series_facts").values({ id: series, provider: "fixture", source_key: "retired", tournament_id: tournament, played_at: new Date("2024-01-01T00:00:00Z"), best_of: 1, completed: true, side_a_team_id: teamA, side_b_team_id: teamB, side_a_score: 1, side_b_score: 0, winner_team_id: teamA, publication_generation: "1", retired_generation: factKind === "series" ? "2" : null }).execute();
+      if (factKind === "game") await context.db.insertInto("game_facts").values({ id: game, provider: "fixture", source_key: "retired-game", series_id: series, game_number: 1, played_at: new Date("2024-01-01T00:00:00Z"), side_a_team_id: teamA, side_b_team_id: teamB, winner_team_id: teamA, publication_generation: "1", retired_generation: "2" }).execute();
+      const result = await createMigrator(context.db, { schema: context.schema }).migrateDown();
+      expect(result.error).toBeInstanceOf(Error);
+      expect(String((result.error as Error).message)).toMatch(/cannot losslessly downgrade fact retirement/i);
+      const retained = factKind === "series"
+        ? await context.db.selectFrom("series_facts").select("retired_generation").where("id", "=", series).executeTakeFirstOrThrow()
+        : await context.db.selectFrom("game_facts").select("retired_generation").where("id", "=", game).executeTakeFirstOrThrow();
+      expect(retained.retired_generation).toBe("2");
+      const column = await sql<{ exists: boolean }>`select exists (select 1 from information_schema.columns where table_schema = ${context.schema} and table_name = ${factKind === "series" ? "series_facts" : "game_facts"} and column_name = 'retired_generation') as exists`.execute(context.db);
+      expect(column.rows).toEqual([{ exists: true }]);
+      const migration = await sql<{ name: string }>`select name from ${sql.table(`${context.schema}.kysely_migration`)} where name = '006_fact_retirement'`.execute(context.db);
+      expect(migration.rows).toEqual([{ name: "006_fact_retirement" }]);
+    } finally { await cleanup(context.schema, context.db); }
+  });
+
+  it("drops retirement columns when no fact has retirement metadata", async () => {
+    const context = await setup();
+    try {
+      const result = await createMigrator(context.db, { schema: context.schema }).migrateDown();
+      expect(result.error).toBeUndefined();
+      const columns = await sql<{ column_name: string }>`select column_name from information_schema.columns where table_schema = ${context.schema} and table_name in ('series_facts', 'game_facts') and column_name = 'retired_generation'`.execute(context.db);
+      expect(columns.rows).toEqual([]);
+    } finally { await cleanup(context.schema, context.db); }
+  });
 });

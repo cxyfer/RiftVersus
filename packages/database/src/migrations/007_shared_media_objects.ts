@@ -19,6 +19,9 @@ export const sharedMediaObjectsMigration: Migration = {
       alter table media_assets drop column content_type;
       alter table media_assets drop column byte_size;
       create index media_assets_object_owners on media_assets (object_key);
+      create trigger media_objects_append_only_before_mutation
+        before update or delete on media_objects
+        for each row execute function riftversus_reject_append_only_mutation();
     `).execute(db);
   },
   async down(db) {
@@ -36,6 +39,7 @@ export const sharedMediaObjectsMigration: Migration = {
       from media_objects object where object.object_key = owner.object_key;
       alter table media_assets drop constraint media_assets_object_key_fk;
       alter table media_assets add constraint media_assets_object_key_key unique (object_key);
+      drop trigger if exists media_objects_append_only_before_mutation on media_objects;
       drop table media_objects;
     `).execute(db);
   },
