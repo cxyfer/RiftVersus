@@ -50,6 +50,9 @@ const EnvironmentSchema = z
         path: configuredS3Variables,
       });
     }
+    if (environment.MEDIA_DELIVERY === "redirect" && configuredS3Variables.length !== S3_VARIABLES.length) {
+      context.addIssue({ code: "custom", message: "MEDIA_DELIVERY=redirect requires complete S3 configuration.", path: ["MEDIA_DELIVERY"] });
+    }
   });
 
 export type Environment = Record<string, string | undefined>;

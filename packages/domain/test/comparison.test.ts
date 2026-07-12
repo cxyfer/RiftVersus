@@ -26,6 +26,7 @@ const query = (left: ComparisonQuery["left"], right: ComparisonQuery["right"]): 
   left,
   right,
   eventCategories: [],
+  leagues: [],
   bestOf: [],
   tournamentIds: [],
   limit: 50,

@@ -8,6 +8,7 @@ import {
   DateSchema,
   EntityKindSchema,
   EventCategorySchema,
+  LeagueSlugSchema,
   SubjectRefSchema,
 } from "../src/index.js";
 
@@ -32,6 +33,7 @@ describe("shared runtime contracts", () => {
       "other",
     ]);
     expect([1, 3, 5].map((value) => BestOfSchema.parse(value))).toEqual([1, 3, 5]);
+    expect(["lck", "lpl", "lec", "lcs"].map((value) => LeagueSlugSchema.parse(value))).toEqual(["lck", "lpl", "lec", "lcs"]);
   });
 
   it("uses lineage mode when a team has no exact era", () => {
@@ -54,7 +56,7 @@ describe("shared runtime contracts", () => {
         left: { kind: "team", id: leftId },
         right: { kind: "region", id: rightId },
       }),
-    ).toMatchObject({ eventCategories: [], bestOf: [], tournamentIds: [], limit: 50 });
+    ).toMatchObject({ eventCategories: [], leagues: [], bestOf: [], tournamentIds: [], limit: 50 });
   });
 
   it("rejects a comparison of the same canonical subject", () => {
@@ -86,6 +88,7 @@ describe("shared runtime contracts", () => {
         left: { kind: "team", id: leftId },
         right: { kind: "region", id: rightId },
         eventCategories: ["worlds"],
+        leagues: [],
         bestOf: [5],
         tournamentIds: [eventId],
         from: "2024-01-01",

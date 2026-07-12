@@ -7,6 +7,7 @@ import { DateSchema } from "./primitives.js";
 export { DateSchema } from "./primitives.js";
 
 export const EventCategorySchema = z.enum(["league", "fst", "msi", "worlds", "other"]);
+export const LeagueSlugSchema = z.enum(["lck", "lpl", "lec", "lcs"]);
 
 export const BestOfSchema = z.preprocess(
   (value) => (typeof value === "string" ? Number(value) : value),
@@ -22,6 +23,7 @@ export const ComparisonQuerySchema = z
     from: DateSchema.optional(),
     to: DateSchema.optional(),
     eventCategories: z.array(EventCategorySchema).default([]),
+    leagues: z.array(LeagueSlugSchema).default([]),
     bestOf: z.array(BestOfSchema).default([]),
     tournamentIds: z.array(UuidSchema).default([]),
     cursor: OpaqueCursorSchema.optional(),
@@ -92,6 +94,7 @@ export const ComparisonResponseSchema = z.object({
 });
 
 export type EventCategory = z.infer<typeof EventCategorySchema>;
+export type LeagueSlug = z.infer<typeof LeagueSlugSchema>;
 export type BestOf = z.infer<typeof BestOfSchema>;
 export type ComparisonQuery = z.infer<typeof ComparisonQuerySchema>;
 export type ComparisonResponse = z.infer<typeof ComparisonResponseSchema>;

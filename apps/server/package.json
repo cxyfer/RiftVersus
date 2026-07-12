@@ -12,6 +12,7 @@
     "@fastify/static": "10.1.0",
     "@riftversus/contracts": "workspace:*",
     "@riftversus/database": "workspace:*",
+    "@riftversus/sync": "workspace:*",
     "fastify": "5.10.0",
     "zod": "4.4.3"
   }

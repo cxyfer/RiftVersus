@@ -1,9 +1,10 @@
-import { compareHeadToHead, createDb, destroyDb, getDatasetStatus, listAvailableFilters, migrateToLatest, searchEntities } from "@riftversus/database";
+import { compareHeadToHead, createDb, destroyDb, getDatasetStatus, getMediaByKey, listAvailableFilters, migrateToLatest, searchEntities } from "@riftversus/database";
 import { resolve } from "node:path";
 
 import { buildApp } from "./app.js";
 import { loadConfig, type Config } from "./config.js";
 import { startListeningServer } from "./server.js";
+import { createConfiguredObjectStore } from "./storage.js";
 
 declare const process: {
   argv: string[];
@@ -17,6 +18,7 @@ function printUsage() {
 }
 
 export async function startServer(config: Config) {
+  const objectStore = createConfiguredObjectStore(config);
   return startListeningServer(config, {
     createDb: () => createDb({ databaseUrl: config.databaseUrl }),
     buildApp: (db) => buildApp({
@@ -27,6 +29,9 @@ export async function startServer(config: Config) {
         const status = await getDatasetStatus(db);
         return status === null ? null : { version: status.version, lastSuccessfulSyncAt: status.lastSuccessfulSyncAt, coverage: status.coverage };
       },
+      getMedia: (key) => getMediaByKey(key, db),
+      ...(objectStore === undefined ? {} : { objectStore }),
+      mediaDelivery: config.mediaDelivery,
       staticDir: resolve(process.cwd(), "apps/web/dist"),
     }),
     destroyDb,

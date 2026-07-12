@@ -1,5 +1,6 @@
 import type { ComparisonResponse, Dataset, ResolvedSubject } from "@riftversus/contracts";
 import { resolve } from "node:path";
+import { Readable } from "node:stream";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { buildApp } from "../src/app.js";
@@ -19,7 +20,7 @@ const right: ResolvedSubject = { id: rightId, kind: "team", displayName: "Right"
 function comparison(): ComparisonResponse {
   return {
     subjects: { left, right },
-    query: { left: { id: leftId, kind: "team" }, right: { id: rightId, kind: "team" }, eventCategories: [], bestOf: [], tournamentIds: [], limit: 50 },
+    query: { left: { id: leftId, kind: "team" }, right: { id: rightId, kind: "team" }, eventCategories: [], leagues: [], bestOf: [], tournamentIds: [], limit: 50 },
     seriesSummary: { wins: 1, losses: 0, total: 1, winRate: 1 },
     gameSummary: { wins: 2, losses: 0, total: 2, winRate: 1 },
     rows: [],
@@ -35,6 +36,7 @@ function createDependencies(overrides: Partial<Parameters<typeof buildApp>[0]> =
     listFilters: vi.fn(async () => ({ eventCategories: ["worlds" as const], tournaments: [], bestOf: [5 as const] })),
     compare: vi.fn(async () => comparison()),
     getDataset: vi.fn(async () => dataset),
+    getMedia: vi.fn(async () => null),
     ...overrides,
   };
 }
@@ -69,6 +71,13 @@ describe("HTTP API", () => {
 
     expect(response.statusCode).toBe(400);
     expect(response.json()).toMatchObject({ error: { code: "VALIDATION_ERROR" } });
+  });
+
+  it("normalizes league filters before calling the comparison owner", async () => {
+    const { app, dependencies } = createApp();
+    const response = await app.inject(`/api/comparisons?left.kind=team&left.id=${leftId}&right.kind=team&right.id=${rightId}&leagues=lpl,lck`);
+    expect(response.statusCode).toBe(200);
+    expect(dependencies.compare).toHaveBeenCalledWith(expect.objectContaining({ leagues: ["lck", "lpl"] }));
   });
 
   it("rejects an invalid comparison cursor with a safe validation envelope", async () => {
@@ -116,6 +125,88 @@ describe("HTTP API", () => {
     const response = await app.inject("/api/dataset");
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual(dataset);
+  });
+
+  it("delivers nested media through the object store and rejects traversal encodings", async () => {
+    const getMedia = vi.fn(async (key: string) => key === "media/faker.png" ? {
+      objectKey: key, sourceUrl: "https://evil.example/faker.png", contentType: "image/png", entityId: leftId, teamEraId: null,
+    } : null);
+    const objectStore = {
+      get: vi.fn(async () => Readable.from("cached-image")),
+      signedGetUrl: vi.fn(async () => "https://storage.example.test/signed/faker.png?expires=300"),
+    };
+    const { app, dependencies } = createApp({ getMedia, objectStore, mediaDelivery: "proxy" });
+    const media = await app.inject("/media/media/faker.png");
+    expect(media.statusCode).toBe(200);
+    expect(media.body).toBe("cached-image");
+    expect(media.headers["content-type"]).toContain("image/png");
+    expect(media.headers["cache-control"]).toBe("public, max-age=31536000, immutable");
+    expect(media.headers["x-content-type-options"]).toBe("nosniff");
+    expect(media.headers.location).toBeUndefined();
+    expect(media.body).not.toContain("evil.example");
+    expect(dependencies.getMedia).toHaveBeenCalledWith("media/faker.png");
+    expect(objectStore.get).toHaveBeenCalledWith("media/faker.png");
+    for (const url of ["/media/media%2Ffaker.png", "/media/../faker.png", "/media/%2e%2e/faker.png", "/media/%252e%252e/faker.png"]) {
+      const response = await app.inject(url);
+      expect(response.statusCode).toBe(404);
+    }
+  });
+
+  it("uses a storage signer only for configured redirect delivery", async () => {
+    const objectStore = { get: vi.fn(), signedGetUrl: vi.fn(async () => "https://storage.example.test/signed/faker.png?expires=300") };
+    const { app } = createApp({
+      getMedia: vi.fn(async () => ({ objectKey: "media/faker.png", sourceUrl: "https://evil.example/faker.png", contentType: "image/png", entityId: leftId, teamEraId: null })),
+      objectStore, mediaDelivery: "redirect",
+    });
+    const response = await app.inject("/media/media/faker.png");
+    expect(response.statusCode).toBe(302);
+    expect(response.headers.location).toBe("https://storage.example.test/signed/faker.png?expires=300");
+    expect(response.headers.location).not.toContain("evil.example");
+    expect(objectStore.signedGetUrl).toHaveBeenCalledWith("media/faker.png", 300);
+    expect(objectStore.get).not.toHaveBeenCalled();
+  });
+
+  it("maps storage read and signing failures to media unavailable", async () => {
+    const getMedia = vi.fn(async () => ({ objectKey: "media/faker.png", sourceUrl: "https://evil.example/faker.png", contentType: "image/png", entityId: leftId, teamEraId: null }));
+
+    const proxy = createApp({
+      getMedia,
+      objectStore: { get: vi.fn(async () => { throw new Error("storage offline"); }), signedGetUrl: vi.fn() },
+      mediaDelivery: "proxy",
+    });
+    const proxyResponse = await proxy.app.inject("/media/media/faker.png");
+    expect(proxyResponse.statusCode).toBe(503);
+    expect(proxyResponse.json()).toMatchObject({ error: { code: "MEDIA_UNAVAILABLE" } });
+
+    const redirect = createApp({
+      getMedia,
+      objectStore: { get: vi.fn(), signedGetUrl: vi.fn(async () => { throw new Error("signer offline"); }) },
+      mediaDelivery: "redirect",
+    });
+    const redirectResponse = await redirect.app.inject("/media/media/faker.png");
+    expect(redirectResponse.statusCode).toBe(503);
+    expect(redirectResponse.json()).toMatchObject({ error: { code: "MEDIA_UNAVAILABLE" } });
+  });
+
+  it("does not render untrusted media content types on the application origin", async () => {
+    const { app } = createApp({
+      getMedia: vi.fn(async () => ({ objectKey: "media/badge.svg", sourceUrl: "https://evil.example/badge.svg", contentType: "image/svg+xml", entityId: leftId, teamEraId: null })),
+      objectStore: { get: vi.fn(async () => Readable.from("<svg><script>alert(1)</script></svg>")), signedGetUrl: vi.fn() },
+      mediaDelivery: "proxy",
+    });
+
+    const response = await app.inject("/media/media/badge.svg");
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["content-type"]).toContain("application/octet-stream");
+    expect(response.headers["x-content-type-options"]).toBe("nosniff");
+  });
+
+  it("returns media unavailable when storage is not injected", async () => {
+    const { app } = createApp({ getMedia: vi.fn(async () => ({ objectKey: "media/faker.png", sourceUrl: "https://evil.example/faker.png", contentType: "image/png", entityId: leftId, teamEraId: null })) });
+    const response = await app.inject("/media/media/faker.png");
+    expect(response.statusCode).toBe(503);
+    expect(response.json()).toMatchObject({ error: { code: "MEDIA_UNAVAILABLE" } });
+    expect(response.body).not.toContain("evil.example");
   });
 
   it("reports liveness without dependencies and failed readiness as 503", async () => {

@@ -50,7 +50,7 @@ export function buildApp(dependencies: AppDependencies) {
   registerComparisonRoutes(app, dependencies);
   registerDatasetRoutes(app, dependencies);
   registerHealthRoutes(app, dependencies);
-  registerMediaRoute(app);
+  registerMediaRoute(app, dependencies);
 
   app.setNotFoundHandler(async (request, reply) => {
     if (request.method === "GET" && !isReservedNamespace(request.url)) {
