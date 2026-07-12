@@ -128,7 +128,17 @@ export async function withSyncAdvisoryLock<T>(provider: string, callback: () => 
     const key = advisoryLockKey(provider).toString();
     const lock = await sql<{ acquired: boolean }>`select pg_try_advisory_lock(${key}::bigint) as acquired`.execute(connection);
     if (!lock.rows[0]?.acquired) return "locked";
-    try { await callback(); return "ran"; }
-    finally { await sql`select pg_advisory_unlock(${key}::bigint)`.execute(connection); }
+    let operationFailed = false;
+    let operationError: unknown;
+    try { await callback(); }
+    catch (error) { operationFailed = true; operationError = error; }
+    let releaseFailed = false;
+    let releaseError: unknown;
+    try { await sql`select pg_advisory_unlock(${key}::bigint)`.execute(connection); }
+    catch (error) { releaseFailed = true; releaseError = error; }
+    if (releaseFailed && operationFailed) throw new AggregateError([operationError, releaseError], "Sync operation and advisory lock release both failed.", { cause: operationError });
+    if (releaseFailed) throw releaseError;
+    if (operationFailed) throw operationError;
+    return "ran";
   });
 }
