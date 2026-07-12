@@ -35,6 +35,7 @@ describeWithDatabase("initial schema migration", () => {
         expect.objectContaining({ migrationName: "002_publication_generation", status: "Success" }),
         expect.objectContaining({ migrationName: "003_dataset_versions_append_only", status: "Success" }),
         expect.objectContaining({ migrationName: "004_media_provenance", status: "Success" }),
+        expect.objectContaining({ migrationName: "005_override_run_provenance", status: "Success" }),
       ]));
 
       const secondRun = await migrateToLatest(db, { schema });
@@ -51,6 +52,7 @@ describeWithDatabase("initial schema migration", () => {
           "team_eras",
           "media_assets",
           "override_applications",
+          "override_application_runs",
           "tournaments",
           "series_facts",
           "game_facts",

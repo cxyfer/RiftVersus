@@ -133,6 +133,7 @@ export interface SyncRunsTable {
   updated_count: Generated<number>;
   warning_count: Generated<number>;
   error: string | null;
+  reused_dataset_version_id: string | null;
 }
 
 export interface SourceObjectsTable {
@@ -180,7 +181,11 @@ export interface OverrideApplicationsTable {
   override_file: string;
   checksum: string;
   applied_at: DefaultTimestamp;
-  sync_run_id: string | null;
+}
+
+export interface OverrideApplicationRunsTable {
+  override_application_id: string;
+  sync_run_id: string;
 }
 
 export interface FactMutationAuditsTable {
@@ -210,5 +215,6 @@ export interface Database {
   dataset_versions: DatasetVersionsTable;
   coverage_status: CoverageStatusTable;
   override_applications: OverrideApplicationsTable;
+  override_application_runs: OverrideApplicationRunsTable;
   fact_mutation_audits: FactMutationAuditsTable;
 }

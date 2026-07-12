@@ -34,6 +34,12 @@ describe("executeCommand", () => {
     expect(deps.log).toHaveBeenCalledWith(JSON.stringify({ status: "published", version: "fixture-v1" }));
   });
 
+  it("preserves every bounded year and logical competition in backfill composition", async () => {
+    const deps = dependencies();
+    await executeCommand({ kind: "backfill", years: [2023, 2024], competitions: ["Worlds"], fixture: null }, config, deps);
+    expect(deps.execute).toHaveBeenCalledWith({ config, objectStore: store, request: { mode: "backfill", years: [2023, 2024], competitions: ["Worlds"] }, fixture: null });
+  });
+
   it("stops the scheduled non-overlapping owner during graceful shutdown", async () => {
     const deps = dependencies();
     await executeCommand({ kind: "sync-scheduled" }, config, deps);

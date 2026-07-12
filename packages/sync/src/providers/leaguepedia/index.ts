@@ -53,7 +53,8 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
       const raw = canonicalJson({ format: "riftversus-leaguepedia-raw-v1", input: rawInput });
       const bytes = new TextEncoder().encode(raw);
       const digest = createHash("sha256").update(bytes).digest("hex");
-      const overrideDigest = createHash("sha256").update(canonicalJson(Object.values(options.overrides.checksums).sort())).digest("hex");
+      const overrideFiles = reviewedOverrideFiles(options.overrides.checksums);
+      const overrideDigest = createHash("sha256").update(canonicalJson(overrideFiles)).digest("hex");
       const versionDigest = createHash("sha256").update(canonicalJson({ rawDigest: digest, parserVersion, overrideDigest })).digest("hex");
       const requested = uniqueCoverageKeys(request.mode === "backfill"
         ? request.competitions.flatMap((competition) => request.years.map((seasonYear) => ({ competition, seasonYear })))
@@ -76,7 +77,7 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
       });
       return {
         version: `leaguepedia-${versionDigest}`,
-        provenance: { sourceDigest: `sha256:${digest}`, parserVersion, overrideChecksums: Object.values(options.overrides.checksums).sort() as `sha256:${string}`[] },
+        provenance: { sourceDigest: `sha256:${digest}`, parserVersion, overrideFiles: overrideFiles as { file: string; checksum: `sha256:${string}` }[] },
         source: {
           sourceKey: `sha256:${digest}`,
           sourceUrl: snapshot.rawEvidence[0]!.sourceUrl,
@@ -97,6 +98,13 @@ function inferredCoverage(snapshot: LeaguepediaSnapshot): { competition: string;
   return uniqueCoverageKeys(snapshot.slices.map(({ competition, seasonYear }) => ({ competition, seasonYear })));
 }
 function uniqueCoverageKeys(items: readonly { competition: string; seasonYear: number }[]): { competition: string; seasonYear: number }[] { return [...new Map(items.map((item) => [JSON.stringify([item.competition, item.seasonYear]), item])).values()]; }
+function reviewedOverrideFiles(checksums: Readonly<Record<string, string>>): { file: string; checksum: `sha256:${string}` }[] {
+  return Object.entries(checksums).map(([file, checksum]) => {
+    if (file.startsWith("/") || file.includes("\\") || file.split("/").includes("..") || !file.includes("/")) throw new Error(`Reviewed override file identity must be a stable repository-relative path: ${file}`);
+    if (!/^sha256:[a-f0-9]{64}$/.test(checksum)) throw new Error(`Reviewed override checksum is invalid for ${file}.`);
+    return { file, checksum: checksum as `sha256:${string}` };
+  }).sort((a, b) => a.file.localeCompare(b.file));
+}
 function combineTraversal(items: readonly LeaguepediaSnapshot["traversal"][]): LeaguepediaSnapshot["traversal"] { return { requestedPages: items.reduce((sum, item) => sum + item.requestedPages, 0), visitedPages: items.reduce((sum, item) => sum + item.visitedPages, 0), complete: items.every((item) => item.complete) }; }
 function requireHttps(value: string): string { const url = new URL(value); if (url.protocol !== "https:") throw new Error("Leaguepedia source URL must use HTTPS."); return url.toString(); }
 function canonicalJson(value: unknown): string { return JSON.stringify(sortValue(value)); }

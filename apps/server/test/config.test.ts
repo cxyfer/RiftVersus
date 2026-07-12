@@ -27,8 +27,10 @@ describe("loadConfig", () => {
   it("validates bounded Leaguepedia sync settings", () => {
     expect(() => loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_ENDPOINT: "http://lol.example/api.php" })).toThrow(/endpoint/i);
     expect(() => loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_SYNC_YEARS: "" })).toThrow();
-    const config = loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_SYNC_YEARS: "2023,2024", LEAGUEPEDIA_SYNC_COMPETITIONS: "Worlds,MSI", LEAGUEPEDIA_MEDIA_HOSTS: "static.wikia.nocookie.net,images.example" });
+    const config = loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_SYNC_YEARS: "2023,2024", LEAGUEPEDIA_SYNC_COMPETITIONS: "Worlds,MSI", LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":{"2023":"2023 Season World Championship","2024":"2024 Season World Championship"},"MSI":{"2023":"2023 Mid-Season Invitational","2024":"2024 Mid-Season Invitational"}}', LEAGUEPEDIA_MEDIA_HOSTS: "static.wikia.nocookie.net,images.example" });
     expect(config.leaguepedia).toMatchObject({ syncYears: [2023, 2024], syncCompetitions: ["Worlds", "MSI"], mediaHosts: ["static.wikia.nocookie.net", "images.example"] });
+    expect(config.leaguepedia.competitionMap.Worlds).toEqual({ "2023": "2023 Season World Championship", "2024": "2024 Season World Championship" });
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":"2024 Season World Championship"}' })).toThrow(/logical competition.*year/i);
   });
 
   it("rejects partial S3 configuration", () => {

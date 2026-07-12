@@ -78,7 +78,7 @@ export interface StagedDimensions {
 export interface StagedVersionProvenance {
   sourceDigest: `sha256:${string}`;
   parserVersion: string;
-  overrideChecksums: readonly `sha256:${string}`[];
+  overrideFiles: readonly { file: string; checksum: `sha256:${string}` }[];
 }
 
 export interface StagedSyncBatch {

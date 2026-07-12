@@ -6,6 +6,7 @@ import { initialMigration } from "./migrations/001_initial.js";
 import { publicationGenerationMigration } from "./migrations/002_publication_generation.js";
 import { datasetVersionsAppendOnlyMigration } from "./migrations/003_dataset_versions_append_only.js";
 import { mediaProvenanceMigration } from "./migrations/004_media_provenance.js";
+import { overrideRunProvenanceMigration } from "./migrations/005_override_run_provenance.js";
 import type { Database } from "./types.js";
 
 export interface MigrationOptions {
@@ -15,7 +16,7 @@ export interface MigrationOptions {
 
 class StaticMigrationProvider implements MigrationProvider {
   async getMigrations(): Promise<Record<string, Migration>> {
-    return { "001_initial": initialMigration, "002_publication_generation": publicationGenerationMigration, "003_dataset_versions_append_only": datasetVersionsAppendOnlyMigration, "004_media_provenance": mediaProvenanceMigration };
+    return { "001_initial": initialMigration, "002_publication_generation": publicationGenerationMigration, "003_dataset_versions_append_only": datasetVersionsAppendOnlyMigration, "004_media_provenance": mediaProvenanceMigration, "005_override_run_provenance": overrideRunProvenanceMigration };
   }
 }
 

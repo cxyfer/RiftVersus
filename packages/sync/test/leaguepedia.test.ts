@@ -36,6 +36,7 @@ async function overrides() {
   return loadOverrides({
     identities: `${root}/data/overrides/identities.yaml`,
     tournaments: `${root}/data/overrides/tournaments.yaml`,
+    logicalFiles: { identities: "data/overrides/identities.yaml", tournaments: "data/overrides/tournaments.yaml" },
   });
 }
 
@@ -559,7 +560,10 @@ describe("Leaguepedia coverage and provider", () => {
     expect(new TextDecoder().decode(batch.source.bytes)).toContain("Duplicate One");
     expect(batch.source.sourceUrl).toContain("action=cargoquery");
     expect(batch.provenance).toMatchObject({ sourceDigest: expect.stringMatching(/^sha256:[a-f0-9]{64}$/), parserVersion: "leaguepedia-v1" });
-    expect(batch.provenance.overrideChecksums).toHaveLength(2);
+    expect(batch.provenance.overrideFiles).toEqual([
+      expect.objectContaining({ file: "data/overrides/identities.yaml", checksum: expect.stringMatching(/^sha256:/) }),
+      expect.objectContaining({ file: "data/overrides/tournaments.yaml", checksum: expect.stringMatching(/^sha256:/) }),
+    ]);
     const replayed = normalizeLeaguepediaSnapshot(parseLeaguepediaRawInput(raw.input as LeaguepediaRawInput), await overrides());
     expect(replayed.facts).toEqual(batch.facts);
     expect(replayed.dimensions).toEqual(batch.dimensions);
@@ -649,12 +653,18 @@ describe("Leaguepedia coverage and provider", () => {
     const reviewed = await overrides();
     const base = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: reviewed, parserVersion: "parser-a" });
     const changedParser = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: reviewed, parserVersion: "parser-b" });
-    const changedOverrides = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: { ...reviewed, checksums: { ...reviewed.checksums, synthetic: `sha256:${"f".repeat(64)}` } }, parserVersion: "parser-a" });
+    const changedOverrides = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: { ...reviewed, checksums: { ...reviewed.checksums, "data/overrides/synthetic.yaml": `sha256:${"f".repeat(64)}` } }, parserVersion: "parser-a" });
     const request = { mode: "backfill", years: [2024], competitions: ["Worlds"] } as const;
     const [a1, a2, parser, override] = await Promise.all([base.stage(request), base.stage(request), changedParser.stage(request), changedOverrides.stage(request)]);
     expect(a1.version).toBe(a2.version);
     expect(a1.version).not.toBe(parser.version);
     expect(a1.version).not.toBe(override.version);
+  });
+
+  it("rejects absolute or synthetic override identities before staging provenance", async () => {
+    const snapshot = await fixture(); const reviewed = await overrides();
+    const provider = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: { ...reviewed, checksums: { "/tmp/identities.yaml": `sha256:${"a".repeat(64)}` } } });
+    await expect(provider.stage({ mode: "sync-once" })).rejects.toThrow(/repository-relative/);
   });
 
   it("changes sourceKey and version when raw Cargo evidence changes despite identical revisions", async () => {

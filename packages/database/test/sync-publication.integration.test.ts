@@ -63,7 +63,19 @@ describeWithDatabase("sync publication repository", () => {
     expect(await db.selectFrom("entities").select("canonical_name").where("id", "=", teamId).executeTakeFirstOrThrow()).toEqual({ canonical_name: "T1" });
     expect(await db.selectFrom("media_assets").select(["object_key", "provider", "byte_size", "is_current"]).where("entity_id", "=", teamId).executeTakeFirstOrThrow()).toMatchObject({ object_key: "media/leaguepedia/t1", provider: "leaguepedia", byte_size: "3", is_current: true });
     expect(await db.selectFrom("coverage_status").select("status").where("provider", "=", "leaguepedia").where("competition", "=", "Worlds").executeTakeFirstOrThrow()).toEqual({ status: "complete" });
-    expect(await db.selectFrom("override_applications").select("checksum").where("sync_run_id", "=", run.id).executeTakeFirstOrThrow()).toEqual({ checksum: "sha256:override" });
+    const firstApplication = await db.selectFrom("override_applications").select(["id", "checksum"]).where("override_file", "=", "data/overrides/identities.yaml").executeTakeFirstOrThrow();
+    expect(firstApplication.checksum).toBe("sha256:override");
+    expect(await db.selectFrom("override_application_runs").select("sync_run_id").where("override_application_id", "=", firstApplication.id).executeTakeFirstOrThrow()).toEqual({ sync_run_id: run.id });
+    const secondRun = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({ syncRunId: secondRun.id, version: "dimension-v2", coverage: [], overrideApplications: [{ overrideFile: "data/overrides/identities.yaml", checksum: "sha256:override" }] }, db);
+    const application = await db.selectFrom("override_applications").select("id").where("override_file", "=", "data/overrides/identities.yaml").where("checksum", "=", "sha256:override").executeTakeFirstOrThrow();
+    expect(await db.selectFrom("override_application_runs").select("sync_run_id").where("override_application_id", "=", application.id).execute()).toEqual(expect.arrayContaining([{ sync_run_id: run.id }, { sync_run_id: secondRun.id }]));
+    const unchangedRun = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await completeUnchangedSyncRun({ syncRunId: unchangedRun.id, version: "dimension-v2" }, db);
+    expect(await db.selectFrom("override_application_runs").select("sync_run_id").where("override_application_id", "=", application.id).execute()).toHaveLength(2);
+    const reusedVersion = await db.selectFrom("dataset_versions").select("id").where("version", "=", "dimension-v2").executeTakeFirstOrThrow();
+    expect(await db.selectFrom("sync_runs").select("reused_dataset_version_id").where("id", "=", unchangedRun.id).executeTakeFirstOrThrow()).toEqual({ reused_dataset_version_id: reusedVersion.id });
+    await expect(db.deleteFrom("override_application_runs").where("override_application_id", "=", application.id).execute()).rejects.toThrow();
   });
 
   it("atomically upserts canonical facts and rolls staged changes back on validation failure", async () => {

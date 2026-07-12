@@ -49,7 +49,7 @@ export async function findDatasetVersion(version: string, db: Kysely<Database>):
 export async function completeUnchangedSyncRun(input: CompleteUnchangedSyncRunInput, db: Kysely<Database>): Promise<void> {
   const version = await db.selectFrom("dataset_versions").select("id").where("version", "=", input.version).executeTakeFirst();
   if (version === undefined) throw new Error("An unchanged sync run must reference an existing dataset version.");
-  const result = await db.updateTable("sync_runs").set({ status: "succeeded", finished_at: new Date() }).where("id", "=", input.syncRunId).where("status", "=", "running").executeTakeFirst();
+  const result = await db.updateTable("sync_runs").set({ status: "succeeded", finished_at: new Date(), reused_dataset_version_id: version.id }).where("id", "=", input.syncRunId).where("status", "=", "running").executeTakeFirst();
   if (result.numUpdatedRows !== 1n) throw new Error("Only a running sync run may complete unchanged.");
 }
 
@@ -165,7 +165,13 @@ async function publishDimensions(input: PublishDatasetInput, trx: Kysely<Databas
 }
 
 async function publishOverrideApplications(input: PublishDatasetInput, trx: Kysely<Database>): Promise<void> {
-  for (const item of input.overrideApplications ?? []) await trx.insertInto("override_applications").values({ id: randomUUID(), override_file: item.overrideFile, checksum: item.checksum, sync_run_id: input.syncRunId }).onConflict((conflict) => conflict.columns(["override_file", "checksum"]).doNothing()).execute();
+  const files = (input.overrideApplications ?? []).map((item) => item.overrideFile);
+  if (new Set(files).size !== files.length) throw new Error("A published run may associate each reviewed override file only once.");
+  for (const item of input.overrideApplications ?? []) {
+    await trx.insertInto("override_applications").values({ id: randomUUID(), override_file: item.overrideFile, checksum: item.checksum }).onConflict((conflict) => conflict.columns(["override_file", "checksum"]).doNothing()).execute();
+    const application = await trx.selectFrom("override_applications").select("id").where("override_file", "=", item.overrideFile).where("checksum", "=", item.checksum).executeTakeFirstOrThrow();
+    await trx.insertInto("override_application_runs").values({ override_application_id: application.id, sync_run_id: input.syncRunId }).onConflict((conflict) => conflict.columns(["override_application_id", "sync_run_id"]).doNothing()).execute();
+  }
 }
 
 async function publishMedia(input: PublishDatasetInput, trx: Kysely<Database>): Promise<void> {

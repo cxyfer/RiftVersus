@@ -28,7 +28,11 @@ export interface ReviewedOverrides {
   checksums: Readonly<Record<string, string>>;
 }
 
-export interface OverridePaths { identities: string; tournaments: string }
+export interface OverridePaths {
+  identities: string;
+  tournaments: string;
+  logicalFiles?: { identities: string; tournaments: string };
+}
 
 export async function loadOverrides(paths: OverridePaths): Promise<ReviewedOverrides> {
   const [identitiesText, tournamentsText] = await Promise.all([
@@ -41,8 +45,8 @@ export async function loadOverrides(paths: OverridePaths): Promise<ReviewedOverr
     identities,
     tournaments,
     checksums: {
-      [paths.identities]: checksum(identitiesText),
-      [paths.tournaments]: checksum(tournamentsText),
+      [paths.logicalFiles?.identities ?? paths.identities]: checksum(identitiesText),
+      [paths.logicalFiles?.tournaments ?? paths.tournaments]: checksum(tournamentsText),
     },
   };
 }

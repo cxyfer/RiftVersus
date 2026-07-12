@@ -54,7 +54,7 @@ function createHarness(overrides: Partial<SyncDependencies> = {}) {
       events.push("stage");
       return {
         version: "fixture-v1",
-        provenance: { sourceDigest: `sha256:${"a".repeat(64)}`, parserVersion: "fixture-1", overrideChecksums: [] },
+        provenance: { sourceDigest: `sha256:${"a".repeat(64)}`, parserVersion: "fixture-1", overrideFiles: [] },
         source: {
           sourceKey: "page:1",
           sourceUrl: "https://wiki.example.test/page/1",
