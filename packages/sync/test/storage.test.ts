@@ -86,4 +86,36 @@ describe("S3 object store", () => {
     const store = createS3ObjectStore(config, { client: { send: vi.fn(async () => ({ Metadata: { sha256: "different" }, ContentLength: 2 })) } });
     await expect(store.putImmutable({ key: "sources/fixture/abc", bytes: new Uint8Array([1, 2]), checksum: "abc", contentType: "application/json" })).rejects.toThrow("checksum");
   });
+
+  it("accepts a conditional-put race only after a matching re-HEAD", async () => {
+    let heads = 0;
+    const client = { send: vi.fn(async (command: unknown) => {
+      if (command instanceof HeadObjectCommand) {
+        heads += 1;
+        if (heads === 1) throw { name: "NotFound", $metadata: { httpStatusCode: 404 } };
+        return { Metadata: { sha256: "abc" }, ContentLength: 2, ContentType: "application/json" };
+      }
+      if (command instanceof PutObjectCommand) throw { name: "PreconditionFailed", $metadata: { httpStatusCode: 412 } };
+      return {};
+    }) };
+    const store = createS3ObjectStore(config, { client });
+    await expect(store.putImmutable({ key: "sources/fixture/abc", bytes: new Uint8Array([1, 2]), checksum: "abc", contentType: "application/json" })).resolves.toBe("existing");
+    expect(heads).toBe(2);
+  });
+
+  it("rejects a conditional-put race whose re-HEAD checksum conflicts", async () => {
+    let heads = 0;
+    const client = { send: vi.fn(async (command: unknown) => {
+      if (command instanceof HeadObjectCommand) {
+        heads += 1;
+        if (heads === 1) throw { name: "NotFound", $metadata: { httpStatusCode: 404 } };
+        return { Metadata: { sha256: "other" }, ContentLength: 2, ContentType: "application/json" };
+      }
+      if (command instanceof PutObjectCommand) throw { name: "PreconditionFailed", $metadata: { httpStatusCode: 412 } };
+      return {};
+    }) };
+    const store = createS3ObjectStore(config, { client });
+    await expect(store.putImmutable({ key: "sources/fixture/abc", bytes: new Uint8Array([1, 2]), checksum: "abc", contentType: "application/json" })).rejects.toThrow("checksum conflict");
+    expect(heads).toBe(2);
+  });
 });

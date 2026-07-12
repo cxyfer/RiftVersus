@@ -82,9 +82,17 @@ describe("runSync", () => {
       sourceObjectId: "source-1",
       media: [expect.objectContaining({ objectKey: expect.stringMatching(/^media\/[a-f0-9]{64}\.png$/) })],
     }));
-    expect(events.indexOf("validate")).toBeLessThan(events.findIndex((event) => event.startsWith("store:sources/")));
-    expect(events.findIndex((event) => event.startsWith("source:sources/"))).toBeLessThan(events.indexOf("publish"));
-    expect(events.at(-1)).toBe("unlock");
+    expect(events).toEqual([
+      "lock",
+      "begin",
+      "validate",
+      expect.stringMatching(/^store:sources\/fixture\/[a-f0-9]{64}$/),
+      expect.stringMatching(/^source:sources\/fixture\/[a-f0-9]{64}$/),
+      "download:https://wiki.example.test/media/logo.png",
+      expect.stringMatching(/^store:media\/[a-f0-9]{64}\.png$/),
+      "publish",
+      "unlock",
+    ]);
   });
 
   it("does not begin a run when the provider lock is held", async () => {
@@ -107,6 +115,7 @@ describe("runSync", () => {
     await expect(runSync(provider, { mode: "sync-once" }, dependencies)).rejects.toBe(error);
     expect(repository.failRun).toHaveBeenCalledWith({ syncRunId: "run-1", error: `${failure} failed` });
     expect(repository.releaseLock).toHaveBeenCalledOnce();
+    expect(events.indexOf("fail")).toBeLessThan(events.indexOf("unlock"));
     expect(events.at(-1)).toBe("unlock");
     if (failure !== "publication") expect(repository.publish).not.toHaveBeenCalled();
   });
@@ -150,12 +159,48 @@ describe("scheduleSync", () => {
     run.mockRejectedValueOnce(new Error("sync rejected"));
     tick!();
     await vi.waitFor(() => expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "sync rejected" })));
+    await vi.waitFor(() => expect(handle.running).toBe(false));
+    run.mockResolvedValueOnce(undefined);
+    tick!();
+    expect(run).toHaveBeenCalledTimes(3);
+    await vi.waitFor(() => expect(handle.running).toBe(false));
     handle.stop();
     expect(stop).toHaveBeenCalledOnce();
   });
 
+  it("observes synchronous throws exactly once and permits the next tick", async () => {
+    let tick: (() => void) | undefined;
+    const run = vi.fn<() => Promise<void>>()
+      .mockImplementationOnce(() => { throw new Error("sync throw"); })
+      .mockResolvedValueOnce(undefined);
+    const onError = vi.fn();
+    const handle = scheduleSync({
+      cron: "0 3 * * *",
+      timezone: "UTC",
+      run,
+      onError,
+      createSchedule: (_cron, _timezone, callback) => { tick = callback; return { stop: vi.fn() }; },
+    });
+
+    tick!();
+    expect(onError).toHaveBeenCalledOnce();
+    expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "sync throw" }));
+    expect(handle.running).toBe(false);
+    tick!();
+    expect(run).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() => expect(handle.running).toBe(false));
+  });
+
+  it("requires an error observer at construction", () => {
+    expect(() => scheduleSync({
+      cron: "0 3 * * *",
+      timezone: "UTC",
+      run: async () => undefined,
+    } as Parameters<typeof scheduleSync>[0])).toThrow("onError");
+  });
+
   it("validates cron and timezone before creating a schedule", () => {
-    expect(() => scheduleSync({ cron: "not cron", timezone: "UTC", run: async () => undefined })).toThrow();
-    expect(() => scheduleSync({ cron: "0 3 * * *", timezone: "Not/A_Zone", run: async () => undefined })).toThrow();
+    expect(() => scheduleSync({ cron: "not cron", timezone: "UTC", run: async () => undefined, onError: vi.fn() })).toThrow();
+    expect(() => scheduleSync({ cron: "0 3 * * *", timezone: "Not/A_Zone", run: async () => undefined, onError: vi.fn() })).toThrow();
   });
 });

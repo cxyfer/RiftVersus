@@ -9,7 +9,7 @@ export interface ScheduleOptions {
   cron: string;
   timezone: string;
   run(): Promise<unknown>;
-  onError?(error: unknown): void;
+  onError(error: unknown): void;
   createSchedule?(cron: string, timezone: string, callback: () => void): { stop(): void };
 }
 
@@ -26,6 +26,7 @@ function defaultSchedule(cron: string, timezone: string, callback: () => void): 
 }
 
 export function scheduleSync(options: ScheduleOptions): ScheduleHandle {
+  if (typeof options.onError !== "function") throw new Error("scheduleSync requires an onError observer.");
   validateTimezone(options.timezone);
   new CronPattern(options.cron, options.timezone);
   let running = false;
@@ -37,12 +38,12 @@ export function scheduleSync(options: ScheduleOptions): ScheduleHandle {
     try {
       result = options.run();
     } catch (error) {
-      options.onError?.(error);
       running = false;
+      options.onError(error);
       return;
     }
     void result
-      .catch((error: unknown) => options.onError?.(error))
+      .catch((error: unknown) => options.onError(error))
       .finally(() => { running = false; });
   };
   const schedule = (options.createSchedule ?? defaultSchedule)(options.cron, options.timezone, tick);
