@@ -1,5 +1,9 @@
 # RiftVersus Design Spec
 
+> Source architecture update: sections 3.3, 5, and the source-related delivery
+> sequence are superseded by
+> `docs/aegis/specs/2026-07-12-leaguepedia-primary-mvp-design.md`.
+
 Date: `2026-07-12`  
 Status: `approved by user on 2026-07-12`  
 Architecture review required: `yes`

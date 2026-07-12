@@ -1,15 +1,15 @@
 {
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
-  "currentTodo": "Await a verified Oracle direct CSV source decision before Task 7; do not merge incomplete Task 9 branch",
+  "currentTodo": "Execute Leaguepedia-primary replacement Task 1: provider-neutral sync runner and immutable storage",
   "completedTodos": [
-    "Task 9 pure adapter branch was reviewed and intentionally withheld because it cannot safely integrate media cache/coverage without Task 7 runner"
+    "User approved Leaguepedia as MVP source; source design amendment and replacement implementation plan created"
   ],
-  "activeSlice": "Task 7/9 integration source-access gate",
+  "activeSlice": "Leaguepedia source redesign approved; planning complete; Task 1 preparation",
   "evidenceRefs": [
-    "Task 9 branch d95c3a2 spec review found blocking runner/integration and client allowlist gaps; no merge"
+    "docs/aegis/specs/2026-07-12-leaguepedia-primary-mvp-design.md; docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md"
   ],
-  "blockedOn": "No official publicly verifiable Oracle CSV direct URL/header exists in available evidence. Task 7 plan prohibits guessing identifiers or parsing download-page HTML. Task 9 depends on Task 7 single runner for media caching, coverage persistence and atomic publication.",
-  "nextStep": "User must provide an official public Oracle CSV direct URL with header evidence, or explicitly approve a reviewed alternative source/provider; then finish Task 7 before reworking Task 9.",
+  "blockedOn": "Real PostgreSQL/Docker integration remains unavailable in the current environment; unit implementation can proceed.",
+  "nextStep": "Commit the approved source amendment, create a fresh Task 1 worktree from main, and dispatch the sync-runner implementer.",
   "updatedAt": "2026-07-12"
 }

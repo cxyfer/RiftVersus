@@ -26,3 +26,5 @@ Entries are workspace records, not authoritative runtime decisions.
 | 2026-07-12 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-06-http-api.json | 2026-07-12-riftversus-mvp evidence task-06-http-api |
 | 2026-07-12 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-10-web-comparison.json | 2026-07-12-riftversus-mvp evidence task-10-web-comparison |
 | 2026-07-12 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-11-browser-export.json | 2026-07-12-riftversus-mvp evidence task-11-browser-export |
+| 2026-07-12 | spec | docs/aegis/specs/2026-07-12-leaguepedia-primary-mvp-design.md | Leaguepedia-Primary MVP Design Amendment |
+| 2026-07-12 | plan | docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md | Leaguepedia-Primary MVP Implementation Plan |

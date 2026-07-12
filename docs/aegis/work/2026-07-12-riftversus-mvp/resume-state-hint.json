@@ -2,9 +2,9 @@
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
   "lastCheckpointRef": "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json",
-  "resumeInstruction": "Do not merge feat/task-09-leaguepedia or create a second database/media publication pipeline. Start with source manifest proof, implement one Task 7 runner, then rebase/rework Task 9 against it.",
+  "resumeInstruction": "Use the Leaguepedia-primary plan as source authority. Keep one runSync publication owner; do not merge feat/task-09-leaguepedia or retain Oracle runtime fallback.",
   "knownPartialWork": [
-    "Task 9 pure adapter branch was reviewed and intentionally withheld because it cannot safely integrate media cache/coverage without Task 7 runner"
+    "User approved Leaguepedia as MVP source; source design amendment and replacement implementation plan created"
   ],
   "mustReadBeforeContinuing": [
     "docs/aegis/work/2026-07-12-riftversus-mvp/10-intent.md",
@@ -12,6 +12,6 @@
     "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json"
   ],
   "unsafeToAssume": [
-    "Do not treat third-party file names, an accessible downloads page, a public wiki probe, or adapter fixtures as authorization to enable live Oracle ingestion or publish coverage."
+    "Do not treat the unmerged Task9 adapter, unit-only fixtures, or an approximate data-size estimate as acceptance evidence."
   ]
 }

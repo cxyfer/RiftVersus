@@ -3,13 +3,13 @@
   "taskId": "2026-07-12-riftversus-mvp",
   "taskIntentRef": "docs/aegis/work/2026-07-12-riftversus-mvp/task-intent-draft.json",
   "baselineRefs": [
-    "docs/aegis/plans/2026-07-12-riftversus-mvp.md Tasks 7 and 9"
+    "docs/aegis/specs/2026-07-12-leaguepedia-primary-mvp-design.md"
   ],
-  "scopeStatus": "No mainline code changes in this slice. Task 9 branch is deliberately unmerged because the plan requires Task 7 runner-owned media caching and coverage publication.",
-  "compatStatus": "Keeping Task9 unmerged preserves the single publication/visibility owner. It avoids an alternate direct provider-to-database/media path.",
-  "retirementStatus": "No live Oracle source, second sync runner, raw media proxy, D1, SQLite, Rust or provider fallback was introduced.",
+  "scopeStatus": "Source architecture now uses Leaguepedia as the only MVP upstream; completed API/web/export work remains unchanged.",
+  "compatStatus": "One PostgreSQL generation and one runSync publication owner remain mandatory. Oracle is retired from MVP runtime rather than retained as a fallback.",
+  "retirementStatus": "Oracle planned manifest/CSV adapter/acceptance paths are delete-first code-retirement targets; no persistent Oracle state exists.",
   "newRiskSignals": [
-    "Task9 review found public client parameters could override the action allowlist; branch remains unmerged and must be fixed after Task7 source decision."
+    "Leaguepedia Cargo schema drift and rate limits require fixtures, bounded live probes, and honest partial/missing coverage. PostgreSQL/Docker gates remain environment-unverified."
   ],
-  "decision": "pause-for-user"
+  "decision": "continue"
 }

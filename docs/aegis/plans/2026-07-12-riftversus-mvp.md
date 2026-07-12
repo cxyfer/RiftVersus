@@ -1,5 +1,9 @@
 # RiftVersus MVP Implementation Plan
 
+> Source Tasks 7-9 are superseded by
+> `docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md`. Completed Tasks
+> 1-6 and 10-11 remain historical execution authority.
+
 Date: `2026-07-12`  
 Status: `ready for execution`  
 Architecture review required: `yes`  

@@ -196,3 +196,23 @@
 - New risk signals:
 - Task9 review found public client parameters could override the action allowlist; branch remains unmerged and must be fixed after Task7 source decision.
 - Advisory decision: pause-for-user
+
+## Checkpoint Update
+
+- Current todo: Execute Leaguepedia-primary replacement Task 1: provider-neutral sync runner and immutable storage
+- Active slice: Leaguepedia source redesign approved; planning complete; Task 1 preparation
+- Completed todos:
+- User approved Leaguepedia as MVP source; source design amendment and replacement implementation plan created
+- Evidence refs:
+- docs/aegis/specs/2026-07-12-leaguepedia-primary-mvp-design.md; docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md
+- Blocked on: Real PostgreSQL/Docker integration remains unavailable in the current environment; unit implementation can proceed.
+- Next step: Commit the approved source amendment, create a fresh Task 1 worktree from main, and dispatch the sync-runner implementer.
+
+## DriftCheckDraft
+
+- Scope status: Source architecture now uses Leaguepedia as the only MVP upstream; completed API/web/export work remains unchanged.
+- Compatibility status: One PostgreSQL generation and one runSync publication owner remain mandatory. Oracle is retired from MVP runtime rather than retained as a fallback.
+- Retirement status: Oracle planned manifest/CSV adapter/acceptance paths are delete-first code-retirement targets; no persistent Oracle state exists.
+- New risk signals:
+- Leaguepedia Cargo schema drift and rate limits require fixtures, bounded live probes, and honest partial/missing coverage. PostgreSQL/Docker gates remain environment-unverified.
+- Advisory decision: continue
