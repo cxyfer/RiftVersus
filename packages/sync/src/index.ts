@@ -6,10 +6,21 @@ export { runSync } from "./runner.js";
 export { scheduleSync } from "./scheduler.js";
 export type { ScheduleHandle, ScheduleOptions } from "./scheduler.js";
 export { validateSyncRequest } from "./types.js";
+export { RetainableStageError } from "./types.js";
 export type {
   RetainedMediaInput, RetainedMediaRecord, RetainedSourceInput, RetainedSourceRecord, StagedSyncBatch,
-  SyncDependencies, SyncProvider, SyncPublicationInput, SyncRepository, SyncRequest, SyncResult,
+  StagedDimensions, StagedEntityDefinition, StagedRegionDefinition, StagedTeamEraDefinition,
+  StagedTournamentDefinition, StagedVersionProvenance, SyncDependencies, SyncProvider, SyncPublicationInput, SyncRepository, SyncRequest, SyncResult,
 } from "./types.js";
 export type { ImmutableObject, ObjectStore, StoredObjectMetadata } from "./storage.js";
 export { createS3ObjectStore } from "./storage/s3.js";
 export type { S3ObjectStoreConfig } from "./storage.js";
+export { loadOverrides } from "./overrides.js";
+export type { IdentityOverride, OverridePaths, ReviewedOverrides, TournamentOverride } from "./overrides.js";
+export {
+  LeaguepediaApiError, LeaguepediaCargoEnvelopeError, LeaguepediaClient, LeaguepediaResourceLimitError, LeaguepediaSnapshotError, createLeaguepediaProvider, deriveLeaguepediaCoverage, fetchAllCargoPages, fetchLeaguepediaRawInput, fetchLeaguepediaSnapshot,
+  normalizeLeaguepediaSnapshot, parseLeaguepediaMedia, parseLeaguepediaRawInput,
+} from "./providers/leaguepedia/index.js";
+export type * from "./providers/leaguepedia/types.js";
+export type { LeaguepediaProviderOptions } from "./providers/leaguepedia/index.js";
+export type { LeaguepediaReadClient, SnapshotRequest, SnapshotResourceLimits, SnapshotSliceRequest, TraversedRows } from "./providers/leaguepedia/index.js";

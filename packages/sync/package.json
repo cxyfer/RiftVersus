@@ -18,7 +18,8 @@
     "@riftversus/contracts": "workspace:*",
     "@riftversus/database": "workspace:*",
     "@riftversus/domain": "workspace:*",
-    "croner": "9.1.0"
+    "croner": "9.1.0",
+    "yaml": "2.8.2"
   },
   "devDependencies": {
     "@types/node": "24.10.0"

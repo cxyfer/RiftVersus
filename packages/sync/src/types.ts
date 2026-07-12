@@ -14,6 +14,13 @@ export interface RetainedSourceInput {
   contentType: string;
 }
 
+export class RetainableStageError extends Error {
+  constructor(message: string, readonly source: RetainedSourceInput, options?: ErrorOptions) {
+    super(message, options);
+    this.name = "RetainableStageError";
+  }
+}
+
 export interface RetainedMediaInput {
   sourceUrl: string;
   attribution: string;
@@ -22,11 +29,65 @@ export interface RetainedMediaInput {
   license?: string | null;
 }
 
+export interface StagedEntityDefinition {
+  id: string;
+  provider: string;
+  sourceKeys: readonly string[];
+  kind: "team" | "player";
+  canonicalName: string;
+  aliases: readonly string[];
+}
+
+export interface StagedTeamEraDefinition {
+  id: string;
+  provider: string;
+  sourceKey: string;
+  teamEntityId: string;
+  displayName: string;
+  regionId?: string | null;
+  validFrom?: string | null;
+  validTo?: string | null;
+}
+
+export interface StagedRegionDefinition {
+  id: string;
+  provider: string;
+  sourceKey: string;
+  name: string;
+}
+
+export interface StagedTournamentDefinition {
+  id: string;
+  provider: string;
+  sourceKey: string;
+  name: string;
+  aliases: readonly string[];
+  category: "league" | "fst" | "msi" | "worlds" | "other";
+  seasonYear?: number | null;
+  validFrom?: string | null;
+  validTo?: string | null;
+}
+
+export interface StagedDimensions {
+  entities: readonly StagedEntityDefinition[];
+  teamEras: readonly StagedTeamEraDefinition[];
+  regions: readonly StagedRegionDefinition[];
+  tournaments: readonly StagedTournamentDefinition[];
+}
+
+export interface StagedVersionProvenance {
+  sourceDigest: `sha256:${string}`;
+  parserVersion: string;
+  overrideChecksums: readonly `sha256:${string}`[];
+}
+
 export interface StagedSyncBatch {
   version: string;
+  provenance: StagedVersionProvenance;
   source: RetainedSourceInput;
   media: readonly RetainedMediaInput[];
   coverage: readonly CoverageInput[];
+  dimensions: StagedDimensions;
   facts: CanonicalFacts;
   rosterGameIds: readonly string[];
 }
@@ -64,9 +125,11 @@ export interface RetainedMediaRecord {
 export interface SyncPublicationInput {
   syncRunId: string;
   version: string;
+  provenance: StagedVersionProvenance;
   sourceObjectId: string;
   media: readonly RetainedMediaRecord[];
   coverage: readonly CoverageInput[];
+  dimensions: StagedDimensions;
   facts: CanonicalFacts;
   rosterGameIds: readonly string[];
 }
@@ -76,6 +139,8 @@ export interface SyncRepository {
   beginRun(input: { provider: string; mode: "sync" | "backfill"; parserVersion: string }): Promise<{ id: string }>;
   failRun(input: { syncRunId: string; error: string }): Promise<void>;
   recordSource(input: RetainedSourceRecord): Promise<{ id: string }>;
+  findPublication(version: string): Promise<{ version: string } | null>;
+  completeUnchanged(input: { syncRunId: string; version: string }): Promise<void>;
   publish(input: SyncPublicationInput): Promise<{ version: string }>;
 }
 
@@ -86,7 +151,7 @@ export interface SyncDependencies {
   validate(batch: StagedSyncBatch): Promise<void> | void;
 }
 
-export type SyncResult = { status: "locked" } | { status: "published"; version: string };
+export type SyncResult = { status: "locked" } | { status: "published" | "unchanged"; version: string };
 
 export function validateSyncRequest(input: unknown): SyncRequest {
   if (!input || typeof input !== "object") throw new Error("Sync request must be an object.");
