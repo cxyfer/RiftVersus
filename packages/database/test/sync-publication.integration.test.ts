@@ -2,7 +2,8 @@ import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 
-import { beginSyncRun, failSyncRun, getDatasetStatus, publishDataset, recordSourceObject, withSyncAdvisoryLock } from "../src/index.js";
+import { beginSyncRun, completeUnchangedSyncRun, failSyncRun, findDatasetVersion, getDatasetStatus, publishDataset, recordSourceObject, recordSourceObjectWithId, withSyncAdvisoryLock } from "../src/index.js";
+import type { PublishDatasetInput } from "../src/repositories/types.js";
 import { createDb, destroyDb } from "../src/db.js";
 import { migrateToLatest } from "../src/migrator.js";
 import { createTestSchemaName, seedComparisonFixture, seedIds } from "./fixtures/seed.js";
@@ -28,6 +29,103 @@ describeWithDatabase("sync publication repository", () => {
     const secondRun = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
     const second = await publishDataset({ syncRunId: secondRun.id, version: "v2", coverage: [] }, db);
     expect(second.id).not.toBe(first.id);
+  });
+
+  it("returns retained source identity and completes unchanged runs without publishing", async () => {
+    const source = { provider: "fixture", sourceKey: "unchanged-source", sourceUrl: "https://example.test/unchanged", objectKey: "sources/unchanged", checksum: "unchanged", parserVersion: "test" };
+    const first = await recordSourceObjectWithId(source, db);
+    const second = await recordSourceObjectWithId(source, db);
+    expect(second).toEqual({ id: first.id, status: "existing" });
+    const publishedRun = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({ syncRunId: publishedRun.id, version: "unchanged-v1", coverage: [] }, db);
+    const version = await findDatasetVersion("unchanged-v1", db);
+    const run = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    await completeUnchangedSyncRun({ syncRunId: run.id, version: "unchanged-v1" }, db);
+    expect(await findDatasetVersion("unchanged-v1", db)).toEqual(version);
+    expect(await db.selectFrom("dataset_versions").select(({ fn }) => fn.countAll<number>().as("count")).where("version", "=", "unchanged-v1").executeTakeFirstOrThrow()).toMatchObject({ count: "1" });
+    expect(await db.selectFrom("sync_runs").select(["status", "finished_at"]).where("id", "=", run.id).executeTakeFirstOrThrow()).toMatchObject({ status: "succeeded" });
+  });
+
+  it("publishes dimensions, media and coverage in the canonical transaction", async () => {
+    const teamId = randomUUID(); const regionId = randomUUID(); const eraId = randomUUID(); const tournamentId = randomUUID();
+    const source = await recordSourceObjectWithId({ provider: "leaguepedia", sourceKey: "dimension-source", sourceUrl: "https://lol.example/wiki", objectKey: "sources/dimension", checksum: "dimension", parserVersion: "test" }, db);
+    const run = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({
+      syncRunId: run.id, version: "dimension-v1", sourceObjectId: source.id, coverage: [{ provider: "leaguepedia", competition: "Worlds", seasonYear: 2024, status: "complete" }],
+      dimensions: {
+        entities: [{ id: teamId, provider: "leaguepedia", sourceKeys: ["T1"], kind: "team", canonicalName: "T1", aliases: ["SKT"] }],
+        regions: [{ id: regionId, provider: "leaguepedia", sourceKey: "LCK", name: "LCK" }],
+        teamEras: [{ id: eraId, provider: "leaguepedia", sourceKey: "T1", teamEntityId: teamId, displayName: "T1", regionId, validFrom: "2019-12-08", validTo: null }],
+        tournaments: [{ id: tournamentId, provider: "leaguepedia", sourceKey: "Worlds 2024", name: "Worlds 2024", aliases: [], category: "worlds", seasonYear: 2024, validFrom: "2024-09-01", validTo: "2024-11-02" }],
+      },
+      media: [
+        { provider: "leaguepedia", sourceUrl: "https://static.example/t1.png", objectKey: "media/leaguepedia/t1", checksum: "sha256:image", contentType: "image/png", byteSize: "3", attribution: "Leaguepedia", entityId: teamId, license: "fair-use" },
+        { provider: "leaguepedia", sourceUrl: "https://static.example/t1.png", objectKey: "media/leaguepedia/t1", checksum: "sha256:image", contentType: "image/png", byteSize: "3", attribution: "Leaguepedia", entityId: regionId, license: "fair-use" },
+      ],
+      overrideApplications: [{ overrideFile: "data/overrides/identities.yaml", checksum: "sha256:override" }],
+    }, db);
+    expect(await db.selectFrom("entities").select("canonical_name").where("id", "=", teamId).executeTakeFirstOrThrow()).toEqual({ canonical_name: "T1" });
+    expect(await db.selectFrom("media_assets as owner").innerJoin("media_objects as object", "object.object_key", "owner.object_key").select(["owner.object_key", "owner.provider", "object.byte_size", "owner.is_current"]).where("owner.entity_id", "=", teamId).executeTakeFirstOrThrow()).toMatchObject({ object_key: "media/leaguepedia/t1", provider: "leaguepedia", byte_size: "3", is_current: true });
+    expect(await db.selectFrom("media_objects").select(({ fn }) => fn.countAll<number>().as("count")).where("object_key", "=", "media/leaguepedia/t1").executeTakeFirstOrThrow()).toMatchObject({ count: "1" });
+    expect(await db.selectFrom("media_assets").select(({ fn }) => fn.countAll<number>().as("count")).where("object_key", "=", "media/leaguepedia/t1").executeTakeFirstOrThrow()).toMatchObject({ count: "2" });
+    const conflictingMediaRun = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await expect(publishDataset({
+      syncRunId: conflictingMediaRun.id,
+      version: "dimension-media-conflict",
+      coverage: [],
+      media: [{ provider: "leaguepedia", sourceUrl: "https://static.example/t1.png", objectKey: "media/leaguepedia/t1", checksum: "sha256:different", contentType: "image/png", byteSize: "3", attribution: "Leaguepedia", entityId: teamId }],
+    }, db)).rejects.toThrow(/immutable media object/i);
+    expect(await db.selectFrom("media_objects").select("checksum").where("object_key", "=", "media/leaguepedia/t1").executeTakeFirstOrThrow()).toEqual({ checksum: "sha256:image" });
+    expect(await db.selectFrom("coverage_status").select("status").where("provider", "=", "leaguepedia").where("competition", "=", "Worlds").executeTakeFirstOrThrow()).toEqual({ status: "complete" });
+    const firstApplication = await db.selectFrom("override_applications").select(["id", "checksum"]).where("override_file", "=", "data/overrides/identities.yaml").executeTakeFirstOrThrow();
+    expect(firstApplication.checksum).toBe("sha256:override");
+    expect(await db.selectFrom("override_application_runs").select("sync_run_id").where("override_application_id", "=", firstApplication.id).executeTakeFirstOrThrow()).toEqual({ sync_run_id: run.id });
+    const secondRun = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({ syncRunId: secondRun.id, version: "dimension-v2", coverage: [], overrideApplications: [{ overrideFile: "data/overrides/identities.yaml", checksum: "sha256:override" }] }, db);
+    const application = await db.selectFrom("override_applications").select("id").where("override_file", "=", "data/overrides/identities.yaml").where("checksum", "=", "sha256:override").executeTakeFirstOrThrow();
+    expect(await db.selectFrom("override_application_runs").select("sync_run_id").where("override_application_id", "=", application.id).execute()).toEqual(expect.arrayContaining([{ sync_run_id: run.id }, { sync_run_id: secondRun.id }]));
+    const unchangedRun = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await completeUnchangedSyncRun({ syncRunId: unchangedRun.id, version: "dimension-v2" }, db);
+    expect(await db.selectFrom("override_application_runs").select("sync_run_id").where("override_application_id", "=", application.id).execute()).toHaveLength(2);
+    const reusedVersion = await db.selectFrom("dataset_versions").select("id").where("version", "=", "dimension-v2").executeTakeFirstOrThrow();
+    expect(await db.selectFrom("sync_runs").select("reused_dataset_version_id").where("id", "=", unchangedRun.id).executeTakeFirstOrThrow()).toEqual({ reused_dataset_version_id: reusedVersion.id });
+    await expect(db.deleteFrom("override_application_runs").where("override_application_id", "=", application.id).execute()).rejects.toThrow();
+  });
+
+  it("retires only complete exact scopes, preserves other years, and restores reappearing facts", async () => {
+    const source = await recordSourceObjectWithId({ provider: "fixture", sourceKey: "retirement", sourceUrl: "https://example.test/retirement", objectKey: "sources/retirement", checksum: "retirement", parserVersion: "test" }, db);
+    const scope = { provider: "fixture", tournamentSourceKey: "worlds", from: "2024-01-01", to: "2025-01-01", status: "partial" as const, unresolvedRows: 1 };
+    const partial = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({ syncRunId: partial.id, version: "retirement-partial", sourceObjectId: source.id, coverage: [], publicationScopes: [scope] }, db);
+    expect((await db.selectFrom("series_facts").select("retired_generation").where("id", "=", seedIds.t1Series).executeTakeFirstOrThrow()).retired_generation).toBeNull();
+    const complete = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({ syncRunId: complete.id, version: "retirement-complete", sourceObjectId: source.id, coverage: [], publicationScopes: [{ ...scope, status: "complete", unresolvedRows: 0 }] }, db);
+    expect((await db.selectFrom("series_facts").select("retired_generation").where("id", "=", seedIds.t1Series).executeTakeFirstOrThrow()).retired_generation).not.toBeNull();
+    expect((await db.selectFrom("game_facts").select("retired_generation").where("id", "=", seedIds.t1Game).executeTakeFirstOrThrow()).retired_generation).not.toBeNull();
+    expect((await db.selectFrom("series_facts").select("retired_generation").where("id", "=", seedIds.sktSeries).executeTakeFirstOrThrow()).retired_generation).toBeNull();
+    expect((await db.selectFrom("series_facts").select("retired_generation").where("id", "=", seedIds.changedSeries).executeTakeFirstOrThrow()).retired_generation).toBeNull();
+    const visibleGeneration = (await db.selectFrom("dataset_versions").select("generation").orderBy("generation", "desc").executeTakeFirstOrThrow()).generation;
+    expect(await db.selectFrom("series_facts").select("id").where("id", "=", seedIds.t1Series).where("publication_generation", "<=", visibleGeneration).where((eb) => eb.or([eb("retired_generation", "is", null), eb("retired_generation", ">", visibleGeneration)])).execute()).toEqual([]);
+    expect(await db.selectFrom("game_facts").select("id").where("id", "=", seedIds.t1Game).where("publication_generation", "<=", visibleGeneration).where((eb) => eb.or([eb("retired_generation", "is", null), eb("retired_generation", ">", visibleGeneration)])).execute()).toEqual([]);
+    const original = await db.selectFrom("series_facts").selectAll().where("id", "=", seedIds.t1Series).executeTakeFirstOrThrow();
+    const reappear = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({ syncRunId: reappear.id, version: "retirement-reappear", sourceObjectId: source.id, coverage: [], publicationScopes: [{ ...scope, status: "complete", unresolvedRows: 0 }], facts: { series: [{ id: original.id, provider: original.provider, sourceKey: original.source_key, tournamentId: original.tournament_id, playedAt: original.played_at, bestOf: original.best_of, completed: original.completed, sideATeamId: original.side_a_team_id, sideAEraId: original.side_a_era_id, sideARegionId: original.side_a_region_id, sideBTeamId: original.side_b_team_id, sideBEraId: original.side_b_era_id, sideBRegionId: original.side_b_region_id, sideAScore: original.side_a_score, sideBScore: original.side_b_score, winnerTeamId: original.winner_team_id }] } }, db);
+    expect((await db.selectFrom("series_facts").select("retired_generation").where("id", "=", seedIds.t1Series).executeTakeFirstOrThrow()).retired_generation).toBeNull();
+  });
+
+  it("rejects every cross-provider publication surface", async () => {
+    const run = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    const invalidInputs: PublishDatasetInput[] = [
+      { syncRunId: run.id, version: "cross-provider-entity", coverage: [], dimensions: { entities: [{ id: randomUUID(), provider: "wrong", sourceKeys: ["wrong"], kind: "team", canonicalName: "Wrong", aliases: [] }], regions: [], teamEras: [], tournaments: [] } },
+      { syncRunId: run.id, version: "cross-provider-region", coverage: [], dimensions: { entities: [], regions: [{ id: randomUUID(), provider: "wrong", sourceKey: "wrong", name: "Wrong" }], teamEras: [], tournaments: [] } },
+      { syncRunId: run.id, version: "cross-provider-era", coverage: [], dimensions: { entities: [], regions: [], teamEras: [{ id: randomUUID(), provider: "wrong", sourceKey: "wrong", teamEntityId: seedIds.t1, displayName: "Wrong" }], tournaments: [] } },
+      { syncRunId: run.id, version: "cross-provider-tournament", coverage: [], dimensions: { entities: [], regions: [], teamEras: [], tournaments: [{ id: randomUUID(), provider: "wrong", sourceKey: "wrong", name: "Wrong", aliases: [], category: "worlds", seasonYear: 2024 }] } },
+      { syncRunId: run.id, version: "cross-provider-media", coverage: [], media: [{ provider: "wrong", sourceUrl: "https://example.test/wrong.png", objectKey: "media/wrong.png", checksum: "wrong", contentType: "image/png", byteSize: "1", attribution: "wrong", entityId: seedIds.t1 }] },
+      { syncRunId: run.id, version: "cross-provider-coverage", coverage: [{ provider: "wrong", competition: "Worlds", seasonYear: 2024, status: "partial" }] },
+      { syncRunId: run.id, version: "cross-provider-fact", coverage: [], facts: { series: [{ id: randomUUID(), provider: "wrong", sourceKey: "wrong", tournamentId: seedIds.worlds, playedAt: new Date("2024-01-01T00:00:00Z"), bestOf: 1, completed: true, sideATeamId: seedIds.t1, sideBTeamId: seedIds.weibo, sideAScore: 1, sideBScore: 0, winnerTeamId: seedIds.t1 }] } },
+      { syncRunId: run.id, version: "cross-provider-scope", coverage: [], publicationScopes: [{ provider: "wrong", tournamentSourceKey: "worlds", from: "2024-01-01", to: "2025-01-01", status: "complete", unresolvedRows: 0 }] },
+    ];
+    for (const input of invalidInputs) await expect(publishDataset(input, db)).rejects.toThrow(/provider.*sync run/i);
   });
 
   it("atomically upserts canonical facts and rolls staged changes back on validation failure", async () => {
@@ -63,13 +161,15 @@ describeWithDatabase("sync publication repository", () => {
     const before = await db.selectFrom("series_facts").select("publication_generation").where("id", "=", seedIds.t1Series).executeTakeFirstOrThrow();
     const publishedBeforeFailure = await getDatasetStatus(db);
     const countsBeforeFailure = await db.selectFrom("game_facts").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow();
+    const currentMediaBeforeFailure = await db.selectFrom("media_assets").select(["object_key", "is_current"]).where("entity_id", "=", seedIds.t1).where("kind", "=", "logo").execute();
     const failed = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
-    await expect(publishDataset({ syncRunId: failed.id, version: "facts-never", sourceObjectId: sourceObject.id, coverage: [], facts: { series: [input], games: [{ id: "99999999-9999-4999-8999-999999999999", provider: "fixture", sourceKey: "invalid", seriesId: "99999999-9999-4999-8999-999999999998", gameNumber: 1, playedAt: new Date(), sideATeamId: seedIds.t1, sideBTeamId: seedIds.weibo }] } }, db)).rejects.toThrow();
+    await expect(publishDataset({ syncRunId: failed.id, version: "facts-never", sourceObjectId: sourceObject.id, coverage: [], media: [{ provider: "fixture", sourceUrl: "https://example.test/new-t1.png", objectKey: "media/new-t1.png", checksum: "sha256:new", contentType: "image/png", byteSize: "3", attribution: "fixture", entityId: seedIds.t1 }], facts: { series: [input], games: [{ id: "99999999-9999-4999-8999-999999999999", provider: "fixture", sourceKey: "invalid", seriesId: "99999999-9999-4999-8999-999999999998", gameNumber: 1, playedAt: new Date(), sideATeamId: seedIds.t1, sideBTeamId: seedIds.weibo }] } }, db)).rejects.toThrow();
     const after = await db.selectFrom("series_facts").select("publication_generation").where("id", "=", seedIds.t1Series).executeTakeFirstOrThrow();
     expect(after).toEqual(before);
     expect(await db.selectFrom("game_facts").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow()).toEqual(countsBeforeFailure);
     expect(await getDatasetStatus(db)).toEqual(publishedBeforeFailure);
     expect(await db.selectFrom("dataset_versions").select("version").where("version", "=", "facts-never").executeTakeFirst()).toBeUndefined();
+    expect(await db.selectFrom("media_assets").select(["object_key", "is_current"]).where("entity_id", "=", seedIds.t1).where("kind", "=", "logo").execute()).toEqual(currentMediaBeforeFailure);
   });
 
   it("does not publish a failed run and excludes concurrent provider work", async () => {

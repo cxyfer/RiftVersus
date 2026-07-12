@@ -78,7 +78,7 @@ export interface StagedDimensions {
 export interface StagedVersionProvenance {
   sourceDigest: `sha256:${string}`;
   parserVersion: string;
-  overrideChecksums: readonly `sha256:${string}`[];
+  overrideFiles: readonly { file: string; checksum: `sha256:${string}` }[];
 }
 
 export interface StagedSyncBatch {
@@ -90,7 +90,10 @@ export interface StagedSyncBatch {
   dimensions: StagedDimensions;
   facts: CanonicalFacts;
   rosterGameIds: readonly string[];
+  publicationScopes: readonly PublicationScope[];
 }
+
+export interface PublicationScope { provider: string; tournamentSourceKey: string; from: string; to: string; status: "complete" | "partial" | "missing"; unresolvedRows: number }
 
 export interface SyncProvider {
   readonly id: string;
@@ -132,6 +135,7 @@ export interface SyncPublicationInput {
   dimensions: StagedDimensions;
   facts: CanonicalFacts;
   rosterGameIds: readonly string[];
+  publicationScopes: readonly PublicationScope[];
 }
 
 export interface SyncRepository {

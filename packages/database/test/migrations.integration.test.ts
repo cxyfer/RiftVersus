@@ -5,7 +5,7 @@ import { sql } from "kysely";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { createDb, destroyDb } from "../src/db.js";
-import { migrateToLatest } from "../src/migrator.js";
+import { createMigrator, migrateToLatest } from "../src/migrator.js";
 import { createTestSchemaName, seedIds } from "./fixtures/seed.js";
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
@@ -34,6 +34,10 @@ describeWithDatabase("initial schema migration", () => {
         expect.objectContaining({ migrationName: "001_initial", status: "Success" }),
         expect.objectContaining({ migrationName: "002_publication_generation", status: "Success" }),
         expect.objectContaining({ migrationName: "003_dataset_versions_append_only", status: "Success" }),
+        expect.objectContaining({ migrationName: "004_media_provenance", status: "Success" }),
+        expect.objectContaining({ migrationName: "005_override_run_provenance", status: "Success" }),
+        expect.objectContaining({ migrationName: "006_fact_retirement", status: "Success" }),
+        expect.objectContaining({ migrationName: "007_shared_media_objects", status: "Success" }),
       ]));
 
       const secondRun = await migrateToLatest(db, { schema });
@@ -49,7 +53,9 @@ describeWithDatabase("initial schema migration", () => {
           "entity_aliases",
           "team_eras",
           "media_assets",
+          "media_objects",
           "override_applications",
+          "override_application_runs",
           "tournaments",
           "series_facts",
           "game_facts",
@@ -92,6 +98,9 @@ describeWithDatabase("initial schema migration", () => {
           "game_players_game_player_lookup",
           "team_region_history_lookup",
           "fact_mutation_audits_fact_lookup",
+          "series_facts_retirement_visibility",
+          "game_facts_retirement_visibility",
+          "media_assets_object_owners",
         ]),
       );
       expect(indexes.rows.find((index) => index.indexname === "media_assets_current_entity_kind_unique")?.indexdef).toContain(
@@ -469,5 +478,171 @@ describeWithDatabase("initial schema migration", () => {
     } finally {
       await destroyDb(db);
     }
+  });
+});
+
+describeWithDatabase("override provenance migration downgrade", () => {
+  const adminPool = new Pool({ connectionString: databaseUrl });
+  afterAll(async () => { await adminPool.end(); });
+
+  async function setup() {
+    const schema = createTestSchemaName();
+    await adminPool.query(`create schema ${schema}`);
+    const db = createDb({ databaseUrl: databaseUrl!, schema });
+    await migrateToLatest(db, { schema });
+    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
+    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
+    const applicationId = randomUUID(); const firstRunId = randomUUID(); const secondRunId = randomUUID();
+    await db.insertInto("sync_runs").values([
+      { id: firstRunId, provider: "leaguepedia", mode: "sync", status: "running", parser_version: "test" },
+      { id: secondRunId, provider: "leaguepedia", mode: "sync", status: "running", parser_version: "test" },
+    ]).execute();
+    await db.insertInto("override_applications").values({ id: applicationId, override_file: "data/overrides/identities.yaml", checksum: "sha256:fixture" }).execute();
+    return { schema, db, applicationId, firstRunId, secondRunId };
+  }
+
+  async function cleanup(schema: string, db: ReturnType<typeof createDb>) {
+    await destroyDb(db); await adminPool.query(`drop schema if exists ${schema} cascade`);
+  }
+
+  it("refuses a lossy downgrade and leaves migration 005 state intact", async () => {
+    const context = await setup();
+    try {
+      await context.db.insertInto("override_application_runs").values([
+        { override_application_id: context.applicationId, sync_run_id: context.firstRunId },
+        { override_application_id: context.applicationId, sync_run_id: context.secondRunId },
+      ]).execute();
+      const result = await createMigrator(context.db, { schema: context.schema }).migrateDown();
+      expect(result.error).toBeInstanceOf(Error);
+      expect(String((result.error as Error).message)).toMatch(/cannot losslessly downgrade/i);
+      expect(await context.db.selectFrom("override_application_runs").select("sync_run_id").where("override_application_id", "=", context.applicationId).execute()).toHaveLength(2);
+      const migration = await sql<{ name: string }>`select name from ${sql.table(`${context.schema}.kysely_migration`)} where name = '005_override_run_provenance'`.execute(context.db);
+      expect(migration.rows).toEqual([{ name: "005_override_run_provenance" }]);
+    } finally { await cleanup(context.schema, context.db); }
+  });
+
+  it("downgrades one association without changing its legacy run identity", async () => {
+    const context = await setup();
+    try {
+      await context.db.insertInto("override_application_runs").values({ override_application_id: context.applicationId, sync_run_id: context.firstRunId }).execute();
+      const result = await createMigrator(context.db, { schema: context.schema }).migrateDown();
+      expect(result.error).toBeUndefined();
+      const legacy = await sql<{ sync_run_id: string }>`select sync_run_id from override_applications where id = ${context.applicationId}`.execute(context.db);
+      expect(legacy.rows).toEqual([{ sync_run_id: context.firstRunId }]);
+      const table = await sql<{ exists: boolean }>`select to_regclass(${`${context.schema}.override_application_runs`}) is not null as exists`.execute(context.db);
+      expect(table.rows).toEqual([{ exists: false }]);
+    } finally { await cleanup(context.schema, context.db); }
+  });
+});
+
+describeWithDatabase("shared media objects migration downgrade", () => {
+  const adminPool = new Pool({ connectionString: databaseUrl });
+  afterAll(async () => { await adminPool.end(); });
+
+  async function setup(ownerCount: 1 | 2) {
+    const schema = createTestSchemaName();
+    await adminPool.query(`create schema ${schema}`);
+    const db = createDb({ databaseUrl: databaseUrl!, schema });
+    await migrateToLatest(db, { schema });
+    const entityIds = [randomUUID(), randomUUID()];
+    await db.insertInto("entities").values(entityIds.slice(0, ownerCount).map((id, index) => ({ id, kind: "team" as const, canonical_name: `Media Owner ${index}`, slug: `media-owner-${index}` }))).execute();
+    await db.insertInto("media_objects").values({ object_key: "media/shared.png", checksum: "sha256:shared", content_type: "image/png", byte_size: "42" }).execute();
+    await db.insertInto("media_assets").values(entityIds.slice(0, ownerCount).map((entityId) => ({ id: randomUUID(), entity_id: entityId, team_era_id: null, kind: "logo" as const, provider: "leaguepedia", source_url: "https://example.test/shared.png", object_key: "media/shared.png", attribution: "fixture", license: null, is_current: true }))).execute();
+    return { schema, db };
+  }
+
+  async function cleanup(schema: string, db: ReturnType<typeof createDb>) {
+    await destroyDb(db);
+    await adminPool.query(`drop schema if exists ${schema} cascade`);
+  }
+
+  it("refuses a lossy downgrade when one immutable object has multiple owners", async () => {
+    const context = await setup(2);
+    try {
+      const result = await createMigrator(context.db, { schema: context.schema }).migrateDown();
+      expect(result.error).toBeInstanceOf(Error);
+      expect(String((result.error as Error).message)).toMatch(/cannot losslessly downgrade/i);
+      expect(await context.db.selectFrom("media_assets").select("object_key").execute()).toHaveLength(2);
+      expect(await context.db.selectFrom("media_objects").select("object_key").execute()).toEqual([{ object_key: "media/shared.png" }]);
+    } finally { await cleanup(context.schema, context.db); }
+  });
+
+  it("restores immutable metadata to a sole legacy owner", async () => {
+    const context = await setup(1);
+    try {
+      const result = await createMigrator(context.db, { schema: context.schema }).migrateDown();
+      expect(result.error).toBeUndefined();
+      const legacy = await sql<{ object_key: string; checksum: string; content_type: string; byte_size: string }>`
+        select object_key, checksum, content_type, byte_size from ${sql.table(`${context.schema}.media_assets`)}
+      `.execute(context.db);
+      expect(legacy.rows).toEqual([{ object_key: "media/shared.png", checksum: "sha256:shared", content_type: "image/png", byte_size: "42" }]);
+      const objectTable = await sql<{ exists: boolean }>`select to_regclass(${`${context.schema}.media_objects`}) is not null as exists`.execute(context.db);
+      expect(objectTable.rows).toEqual([{ exists: false }]);
+    } finally { await cleanup(context.schema, context.db); }
+  });
+
+  it("rejects direct immutable metadata updates and deletion", async () => {
+    const context = await setup(1);
+    try {
+      await expect(context.db.updateTable("media_objects").set({ checksum: "sha256:changed" }).where("object_key", "=", "media/shared.png").execute()).rejects.toThrow(/append-only/i);
+      await expect(context.db.updateTable("media_objects").set({ content_type: "image/webp" }).where("object_key", "=", "media/shared.png").execute()).rejects.toThrow(/append-only/i);
+      await expect(context.db.updateTable("media_objects").set({ byte_size: "43" }).where("object_key", "=", "media/shared.png").execute()).rejects.toThrow(/append-only/i);
+      await expect(context.db.deleteFrom("media_objects").where("object_key", "=", "media/shared.png").execute()).rejects.toThrow(/append-only/i);
+      expect(await context.db.selectFrom("media_objects").selectAll().where("object_key", "=", "media/shared.png").executeTakeFirstOrThrow()).toEqual({ object_key: "media/shared.png", checksum: "sha256:shared", content_type: "image/png", byte_size: "42" });
+    } finally { await cleanup(context.schema, context.db); }
+  });
+});
+
+describeWithDatabase("fact retirement migration downgrade", () => {
+  const adminPool = new Pool({ connectionString: databaseUrl });
+  afterAll(async () => { await adminPool.end(); });
+
+  async function setup() {
+    const schema = createTestSchemaName();
+    await adminPool.query(`create schema ${schema}`);
+    const db = createDb({ databaseUrl: databaseUrl!, schema });
+    await migrateToLatest(db, { schema });
+    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
+    return { schema, db };
+  }
+
+  async function cleanup(schema: string, db: ReturnType<typeof createDb>) {
+    await destroyDb(db);
+    await adminPool.query(`drop schema if exists ${schema} cascade`);
+  }
+
+  it.each(["series", "game"] as const)("refuses a lossy downgrade for retired %s facts and preserves migration metadata, column, and value", async (factKind) => {
+    const context = await setup();
+    try {
+      const teamA = randomUUID(); const teamB = randomUUID(); const tournament = randomUUID(); const series = randomUUID(); const game = randomUUID();
+      await context.db.insertInto("entities").values([
+        { id: teamA, kind: "team", canonical_name: "Retirement A", slug: "retirement-a" },
+        { id: teamB, kind: "team", canonical_name: "Retirement B", slug: "retirement-b" },
+      ]).execute();
+      await context.db.insertInto("tournaments").values({ id: tournament, provider: "fixture", source_key: "retirement", name: "Retirement", category: "worlds" }).execute();
+      await context.db.insertInto("series_facts").values({ id: series, provider: "fixture", source_key: "retired", tournament_id: tournament, played_at: new Date("2024-01-01T00:00:00Z"), best_of: 1, completed: true, side_a_team_id: teamA, side_b_team_id: teamB, side_a_score: 1, side_b_score: 0, winner_team_id: teamA, publication_generation: "1", retired_generation: factKind === "series" ? "2" : null }).execute();
+      if (factKind === "game") await context.db.insertInto("game_facts").values({ id: game, provider: "fixture", source_key: "retired-game", series_id: series, game_number: 1, played_at: new Date("2024-01-01T00:00:00Z"), side_a_team_id: teamA, side_b_team_id: teamB, winner_team_id: teamA, publication_generation: "1", retired_generation: "2" }).execute();
+      const result = await createMigrator(context.db, { schema: context.schema }).migrateDown();
+      expect(result.error).toBeInstanceOf(Error);
+      expect(String((result.error as Error).message)).toMatch(/cannot losslessly downgrade fact retirement/i);
+      const retained = factKind === "series"
+        ? await context.db.selectFrom("series_facts").select("retired_generation").where("id", "=", series).executeTakeFirstOrThrow()
+        : await context.db.selectFrom("game_facts").select("retired_generation").where("id", "=", game).executeTakeFirstOrThrow();
+      expect(retained.retired_generation).toBe("2");
+      const column = await sql<{ exists: boolean }>`select exists (select 1 from information_schema.columns where table_schema = ${context.schema} and table_name = ${factKind === "series" ? "series_facts" : "game_facts"} and column_name = 'retired_generation') as exists`.execute(context.db);
+      expect(column.rows).toEqual([{ exists: true }]);
+      const migration = await sql<{ name: string }>`select name from ${sql.table(`${context.schema}.kysely_migration`)} where name = '006_fact_retirement'`.execute(context.db);
+      expect(migration.rows).toEqual([{ name: "006_fact_retirement" }]);
+    } finally { await cleanup(context.schema, context.db); }
+  });
+
+  it("drops retirement columns when no fact has retirement metadata", async () => {
+    const context = await setup();
+    try {
+      const result = await createMigrator(context.db, { schema: context.schema }).migrateDown();
+      expect(result.error).toBeUndefined();
+      const columns = await sql<{ column_name: string }>`select column_name from information_schema.columns where table_schema = ${context.schema} and table_name in ('series_facts', 'game_facts') and column_name = 'retired_generation'`.execute(context.db);
+      expect(columns.rows).toEqual([]);
+    } finally { await cleanup(context.schema, context.db); }
   });
 });

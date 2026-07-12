@@ -25,7 +25,7 @@ import {
 import { RetainableStageError } from "../src/types.js";
 
 const root = fileURLToPath(new URL("../../..", import.meta.url));
-const fixturePath = fileURLToPath(new URL("./fixtures/leaguepedia-snapshot.json", import.meta.url));
+const fixturePath = `${root}/data/fixtures/leaguepedia-small.json`;
 
 async function fixture(): Promise<LeaguepediaSnapshot> {
   return parseLeaguepediaRawInput(await rawFixture());
@@ -36,6 +36,7 @@ async function overrides() {
   return loadOverrides({
     identities: `${root}/data/overrides/identities.yaml`,
     tournaments: `${root}/data/overrides/tournaments.yaml`,
+    logicalFiles: { identities: "data/overrides/identities.yaml", tournaments: "data/overrides/tournaments.yaml" },
   });
 }
 
@@ -47,7 +48,7 @@ function cargoPage(table: LeaguepediaCargoTable, offset: number, rows: readonly 
   return { offset, rows, rawEvidence: rawEvidence(table, offset, rows) };
 }
 function rawInput(snapshot: LeaguepediaSnapshot): LeaguepediaRawInput {
-  return { sourceUrl: snapshot.sourceUrl, slices: snapshot.slices.map(({ sliceId, competition, sourceCompetition, seasonYear, from, to }) => ({ sliceId, competition, sourceCompetition, seasonYear, from, to })), rawEvidence: snapshot.rawEvidence };
+  return { provenance: snapshot.provenance, sourceUrl: snapshot.sourceUrl, slices: snapshot.slices.map(({ sliceId, competition, sourceCompetition, seasonYear, from, to }) => ({ sliceId, competition, sourceCompetition, seasonYear, from, to })), rawEvidence: snapshot.rawEvidence };
 }
 
 async function multiSourceWorldsInput(): Promise<LeaguepediaRawInput> {
@@ -253,6 +254,7 @@ describe("Leaguepedia fetching", () => {
       fetchGamePlayersPage: async ({ offset }: { offset: number }) => cargoPage("ScoreboardPlayers", offset, []), fetchImageInfoWithEvidence: async () => ({ data: {}, rawEvidence: [] }),
     };
     await expect(fetchLeaguepediaRawInput(client, { sourceUrl: "https://lol.example/wiki", slices: Array.from({ length: 101 }, (_, seasonYear) => ({ competition: "Worlds", seasonYear, from: "2024-01-01", to: "2025-01-01" })) })).rejects.toThrow(/100/);
+    expect((await fetchLeaguepediaRawInput(client, { sourceUrl: "https://lol.example/wiki", slices: [{ competition: "Worlds", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" }] })).provenance).toEqual({ kind: "live" });
   });
 
   it("limits concurrent slice requests to four", async () => {
@@ -329,6 +331,12 @@ describe("Leaguepedia fetching", () => {
     expect(staged).toBeInstanceOf(RetainableStageError);
   });
 
+  it("rejects retained raw input without an explicit provenance discriminator", async () => {
+    const input = await rawFixture();
+    expect(() => parseLeaguepediaRawInput({ ...input, provenance: undefined as never })).toThrow(/provenance/i);
+    expect(() => parseLeaguepediaRawInput({ ...input, provenance: { kind: "synthetic-fixture", name: "" } })).toThrow(/provenance/i);
+  });
+
   it("rejects a game row from a different exact tournament source key", async () => {
     const input = await rawFixture();
     const wrong: LeaguepediaRawInput = { ...input, rawEvidence: input.rawEvidence.map((item) => item.table === "ScoreboardGames" ? {
@@ -342,7 +350,7 @@ describe("Leaguepedia fetching", () => {
     const at = (timestamp: string): LeaguepediaRawInput => ({ ...input, rawEvidence: input.rawEvidence.map((item) => item.table === "ScoreboardGames" ? {
       ...item, response: { cargoquery: (item.response.cargoquery as Array<{ title: Record<string, unknown> }>).map(({ title }) => ({ title: { ...title, DateTime_UTC: timestamp } })) },
     } : item) });
-    expect(parseLeaguepediaRawInput(at("2024-01-01T00:00:00Z")).games).toHaveLength(1);
+    expect(parseLeaguepediaRawInput(at("2024-01-01T00:00:00Z")).games).toHaveLength(5);
     expect(() => parseLeaguepediaRawInput(at("2025-01-01T00:00:00Z"))).toThrow(/outside \[2024-01-01, 2025-01-01\)/);
   });
 
@@ -360,7 +368,7 @@ describe("Leaguepedia fetching", () => {
     const multi: LeaguepediaRawInput = { ...input, slices: [...input.slices, { sliceId, competition: "Worlds", sourceCompetition: "2024 Season World Championship", seasonYear: 2025, from: "2025-01-01", to: "2026-01-01" }], rawEvidence: [...input.rawEvidence, secondPage] };
     const batch = await createLeaguepediaProvider({ loadRawInput: async () => multi, overrides: await overrides() }).stage({ mode: "backfill", years: [2024, 2025], competitions: ["Worlds"] });
     expect(batch.coverage).toEqual([
-      expect.objectContaining({ seasonYear: 2024, status: "complete" }),
+      expect.objectContaining({ seasonYear: 2024, status: "partial" }),
       expect.objectContaining({ seasonYear: 2025, status: "partial" }),
     ]);
   });
@@ -403,6 +411,7 @@ describe("Leaguepedia fetching", () => {
     expect(snapshot.rawEvidence.map((item) => item.table)).toEqual(expect.arrayContaining(["Teams", "Players", "Tournaments", "ScoreboardGames", "ScoreboardPlayers"]));
     expect(snapshot.rawEvidence.find((item) => item.table === "ScoreboardGames")?.scope).toMatchObject({ competition: "2024 Season World Championship", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01", sliceIds: [expect.any(String)] });
     expect(snapshot.rawEvidence.find((item) => item.table === "ScoreboardPlayers")?.scope).toMatchObject({ gameIds: ["G1"], sliceIds: [expect.any(String)] });
+    expect(snapshot.provenance).toEqual({ kind: "live" });
     expect(snapshot.revisionIds).toEqual([77]);
     expect(snapshot.traversal.complete).toBe(true);
   });
@@ -458,12 +467,16 @@ describe("Leaguepedia normalization", () => {
   });
 
   it("normalizes explicit series, games and player facts with stable identifiers", async () => {
-    const result = normalizeLeaguepediaSnapshot(await fixture(), await overrides());
+    const snapshot = await fixture();
+    const result = normalizeLeaguepediaSnapshot(snapshot, await overrides());
     expect(result.facts.series).toHaveLength(1);
     expect(result.facts.series?.[0]).toMatchObject({ sourceKey: "WORLD24-FINAL", bestOf: 5, completed: true, sideAScore: 3, sideBScore: 2 });
+    expect(result.facts.games?.map((game) => game.winnerTeamId === result.entityIds.get("T1") ? "T1" : "Bilibili Gaming")).toEqual(["Bilibili Gaming", "T1", "Bilibili Gaming", "T1", "T1"]);
+    expect(result.facts.gamePlayers).toHaveLength(50);
+    expect(new Set(result.facts.gamePlayers?.map((player) => snapshot.entities.find((entity) => result.entityIds.get(entity.sourceKey) === player.playerEntityId)?.sourceKey))).toEqual(new Set(["Zeus", "Oner", "Faker", "Gumayusi", "Keria", "Bin", "Xun", "knight", "Elk", "ON"]));
     expect(result.facts.games?.[0]).toMatchObject({ sourceKey: "WORLD24-FINAL-G1", gameNumber: 1 });
     expect(result.facts.gamePlayers?.[0]?.gameId).toBe(result.facts.games?.[0]?.id);
-    expect(result.rosterGameIds).toEqual([result.facts.games?.[0]?.id]);
+    expect(result.rosterGameIds).toEqual(result.facts.games?.map((game) => game.id));
     expect(result.dimensions.entities.find((entity) => entity.canonicalName === "T1")?.sourceKeys).toEqual(["SK Telecom T1", "T1"]);
     const t1Eras = result.dimensions.teamEras.filter((era) => era.teamEntityId === result.entityIds.get("T1"));
     expect(t1Eras).toHaveLength(2);
@@ -549,17 +562,25 @@ describe("Leaguepedia coverage and provider", () => {
     expect(batch.source.bytes.byteLength).toBeGreaterThan(0);
     expect(batch.media).toHaveLength(1);
     expect(batch.facts.series).toHaveLength(1);
-    expect(batch.coverage[0]?.status).toBe("complete");
+    expect(batch.coverage[0]).toMatchObject({ status: "partial", detail: expect.stringContaining("synthetic fixture is not source coverage") });
+    expect(batch.publicationScopes.every((scope) => scope.status !== "complete")).toBe(true);
     expect(batch.dimensions.entities).not.toHaveLength(0);
     const raw = JSON.parse(new TextDecoder().decode(batch.source.bytes)) as Record<string, unknown>;
     expect(raw).toHaveProperty("format", "riftversus-leaguepedia-raw-v1");
-    expect(raw).toHaveProperty("input");
+    expect(raw).toHaveProperty("input.provenance", { kind: "synthetic-fixture", name: "leaguepedia-small" });
+    const retainedInput = raw.input as LeaguepediaRawInput;
+    expect([retainedInput.sourceUrl, ...retainedInput.rawEvidence.map((item) => item.sourceUrl)].every((url) => new URL(url).hostname === "fixture.riftversus.invalid")).toBe(true);
+    expect(retainedInput.rawEvidence.every((item) => item.revisionIds.length === 0 && new URL(item.sourceUrl).search === "")).toBe(true);
+    expect(batch.media.every((item) => new URL(item.sourceUrl).hostname === "fixture.riftversus.invalid")).toBe(true);
     expect(raw).not.toHaveProperty("entities");
     expect(raw).not.toHaveProperty("games");
     expect(new TextDecoder().decode(batch.source.bytes)).toContain("Duplicate One");
-    expect(batch.source.sourceUrl).toContain("action=cargoquery");
+    expect(batch.source.sourceUrl).toBe("https://fixture.riftversus.invalid/dataset/leaguepedia-small");
     expect(batch.provenance).toMatchObject({ sourceDigest: expect.stringMatching(/^sha256:[a-f0-9]{64}$/), parserVersion: "leaguepedia-v1" });
-    expect(batch.provenance.overrideChecksums).toHaveLength(2);
+    expect(batch.provenance.overrideFiles).toEqual([
+      expect.objectContaining({ file: "data/overrides/identities.yaml", checksum: expect.stringMatching(/^sha256:/) }),
+      expect.objectContaining({ file: "data/overrides/tournaments.yaml", checksum: expect.stringMatching(/^sha256:/) }),
+    ]);
     const replayed = normalizeLeaguepediaSnapshot(parseLeaguepediaRawInput(raw.input as LeaguepediaRawInput), await overrides());
     expect(replayed.facts).toEqual(batch.facts);
     expect(replayed.dimensions).toEqual(batch.dimensions);
@@ -608,7 +629,7 @@ describe("Leaguepedia coverage and provider", () => {
     });
     const failure = await provider.stage({ mode: "sync-once" }).catch((error: unknown) => error);
     expect(failure).toBeInstanceOf(RetainableStageError);
-    expect(JSON.parse(new TextDecoder().decode((failure as RetainableStageError).source.bytes))).toEqual(expect.objectContaining({ format: "riftversus-leaguepedia-raw-v1", evidence: expect.any(Array) }));
+    expect(JSON.parse(new TextDecoder().decode((failure as RetainableStageError).source.bytes))).toEqual(expect.objectContaining({ format: "riftversus-leaguepedia-raw-v1", provenance: { kind: "live" }, evidence: expect.any(Array) }));
   });
 
   it("derives dates and completeness independently for each requested slice", async () => {
@@ -616,7 +637,7 @@ describe("Leaguepedia coverage and provider", () => {
     const provider = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: await overrides() });
     const batch = await provider.stage({ mode: "backfill", years: [2024, 2025], competitions: ["Worlds"] });
     expect(batch.coverage).toEqual([
-      expect.objectContaining({ seasonYear: 2024, earliestDate: "2024-11-02", latestDate: "2024-11-02", status: "complete" }),
+      expect.objectContaining({ seasonYear: 2024, earliestDate: "2024-11-02", latestDate: "2024-11-02", status: "partial" }),
       expect.objectContaining({ seasonYear: 2025, earliestDate: null, latestDate: null, status: "missing" }),
     ]);
   });
@@ -627,14 +648,25 @@ describe("Leaguepedia coverage and provider", () => {
     expect(batch.coverage).toEqual([expect.objectContaining({
       competition: "Worlds", seasonYear: 2024, status: "partial", earliestDate: "2024-10-01", latestDate: "2024-11-02",
     })]);
-    expect(batch.facts.games).toHaveLength(2);
+    expect(batch.facts.games).toHaveLength(6);
   });
 
   it("deduplicates the same consistent GameId across logical source slices", async () => {
     const input = await duplicateGameWorldsInput();
     const batch = await createLeaguepediaProvider({ loadRawInput: async () => input, overrides: await overrides() }).stage({ mode: "backfill", years: [2024], competitions: ["Worlds"] });
-    expect(batch.facts.games).toHaveLength(1);
-    expect(batch.coverage).toEqual([expect.objectContaining({ status: "complete", detail: expect.stringContaining("Verified 1 rows") })]);
+    expect(batch.facts.games).toHaveLength(5);
+    expect(batch.coverage).toEqual([expect.objectContaining({ status: "partial", detail: expect.stringContaining("synthetic fixture is not source coverage") })]);
+  });
+
+  it("marks coverage partial when a completed series is missing an expected game", async () => {
+    const input = await rawFixture();
+    const missing: LeaguepediaRawInput = { ...input, rawEvidence: input.rawEvidence.map((item) => {
+      if (item.table !== "ScoreboardGames" && item.table !== "ScoreboardPlayers") return item;
+      return { ...item, response: { cargoquery: (item.response.cargoquery as Array<{ title: Record<string, unknown> }>).filter(({ title }) => title.GameId !== "WORLD24-FINAL-G3") } };
+    }) };
+    const batch = await createLeaguepediaProvider({ loadRawInput: async () => missing, overrides: await overrides() }).stage({ mode: "sync-once" });
+    expect(batch.coverage).toEqual([expect.objectContaining({ status: "partial", detail: expect.stringContaining("provider rows") })]);
+    expect(batch.publicationScopes).toEqual([expect.objectContaining({ status: "partial", unresolvedRows: 1 })]);
   });
 
   it("emits one inferred coverage row per logical competition and year", async () => {
@@ -649,12 +681,30 @@ describe("Leaguepedia coverage and provider", () => {
     const reviewed = await overrides();
     const base = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: reviewed, parserVersion: "parser-a" });
     const changedParser = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: reviewed, parserVersion: "parser-b" });
-    const changedOverrides = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: { ...reviewed, checksums: { ...reviewed.checksums, synthetic: `sha256:${"f".repeat(64)}` } }, parserVersion: "parser-a" });
+    const changedOverrides = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: { ...reviewed, checksums: { ...reviewed.checksums, "data/overrides/synthetic.yaml": `sha256:${"f".repeat(64)}` } }, parserVersion: "parser-a" });
     const request = { mode: "backfill", years: [2024], competitions: ["Worlds"] } as const;
     const [a1, a2, parser, override] = await Promise.all([base.stage(request), base.stage(request), changedParser.stage(request), changedOverrides.stage(request)]);
     expect(a1.version).toBe(a2.version);
     expect(a1.version).not.toBe(parser.version);
     expect(a1.version).not.toBe(override.version);
+  });
+
+  it("keeps live completeness authoritative and versions provenance separately", async () => {
+    const syntheticInput = await rawFixture();
+    const reviewed = await overrides();
+    const request = { mode: "sync-once" } as const;
+    const synthetic = await createLeaguepediaProvider({ loadRawInput: async () => syntheticInput, overrides: reviewed }).stage(request);
+    const live = await createLeaguepediaProvider({ loadRawInput: async () => ({ ...syntheticInput, provenance: { kind: "live" } }), overrides: reviewed }).stage(request);
+    expect(synthetic.coverage[0]?.status).toBe("partial");
+    expect(live.coverage[0]?.status).toBe("complete");
+    expect(live.publicationScopes).toEqual([expect.objectContaining({ status: "complete" })]);
+    expect(live.version).not.toBe(synthetic.version);
+  });
+
+  it("rejects absolute or synthetic override identities before staging provenance", async () => {
+    const snapshot = await fixture(); const reviewed = await overrides();
+    const provider = createLeaguepediaProvider({ loadRawInput: async () => rawInput(snapshot), overrides: { ...reviewed, checksums: { "/tmp/identities.yaml": `sha256:${"a".repeat(64)}` } } });
+    await expect(provider.stage({ mode: "sync-once" })).rejects.toThrow(/repository-relative/);
   });
 
   it("changes sourceKey and version when raw Cargo evidence changes despite identical revisions", async () => {

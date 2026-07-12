@@ -11,6 +11,7 @@ export type {
   RetainedMediaInput, RetainedMediaRecord, RetainedSourceInput, RetainedSourceRecord, StagedSyncBatch,
   StagedDimensions, StagedEntityDefinition, StagedRegionDefinition, StagedTeamEraDefinition,
   StagedTournamentDefinition, StagedVersionProvenance, SyncDependencies, SyncProvider, SyncPublicationInput, SyncRepository, SyncRequest, SyncResult,
+  PublicationScope,
 } from "./types.js";
 export type { ImmutableObject, ObjectStore, StoredObjectMetadata } from "./storage.js";
 export { createS3ObjectStore } from "./storage/s3.js";

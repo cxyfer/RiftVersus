@@ -1,77 +1,102 @@
 import { compareHeadToHead, createDb, destroyDb, getDatasetStatus, getMediaByKey, listAvailableFilters, migrateToLatest, searchEntities } from "@riftversus/database";
+import { scheduleSync } from "@riftversus/sync";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { buildApp } from "./app.js";
+import { cliUsage, parseCliCommand, type CliCommand } from "./commands.js";
 import { loadConfig, type Config } from "./config.js";
 import { startListeningServer } from "./server.js";
 import { createConfiguredObjectStore } from "./storage.js";
+import { executeLeaguepediaSync } from "./sync-service.js";
 
 declare const process: {
-  argv: string[];
-  cwd(): string;
-  env: Record<string, string | undefined>;
-  exitCode?: number;
+  argv: string[]; cwd(): string; env: Record<string, string | undefined>; exitCode?: number;
+  once(event: "SIGINT" | "SIGTERM", listener: () => void): unknown;
+  off(event: "SIGINT" | "SIGTERM", listener: () => void): unknown;
 };
-
-function printUsage() {
-  console.log("Usage: riftversus <serve|migrate>");
-}
 
 export async function startServer(config: Config) {
   const objectStore = createConfiguredObjectStore(config);
   return startListeningServer(config, {
     createDb: () => createDb({ databaseUrl: config.databaseUrl }),
     buildApp: (db) => buildApp({
-      searchEntities: (query) => searchEntities(query, db),
-      listFilters: () => listAvailableFilters(db),
-      compare: (query) => compareHeadToHead(query, db),
-      getDataset: async () => {
-        const status = await getDatasetStatus(db);
-        return status === null ? null : { version: status.version, lastSuccessfulSyncAt: status.lastSuccessfulSyncAt, coverage: status.coverage };
-      },
-      getMedia: (key) => getMediaByKey(key, db),
-      ...(objectStore === undefined ? {} : { objectStore }),
-      mediaDelivery: config.mediaDelivery,
-      staticDir: resolve(process.cwd(), "apps/web/dist"),
+      searchEntities: (query) => searchEntities(query, db), listFilters: () => listAvailableFilters(db), compare: (query) => compareHeadToHead(query, db),
+      getDataset: async () => { const status = await getDatasetStatus(db); return status === null ? null : { version: status.version, lastSuccessfulSyncAt: status.lastSuccessfulSyncAt, coverage: status.coverage }; },
+      getMedia: (key) => getMediaByKey(key, db), ...(objectStore === undefined ? {} : { objectStore }), mediaDelivery: config.mediaDelivery, staticDir: resolve(process.cwd(), "apps/web/dist"),
     }),
     destroyDb,
   });
 }
 
-async function main() {
-  const [command] = process.argv.slice(2);
-
-  if (command === "--help" || command === "-h" || command === undefined) {
-    printUsage();
-    process.exitCode = command === undefined ? 1 : 0;
-    return;
-  }
-
-  if ((command !== "migrate" && command !== "serve") || process.argv.length !== 3) {
-    console.error(`Unknown command: ${command}`);
-    printUsage();
-    process.exitCode = 1;
-    return;
-  }
-
-  const config = loadConfig(process.env);
-  if (command === "serve") {
-    await startServer(config);
-    return;
-  }
+async function migrate(config: Config) {
   const db = createDb({ databaseUrl: config.databaseUrl });
+  try { const result = await migrateToLatest(db); for (const migration of result.results ?? []) console.log(`${migration.migrationName}: ${migration.status}`); }
+  finally { await destroyDb(db); }
+}
 
-  try {
-    const result = await migrateToLatest(db);
-    for (const migration of result.results ?? []) {
-      console.log(`${migration.migrationName}: ${migration.status}`);
-    }
-  } finally {
-    await destroyDb(db);
+function requiredObjectStore(config: Config) {
+  const store = createConfiguredObjectStore(config);
+  if (store === undefined) throw new Error("sync and backfill require complete S3 configuration.");
+  return store;
+}
+
+async function waitForShutdown(): Promise<void> {
+  await new Promise<void>((resolveShutdown) => {
+    const finish = () => { process.off("SIGINT", finish); process.off("SIGTERM", finish); resolveShutdown(); };
+    process.once("SIGINT", finish); process.once("SIGTERM", finish);
+  });
+}
+
+export async function runCli(argv: readonly string[], environment: Record<string, string | undefined>): Promise<void> {
+  const command = parseCliCommand(argv);
+  const config = loadConfig(environment);
+  await executeCommand(command, config);
+}
+
+export interface CommandDependencies {
+  startServer(config: Config): Promise<unknown>;
+  migrate(config: Config): Promise<void>;
+  objectStore(config: Config): ReturnType<typeof requiredObjectStore>;
+  execute(input: Parameters<typeof executeLeaguepediaSync>[0]): ReturnType<typeof executeLeaguepediaSync>;
+  schedule: typeof scheduleSync;
+  waitForShutdown(): Promise<void>;
+  log(value: string): void;
+  error(value: unknown): void;
+}
+
+const defaultCommandDependencies: CommandDependencies = {
+  startServer, migrate, objectStore: requiredObjectStore, execute: executeLeaguepediaSync,
+  schedule: scheduleSync, waitForShutdown, log: (value) => console.log(value), error: (value) => console.error(value),
+};
+
+export async function executeCommand(command: CliCommand, config: Config, dependencies: CommandDependencies = defaultCommandDependencies): Promise<void> {
+  if (command.kind === "serve") { await dependencies.startServer(config); return; }
+  if (command.kind === "migrate") { await dependencies.migrate(config); return; }
+  const objectStore = dependencies.objectStore(config);
+  if (command.kind === "sync-once") {
+    dependencies.log(JSON.stringify(await dependencies.execute({ config, objectStore, request: { mode: "sync-once" }, fixture: command.fixture })));
+    return;
+  }
+  if (command.kind === "backfill") {
+    dependencies.log(JSON.stringify(await dependencies.execute({ config, objectStore, request: { mode: "backfill", years: command.years, competitions: command.competitions }, fixture: command.fixture })));
+    return;
+  }
+  const handle = dependencies.schedule({ cron: config.syncCron, timezone: config.syncTimezone, run: () => dependencies.execute({ config, objectStore, request: { mode: "sync" }, fixture: null }), onError: dependencies.error });
+  try { await dependencies.waitForShutdown(); }
+  finally {
+    handle.stop();
+    while (handle.running) await new Promise((resolveWait) => setTimeout(resolveWait, 25));
   }
 }
 
-void main().catch((error: unknown) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+async function main() {
+  const argv = process.argv.slice(2);
+  if (argv[0] === "--help" || argv[0] === "-h") { console.log(cliUsage); return; }
+  if (argv.length === 0) { console.error(cliUsage); process.exitCode = 1; return; }
+  await runCli(argv, process.env);
+}
+
+if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  void main().catch((error: unknown) => { console.error(error); process.exitCode = 1; });
+}

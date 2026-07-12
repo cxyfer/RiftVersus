@@ -9,6 +9,29 @@ const S3_VARIABLES = [
   "S3_FORCE_PATH_STYLE",
 ] as const;
 
+const csv = (value: string, name: string) => {
+  const items = value.split(",").map((item) => item.trim()).filter(Boolean);
+  if (items.length === 0 || new Set(items).size !== items.length) throw new Error(`${name} must contain unique comma-separated values.`);
+  return items;
+};
+const years = (value: string) => csv(value, "LEAGUEPEDIA_SYNC_YEARS").map((item) => {
+  const year = Number(item); if (!Number.isInteger(year) || year < 2011 || year > 2100) throw new Error("LEAGUEPEDIA_SYNC_YEARS contains an invalid year."); return year;
+});
+function competitionMap(value: string): Record<string, Record<string, string>> {
+  const parsed = JSON.parse(value) as unknown;
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) throw new Error("LEAGUEPEDIA_COMPETITION_MAP must map each logical competition and year to an exact source key.");
+  const output: Record<string, Record<string, string>> = {};
+  for (const [competition, years] of Object.entries(parsed)) {
+    if (typeof years !== "object" || years === null || Array.isArray(years) || Object.keys(years).length === 0) throw new Error("LEAGUEPEDIA_COMPETITION_MAP must map each logical competition and year to an exact source key.");
+    output[competition] = {};
+    for (const [year, sourceKey] of Object.entries(years)) {
+      if (!/^\d{4}$/.test(year) || typeof sourceKey !== "string" || !sourceKey.trim()) throw new Error("LEAGUEPEDIA_COMPETITION_MAP must map each logical competition and year to an exact source key.");
+      output[competition]![year] = sourceKey.trim();
+    }
+  }
+  return output;
+}
+
 const S3EndpointSchema = z.url().refine(
   (endpoint) => {
     const url = new URL(endpoint);
@@ -38,6 +61,17 @@ const EnvironmentSchema = z
     LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
     SYNC_CRON: z.string().min(1).default("0 3 * * *"),
     SYNC_TIMEZONE: z.string().min(1).default("UTC"),
+    LEAGUEPEDIA_ENDPOINT: z.url().refine((value) => new URL(value).protocol === "https:", "LEAGUEPEDIA_ENDPOINT must use HTTPS.").default("https://lol.fandom.com/api.php"),
+    LEAGUEPEDIA_USER_AGENT: z.string().min(12).default("RiftVersus/0.1 (https://github.com/riftversus; contact@example.invalid)"),
+    LEAGUEPEDIA_SYNC_YEARS: z.string().min(1).default("2023,2024"),
+    LEAGUEPEDIA_SYNC_COMPETITIONS: z.string().min(1).default("Worlds"),
+    LEAGUEPEDIA_COMPETITION_MAP: z.string().min(2).default('{"Worlds":{"2023":"2023 Season World Championship","2024":"2024 Season World Championship"}}'),
+    LEAGUEPEDIA_MEDIA_HOSTS: z.string().min(1).default("static.wikia.nocookie.net"),
+    LEAGUEPEDIA_OVERRIDES_DIR: z.string().min(1).default("data/overrides"),
+    LEAGUEPEDIA_FIXTURE_PATH: z.string().min(1).default("data/fixtures/leaguepedia-small.json"),
+    LEAGUEPEDIA_MAX_BYTES: z.coerce.number().int().positive().max(500_000_000).default(100_000_000),
+    LEAGUEPEDIA_MAX_PAGES: z.coerce.number().int().positive().max(10_000).default(2_000),
+    LEAGUEPEDIA_MAX_ROWS: z.coerce.number().int().positive().max(2_000_000).default(500_000),
     MEDIA_DELIVERY: z.enum(["proxy", "redirect"]).default("proxy"),
   })
   .superRefine((environment, context) => {
@@ -60,6 +94,7 @@ export type Environment = Record<string, string | undefined>;
 export function loadConfig(environment: Environment) {
   const parsed = EnvironmentSchema.parse(environment);
   const hasS3 = S3_VARIABLES.every((key) => parsed[key] !== undefined);
+  const parsedCompetitionMap = competitionMap(parsed.LEAGUEPEDIA_COMPETITION_MAP);
 
   return {
     databaseUrl: parsed.DATABASE_URL,
@@ -68,6 +103,19 @@ export function loadConfig(environment: Environment) {
     logLevel: parsed.LOG_LEVEL,
     syncCron: parsed.SYNC_CRON,
     syncTimezone: parsed.SYNC_TIMEZONE,
+    leaguepediaEndpoint: parsed.LEAGUEPEDIA_ENDPOINT,
+    leaguepediaUserAgent: parsed.LEAGUEPEDIA_USER_AGENT,
+    leaguepedia: {
+      endpoint: parsed.LEAGUEPEDIA_ENDPOINT,
+      userAgent: parsed.LEAGUEPEDIA_USER_AGENT,
+      syncYears: years(parsed.LEAGUEPEDIA_SYNC_YEARS),
+      syncCompetitions: csv(parsed.LEAGUEPEDIA_SYNC_COMPETITIONS, "LEAGUEPEDIA_SYNC_COMPETITIONS"),
+      competitionMap: parsedCompetitionMap,
+      mediaHosts: csv(parsed.LEAGUEPEDIA_MEDIA_HOSTS, "LEAGUEPEDIA_MEDIA_HOSTS"),
+      overridesDir: parsed.LEAGUEPEDIA_OVERRIDES_DIR,
+      fixturePath: parsed.LEAGUEPEDIA_FIXTURE_PATH,
+      resourceLimits: { maxBytes: parsed.LEAGUEPEDIA_MAX_BYTES, maxPages: parsed.LEAGUEPEDIA_MAX_PAGES, maxRows: parsed.LEAGUEPEDIA_MAX_ROWS },
+    },
     mediaDelivery: parsed.MEDIA_DELIVERY,
     s3: hasS3
       ? {

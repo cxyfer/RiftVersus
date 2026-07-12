@@ -44,14 +44,15 @@ export interface MediaAssetsTable {
   entity_id: string | null;
   team_era_id: string | null;
   kind: string;
+  provider: string | null;
   source_url: string;
   object_key: string;
-  checksum: string | null;
-  content_type: string | null;
   attribution: string | null;
   license: string | null;
   is_current: Generated<boolean>;
 }
+
+export interface MediaObjectsTable { object_key: string; checksum: string; content_type: string; byte_size: string }
 
 export interface TournamentsTable {
   id: string;
@@ -83,6 +84,7 @@ export interface SeriesFactsTable {
   side_b_score: number | null;
   winner_team_id: string | null;
   publication_generation: Generated<string>;
+  retired_generation: string | null;
 }
 
 export interface GameFactsTable {
@@ -100,6 +102,7 @@ export interface GameFactsTable {
   side_b_region_id: string | null;
   winner_team_id: string | null;
   publication_generation: Generated<string>;
+  retired_generation: string | null;
 }
 
 export interface GamePlayersTable {
@@ -131,6 +134,7 @@ export interface SyncRunsTable {
   updated_count: Generated<number>;
   warning_count: Generated<number>;
   error: string | null;
+  reused_dataset_version_id: string | null;
 }
 
 export interface SourceObjectsTable {
@@ -178,7 +182,11 @@ export interface OverrideApplicationsTable {
   override_file: string;
   checksum: string;
   applied_at: DefaultTimestamp;
-  sync_run_id: string | null;
+}
+
+export interface OverrideApplicationRunsTable {
+  override_application_id: string;
+  sync_run_id: string;
 }
 
 export interface FactMutationAuditsTable {
@@ -197,6 +205,7 @@ export interface Database {
   entity_aliases: EntityAliasesTable;
   team_eras: TeamErasTable;
   media_assets: MediaAssetsTable;
+  media_objects: MediaObjectsTable;
   tournaments: TournamentsTable;
   series_facts: SeriesFactsTable;
   game_facts: GameFactsTable;
@@ -208,5 +217,6 @@ export interface Database {
   dataset_versions: DatasetVersionsTable;
   coverage_status: CoverageStatusTable;
   override_applications: OverrideApplicationsTable;
+  override_application_runs: OverrideApplicationRunsTable;
   fact_mutation_audits: FactMutationAuditsTable;
 }

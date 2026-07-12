@@ -72,6 +72,15 @@ export interface SourceObjectInput {
   parserVersion: string;
 }
 
+export interface StagedEntityInput { id: string; provider: string; sourceKeys: readonly string[]; kind: "team" | "player"; canonicalName: string; aliases: readonly string[] }
+export interface StagedRegionInput { id: string; provider: string; sourceKey: string; name: string }
+export interface StagedTeamEraInput { id: string; provider: string; sourceKey: string; teamEntityId: string; displayName: string; regionId?: string | null; validFrom?: string | null; validTo?: string | null }
+export interface StagedTournamentInput { id: string; provider: string; sourceKey: string; name: string; aliases: readonly string[]; category: "league" | "fst" | "msi" | "worlds" | "other"; seasonYear?: number | null; validFrom?: string | null; validTo?: string | null }
+export interface StagedDimensionsInput { entities: readonly StagedEntityInput[]; teamEras: readonly StagedTeamEraInput[]; regions: readonly StagedRegionInput[]; tournaments: readonly StagedTournamentInput[] }
+export interface PublishedMediaInput { provider: string; sourceUrl: string; objectKey: string; checksum: string; contentType: string; byteSize: string; attribution: string; entityId?: string | null; teamEraId?: string | null; license?: string | null }
+export interface OverrideApplicationInput { overrideFile: string; checksum: string }
+export interface PublicationScopeInput { provider: string; tournamentSourceKey: string; from: string; to: string; status: "complete" | "partial" | "missing"; unresolvedRows: number }
+
 export interface CoverageInput {
   provider: string;
   competition: string;
@@ -90,7 +99,13 @@ export interface PublishDatasetInput {
   facts?: CanonicalFacts;
   /** Every listed game has an authoritative roster, including an intentionally empty one. */
   rosterGameIds?: readonly string[];
+  dimensions?: StagedDimensionsInput;
+  media?: readonly PublishedMediaInput[];
+  overrideApplications?: readonly OverrideApplicationInput[];
+  publicationScopes?: readonly PublicationScopeInput[];
 }
+
+export interface CompleteUnchangedSyncRunInput { syncRunId: string; version: string }
 
 export interface SeriesFactInput {
   id: string; provider: string; sourceKey: string; tournamentId: string; playedAt: Date;

@@ -80,6 +80,12 @@ export async function seedComparisonFixture(db: Kysely<Database>) {
   await db.insertInto("entity_aliases").values({
     id: randomUUID(), entity_id: seedIds.t1, provider: "fixture", source_key: "skt", display_name: "SKT T1",
   }).execute();
+  await db.insertInto("media_objects").values([
+    { object_key: "media/t1.png", checksum: "fixture-t1", content_type: "image/png", byte_size: "1" },
+    { object_key: "media/lpl.png", checksum: "fixture-lpl", content_type: "image/png", byte_size: "1" },
+    { object_key: "media/faker.png", checksum: "fixture-faker", content_type: "image/png", byte_size: "1" },
+    { object_key: "media/t1-era.png", checksum: "fixture-t1-era", content_type: "image/png", byte_size: "1" },
+  ]).execute();
   await db.insertInto("media_assets").values([
     { id: mediaId(1), entity_id: seedIds.t1, kind: "logo", source_url: "https://example.test/t1.png", object_key: "media/t1.png", is_current: true },
     { id: mediaId(2), entity_id: seedIds.lpl, kind: "logo", source_url: "https://example.test/lpl.png", object_key: "media/lpl.png", is_current: true },
