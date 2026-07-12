@@ -50,6 +50,40 @@ function rawInput(snapshot: LeaguepediaSnapshot): LeaguepediaRawInput {
   return { sourceUrl: snapshot.sourceUrl, slices: snapshot.slices.map(({ sliceId, competition, sourceCompetition, seasonYear, from, to }) => ({ sliceId, competition, sourceCompetition, seasonYear, from, to })), rawEvidence: snapshot.rawEvidence };
 }
 
+async function multiSourceWorldsInput(): Promise<LeaguepediaRawInput> {
+  const input = await rawFixture();
+  const gamePage = input.rawEvidence.find((item) => item.table === "ScoreboardGames")!;
+  const tournamentPage = input.rawEvidence.find((item) => item.table === "Tournaments")!;
+  const original = (gamePage.response.cargoquery as Array<{ title: Record<string, unknown> }>)[0]!.title;
+  const sourceCompetition = "2024 Worlds Play-In";
+  const sliceId = "Worlds:2024%20Worlds%20Play-In:2024:2024-01-01:2025-01-01";
+  const title = { ...original, GameId: "WORLD24-PLAYIN-G1", MatchId: "WORLD24-PLAYIN-M1", Tournament: sourceCompetition, DateTime_UTC: "2024-10-01T00:00:00Z" };
+  return {
+    ...input,
+    slices: [...input.slices, { sliceId, competition: "Worlds", sourceCompetition, seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" }],
+    rawEvidence: input.rawEvidence.map((item) => item === tournamentPage ? { ...item, response: { cargoquery: [...(item.response.cargoquery as unknown[]), { title: { OverviewPage: sourceCompetition, Name: sourceCompetition, DateStart: "2024-09-01", DateEnd: "2024-10-10" } }] } } : item).concat({
+      ...gamePage, requestId: "games:playin:0", offset: 0,
+      scope: { sliceIds: [sliceId], competition: sourceCompetition, seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" },
+      response: { cargoquery: Array.from({ length: 500 }, () => ({ title })) },
+    }),
+  };
+}
+
+async function duplicateGameWorldsInput(): Promise<LeaguepediaRawInput> {
+  const input = await rawFixture();
+  const gamePage = input.rawEvidence.find((item) => item.table === "ScoreboardGames")!;
+  const playerPage = input.rawEvidence.find((item) => item.table === "ScoreboardPlayers")!;
+  const sourceCompetition = input.slices[0]!.sourceCompetition;
+  const sliceId = "Worlds:2024%20Season%20World%20Championship:2024:2024-07-01:2025-01-01";
+  return {
+    ...input,
+    slices: [...input.slices, { sliceId, competition: "Worlds", sourceCompetition, seasonYear: 2024, from: "2024-07-01", to: "2025-01-01" }],
+    rawEvidence: input.rawEvidence.map((item) => item === playerPage ? { ...item, scope: { ...item.scope, sliceIds: [...(item.scope?.sliceIds ?? []), sliceId] } } : item).concat(
+      { ...gamePage, requestId: "games:duplicate:0", scope: { sliceIds: [sliceId], competition: sourceCompetition, seasonYear: 2024, from: "2024-07-01", to: "2025-01-01" } },
+    ),
+  };
+}
+
 describe("LeaguepediaClient", () => {
   it("fixes endpoint, action, format, fields and table in typed methods", async () => {
     const urls: URL[] = [];
@@ -585,6 +619,29 @@ describe("Leaguepedia coverage and provider", () => {
       expect.objectContaining({ seasonYear: 2024, earliestDate: "2024-11-02", latestDate: "2024-11-02", status: "complete" }),
       expect.objectContaining({ seasonYear: 2025, earliestDate: null, latestDate: null, status: "missing" }),
     ]);
+  });
+
+  it("groups Worlds main and Play-In source slices into one logical partial coverage row", async () => {
+    const input = await multiSourceWorldsInput();
+    const batch = await createLeaguepediaProvider({ loadRawInput: async () => input, overrides: await overrides() }).stage({ mode: "backfill", years: [2024], competitions: ["Worlds"] });
+    expect(batch.coverage).toEqual([expect.objectContaining({
+      competition: "Worlds", seasonYear: 2024, status: "partial", earliestDate: "2024-10-01", latestDate: "2024-11-02",
+    })]);
+    expect(batch.facts.games).toHaveLength(2);
+  });
+
+  it("deduplicates the same consistent GameId across logical source slices", async () => {
+    const input = await duplicateGameWorldsInput();
+    const batch = await createLeaguepediaProvider({ loadRawInput: async () => input, overrides: await overrides() }).stage({ mode: "backfill", years: [2024], competitions: ["Worlds"] });
+    expect(batch.facts.games).toHaveLength(1);
+    expect(batch.coverage).toEqual([expect.objectContaining({ status: "complete", detail: expect.stringContaining("Verified 1 rows") })]);
+  });
+
+  it("emits one inferred coverage row per logical competition and year", async () => {
+    const input = await multiSourceWorldsInput();
+    const batch = await createLeaguepediaProvider({ loadRawInput: async () => input, overrides: await overrides() }).stage({ mode: "sync-once" });
+    expect(batch.coverage).toHaveLength(1);
+    expect(batch.coverage[0]).toMatchObject({ competition: "Worlds", seasonYear: 2024 });
   });
 
   it("changes deterministic version when parser or reviewed override checksums change", async () => {

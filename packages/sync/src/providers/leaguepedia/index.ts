@@ -55,21 +55,21 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
       const digest = createHash("sha256").update(bytes).digest("hex");
       const overrideDigest = createHash("sha256").update(canonicalJson(Object.values(options.overrides.checksums).sort())).digest("hex");
       const versionDigest = createHash("sha256").update(canonicalJson({ rawDigest: digest, parserVersion, overrideDigest })).digest("hex");
-      const requested = request.mode === "backfill"
+      const requested = uniqueCoverageKeys(request.mode === "backfill"
         ? request.competitions.flatMap((competition) => request.years.map((seasonYear) => ({ competition, seasonYear })))
-        : inferredCoverage(snapshot);
+        : inferredCoverage(snapshot));
       const coverage = requested.map(({ competition, seasonYear }) => {
-        const slice = snapshot.slices.find((item) => item.competition === competition && item.seasonYear === seasonYear);
-        const sliceGames = slice === undefined ? [] : snapshot.games.filter((game) => slice.gameSourceKeys.includes(game.sourceKey));
-        const affectedGames = slice === undefined ? 0 : normalized.quarantineAffectedGameKeys.filter((key) => slice.gameSourceKeys.includes(key)).length;
-        const incompleteRosters = slice === undefined ? 0 : normalized.rosterIncompleteGameKeys.filter((key) => slice.gameSourceKeys.includes(key)).length;
+        const slices = snapshot.slices.filter((item) => item.competition === competition && item.seasonYear === seasonYear);
+        const gameKeys = new Set(slices.flatMap((slice) => slice.gameSourceKeys));
+        const sliceGames = snapshot.games.filter((game) => gameKeys.has(game.sourceKey));
+        const unresolvedGameKeys = new Set([...normalized.quarantineAffectedGameKeys, ...normalized.rosterIncompleteGameKeys].filter((key) => gameKeys.has(key)));
         const dates = sliceGames.map((game) => game.playedAt).sort();
         return deriveLeaguepediaCoverage({
           competition,
           seasonYear,
           observedRows: sliceGames.length,
-          traversal: slice?.traversal ?? { requestedPages: 1, visitedPages: 0, complete: false },
-          unresolvedRows: (slice?.malformedOptionalRows ?? 0) + affectedGames + incompleteRosters,
+          traversal: slices.length === 0 ? { requestedPages: 1, visitedPages: 0, complete: false } : combineTraversal(slices.map((slice) => slice.traversal)),
+          unresolvedRows: slices.reduce((sum, slice) => sum + slice.malformedOptionalRows, 0) + unresolvedGameKeys.size,
           earliestDate: dates[0]?.slice(0, 10) ?? null,
           latestDate: dates.at(-1)?.slice(0, 10) ?? null,
         });
@@ -94,8 +94,10 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
 }
 
 function inferredCoverage(snapshot: LeaguepediaSnapshot): { competition: string; seasonYear: number }[] {
-  return snapshot.slices.map(({ competition, seasonYear }) => ({ competition, seasonYear }));
+  return uniqueCoverageKeys(snapshot.slices.map(({ competition, seasonYear }) => ({ competition, seasonYear })));
 }
+function uniqueCoverageKeys(items: readonly { competition: string; seasonYear: number }[]): { competition: string; seasonYear: number }[] { return [...new Map(items.map((item) => [JSON.stringify([item.competition, item.seasonYear]), item])).values()]; }
+function combineTraversal(items: readonly LeaguepediaSnapshot["traversal"][]): LeaguepediaSnapshot["traversal"] { return { requestedPages: items.reduce((sum, item) => sum + item.requestedPages, 0), visitedPages: items.reduce((sum, item) => sum + item.visitedPages, 0), complete: items.every((item) => item.complete) }; }
 function requireHttps(value: string): string { const url = new URL(value); if (url.protocol !== "https:") throw new Error("Leaguepedia source URL must use HTTPS."); return url.toString(); }
 function canonicalJson(value: unknown): string { return JSON.stringify(sortValue(value)); }
 function sortValue(value: unknown): unknown {
