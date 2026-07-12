@@ -44,6 +44,9 @@ importers:
       '@riftversus/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@riftversus/sync':
+        specifier: workspace:*
+        version: link:../../packages/sync
       fastify:
         specifier: 5.10.0
         version: 5.10.0
@@ -145,6 +148,10 @@ importers:
       '@riftversus/domain':
         specifier: workspace:*
         version: link:../domain
+    devDependencies:
+      '@types/node':
+        specifier: 24.10.0
+        version: 24.10.0
 
 packages:
 
@@ -891,6 +898,9 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
+
+  '@types/node@24.10.0':
+    resolution: {integrity: sha512-qzQZRBqkFsYyaSWXuEHc2WR9c0a0CXwiE5FWUvn7ZM+vdy1uZLfCunD38UzhuB7YN/J11ndbDBcTmOdxJo9Q7A==}
 
   '@types/node@26.1.1':
     resolution: {integrity: sha512-nxAkRSVkN1Y0JC1W8ky/fTfkGsMmcrRsbx+3XoZE+rMOX71kLYTV7fLXpqud1GpbpP5TuffXFqfX7fH2GgZREw==}
@@ -1966,6 +1976,9 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  undici-types@7.16.0:
+    resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
+
   undici-types@8.3.0:
     resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
 
@@ -2777,6 +2790,10 @@ snapshots:
   '@types/estree@1.0.9': {}
 
   '@types/json-schema@7.0.15': {}
+
+  '@types/node@24.10.0':
+    dependencies:
+      undici-types: 7.16.0
 
   '@types/node@26.1.1':
     dependencies:
@@ -3879,6 +3896,8 @@ snapshots:
       - supports-color
 
   typescript@5.9.3: {}
+
+  undici-types@7.16.0: {}
 
   undici-types@8.3.0: {}
 

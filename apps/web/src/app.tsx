@@ -39,7 +39,7 @@ function EntityCombobox({ value, onPick, label, api }: { value: EntityOption; on
   useEffect(() => { const timer = window.setTimeout(() => setDebouncedTerm(term), 220); return () => window.clearTimeout(timer); }, [term]);
   const search = useQuery({ queryKey: ["entities", debouncedTerm], queryFn: () => api.searchEntities(debouncedTerm, []), enabled: open && debouncedTerm.trim().length > 0 });
   const options = search.data ?? [];
-  const activeOptionId = options[active] ? `${inputId}-option-${active}` : undefined;
+  const activeOptionId = open && debouncedTerm && options[active] ? `${inputId}-option-${active}` : undefined;
   const pick = (option: EntityOption) => { onPick(option); setTerm(""); setDebouncedTerm(""); setOpen(false); setActive(0); };
   return <div className="entity-combobox">
     <label htmlFor={inputId}>{label}</label>

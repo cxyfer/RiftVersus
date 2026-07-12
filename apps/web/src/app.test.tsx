@@ -52,6 +52,19 @@ describe("comparison workspace", () => {
     expect(compare).not.toHaveBeenCalled();
   });
 
+  it("clears the active descendant when Escape closes a populated listbox", async () => {
+    const user = userEvent.setup();
+    renderApp();
+    const input = screen.getByRole("combobox", { name: "比較對象" });
+    await user.click(input);
+    await user.type(input, "Faker");
+    await screen.findByText("Faker", {}, { timeout: 1_000 });
+    expect(input).toHaveAttribute("aria-activedescendant");
+    await user.keyboard("{Escape}");
+    expect(input).not.toHaveAttribute("aria-activedescendant");
+    expect(screen.queryByRole("option")).not.toBeInTheDocument();
+  });
+
   it("swaps both URL subjects", async () => {
     const user = userEvent.setup();
     renderApp();

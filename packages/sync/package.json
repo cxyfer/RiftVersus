@@ -16,5 +16,8 @@
     "@riftversus/contracts": "workspace:*",
     "@riftversus/database": "workspace:*",
     "@riftversus/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0"
   }
 }

@@ -28,6 +28,7 @@ export async function startServer(config: Config) {
         return status === null ? null : { version: status.version, lastSuccessfulSyncAt: status.lastSuccessfulSyncAt, coverage: status.coverage };
       },
       getMedia: (key) => getMediaByKey(key, db),
+      mediaDelivery: config.mediaDelivery,
       staticDir: resolve(process.cwd(), "apps/web/dist"),
     }),
     destroyDb,

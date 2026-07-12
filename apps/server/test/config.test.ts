@@ -32,6 +32,10 @@ describe("loadConfig", () => {
     ).toThrow();
   });
 
+  it("requires complete S3 configuration for redirect media delivery", () => {
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, MEDIA_DELIVERY: "redirect" })).toThrow();
+  });
+
   it("rejects S3 endpoints that could leak credentials or signed URL data", () => {
     const s3Config = {
       DATABASE_URL: databaseUrl,

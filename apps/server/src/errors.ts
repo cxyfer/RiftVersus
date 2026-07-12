@@ -26,6 +26,10 @@ export function notReadyError() {
   return new ApiError(503, "NOT_READY", "The service is not ready.");
 }
 
+export function mediaUnavailableError() {
+  return new ApiError(503, "MEDIA_UNAVAILABLE", "Media storage is unavailable.");
+}
+
 export function isMissingSubjectError(error: unknown) {
   return error instanceof Error && (
     /^Unknown (player|team|region) subject: /.test(error.message)

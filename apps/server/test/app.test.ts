@@ -1,5 +1,6 @@
 import type { ComparisonResponse, Dataset, ResolvedSubject } from "@riftversus/contracts";
 import { resolve } from "node:path";
+import { Readable } from "node:stream";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { buildApp } from "../src/app.js";
@@ -126,20 +127,50 @@ describe("HTTP API", () => {
     expect(response.json()).toEqual(dataset);
   });
 
-  it("delivers nested published media keys and rejects traversal encodings", async () => {
-    const { app, dependencies } = createApp({
-      getMedia: vi.fn(async (key: string) => key === "media/faker.png" ? {
-        objectKey: key, sourceUrl: "https://media.example.test/faker.png", contentType: "image/png", entityId: leftId, teamEraId: null,
-      } : null),
-    });
+  it("delivers nested media through the object store and rejects traversal encodings", async () => {
+    const getMedia = vi.fn(async (key: string) => key === "media/faker.png" ? {
+      objectKey: key, sourceUrl: "https://evil.example/faker.png", contentType: "image/png", entityId: leftId, teamEraId: null,
+    } : null);
+    const objectStore = {
+      get: vi.fn(async () => Readable.from("cached-image")),
+      signedGetUrl: vi.fn(async () => "https://storage.example.test/signed/faker.png?expires=300"),
+    };
+    const { app, dependencies } = createApp({ getMedia, objectStore, mediaDelivery: "proxy" });
     const media = await app.inject("/media/media/faker.png");
-    expect(media.statusCode).toBe(302);
-    expect(media.headers.location).toBe("https://media.example.test/faker.png");
+    expect(media.statusCode).toBe(200);
+    expect(media.body).toBe("cached-image");
+    expect(media.headers["content-type"]).toContain("image/png");
+    expect(media.headers["cache-control"]).toBe("public, max-age=31536000, immutable");
+    expect(media.headers.location).toBeUndefined();
+    expect(media.body).not.toContain("evil.example");
     expect(dependencies.getMedia).toHaveBeenCalledWith("media/faker.png");
+    expect(objectStore.get).toHaveBeenCalledWith("media/faker.png");
     for (const url of ["/media/media%2Ffaker.png", "/media/../faker.png", "/media/%2e%2e/faker.png", "/media/%252e%252e/faker.png"]) {
       const response = await app.inject(url);
       expect(response.statusCode).toBe(404);
     }
+  });
+
+  it("uses a storage signer only for configured redirect delivery", async () => {
+    const objectStore = { get: vi.fn(), signedGetUrl: vi.fn(async () => "https://storage.example.test/signed/faker.png?expires=300") };
+    const { app } = createApp({
+      getMedia: vi.fn(async () => ({ objectKey: "media/faker.png", sourceUrl: "https://evil.example/faker.png", contentType: "image/png", entityId: leftId, teamEraId: null })),
+      objectStore, mediaDelivery: "redirect",
+    });
+    const response = await app.inject("/media/media/faker.png");
+    expect(response.statusCode).toBe(302);
+    expect(response.headers.location).toBe("https://storage.example.test/signed/faker.png?expires=300");
+    expect(response.headers.location).not.toContain("evil.example");
+    expect(objectStore.signedGetUrl).toHaveBeenCalledWith("media/faker.png", 300);
+    expect(objectStore.get).not.toHaveBeenCalled();
+  });
+
+  it("returns media unavailable when storage is not injected", async () => {
+    const { app } = createApp({ getMedia: vi.fn(async () => ({ objectKey: "media/faker.png", sourceUrl: "https://evil.example/faker.png", contentType: "image/png", entityId: leftId, teamEraId: null })) });
+    const response = await app.inject("/media/media/faker.png");
+    expect(response.statusCode).toBe(503);
+    expect(response.json()).toMatchObject({ error: { code: "MEDIA_UNAVAILABLE" } });
+    expect(response.body).not.toContain("evil.example");
   });
 
   it("reports liveness without dependencies and failed readiness as 503", async () => {
