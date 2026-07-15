@@ -1,15 +1,18 @@
 {
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
-  "currentTodo": "Execute Task 5 Docker/PostgreSQL historical acceptance and close environment-backed evidence gaps",
+  "currentTodo": "Create the planned Task5 commits, merge the approved worktree branch to main, and run post-merge verification",
   "completedTodos": [
-    "Replacement Task 4 retired active Oracle source surfaces, hardened source guards/config validation, and documented Leaguepedia operations/deployment after final reviews"
+    "Closed whole-diff review findings with fail-closed actual response scope coverage, exact 13-year acceptance coverage, ADR and release baseline, resource and latency evidence, and synchronized signed-release evidence",
+    "Fresh independent snapshot, spec, quality, Docker, PostgreSQL and Playwright gates approved the convergence artifact"
   ],
-  "activeSlice": "Leaguepedia Tasks 1-4 complete; Docker/PostgreSQL acceptance preparation",
+  "activeSlice": "Implementation, independent reviews and runtime acceptance complete; commit and merge handoff",
   "evidenceRefs": [
-    "merge af9b823; evidence artifact leaguepedia-task-04-oracle-retirement"
+    "task5-slice-coverage-fail-closed",
+    "task5-exact-coverage-contract",
+    "task5-signed-release-final"
   ],
-  "blockedOn": "Docker CLI/daemon and TEST_DATABASE_URL are unavailable in the current environment; code/static Docker work can proceed but runtime acceptance cannot be claimed yet.",
-  "nextStep": "Inspect existing Docker stack and Task 5 plan, implement any missing container/health/fixture acceptance surfaces, then run all possible static gates and request or use a real Docker/PostgreSQL environment for final acceptance.",
-  "updatedAt": "2026-07-12"
+  "blockedOn": null,
+  "nextStep": "Inspect final status and diff, create repository-style Docker and historical release commits, merge feat/docker-acceptance to main, then run post-merge root and Aegis checks",
+  "updatedAt": "2026-07-15"
 }

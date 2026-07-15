@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "deterministic-avatar-task-02",
+  "type": "test-and-review",
+  "source": "packages/database/src/repositories/presentation.ts; packages/database/src/repositories/entities.ts; packages/database/src/repositories/comparison.ts; packages/database/test/presentation.integration.test.ts; packages/database/test/comparison.integration.test.ts",
+  "summary": "Strict TDD repository resolver complete; real PG17 RED and GREEN; DB integration 34/34 zero skip; consumer/typecheck/lint/diff pass; exact-era inconsistency fixed; spec COMPLIANT and quality APPROVED.",
+  "verifier": "presentation_resolver_spec_reviewer and presentation_resolver_quality_reviewer"
+}

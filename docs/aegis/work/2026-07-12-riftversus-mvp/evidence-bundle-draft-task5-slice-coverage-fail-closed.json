@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "task5-slice-coverage-fail-closed",
+  "type": "test-and-review",
+  "source": "packages/sync/src/providers/leaguepedia/fetch.ts; packages/sync/test/leaguepedia.test.ts",
+  "summary": "Executable cross-slice mutation proofs showed that declared scope alone could misclassify schedule and player traversals as complete. The canonical replay parser now requires both declared scope ID union and actual selected response row ID union to cover every required match and game while allowing legitimate shared envelopes. Original and widened declaration swaps fail closed; shared evidence remains valid. Sync passed 171 of 171 and independent quality re-review approved with no findings.",
+  "verifier": "root, slice_scope_completeness_fix, task5_final_quality_reviewer"
+}

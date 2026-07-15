@@ -296,3 +296,135 @@
 - merge af9b823; evidence artifact leaguepedia-task-04-oracle-retirement
 - Blocked on: Docker CLI/daemon and TEST_DATABASE_URL are unavailable in the current environment; code/static Docker work can proceed but runtime acceptance cannot be claimed yet.
 - Next step: Inspect existing Docker stack and Task 5 plan, implement any missing container/health/fixture acceptance surfaces, then run all possible static gates and request or use a real Docker/PostgreSQL environment for final acceptance.
+
+## Checkpoint Update
+
+- Current todo: Restore root lint gate, then execute deterministic avatar Task 2 repository presentation resolver
+- Active slice: Task 1 complete; Task5B lint cleanup before Task 2
+- Completed todos:
+- Deterministic avatar Task 1 generator and Fastify route passed strict TDD, spec review, and quality review
+- Evidence refs:
+- deterministic-avatar-task-01: targeted 30/30; server 128/128; spec COMPLIANT; quality APPROVED
+- Blocked on: Root lint has three unused-symbol failures in prior Task5B sync changes
+- Next step: Return the three Task5B lint findings to their original owner, verify root lint, then dispatch a fresh Task 2 implementer
+
+## DriftCheckDraft
+
+- Scope status: Task1 stayed within generator, avatar route, namespace classification, tests, and approved design/plan wording.
+- Compatibility status: Media persistence, DB schema, sync owner, public JSON names, and /media behavior unchanged; canonical UUID case and encoded namespace behavior strengthened.
+- Retirement status: Generic placeholder remains browser error recovery only; retained-media-only acceptance retirement is pending Task3.
+- New risk signals:
+- Minor If-None-Match 304 efficiency debt deferred; root lint blocked by three prior Task5B unused symbols.
+- Advisory decision: needs-verification
+
+## Checkpoint Update
+
+- Current todo: Execute deterministic avatar Task 2 repository presentation resolver
+- Active slice: Task 2 repository/contracts integration preparation
+- Completed todos:
+- Task1 generator/route dual-reviewed; Task5B dead lint bindings retired and root lint gate restored
+- Evidence refs:
+- Task1 spec COMPLIANT and quality APPROVED; Task5B sync 166/166; root lint/typecheck pass
+- Blocked on: none
+- Next step: Dispatch fresh Task2 implementer with strict TDD and real PostgreSQL integration evidence
+
+## DriftCheckDraft
+
+- Scope status: Task1 complete and cleanup limited to proven dead Task5B symbols; Task2 scope ready.
+- Compatibility status: No runtime behavior or evidence shape changed in lint cleanup; root gates restored.
+- Retirement status: Dead helper/bindings removed with no compat path; avatar placeholder main-path retirement moves to Task2.
+- New risk signals:
+- Task2 must use real PostgreSQL integration and avoid adding fallback branches inside comparison.ts.
+- Advisory decision: continue
+
+## Checkpoint Update
+
+- Current todo: Repair Task5B regions override root integration fixture drift, then execute acceptance Task3
+- Active slice: Task2 complete; root integration restoration before Task3
+- Completed todos:
+- Deterministic avatar Task2 repository resolver passed strict TDD, real PG17 integration, spec review, and quality review
+- Evidence refs:
+- deterministic-avatar-task-02: DB 34/34 zero skip; spec COMPLIANT; quality APPROVED
+- Blocked on: Root integration expects 2 override application runs but regions.yaml makes the correct observed count 3
+- Next step: Return override-count drift to Task5B owner, verify full root integration, then dispatch Task3 implementer
+
+## DriftCheckDraft
+
+- Scope status: Task2 stayed within repository resolver, exact-era SQL, compatible contracts, tests, and approved docs.
+- Compatibility status: Retained media precedence, data-URI schema acceptance, public JSON names, DB schema, and comparison facts unchanged.
+- Retirement status: Production DB placeholder main path removed; web/export placeholder remains error recovery; no duplicate resolver.
+- New risk signals:
+- Root integration fixture is stale after adding reviewed regions override; transient migration test isolation flake remains observed but not reproducible in consecutive full DB runs.
+- Advisory decision: needs-verification
+
+## DriftCheckDraft
+
+- Scope status: Deterministic avatar Tasks 1 through 3 and the integration harness repair stayed within approved Task5 acceptance scope.
+- Compatibility status: Public comparison contracts remain string-compatible. Acceptance snapshot is internal version 2 only. Production Kysely migration semantics are unchanged.
+- Retirement status: Version 1 retained-only reviewed acceptance path and parallel schema migration harness path are retired without adapters or fallbacks.
+- New risk signals:
+- Task4 still requires official live publication, reviewed snapshot, Docker resource evidence, query plans, Playwright, and final reviews before any completion claim.
+- Advisory decision: continue
+
+## Checkpoint Update
+
+- Current todo: Execute deterministic avatar Task4 and parent Task5 runtime acceptance
+- Active slice: Tasks 1 through 3 complete; Task4 official publication and Docker acceptance
+- Completed todos:
+- Avatar generator and route passed strict TDD, spec and quality review
+- Repository presentation resolver passed real PostgreSQL integration, spec and quality review
+- Acceptance schema version 2 retained/generated union passed strict TDD, spec and quality review
+- Override audit fixture drift and Kysely database-global migration harness race were repaired with zero-skip PostgreSQL evidence
+- Evidence refs:
+- deterministic-avatar-task-01
+- deterministic-avatar-task-02
+- deterministic-avatar-task-03
+- task5-integration-harness
+- Blocked on: No code blocker. Official Leaguepedia network publication and Docker runtime evidence are still pending.
+- Next step: Rebuild production image, run the 2013 through 2025 Worlds backfill through runSync, generate the exact reviewed snapshot, and execute acceptance, API, Playwright, query-plan, resource, root and Compose gates.
+
+## Checkpoint Update
+
+- Current todo: Complete final Task5 independent reviews, commit the approved release, merge to main, and run post-merge audit
+- Active slice: Task5 implementation and runtime gates complete; final whole-diff review and integration handoff
+- Completed todos:
+- Published and independently reviewed the official 2013-2025 Leaguepedia snapshot with exact T1 versus LPL Worlds BO5 acceptance
+- Verified PostgreSQL 17 migrations, exact DATE handling, query plans, deterministic avatars, Docker packaging, production Playwright, mock PNG and ZIP export, attribution, and resource measurements
+- Evidence refs:
+- task5-postgresql-date-boundary
+- task5-official-leaguepedia-acceptance
+- task5-docker-release-gates
+- Blocked on: none
+- Next step: Resolve any final whole-diff review findings, then create the planned Docker and historical acceptance commits and merge the worktree branch
+
+## DriftCheckDraft
+
+- Scope status: Task5 stayed within approved Docker, PostgreSQL, Leaguepedia publication, deterministic presentation, reviewed historical acceptance, release browser coverage and operator documentation boundaries.
+- Compatibility status: The same image supports local Compose and externally supplied PostgreSQL and S3. Public comparison contracts remain compatible; generated avatar URLs extend presentation without changing fact semantics. Per-pool DATE parsing repairs exact calendar behavior without global parser state.
+- Retirement status: Oracle MVP and retained-media-only acceptance remain deleted. No alternate provider, hard-coded undefeated business rule, duplicate publication owner, DATE fallback, or development mock was introduced into the release path.
+- New risk signals:
+- Implementation and runtime gates are green, but final whole-diff spec and quality reviews plus commit, merge and post-merge verification remain open.
+- Advisory decision: needs-verification
+
+## Checkpoint Update
+
+- Current todo: Create the planned Task5 commits, merge the approved worktree branch to main, and run post-merge verification
+- Active slice: Implementation, independent reviews and runtime acceptance complete; commit and merge handoff
+- Completed todos:
+- Closed whole-diff review findings with fail-closed actual response scope coverage, exact 13-year acceptance coverage, ADR and release baseline, resource and latency evidence, and synchronized signed-release evidence
+- Fresh independent snapshot, spec, quality, Docker, PostgreSQL and Playwright gates approved the convergence artifact
+- Evidence refs:
+- task5-slice-coverage-fail-closed
+- task5-exact-coverage-contract
+- task5-signed-release-final
+- Blocked on: none
+- Next step: Inspect final status and diff, create repository-style Docker and historical release commits, merge feat/docker-acceptance to main, then run post-merge root and Aegis checks
+
+## DriftCheckDraft
+
+- Scope status: Task5 implementation, review remediation, official source publication, signed historical acceptance and Docker convergence stayed within the approved Leaguepedia-primary and deterministic-avatar completion boundaries.
+- Compatibility status: Local Compose and external PostgreSQL/S3 still use one image. Public comparison semantics remain compatible. Exact acceptance coverage and slice replay checks only strengthen internal fail-closed evidence; generated avatar URLs remain deterministic presentation.
+- Retirement status: Oracle MVP, retained-media-only acceptance, aggregate-only release coverage and declared-scope-only completeness are retired without fallback or compatibility paths. No persistent rows or objects were deleted.
+- New risk signals:
+- No implementation or evidence blocker remains; only repository commit, merge and post-merge verification are open.
+- Advisory decision: continue

@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "deterministic-avatar-task-01",
+  "type": "test-and-review",
+  "source": "apps/server/src/avatar.ts; apps/server/src/routes/avatar.ts; apps/server/test/avatar.test.ts; apps/server/test/app.test.ts",
+  "summary": "Strict TDD RED/GREEN complete; targeted 30/30, server 128/128, typecheck/scoped lint/diff pass; UUID collision and case identity regressions closed; encoded namespace bypass closed; spec COMPLIANT and quality APPROVED.",
+  "verifier": "avatar_route_spec_reviewer and avatar_route_quality_reviewer"
+}

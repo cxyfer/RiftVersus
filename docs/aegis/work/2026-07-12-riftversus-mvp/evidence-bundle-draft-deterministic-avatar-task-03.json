@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "deterministic-avatar-task-03",
+  "type": "verification",
+  "source": "Task3 strict TDD and fresh independent reviews",
+  "summary": "Schema v2 retained/generated acceptance union. RED 19 of 21, GREEN targeted 23 of 23, server 135 of 135, root test build typecheck lint and diff passed. Spec COMPLIANT and quality APPROVED. Version 1 reviewed path retired.",
+  "verifier": "root, acceptance_union_spec_reviewer, acceptance_union_quality_reviewer"
+}

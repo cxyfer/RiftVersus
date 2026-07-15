@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "task5-signed-release-final",
+  "type": "release-verification",
+  "source": "Signed snapshot sha256:9a0fa96fc48323a7572af0e5ed41c3e295d1ba7b1d38e8d159639c7140c283a9; convergence Docker image sha256:9c5ac7e7bd8d51dcd3fe063175c4da1a03a2e42aaadf41089a78eb6785577751",
+  "summary": "Authoritative convergence artifact after evidence wording synchronization. Final image is 178714861 bytes, runs as node UID 1000, contains no first-party source or tests, and exactly packages the signed snapshot plus six operator documents. Packaged acceptance is ready with no blockers, exact 13 complete Worlds coverage rows for 2013 through 2025, 12-0 series and 36-9 games. Release Playwright passed 4 of 4 and mock PNG and ZIP passed 3 of 3 with zero skips. Node VmRSS was 98040 kB idle and 98416 kB after one reviewed request. PostgreSQL, MinIO and named volumes were preserved. The earlier 888634 artifact is superseded by this docs-only convergence build.",
+  "verifier": "root, codex-independent-coverage-snapshot-review, final_snapshot_packager, task4_e2e_verifier, task5_final_spec_reviewer, task5_final_quality_reviewer"
+}

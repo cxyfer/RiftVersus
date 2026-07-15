@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "task5-postgresql-date-boundary",
+  "type": "test-and-review",
+  "source": "packages/database/src/db.ts; packages/database/src/repositories/dataset.ts; test/database-date-parser.test.ts; packages/database/test/sync-publication.integration.test.ts",
+  "summary": "Per-pool PostgreSQL OID 1082 parsing now preserves exact ISO calendar dates without global parser state while timestamp types remain Date objects. Invalid, infinity, BC and five-digit dates fail closed. Fresh PostgreSQL 17 integration passed 38 of 38 with zero skips; query-plan budgets passed; prior focused Apia runs and independent spec and quality reviews approved.",
+  "verifier": "root, database date boundary spec reviewer, database date boundary quality reviewer"
+}

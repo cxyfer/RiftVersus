@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "task5-docker-release-gates",
+  "type": "benchmark-and-release-precursor",
+  "source": "Pre-signing benchmark image sha256:03bf367a2357eec67d5df48c2bd29cb2ff3f391182f6a43f932d126cdcb1dd48; PostgreSQL 17.10; MinIO; host-to-container HTTP sampling",
+  "summary": "This artifact preserves the read-only retained-data and API benchmark environment, not the final signed image. PostgreSQL occupied 17069747 bytes; source_objects and MinIO each held 6 objects totalling 52966661 bytes; persisted media was 0 objects and 0 bytes. Sequential warmup-5 sample-50 nearest-rank p95 was 9.533 ms for entity search and 18.215 ms for the reviewed comparison. The former image, RSS and test counts are superseded as release authority by task5-signed-release-final; packaged operations documentation explicitly prevents self-referential final digest claims.",
+  "verifier": "root, release_evidence_adr_fix, task5_final_spec_reviewer"
+}

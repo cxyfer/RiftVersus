@@ -97,3 +97,115 @@ No evidence has been recorded yet.
 - Source: merge af9b823; task commits 4a3e0c4,0ece7e4,dd21265,c218d60
 - Summary: Oracle MVP source retirement and Leaguepedia operator documentation passed controller verification: server 99/99, sync 103/103, root/guard 35/35, consumer, typecheck, lint, build, CLI help, Aegis workspace check and diff check. Spec and independent quality reviews approved after tracked-file scan authority, policy-line hardening, endpoint/User-Agent/media-host validation and placeholder rejection. Active runtime/config/package paths contain no retired provider/fallback; historical docs/aegis evidence remains preserved.
 - Verifier: controller plus independent spec and quality reviewers
+
+## EvidenceBundleDraft
+
+- Artifact key: deterministic-avatar-task-01
+- Type: test-and-review
+- Source: apps/server/src/avatar.ts; apps/server/src/routes/avatar.ts; apps/server/test/avatar.test.ts; apps/server/test/app.test.ts
+- Summary: Strict TDD RED/GREEN complete; targeted 30/30, server 128/128, typecheck/scoped lint/diff pass; UUID collision and case identity regressions closed; encoded namespace bypass closed; spec COMPLIANT and quality APPROVED.
+- Verifier: avatar_route_spec_reviewer and avatar_route_quality_reviewer
+
+## EvidenceBundleDraft
+
+- Artifact key: task5b-lint-cleanup
+- Type: verification
+- Source: packages/sync/src/providers/leaguepedia/fetch.ts; packages/sync/test/leaguepedia.test.ts
+- Summary: Delete-first cleanup removed three dead bindings from prior Task5B refactor; sync 166/166, root lint/typecheck, targeted eslint, and diff check pass.
+- Verifier: task5b_snapshot_implementer
+
+## EvidenceBundleDraft
+
+- Artifact key: deterministic-avatar-task-02
+- Type: test-and-review
+- Source: packages/database/src/repositories/presentation.ts; packages/database/src/repositories/entities.ts; packages/database/src/repositories/comparison.ts; packages/database/test/presentation.integration.test.ts; packages/database/test/comparison.integration.test.ts
+- Summary: Strict TDD repository resolver complete; real PG17 RED and GREEN; DB integration 34/34 zero skip; consumer/typecheck/lint/diff pass; exact-era inconsistency fixed; spec COMPLIANT and quality APPROVED.
+- Verifier: presentation_resolver_spec_reviewer and presentation_resolver_quality_reviewer
+
+## EvidenceBundleDraft
+
+- Artifact key: deterministic-avatar-task-03
+- Type: verification
+- Source: Task3 strict TDD and fresh independent reviews
+- Summary: Schema v2 retained/generated acceptance union. RED 19 of 21, GREEN targeted 23 of 23, server 135 of 135, root test build typecheck lint and diff passed. Spec COMPLIANT and quality APPROVED. Version 1 reviewed path retired.
+- Verifier: root, acceptance_union_spec_reviewer, acceptance_union_quality_reviewer
+
+## EvidenceBundleDraft
+
+- Artifact key: task5-integration-harness
+- Type: verification
+- Source: Isolated PostgreSQL 17 flake investigation and independent reviews
+- Summary: Root cause was Kysely database-global migration advisory lock across schema-isolated file workers. Native Vitest file serialization repaired teardown race. Strict RED and GREEN passed. Four fresh full runs each passed 35 of 35 with zero skips, isolated migrations 9 of 9, unit 46 of 46, lint typecheck and diff passed. Spec COMPLIANT and quality APPROVED.
+- Verifier: root, migration_parallel_debugger, migration_harness_spec_reviewer, migration_harness_quality_reviewer
+
+## EvidenceBundleDraft
+
+- Artifact key: task5-postgresql-date-boundary
+- Type: test-and-review
+- Source: packages/database/src/db.ts; packages/database/src/repositories/dataset.ts; test/database-date-parser.test.ts; packages/database/test/sync-publication.integration.test.ts
+- Summary: Per-pool PostgreSQL OID 1082 parsing now preserves exact ISO calendar dates without global parser state while timestamp types remain Date objects. Invalid, infinity, BC and five-digit dates fail closed. Fresh PostgreSQL 17 integration passed 38 of 38 with zero skips; query-plan budgets passed; prior focused Apia runs and independent spec and quality reviews approved.
+- Verifier: root, database date boundary spec reviewer, database date boundary quality reviewer
+
+## EvidenceBundleDraft
+
+- Artifact key: task5-official-leaguepedia-acceptance
+- Type: reviewed-live-evidence
+- Source: Leaguepedia Cargo live snapshot; data/acceptance/leaguepedia-t1-lpl-worlds-bo5.json; apps/server/src/acceptance.ts; final PostgreSQL and object storage publication
+- Summary: Official Leaguepedia backfill published dataset leaguepedia-bbb75c5f7cab4b7693536c3f002feaff09a5f11c894063d6dd151d20f1edb100 generation 1 with complete Worlds coverage for 2013 through 2025. Reviewed T1 versus LPL Worlds BO5 snapshot proves 12-0 series and 36-9 games across 12 rows and 45 game IDs, with 57 of 57 facts linked to retained raw source checksum 0f5b3a..., exact page and revision provenance, deterministic T1 and LPL avatars, strict legal attribution gate, and independent reviewer metadata. Packaged no-argument acceptance CLI returned ready with no blockers.
+- Verifier: root, codex-independent-runtime-review, final_snapshot_packager
+
+## EvidenceBundleDraft
+
+- Artifact key: task5-docker-release-gates
+- Type: release-verification
+- Source: Docker image sha256:03bf367a2357eec67d5df48c2bd29cb2ff3f391182f6a43f932d126cdcb1dd48; PostgreSQL 17 integration; Playwright production and mock suites
+- Summary: Final docs-inclusive image is 178705613 bytes, runs as node UID 1000, contains no first-party source or tests, and preserves host-image acceptance and operations hashes. App is healthy; comparison and avatars return HTTP 200; Node VmRSS measured 122680 kB idle and 122792 kB after one reviewed request. Fresh root tests passed 59 unit, 9 contracts, 19 domain, 166 sync, 150 server and 38 web; PostgreSQL integration passed 38 of 38 zero skip; production Playwright passed 4 of 4 and mock PNG/ZIP passed 3 of 3 zero skip. Release E2E also covers avatar 404 fallback with PNG export, API 503 and 390 by 844 layout.
+- Verifier: root, final_snapshot_packager, task4_e2e_verifier, release_e2e_spec_reviewer, release_e2e_quality_reviewer
+
+## EvidenceBundleDraft
+
+- Artifact key: task5-signed-release-final
+- Type: release-verification
+- Source: Signed acceptance snapshot sha256:9a0fa96fc48323a7572af0e5ed41c3e295d1ba7b1d38e8d159639c7140c283a9; Docker image sha256:888634625239f48d1271a3c4aa6fc686ec038ed34d608498616ea3703c0b6cc9
+- Summary: Fresh independent review approved the exact 2013 through 2025 coverage snapshot; metadata-only reconstruction equals approved pending hash 1289e819463b11881df3be8d5a9451f88433c6508c9815e25667d6e75ac3d609. Final image is 178714360 bytes and runs as node UID 1000. Packaged no-argument acceptance is ready with no blockers, exact 13 complete coverage rows, 12-0 series and 36-9 games. Release Playwright passed 4 of 4 and mock PNG and ZIP passed 3 of 3 with zero skips. Node VmRSS was 127040 kB idle and after one request. PostgreSQL, MinIO and named volumes were preserved.
+- Verifier: root, codex-independent-coverage-snapshot-review, final_snapshot_packager, task4_e2e_verifier, task5_final_quality_reviewer
+
+## EvidenceBundleDraft
+
+- Artifact key: task5-slice-coverage-fail-closed
+- Type: test-and-review
+- Source: packages/sync/src/providers/leaguepedia/fetch.ts; packages/sync/test/leaguepedia.test.ts
+- Summary: Executable cross-slice mutation proofs showed that declared scope alone could misclassify schedule and player traversals as complete. The canonical replay parser now requires both declared scope ID union and actual selected response row ID union to cover every required match and game while allowing legitimate shared envelopes. Original and widened declaration swaps fail closed; shared evidence remains valid. Sync passed 171 of 171 and independent quality re-review approved with no findings.
+- Verifier: root, slice_scope_completeness_fix, task5_final_quality_reviewer
+
+## EvidenceBundleDraft
+
+- Artifact key: task5-exact-coverage-contract
+- Type: test-and-review
+- Source: apps/server/src/acceptance.ts; packages/database/src/repositories/sync.ts; data/acceptance/leaguepedia-t1-lpl-worlds-bo5.json
+- Summary: Acceptance version 2 now records and validates exactly 13 Leaguepedia Worlds complete coverage rows for 2013 through 2025. Repository evidence is selected from the same dataset version and compared by all coverage fields; missing, extra, duplicate, partial and date drift fail closed. Empty series ID lookup and unknown dataset evidence are explicit. Server passed 152 of 152 and isolated PostgreSQL passed 39 of 39 with zero skips. Independent source and runtime review approved.
+- Verifier: root, acceptance_coverage_contract_fix, codex-independent-coverage-snapshot-review
+
+## EvidenceBundleDraft
+
+- Artifact key: task5-docker-release-gates
+- Type: benchmark-and-release-precursor
+- Source: Pre-signing benchmark image sha256:03bf367a2357eec67d5df48c2bd29cb2ff3f391182f6a43f932d126cdcb1dd48; PostgreSQL 17.10; MinIO; host-to-container HTTP sampling
+- Summary: This artifact preserves the read-only retained-data and API benchmark environment, not the final signed image. PostgreSQL occupied 17069747 bytes; source_objects and MinIO each held 6 objects totalling 52966661 bytes; persisted media was 0 objects and 0 bytes. Sequential warmup-5 sample-50 nearest-rank p95 was 9.533 ms for entity search and 18.215 ms for the reviewed comparison. The former image, RSS and test counts are superseded as release authority by task5-signed-release-final; packaged operations documentation explicitly prevents self-referential final digest claims.
+- Verifier: root, release_evidence_adr_fix, task5_final_spec_reviewer
+
+## EvidenceBundleDraft
+
+- Artifact key: task5-official-leaguepedia-acceptance
+- Type: reviewed-live-evidence
+- Source: Signed snapshot sha256:9a0fa96fc48323a7572af0e5ed41c3e295d1ba7b1d38e8d159639c7140c283a9; official Leaguepedia raw evidence; PostgreSQL generation 1; MinIO immutable object
+- Summary: Fresh reviewer codex-independent-coverage-snapshot-review approved the exact pending candidate at 2026-07-15T11:18:03Z; mechanical review metadata replacement reconstructs the approved hash. The signed snapshot pins dataset leaguepedia-bbb75c5f7cab4b7693536c3f002feaff09a5f11c894063d6dd151d20f1edb100, exact 13 complete Worlds coverage rows for 2013 through 2025, 12-0 series, 36-9 games, 12 series and 45 games. All 57 facts use latest reviewed raw lineage; page, revision, legal attribution and deterministic avatar hashes were independently checked. This supersedes the earlier runtime-review-only snapshot record.
+- Verifier: root, codex-independent-coverage-snapshot-review, final_snapshot_packager
+
+## EvidenceBundleDraft
+
+- Artifact key: task5-signed-release-final
+- Type: release-verification
+- Source: Signed snapshot sha256:9a0fa96fc48323a7572af0e5ed41c3e295d1ba7b1d38e8d159639c7140c283a9; convergence Docker image sha256:9c5ac7e7bd8d51dcd3fe063175c4da1a03a2e42aaadf41089a78eb6785577751
+- Summary: Authoritative convergence artifact after evidence wording synchronization. Final image is 178714861 bytes, runs as node UID 1000, contains no first-party source or tests, and exactly packages the signed snapshot plus six operator documents. Packaged acceptance is ready with no blockers, exact 13 complete Worlds coverage rows for 2013 through 2025, 12-0 series and 36-9 games. Release Playwright passed 4 of 4 and mock PNG and ZIP passed 3 of 3 with zero skips. Node VmRSS was 98040 kB idle and 98416 kB after one reviewed request. PostgreSQL, MinIO and named volumes were preserved. The earlier 888634 artifact is superseded by this docs-only convergence build.
+- Verifier: root, codex-independent-coverage-snapshot-review, final_snapshot_packager, task4_e2e_verifier, task5_final_spec_reviewer, task5_final_quality_reviewer

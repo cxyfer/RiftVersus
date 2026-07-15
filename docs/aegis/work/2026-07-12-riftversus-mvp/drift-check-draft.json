@@ -3,13 +3,16 @@
   "taskId": "2026-07-12-riftversus-mvp",
   "taskIntentRef": "docs/aegis/work/2026-07-12-riftversus-mvp/task-intent-draft.json",
   "baselineRefs": [
+    "docs/aegis/adr/ADR-0001-leaguepedia-facts-and-fail-closed-presentation.md",
+    "docs/aegis/baseline/2026-07-15-riftversus-release.md",
+    "docs/aegis/plans/2026-07-12-riftversus-mvp.md",
     "docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md"
   ],
-  "scopeStatus": "Leaguepedia replacement Task 4 retired all active Oracle source surfaces and added operator-facing Leaguepedia source, attribution, operations and deployment documentation plus tracked-file guards.",
-  "compatStatus": "Runtime remains Leaguepedia-only with operator-supplied reviewed endpoint, User-Agent and media hosts. Existing API/UI contracts are unchanged; synthetic fixture remains explicitly partial and non-retiring.",
-  "retirementStatus": "Oracle is absent from active runtime/config/package/test/deployment paths. Only historical docs/aegis records and explicit operator policy about exclusion/reconsideration remain.",
+  "scopeStatus": "Task5 implementation, review remediation, official source publication, signed historical acceptance and Docker convergence stayed within the approved Leaguepedia-primary and deterministic-avatar completion boundaries.",
+  "compatStatus": "Local Compose and external PostgreSQL/S3 still use one image. Public comparison semantics remain compatible. Exact acceptance coverage and slice replay checks only strengthen internal fail-closed evidence; generated avatar URLs remain deterministic presentation.",
+  "retirementStatus": "Oracle MVP, retained-media-only acceptance, aggregate-only release coverage and declared-scope-only completeness are retired without fallback or compatibility paths. No persistent rows or objects were deleted.",
   "newRiskSignals": [
-    "Guard scans Git tracked files and binary paths, not unstaged untracked content or binary payloads. Host validation cannot prove official ownership/connectivity; bounded live probes and operator review remain mandatory. PostgreSQL/Docker acceptance is still open."
+    "No implementation or evidence blocker remains; only repository commit, merge and post-merge verification are open."
   ],
-  "decision": "needs-verification"
+  "decision": "continue"
 }

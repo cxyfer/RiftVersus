@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "task5-official-leaguepedia-acceptance",
+  "type": "reviewed-live-evidence",
+  "source": "Signed snapshot sha256:9a0fa96fc48323a7572af0e5ed41c3e295d1ba7b1d38e8d159639c7140c283a9; official Leaguepedia raw evidence; PostgreSQL generation 1; MinIO immutable object",
+  "summary": "Fresh reviewer codex-independent-coverage-snapshot-review approved the exact pending candidate at 2026-07-15T11:18:03Z; mechanical review metadata replacement reconstructs the approved hash. The signed snapshot pins dataset leaguepedia-bbb75c5f7cab4b7693536c3f002feaff09a5f11c894063d6dd151d20f1edb100, exact 13 complete Worlds coverage rows for 2013 through 2025, 12-0 series, 36-9 games, 12 series and 45 games. All 57 facts use latest reviewed raw lineage; page, revision, legal attribution and deterministic avatar hashes were independently checked. This supersedes the earlier runtime-review-only snapshot record.",
+  "verifier": "root, codex-independent-coverage-snapshot-review, final_snapshot_packager"
+}

@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "task5-integration-harness",
+  "type": "verification",
+  "source": "Isolated PostgreSQL 17 flake investigation and independent reviews",
+  "summary": "Root cause was Kysely database-global migration advisory lock across schema-isolated file workers. Native Vitest file serialization repaired teardown race. Strict RED and GREEN passed. Four fresh full runs each passed 35 of 35 with zero skips, isolated migrations 9 of 9, unit 46 of 46, lint typecheck and diff passed. Spec COMPLIANT and quality APPROVED.",
+  "verifier": "root, migration_parallel_debugger, migration_harness_spec_reviewer, migration_harness_quality_reviewer"
+}

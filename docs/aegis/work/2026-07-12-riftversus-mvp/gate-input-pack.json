@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "baselineRefs": [
+    "docs/aegis/adr/ADR-0001-leaguepedia-facts-and-fail-closed-presentation.md",
+    "docs/aegis/baseline/2026-07-15-riftversus-release.md",
+    "docs/aegis/plans/2026-07-12-riftversus-mvp.md",
+    "docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md"
+  ],
+  "impactStatement": "docs/aegis/work/2026-07-12-riftversus-mvp/impact-statement-draft.json",
+  "compatPlan": "同一 DATABASE_URL 與 S3 contract 支援 local/remote；failed sync 不取代已發布資料",
+  "retirementPlan": "Oracle MVP, retained-media-only acceptance, aggregate-only release coverage and declared-scope-only completeness are retired without fallback or compatibility paths. No persistent rows or objects were deleted.",
+  "evidenceBundle": [
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-deterministic-avatar-task-01.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-deterministic-avatar-task-02.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-deterministic-avatar-task-03.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-leaguepedia-task-01-sync-runner.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-leaguepedia-task-02-provider-adapter.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-leaguepedia-task-03-publication-cli.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-leaguepedia-task-04-oracle-retirement.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-01-foundation.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-02-contracts-config.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-03-database-schema.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-04-domain-semantics.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-05-repositories-publication.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-06-http-api.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-10-web-comparison.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task-11-browser-export.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-docker-release-gates.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-exact-coverage-contract.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-integration-harness.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-official-leaguepedia-acceptance.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-postgresql-date-boundary.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-signed-release-final.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-slice-coverage-fail-closed.json",
+    "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5b-lint-cleanup.json"
+  ]
+}

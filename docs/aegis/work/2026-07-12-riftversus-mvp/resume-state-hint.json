@@ -2,9 +2,10 @@
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
   "lastCheckpointRef": "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json",
-  "resumeInstruction": "Resume from docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md Task 5. Do not mark complete until PostgreSQL migrations 001-007 and fixture import twice execute against a real database, and Docker stack/health/API acceptance has runtime evidence.",
+  "resumeInstruction": "Use the authoritative task5-signed-release-final artifact, verify final reviewers are COMPLIANT and APPROVED, commit without altering files, merge to main, and run post-merge tests before completion.",
   "knownPartialWork": [
-    "Replacement Task 4 retired active Oracle source surfaces, hardened source guards/config validation, and documented Leaguepedia operations/deployment after final reviews"
+    "Closed whole-diff review findings with fail-closed actual response scope coverage, exact 13-year acceptance coverage, ADR and release baseline, resource and latency evidence, and synchronized signed-release evidence",
+    "Fresh independent snapshot, spec, quality, Docker, PostgreSQL and Playwright gates approved the convergence artifact"
   ],
   "mustReadBeforeContinuing": [
     "docs/aegis/work/2026-07-12-riftversus-mvp/10-intent.md",
@@ -12,6 +13,6 @@
     "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json"
   ],
   "unsafeToAssume": [
-    "Do not infer runtime PostgreSQL, S3-compatible storage, migrations, retirement, shared media, or Docker health from skipped integration tests or static compose validation alone."
+    "Do not modify packaged operations or rebuild the convergence image after recording digest 9c5ac7e7; do not mutate PostgreSQL, MinIO or named volumes; do not claim completion before post-merge checks."
   ]
 }

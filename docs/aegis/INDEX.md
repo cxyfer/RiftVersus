@@ -32,3 +32,20 @@ Entries are workspace records, not authoritative runtime decisions.
 | 2026-07-12 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-leaguepedia-task-02-provider-adapter.json | 2026-07-12-riftversus-mvp evidence leaguepedia-task-02-provider-adapter |
 | 2026-07-13 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-leaguepedia-task-03-publication-cli.json | 2026-07-12-riftversus-mvp evidence leaguepedia-task-03-publication-cli |
 | 2026-07-13 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-leaguepedia-task-04-oracle-retirement.json | 2026-07-12-riftversus-mvp evidence leaguepedia-task-04-oracle-retirement |
+| 2026-07-14 | spec | docs/aegis/specs/2026-07-14-deterministic-avatar-fallback-design.md | Deterministic Avatar Fallback Design Amendment |
+| 2026-07-14 | plan | docs/aegis/plans/2026-07-14-deterministic-avatar-fallback.md | Deterministic Avatar Fallback Implementation Plan |
+| 2026-07-14 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-deterministic-avatar-task-01.json | 2026-07-12-riftversus-mvp evidence deterministic-avatar-task-01 |
+| 2026-07-14 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5b-lint-cleanup.json | 2026-07-12-riftversus-mvp evidence task5b-lint-cleanup |
+| 2026-07-14 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-deterministic-avatar-task-02.json | 2026-07-12-riftversus-mvp evidence deterministic-avatar-task-02 |
+| 2026-07-14 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-deterministic-avatar-task-03.json | 2026-07-12-riftversus-mvp evidence deterministic-avatar-task-03 |
+| 2026-07-14 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-integration-harness.json | 2026-07-12-riftversus-mvp evidence task5-integration-harness |
+| 2026-07-14 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/gate-input-pack.json | 2026-07-12-riftversus-mvp gate input pack |
+| 2026-07-14 | work | docs/aegis/work/2026-07-12-riftversus-mvp/proof-bundle.md | 2026-07-12-riftversus-mvp proof bundle |
+| 2026-07-15 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-postgresql-date-boundary.json | 2026-07-12-riftversus-mvp evidence task5-postgresql-date-boundary |
+| 2026-07-15 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-official-leaguepedia-acceptance.json | 2026-07-12-riftversus-mvp evidence task5-official-leaguepedia-acceptance |
+| 2026-07-15 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-docker-release-gates.json | 2026-07-12-riftversus-mvp evidence task5-docker-release-gates |
+| 2026-07-15 | adr | docs/aegis/adr/ADR-0001-leaguepedia-facts-and-fail-closed-presentation.md | ADR-0001 - Leaguepedia facts and fail-closed presentation ownership |
+| 2026-07-15 | baseline | docs/aegis/baseline/2026-07-15-riftversus-release.md | RiftVersus release architecture baseline |
+| 2026-07-15 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-signed-release-final.json | 2026-07-12-riftversus-mvp evidence task5-signed-release-final |
+| 2026-07-15 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-slice-coverage-fail-closed.json | 2026-07-12-riftversus-mvp evidence task5-slice-coverage-fail-closed |
+| 2026-07-15 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-exact-coverage-contract.json | 2026-07-12-riftversus-mvp evidence task5-exact-coverage-contract |

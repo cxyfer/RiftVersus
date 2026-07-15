@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "task5-exact-coverage-contract",
+  "type": "test-and-review",
+  "source": "apps/server/src/acceptance.ts; packages/database/src/repositories/sync.ts; data/acceptance/leaguepedia-t1-lpl-worlds-bo5.json",
+  "summary": "Acceptance version 2 now records and validates exactly 13 Leaguepedia Worlds complete coverage rows for 2013 through 2025. Repository evidence is selected from the same dataset version and compared by all coverage fields; missing, extra, duplicate, partial and date drift fail closed. Empty series ID lookup and unknown dataset evidence are explicit. Server passed 152 of 152 and isolated PostgreSQL passed 39 of 39 with zero skips. Independent source and runtime review approved.",
+  "verifier": "root, acceptance_coverage_contract_fix, codex-independent-coverage-snapshot-review"
+}

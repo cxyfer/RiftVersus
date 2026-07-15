@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "task5b-lint-cleanup",
+  "type": "verification",
+  "source": "packages/sync/src/providers/leaguepedia/fetch.ts; packages/sync/test/leaguepedia.test.ts",
+  "summary": "Delete-first cleanup removed three dead bindings from prior Task5B refactor; sync 166/166, root lint/typecheck, targeted eslint, and diff check pass.",
+  "verifier": "task5b_snapshot_implementer"
+}
