@@ -43,7 +43,7 @@ This proof bundle is an advisory Aegis Method Pack record. It does not determine
 
 ## Drift Check
 
-- Scope status: Task5 implementation, review remediation, official source publication, signed historical acceptance and Docker convergence stayed within the approved Leaguepedia-primary and deterministic-avatar completion boundaries.
-- Compatibility status: Local Compose and external PostgreSQL/S3 still use one image. Public comparison semantics remain compatible. Exact acceptance coverage and slice replay checks only strengthen internal fail-closed evidence; generated avatar URLs remain deterministic presentation.
-- Retirement status: Oracle MVP, retained-media-only acceptance, aggregate-only release coverage and declared-scope-only completeness are retired without fallback or compatibility paths. No persistent rows or objects were deleted.
+- Scope status: Release closure only: main fast-forward merge and post-merge verification; no product, runtime, schema, provider or image change.
+- Compatibility status: Main at 7e8caa3 is byte-identical to the independently reviewed feature commit; public comparison and deployment contracts are unchanged.
+- Retirement status: Oracle MVP, retained-media-only acceptance, aggregate-only coverage and declared-only scope checks remain retired; no fallback was reintroduced.
 - Advisory decision: continue

@@ -1,18 +1,17 @@
 {
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
-  "currentTodo": "Create the planned Task5 commits, merge the approved worktree branch to main, and run post-merge verification",
+  "currentTodo": "No open implementation todo; release execution complete",
   "completedTodos": [
-    "Closed whole-diff review findings with fail-closed actual response scope coverage, exact 13-year acceptance coverage, ADR and release baseline, resource and latency evidence, and synchronized signed-release evidence",
-    "Fresh independent snapshot, spec, quality, Docker, PostgreSQL and Playwright gates approved the convergence artifact"
+    "Committed release verification and Aegis evidence as 410da75 and 7e8caa3",
+    "Fast-forward merged feat/docker-acceptance into main at 7e8caa3",
+    "Post-merge unit, workspace, build, typecheck, lint and runtime-artifact checks passed on the identical main commit"
   ],
-  "activeSlice": "Implementation, independent reviews and runtime acceptance complete; commit and merge handoff",
+  "activeSlice": "Leaguepedia MVP release execution complete",
   "evidenceRefs": [
-    "task5-slice-coverage-fail-closed",
-    "task5-exact-coverage-contract",
-    "task5-signed-release-final"
+    "main 7e8caa3; signed release artifact task5-signed-release-final; post-merge canonical checks 2026-07-15"
   ],
   "blockedOn": null,
-  "nextStep": "Inspect final status and diff, create repository-style Docker and historical release commits, merge feat/docker-acceptance to main, then run post-merge root and Aegis checks",
+  "nextStep": "Operate or deploy from the signed image, or frame any follow-up as a separate task",
   "updatedAt": "2026-07-15"
 }

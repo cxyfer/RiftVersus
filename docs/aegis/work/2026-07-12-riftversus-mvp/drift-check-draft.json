@@ -8,11 +8,11 @@
     "docs/aegis/plans/2026-07-12-riftversus-mvp.md",
     "docs/aegis/plans/2026-07-12-leaguepedia-primary-mvp.md"
   ],
-  "scopeStatus": "Task5 implementation, review remediation, official source publication, signed historical acceptance and Docker convergence stayed within the approved Leaguepedia-primary and deterministic-avatar completion boundaries.",
-  "compatStatus": "Local Compose and external PostgreSQL/S3 still use one image. Public comparison semantics remain compatible. Exact acceptance coverage and slice replay checks only strengthen internal fail-closed evidence; generated avatar URLs remain deterministic presentation.",
-  "retirementStatus": "Oracle MVP, retained-media-only acceptance, aggregate-only release coverage and declared-scope-only completeness are retired without fallback or compatibility paths. No persistent rows or objects were deleted.",
+  "scopeStatus": "Release closure only: main fast-forward merge and post-merge verification; no product, runtime, schema, provider or image change.",
+  "compatStatus": "Main at 7e8caa3 is byte-identical to the independently reviewed feature commit; public comparison and deployment contracts are unchanged.",
+  "retirementStatus": "Oracle MVP, retained-media-only acceptance, aggregate-only coverage and declared-only scope checks remain retired; no fallback was reintroduced.",
   "newRiskSignals": [
-    "No implementation or evidence blocker remains; only repository commit, merge and post-merge verification are open."
+    "Registry publication and production deployment remain outside this completed local release scope."
   ],
   "decision": "continue"
 }

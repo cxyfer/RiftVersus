@@ -8,7 +8,7 @@
   ],
   "impactStatement": "docs/aegis/work/2026-07-12-riftversus-mvp/impact-statement-draft.json",
   "compatPlan": "同一 DATABASE_URL 與 S3 contract 支援 local/remote；failed sync 不取代已發布資料",
-  "retirementPlan": "Oracle MVP, retained-media-only acceptance, aggregate-only release coverage and declared-scope-only completeness are retired without fallback or compatibility paths. No persistent rows or objects were deleted.",
+  "retirementPlan": "Oracle MVP, retained-media-only acceptance, aggregate-only coverage and declared-only scope checks remain retired; no fallback was reintroduced.",
   "evidenceBundle": [
     "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-deterministic-avatar-task-01.json",
     "docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-deterministic-avatar-task-02.json",

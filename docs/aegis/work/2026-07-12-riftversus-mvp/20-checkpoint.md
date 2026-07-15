@@ -428,3 +428,25 @@
 - New risk signals:
 - No implementation or evidence blocker remains; only repository commit, merge and post-merge verification are open.
 - Advisory decision: continue
+
+## Checkpoint Update
+
+- Current todo: No open implementation todo; release execution complete
+- Active slice: Leaguepedia MVP release execution complete
+- Completed todos:
+- Committed release verification and Aegis evidence as 410da75 and 7e8caa3
+- Fast-forward merged feat/docker-acceptance into main at 7e8caa3
+- Post-merge unit, workspace, build, typecheck, lint and runtime-artifact checks passed on the identical main commit
+- Evidence refs:
+- main 7e8caa3; signed release artifact task5-signed-release-final; post-merge canonical checks 2026-07-15
+- Blocked on: none
+- Next step: Operate or deploy from the signed image, or frame any follow-up as a separate task
+
+## DriftCheckDraft
+
+- Scope status: Release closure only: main fast-forward merge and post-merge verification; no product, runtime, schema, provider or image change.
+- Compatibility status: Main at 7e8caa3 is byte-identical to the independently reviewed feature commit; public comparison and deployment contracts are unchanged.
+- Retirement status: Oracle MVP, retained-media-only acceptance, aggregate-only coverage and declared-only scope checks remain retired; no fallback was reintroduced.
+- New risk signals:
+- Registry publication and production deployment remain outside this completed local release scope.
+- Advisory decision: continue

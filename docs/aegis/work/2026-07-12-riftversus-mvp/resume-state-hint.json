@@ -2,10 +2,11 @@
   "schemaVersion": "aegis.schema.v0",
   "taskId": "2026-07-12-riftversus-mvp",
   "lastCheckpointRef": "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json",
-  "resumeInstruction": "Use the authoritative task5-signed-release-final artifact, verify final reviewers are COMPLIANT and APPROVED, commit without altering files, merge to main, and run post-merge tests before completion.",
+  "resumeInstruction": "Treat the Leaguepedia MVP release as complete at main 7e8caa3; use the signed release artifact and ADR/baseline for deployment or separately scoped follow-up work.",
   "knownPartialWork": [
-    "Closed whole-diff review findings with fail-closed actual response scope coverage, exact 13-year acceptance coverage, ADR and release baseline, resource and latency evidence, and synchronized signed-release evidence",
-    "Fresh independent snapshot, spec, quality, Docker, PostgreSQL and Playwright gates approved the convergence artifact"
+    "Committed release verification and Aegis evidence as 410da75 and 7e8caa3",
+    "Fast-forward merged feat/docker-acceptance into main at 7e8caa3",
+    "Post-merge unit, workspace, build, typecheck, lint and runtime-artifact checks passed on the identical main commit"
   ],
   "mustReadBeforeContinuing": [
     "docs/aegis/work/2026-07-12-riftversus-mvp/10-intent.md",
@@ -13,6 +14,6 @@
     "docs/aegis/work/2026-07-12-riftversus-mvp/todo-checkpoint-draft.json"
   ],
   "unsafeToAssume": [
-    "Do not modify packaged operations or rebuild the convergence image after recording digest 9c5ac7e7; do not mutate PostgreSQL, MinIO or named volumes; do not claim completion before post-merge checks."
+    "Do not rebuild or relabel image digest 9c5ac7e7 as the signed artifact; deployment and registry publication were not performed."
   ]
 }
