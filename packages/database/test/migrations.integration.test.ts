@@ -38,6 +38,7 @@ describeWithDatabase("initial schema migration", () => {
         expect.objectContaining({ migrationName: "005_override_run_provenance", status: "Success" }),
         expect.objectContaining({ migrationName: "006_fact_retirement", status: "Success" }),
         expect.objectContaining({ migrationName: "007_shared_media_objects", status: "Success" }),
+        expect.objectContaining({ migrationName: "008_entity_search_indexes", status: "Success" }),
       ]));
 
       const secondRun = await migrateToLatest(db, { schema });
@@ -91,6 +92,9 @@ describeWithDatabase("initial schema migration", () => {
           "media_assets_current_entity_kind_unique",
           "entities_canonical_name_search",
           "entity_aliases_display_name_search",
+          "entities_canonical_name_trgm",
+          "entities_slug_trgm",
+          "entity_aliases_display_name_trgm",
           "tournaments_category_lookup",
           "series_facts_comparison_lookup",
           "game_facts_comparison_lookup",
@@ -103,9 +107,9 @@ describeWithDatabase("initial schema migration", () => {
           "media_assets_object_owners",
         ]),
       );
-      expect(indexes.rows.find((index) => index.indexname === "media_assets_current_entity_kind_unique")?.indexdef).toContain(
-        "WHERE is_current",
-      );
+      const currentMediaIndex = indexes.rows.find((index) => index.indexname === "media_assets_current_entity_kind_unique")?.indexdef;
+      expect(currentMediaIndex).toContain("WHERE");
+      expect(currentMediaIndex).toContain("is_current");
 
       await expect(
         db.insertInto("entities").values({
@@ -492,6 +496,7 @@ describeWithDatabase("override provenance migration downgrade", () => {
     await migrateToLatest(db, { schema });
     expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
     expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
+    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
     const applicationId = randomUUID(); const firstRunId = randomUUID(); const secondRunId = randomUUID();
     await db.insertInto("sync_runs").values([
       { id: firstRunId, provider: "leaguepedia", mode: "sync", status: "running", parser_version: "test" },
@@ -544,6 +549,7 @@ describeWithDatabase("shared media objects migration downgrade", () => {
     await adminPool.query(`create schema ${schema}`);
     const db = createDb({ databaseUrl: databaseUrl!, schema });
     await migrateToLatest(db, { schema });
+    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
     const entityIds = [randomUUID(), randomUUID()];
     await db.insertInto("entities").values(entityIds.slice(0, ownerCount).map((id, index) => ({ id, kind: "team" as const, canonical_name: `Media Owner ${index}`, slug: `media-owner-${index}` }))).execute();
     await db.insertInto("media_objects").values({ object_key: "media/shared.png", checksum: "sha256:shared", content_type: "image/png", byte_size: "42" }).execute();
@@ -602,6 +608,7 @@ describeWithDatabase("fact retirement migration downgrade", () => {
     await adminPool.query(`create schema ${schema}`);
     const db = createDb({ databaseUrl: databaseUrl!, schema });
     await migrateToLatest(db, { schema });
+    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
     expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
     return { schema, db };
   }

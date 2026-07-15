@@ -1,5 +1,8 @@
 {
-  "provenance": { "kind": "synthetic-fixture", "name": "leaguepedia-small" },
+  "provenance": {
+    "kind": "synthetic-fixture",
+    "name": "leaguepedia-small"
+  },
   "sourceUrl": "https://fixture.riftversus.invalid/dataset/leaguepedia-small",
   "slices": [
     {
@@ -14,94 +17,178 @@
   "rawEvidence": [
     {
       "requestId": "cargoquery:Teams:0:fixture",
-      "action": "cargoquery",
+      "action": "cargoexport",
       "table": "Teams",
       "offset": 0,
-      "sourceUrl": "https://fixture.riftversus.invalid/raw/teams/page-0",
-      "response": {
-        "cargoquery": [
-          {
-            "title": {
-              "OverviewPage": "SK Telecom T1",
-              "Name": "SK Telecom T1",
-              "Aliases": "SKT",
-              "Region": "Korea"
-            }
-          },
-          {
-            "title": {
-              "OverviewPage": "T1",
-              "Name": "T1",
-              "Aliases": "SKT",
-              "Region": "Korea",
-              "Image": "T1 logo"
-            }
-          },
-          {
-            "title": {
-              "OverviewPage": "Bilibili Gaming",
-              "Name": "Bilibili Gaming",
-              "Aliases": "BLG",
-              "Region": "China"
-            }
-          }
-        ]
-      },
+      "sourceUrl": "https://fixture.riftversus.invalid/wiki/Special:CargoExport?tables=Teams&offset=0&format=json",
+      "response": [
+        {
+          "OverviewPage": "SK Telecom T1",
+        "Name": "SK Telecom T1",
+        "Region": "Korea",
+        "Short": "SKT",
+        "RenamedTo": "T1"
+        },
+        {
+          "OverviewPage": "T1",
+        "Name": "T1",
+        "Region": "Korea",
+        "Image": "T1 logo",
+        "Short": "T1",
+        "RenamedTo": null
+        },
+        {
+          "OverviewPage": "Bilibili Gaming",
+          "Name": "Bilibili Gaming",
+          "Region": "China",
+          "Short": "BLG"
+        }
+      ],
+      "revisionIds": []
+    },
+    {
+      "requestId": "cargoquery:TeamRedirects:0:fixture",
+      "action": "cargoexport",
+      "table": "TeamRedirects",
+      "offset": 0,
+      "sourceUrl": "https://fixture.riftversus.invalid/wiki/Special:CargoExport?tables=TeamRedirects&offset=0&format=json",
+      "response": [
+        { "_pageName": "SK Telecom T1", "AllName": "SK Telecom T1" },
+        { "_pageName": "SK Telecom T1", "AllName": "SKT" },
+        { "_pageName": "T1", "AllName": "T1" },
+        { "_pageName": "Bilibili Gaming", "AllName": "Bilibili Gaming" },
+        { "_pageName": "Bilibili Gaming", "AllName": "BLG" }
+      ],
       "revisionIds": []
     },
     {
       "requestId": "cargoquery:Players:0:fixture",
-      "action": "cargoquery",
+      "action": "cargoexport",
       "table": "Players",
       "offset": 0,
-      "sourceUrl": "https://fixture.riftversus.invalid/raw/players/page-0",
-      "response": {
-        "cargoquery": [
-          { "title": { "OverviewPage": "Zeus", "Name": "Zeus" } },
-          { "title": { "OverviewPage": "Oner", "Name": "Oner" } },
-          {
-            "title": {
-              "OverviewPage": "Faker",
-              "Name": "Faker",
-              "Aliases": "Hide on bush"
-            }
-          },
-          { "title": { "OverviewPage": "Gumayusi", "Name": "Gumayusi" } },
-          { "title": { "OverviewPage": "Keria", "Name": "Keria" } },
-          { "title": { "OverviewPage": "Bin", "Name": "Bin" } },
-          { "title": { "OverviewPage": "Xun", "Name": "Xun" } },
-          { "title": { "OverviewPage": "knight", "Name": "knight" } },
-          { "title": { "OverviewPage": "Elk", "Name": "Elk" } },
-          { "title": { "OverviewPage": "ON", "Name": "ON" } },
-          { "title": { "OverviewPage": "Duplicate One", "Name": "Rookie" } },
-          { "title": { "OverviewPage": "Duplicate Two", "Name": "Rookie" } }
-        ]
-      },
+      "sourceUrl": "https://fixture.riftversus.invalid/wiki/Special:CargoExport?tables=Players&offset=0&format=json",
+      "response": [
+        {
+          "OverviewPage": "Zeus",
+          "Name": "Zeus"
+        },
+        {
+          "OverviewPage": "Oner",
+          "Name": "Oner"
+        },
+        {
+          "OverviewPage": "Faker",
+          "Name": "Faker"
+        },
+        {
+          "OverviewPage": "Gumayusi",
+          "Name": "Gumayusi"
+        },
+        {
+          "OverviewPage": "Keria",
+          "Name": "Keria"
+        },
+        {
+          "OverviewPage": "Bin",
+          "Name": "Bin"
+        },
+        {
+          "OverviewPage": "Xun",
+          "Name": "Xun"
+        },
+        {
+          "OverviewPage": "knight",
+          "Name": "knight"
+        },
+        {
+          "OverviewPage": "Elk",
+          "Name": "Elk"
+        },
+        {
+          "OverviewPage": "ON",
+          "Name": "ON"
+        },
+        {
+          "OverviewPage": "Duplicate One",
+          "Name": "Rookie"
+        },
+        {
+          "OverviewPage": "Duplicate Two",
+          "Name": "Rookie"
+        }
+      ],
+      "revisionIds": []
+    },
+    {
+      "requestId": "cargoquery:PlayerRedirects:0:fixture",
+      "action": "cargoexport",
+      "table": "PlayerRedirects",
+      "offset": 0,
+      "sourceUrl": "https://fixture.riftversus.invalid/wiki/Special:CargoExport?tables=PlayerRedirects&offset=0&format=json",
+      "response": [
+        { "OverviewPage": "Zeus", "ID": "Zeus", "AllName": "Zeus" },
+        { "OverviewPage": "Oner", "ID": "Oner", "AllName": "Oner" },
+        { "OverviewPage": "Faker", "ID": "Faker", "AllName": "Faker" },
+        { "OverviewPage": "Gumayusi", "ID": "Gumayusi", "AllName": "Gumayusi" },
+        { "OverviewPage": "Keria", "ID": "Keria", "AllName": "Keria" },
+        { "OverviewPage": "Bin", "ID": "Bin", "AllName": "Bin" },
+        { "OverviewPage": "Xun", "ID": "Xun", "AllName": "Xun" },
+        { "OverviewPage": "knight", "ID": "knight", "AllName": "knight" },
+        { "OverviewPage": "Elk", "ID": "Elk", "AllName": "Elk" },
+        { "OverviewPage": "ON", "ID": "ON", "AllName": "ON" },
+        { "OverviewPage": "Duplicate One", "ID": "Duplicate One", "AllName": "Duplicate One" },
+        { "OverviewPage": "Duplicate Two", "ID": "Duplicate Two", "AllName": "Duplicate Two" }
+      ],
       "revisionIds": []
     },
     {
       "requestId": "cargoquery:Tournaments:0:fixture",
-      "action": "cargoquery",
+      "action": "cargoexport",
       "table": "Tournaments",
       "offset": 0,
-      "sourceUrl": "https://fixture.riftversus.invalid/raw/tournaments/page-0",
-      "response": {
-        "cargoquery": [
-          {
-            "title": {
-              "OverviewPage": "2024 Season World Championship",
-              "Name": "2024 Season World Championship",
-              "DateStart": "2024-09-25",
-              "DateEnd": "2024-11-02"
-            }
-          }
+      "sourceUrl": "https://fixture.riftversus.invalid/wiki/Special:CargoExport?tables=Tournaments&offset=0&format=json",
+      "response": [
+        {
+          "OverviewPage": "2024 Season World Championship",
+          "Name": "2024 Season World Championship",
+          "DateStart": "2024-09-25"
+        }
+      ],
+      "revisionIds": []
+    },
+    {
+      "requestId": "cargoquery:MatchSchedule:0:fixture",
+      "action": "cargoexport",
+      "table": "MatchSchedule",
+      "offset": 0,
+      "scope": {
+        "sliceIds": [
+          "Worlds:2024%20Season%20World%20Championship:2024:2024-01-01:2025-01-01"
+        ],
+        "matchIds": [
+          "WORLD24-FINAL"
         ]
       },
+      "sourceUrl": "https://fixture.riftversus.invalid/wiki/Special:CargoExport?tables=MatchSchedule&offset=0&format=json",
+      "response": [
+        {
+          "UniqueMatch": "WORLD24-FINAL",
+          "MatchId": "WORLD24-FINAL",
+          "OverviewPage": "2024 Season World Championship",
+          "DateTimeUTC": "2024-11-02T14:00:00Z",
+          "Team1": "T1",
+          "Team2": "Bilibili Gaming",
+          "Team1Score": 3,
+          "Team2Score": 2,
+          "Winner": 1,
+          "BestOf": 5
+        }
+      ],
       "revisionIds": []
     },
     {
       "requestId": "cargoquery:ScoreboardGames:0:fixture",
-      "action": "cargoquery",
+      "action": "cargoexport",
       "table": "ScoreboardGames",
       "offset": 0,
       "scope": {
@@ -113,91 +200,74 @@
         "from": "2024-01-01",
         "to": "2025-01-01"
       },
-      "sourceUrl": "https://fixture.riftversus.invalid/raw/scoreboard-games/page-0",
-      "response": {
-        "cargoquery": [
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G1",
-              "MatchId": "WORLD24-FINAL",
-              "Tournament": "2024 Season World Championship",
-              "DateTime_UTC": "2024-11-02T14:00:00Z",
-              "BestOf": 5,
-              "N_GameInMatch": 1,
-              "Team1": "T1",
-              "Team2": "Bilibili Gaming",
-              "Team1Score": 3,
-              "Team2Score": 2,
-              "Winner": 2
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G2",
-              "MatchId": "WORLD24-FINAL",
-              "Tournament": "2024 Season World Championship",
-              "DateTime_UTC": "2024-11-02T15:00:00Z",
-              "BestOf": 5,
-              "N_GameInMatch": 2,
-              "Team1": "T1",
-              "Team2": "Bilibili Gaming",
-              "Team1Score": 3,
-              "Team2Score": 2,
-              "Winner": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G3",
-              "MatchId": "WORLD24-FINAL",
-              "Tournament": "2024 Season World Championship",
-              "DateTime_UTC": "2024-11-02T16:00:00Z",
-              "BestOf": 5,
-              "N_GameInMatch": 3,
-              "Team1": "T1",
-              "Team2": "Bilibili Gaming",
-              "Team1Score": 3,
-              "Team2Score": 2,
-              "Winner": 2
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G4",
-              "MatchId": "WORLD24-FINAL",
-              "Tournament": "2024 Season World Championship",
-              "DateTime_UTC": "2024-11-02T17:00:00Z",
-              "BestOf": 5,
-              "N_GameInMatch": 4,
-              "Team1": "T1",
-              "Team2": "Bilibili Gaming",
-              "Team1Score": 3,
-              "Team2Score": 2,
-              "Winner": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G5",
-              "MatchId": "WORLD24-FINAL",
-              "Tournament": "2024 Season World Championship",
-              "DateTime_UTC": "2024-11-02T18:00:00Z",
-              "BestOf": 5,
-              "N_GameInMatch": 5,
-              "Team1": "T1",
-              "Team2": "Bilibili Gaming",
-              "Team1Score": 3,
-              "Team2Score": 2,
-              "Winner": 1
-            }
-          }
-        ]
-      },
+      "sourceUrl": "https://fixture.riftversus.invalid/wiki/Special:CargoExport?tables=ScoreboardGames&offset=0&format=json",
+      "response": [
+        {
+          "GameId": "WORLD24-FINAL-G1",
+          "MatchId": "WORLD24-FINAL",
+          "Tournament": "2024 Season World Championship",
+          "Team1": "T1",
+          "Team2": "Bilibili Gaming",
+          "Team1Score": 0,
+          "Team2Score": 1,
+          "Winner": 2,
+          "DateTimeUTC": "2024-11-02T14:00:00Z",
+          "GameNumber": 1
+        },
+        {
+          "GameId": "WORLD24-FINAL-G2",
+          "MatchId": "WORLD24-FINAL",
+          "Tournament": "2024 Season World Championship",
+          "Team1": "T1",
+          "Team2": "Bilibili Gaming",
+          "Team1Score": 1,
+          "Team2Score": 1,
+          "Winner": 1,
+          "DateTimeUTC": "2024-11-02T15:00:00Z",
+          "GameNumber": 2
+        },
+        {
+          "GameId": "WORLD24-FINAL-G3",
+          "MatchId": "WORLD24-FINAL",
+          "Tournament": "2024 Season World Championship",
+          "Team1": "T1",
+          "Team2": "Bilibili Gaming",
+          "Team1Score": 1,
+          "Team2Score": 2,
+          "Winner": 2,
+          "DateTimeUTC": "2024-11-02T16:00:00Z",
+          "GameNumber": 3
+        },
+        {
+          "GameId": "WORLD24-FINAL-G4",
+          "MatchId": "WORLD24-FINAL",
+          "Tournament": "2024 Season World Championship",
+          "Team1": "T1",
+          "Team2": "Bilibili Gaming",
+          "Team1Score": 2,
+          "Team2Score": 2,
+          "Winner": 1,
+          "DateTimeUTC": "2024-11-02T17:00:00Z",
+          "GameNumber": 4
+        },
+        {
+          "GameId": "WORLD24-FINAL-G5",
+          "MatchId": "WORLD24-FINAL",
+          "Tournament": "2024 Season World Championship",
+          "Team1": "T1",
+          "Team2": "Bilibili Gaming",
+          "Team1Score": 3,
+          "Team2Score": 2,
+          "Winner": 1,
+          "DateTimeUTC": "2024-11-02T18:00:00Z",
+          "GameNumber": 5
+        }
+      ],
       "revisionIds": []
     },
     {
       "requestId": "cargoquery:ScoreboardPlayers:0:fixture",
-      "action": "cargoquery",
+      "action": "cargoexport",
       "table": "ScoreboardPlayers",
       "offset": 0,
       "scope": {
@@ -212,411 +282,359 @@
           "WORLD24-FINAL-G5"
         ]
       },
-      "sourceUrl": "https://fixture.riftversus.invalid/raw/scoreboard-players/page-0",
-      "response": {
-        "cargoquery": [
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G1",
-              "PlayerName": "Faker",
-              "Team": "T1",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G1",
-              "PlayerName": "Zeus",
-              "Team": "T1",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G1",
-              "PlayerName": "Oner",
-              "Team": "T1",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G1",
-              "PlayerName": "Gumayusi",
-              "Team": "T1",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G1",
-              "PlayerName": "Keria",
-              "Team": "T1",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G1",
-              "PlayerName": "Bin",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G1",
-              "PlayerName": "Xun",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G1",
-              "PlayerName": "knight",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G1",
-              "PlayerName": "Elk",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G1",
-              "PlayerName": "ON",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G2",
-              "PlayerName": "Faker",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G2",
-              "PlayerName": "Zeus",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G2",
-              "PlayerName": "Oner",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G2",
-              "PlayerName": "Gumayusi",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G2",
-              "PlayerName": "Keria",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G2",
-              "PlayerName": "Bin",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G2",
-              "PlayerName": "Xun",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G2",
-              "PlayerName": "knight",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G2",
-              "PlayerName": "Elk",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G2",
-              "PlayerName": "ON",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G3",
-              "PlayerName": "Faker",
-              "Team": "T1",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G3",
-              "PlayerName": "Zeus",
-              "Team": "T1",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G3",
-              "PlayerName": "Oner",
-              "Team": "T1",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G3",
-              "PlayerName": "Gumayusi",
-              "Team": "T1",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G3",
-              "PlayerName": "Keria",
-              "Team": "T1",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G3",
-              "PlayerName": "Bin",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G3",
-              "PlayerName": "Xun",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G3",
-              "PlayerName": "knight",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G3",
-              "PlayerName": "Elk",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G3",
-              "PlayerName": "ON",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G4",
-              "PlayerName": "Zeus",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G4",
-              "PlayerName": "Oner",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G4",
-              "PlayerName": "Faker",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G4",
-              "PlayerName": "Gumayusi",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G4",
-              "PlayerName": "Keria",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G4",
-              "PlayerName": "Bin",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G4",
-              "PlayerName": "Xun",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G4",
-              "PlayerName": "knight",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G4",
-              "PlayerName": "Elk",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G4",
-              "PlayerName": "ON",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G5",
-              "PlayerName": "Zeus",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G5",
-              "PlayerName": "Oner",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G5",
-              "PlayerName": "Faker",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G5",
-              "PlayerName": "Gumayusi",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G5",
-              "PlayerName": "Keria",
-              "Team": "T1",
-              "PlayerWin": 1
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G5",
-              "PlayerName": "Bin",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G5",
-              "PlayerName": "Xun",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G5",
-              "PlayerName": "knight",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G5",
-              "PlayerName": "Elk",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          },
-          {
-            "title": {
-              "GameId": "WORLD24-FINAL-G5",
-              "PlayerName": "ON",
-              "Team": "Bilibili Gaming",
-              "PlayerWin": 0
-            }
-          }
-        ]
-      },
+      "sourceUrl": "https://fixture.riftversus.invalid/wiki/Special:CargoExport?tables=ScoreboardPlayers&offset=0&format=json",
+      "response": [
+        {
+          "GameId": "WORLD24-FINAL-G1",
+          "Team": "T1",
+          "PlayerKey": "Faker",
+          "PlayerDisplayName": "Faker",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G1",
+          "Team": "T1",
+          "PlayerKey": "Zeus",
+          "PlayerDisplayName": "Zeus",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G1",
+          "Team": "T1",
+          "PlayerKey": "Oner",
+          "PlayerDisplayName": "Oner",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G1",
+          "Team": "T1",
+          "PlayerKey": "Gumayusi",
+          "PlayerDisplayName": "Gumayusi",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G1",
+          "Team": "T1",
+          "PlayerKey": "Keria",
+          "PlayerDisplayName": "Keria",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G1",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Bin",
+          "PlayerDisplayName": "Bin",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G1",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Xun",
+          "PlayerDisplayName": "Xun",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G1",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "knight",
+          "PlayerDisplayName": "knight",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G1",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Elk",
+          "PlayerDisplayName": "Elk",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G1",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "ON",
+          "PlayerDisplayName": "ON",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G2",
+          "Team": "T1",
+          "PlayerKey": "Faker",
+          "PlayerDisplayName": "Faker",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G2",
+          "Team": "T1",
+          "PlayerKey": "Zeus",
+          "PlayerDisplayName": "Zeus",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G2",
+          "Team": "T1",
+          "PlayerKey": "Oner",
+          "PlayerDisplayName": "Oner",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G2",
+          "Team": "T1",
+          "PlayerKey": "Gumayusi",
+          "PlayerDisplayName": "Gumayusi",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G2",
+          "Team": "T1",
+          "PlayerKey": "Keria",
+          "PlayerDisplayName": "Keria",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G2",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Bin",
+          "PlayerDisplayName": "Bin",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G2",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Xun",
+          "PlayerDisplayName": "Xun",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G2",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "knight",
+          "PlayerDisplayName": "knight",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G2",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Elk",
+          "PlayerDisplayName": "Elk",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G2",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "ON",
+          "PlayerDisplayName": "ON",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G3",
+          "Team": "T1",
+          "PlayerKey": "Faker",
+          "PlayerDisplayName": "Faker",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G3",
+          "Team": "T1",
+          "PlayerKey": "Zeus",
+          "PlayerDisplayName": "Zeus",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G3",
+          "Team": "T1",
+          "PlayerKey": "Oner",
+          "PlayerDisplayName": "Oner",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G3",
+          "Team": "T1",
+          "PlayerKey": "Gumayusi",
+          "PlayerDisplayName": "Gumayusi",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G3",
+          "Team": "T1",
+          "PlayerKey": "Keria",
+          "PlayerDisplayName": "Keria",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G3",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Bin",
+          "PlayerDisplayName": "Bin",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G3",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Xun",
+          "PlayerDisplayName": "Xun",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G3",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "knight",
+          "PlayerDisplayName": "knight",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G3",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Elk",
+          "PlayerDisplayName": "Elk",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G3",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "ON",
+          "PlayerDisplayName": "ON",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G4",
+          "Team": "T1",
+          "PlayerKey": "Zeus",
+          "PlayerDisplayName": "Zeus",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G4",
+          "Team": "T1",
+          "PlayerKey": "Oner",
+          "PlayerDisplayName": "Oner",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G4",
+          "Team": "T1",
+          "PlayerKey": "Faker",
+          "PlayerDisplayName": "Faker",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G4",
+          "Team": "T1",
+          "PlayerKey": "Gumayusi",
+          "PlayerDisplayName": "Gumayusi",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G4",
+          "Team": "T1",
+          "PlayerKey": "Keria",
+          "PlayerDisplayName": "Keria",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G4",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Bin",
+          "PlayerDisplayName": "Bin",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G4",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Xun",
+          "PlayerDisplayName": "Xun",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G4",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "knight",
+          "PlayerDisplayName": "knight",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G4",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Elk",
+          "PlayerDisplayName": "Elk",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G4",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "ON",
+          "PlayerDisplayName": "ON",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G5",
+          "Team": "T1",
+          "PlayerKey": "Zeus",
+          "PlayerDisplayName": "Zeus",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G5",
+          "Team": "T1",
+          "PlayerKey": "Oner",
+          "PlayerDisplayName": "Oner",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G5",
+          "Team": "T1",
+          "PlayerKey": "Faker",
+          "PlayerDisplayName": "Faker",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G5",
+          "Team": "T1",
+          "PlayerKey": "Gumayusi",
+          "PlayerDisplayName": "Gumayusi",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G5",
+          "Team": "T1",
+          "PlayerKey": "Keria",
+          "PlayerDisplayName": "Keria",
+          "PlayerWin": "Yes"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G5",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Bin",
+          "PlayerDisplayName": "Bin",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G5",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Xun",
+          "PlayerDisplayName": "Xun",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G5",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "knight",
+          "PlayerDisplayName": "knight",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G5",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "Elk",
+          "PlayerDisplayName": "Elk",
+          "PlayerWin": "No"
+        },
+        {
+          "GameId": "WORLD24-FINAL-G5",
+          "Team": "Bilibili Gaming",
+          "PlayerKey": "ON",
+          "PlayerDisplayName": "ON",
+          "PlayerWin": "No"
+        }
+      ],
       "revisionIds": []
     },
     {
@@ -633,8 +651,12 @@
                   "url": "https://fixture.riftversus.invalid/media/t1.png",
                   "mime": "image/png",
                   "extmetadata": {
-                    "LicenseShortName": { "value": "CC BY-SA" },
-                    "Artist": { "value": "Leaguepedia contributors" }
+                    "LicenseShortName": {
+                      "value": "CC BY-SA"
+                    },
+                    "Artist": {
+                      "value": "Leaguepedia contributors"
+                    }
                   }
                 }
               ]

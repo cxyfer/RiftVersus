@@ -7,11 +7,15 @@
     "build": "tsc -b",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc -b --pretty false",
-    "test": "pnpm test:consumer && pnpm test:unit",
+    "test": "pnpm test:consumer && pnpm test:unit && pnpm test:workspace",
     "test:consumer": "pnpm build && node packages/sync/test/public-entry.consumer.mjs && tsc --noEmit -p packages/sync/test/consumer.tsconfig.json",
     "test:unit": "vitest run --config vitest.unit.config.ts",
+    "test:workspace": "pnpm --filter @riftversus/contracts test && pnpm --filter @riftversus/domain test && pnpm --filter @riftversus/sync test && pnpm --filter @riftversus/server test && pnpm --filter @riftversus/web test",
     "test:integration": "vitest run --config vitest.integration.config.ts --passWithNoTests",
-    "test:e2e": "vitest run --config vitest.e2e.config.ts --passWithNoTests"
+    "test:e2e": "pnpm --filter @riftversus/web test:e2e",
+    "test:e2e:release": "pnpm --filter @riftversus/web test:e2e:release",
+    "test:runtime-artifact": "node scripts/static-runtime-preflight.mjs",
+    "acceptance:check": "pnpm build && node apps/server/dist/acceptance-cli.js"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -20,6 +24,7 @@
     "prettier": "3.9.5",
     "typescript": "5.9.3",
     "typescript-eslint": "8.63.0",
-    "vitest": "4.1.10"
+    "vitest": "4.1.10",
+    "yaml": "2.8.2"
   }
 }

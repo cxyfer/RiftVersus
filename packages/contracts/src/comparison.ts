@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { DatasetSchema } from "./dataset.js";
-import { ResolvedSubjectSchema, SubjectRefSchema, UuidSchema } from "./entities.js";
+import { PresentationImageUrlSchema, ResolvedSubjectSchema, SubjectRefSchema, UuidSchema } from "./entities.js";
 import { DateSchema } from "./primitives.js";
 
 export { DateSchema } from "./primitives.js";
@@ -88,8 +88,8 @@ export const ComparisonResponseSchema = z.object({
   dataset: DatasetSchema,
   coverageWarnings: z.array(CoverageWarningSchema),
   mediaUrls: z.object({
-    left: z.string().min(1),
-    right: z.string().min(1),
+    left: PresentationImageUrlSchema,
+    right: PresentationImageUrlSchema,
   }),
 });
 

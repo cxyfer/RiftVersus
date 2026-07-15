@@ -81,9 +81,10 @@ export async function executeLeaguepediaSync(input: {
     const overridesDir = resolve(rootDir, input.config.leaguepedia.overridesDir);
     const overrides = await loadOverrides({
       identities: resolve(overridesDir, "identities.yaml"), tournaments: resolve(overridesDir, "tournaments.yaml"),
-      logicalFiles: { identities: "data/overrides/identities.yaml", tournaments: "data/overrides/tournaments.yaml" },
+      regions: resolve(overridesDir, "regions.yaml"),
+      logicalFiles: { identities: "data/overrides/identities.yaml", tournaments: "data/overrides/tournaments.yaml", regions: "data/overrides/regions.yaml" },
     });
-    const client = new LeaguepediaClient({ endpoint: input.config.leaguepedia.endpoint, userAgent: input.config.leaguepedia.userAgent });
+    const client = new LeaguepediaClient({ endpoint: input.config.leaguepedia.endpoint, userAgent: input.config.leaguepedia.userAgent, requestIntervalMs: input.config.leaguepedia.requestIntervalMs });
     const provider = createLeaguepediaProvider({
       overrides,
       loadRawInput: input.fixture === "leaguepedia-small"

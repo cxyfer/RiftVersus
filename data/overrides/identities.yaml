@@ -18,3 +18,24 @@ rules:
       - SKT
     validFrom: 2019-12-08
     reviewedNote: Current T1 identity continues the reviewed SKT lineage.
+  - sourceKey: Splyce
+    canonicalName: Movistar KOI
+    canonicalId: 35c453b9-1773-5568-8e9b-c7613835f8c8
+    kind: team
+    aliases:
+      - SPY
+    reviewedNote: Leaguepedia Teams RenamedTo resolves through TeamRedirects to MAD Lions KOI; reviewed page 198334 revision 4125518 confirms the forward rename without an exact boundary date.
+  - sourceKey: MAD Lions KOI
+    canonicalName: Movistar KOI
+    canonicalId: 35c453b9-1773-5568-8e9b-c7613835f8c8
+    kind: team
+    aliases:
+      - MDK
+    reviewedNote: Leaguepedia Teams RenamedTo points to Movistar KOI; reviewed page 349575 revision 4347260 confirms the forward rename without an exact boundary date.
+  - sourceKey: Movistar KOI
+    canonicalName: Movistar KOI
+    canonicalId: 35c453b9-1773-5568-8e9b-c7613835f8c8
+    kind: team
+    aliases:
+      - MKOI
+    reviewedNote: Reviewed Leaguepedia page 183371 revision 4478621 as the official forward target; no exact boundary date is asserted.

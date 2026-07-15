@@ -4,22 +4,10 @@ import type { Database } from "../types.js";
 import type { EntitySearchQuery, EntitySearchResponse } from "./types.js";
 import { sql } from "kysely";
 import { latestPublicationGeneration } from "./publication.js";
+import { presentationImageUrl } from "./presentation.js";
 
 export async function searchEntities(query: EntitySearchQuery, db: Kysely<Database>): Promise<EntitySearchResponse> {
-  const term = `%${query.query.trim().toLowerCase()}%`;
-  const limit = query.limit ?? 20;
-  let statement = db.selectFrom("entities as entity")
-    .leftJoin("team_eras as era", "era.team_entity_id", "entity.id")
-    .leftJoin("media_assets as media", (join) => join.onRef("media.entity_id", "=", "entity.id").on("media.is_current", "=", true))
-    .leftJoin("entity_aliases as alias", (join) => join.onRef("alias.entity_id", "=", "entity.id").on("alias.searchable", "=", true))
-    .select(["entity.id", "entity.kind", "entity.canonical_name", "era.id as era_id", "era.display_name as era_label", "media.object_key as media_key"])
-    .where((eb) => eb.or([eb("entity.canonical_name", "ilike", term), eb("entity.slug", "ilike", term), eb("alias.display_name", "ilike", term)]));
-  statement = statement.where(sql<boolean>`(
-    exists (select 1 from series_facts series where series.publication_generation <= ${latestPublicationGeneration} and (series.retired_generation is null or series.retired_generation > ${latestPublicationGeneration}) and entity.id in (series.side_a_team_id, series.side_b_team_id, series.side_a_region_id, series.side_b_region_id))
-    or exists (select 1 from game_players player join game_facts game on game.id = player.game_id where game.publication_generation <= ${latestPublicationGeneration} and (game.retired_generation is null or game.retired_generation > ${latestPublicationGeneration}) and player.player_entity_id = entity.id)
-  )`);
-  if (query.kinds?.length) statement = statement.where("entity.kind", "in", query.kinds);
-  const rows = await statement.orderBy("entity.canonical_name").limit(limit).execute();
+  const rows = await buildEntitySearchQuery(query, db).execute();
   const seen = new Set<string>();
   return { entities: rows.flatMap((row) => {
     const key = `${row.id}:${row.era_id ?? ""}`;
@@ -28,7 +16,36 @@ export async function searchEntities(query: EntitySearchQuery, db: Kysely<Databa
     return [{
       kind: row.kind, id: row.id, displayName: row.era_label ?? row.canonical_name,
       ...(row.era_id === null ? {} : { teamEraId: row.era_id, ...(row.era_label === null ? {} : { eraLabel: row.era_label }) }),
-      ...(row.media_key === null ? {} : { mediaUrl: `/media/${row.media_key}` }),
+      mediaUrl: presentationImageUrl({ kind: row.kind, entityId: row.id, retainedObjectKey: row.media_key }),
     }];
   }) };
+}
+
+/** Internal SQL owner shared by repository execution and integration plan checks. */
+export function buildEntitySearchQuery(query: EntitySearchQuery, db: Kysely<Database>) {
+  const term = `%${query.query.trim().toLowerCase()}%`;
+  const limit = query.limit ?? 20;
+  let statement = db
+    .with((cte) => cte("matched_entities").materialized(), (builder) => builder
+      .selectFrom("entities as name_candidate")
+      .select("name_candidate.id")
+      .where("name_candidate.canonical_name", "ilike", term)
+      .union(builder.selectFrom("entities as slug_candidate").select("slug_candidate.id").where("slug_candidate.slug", "ilike", term))
+      .union(builder.selectFrom("entity_aliases as alias_candidate").select("alias_candidate.entity_id as id").where("alias_candidate.searchable", "=", true).where("alias_candidate.display_name", "ilike", term)))
+    .selectFrom("entities as entity")
+    .innerJoin("matched_entities as matched", "matched.id", "entity.id")
+    .leftJoin("team_eras as era", "era.team_entity_id", "entity.id")
+    .leftJoin("media_assets as media", (join) => join
+      .on("media.is_current", "=", true)
+      .on(sql<boolean>`(
+        (era.id is not null and media.team_era_id = era.id)
+        or (era.id is null and media.entity_id = entity.id)
+      )`))
+    .select(["entity.id", "entity.kind", "entity.canonical_name", "era.id as era_id", "era.display_name as era_label", "media.object_key as media_key"]);
+  statement = statement.where(sql<boolean>`(
+    exists (select 1 from series_facts series where series.publication_generation <= ${latestPublicationGeneration} and (series.retired_generation is null or series.retired_generation > ${latestPublicationGeneration}) and entity.id in (series.side_a_team_id, series.side_b_team_id, series.side_a_region_id, series.side_b_region_id))
+    or exists (select 1 from game_players player join game_facts game on game.id = player.game_id where game.publication_generation <= ${latestPublicationGeneration} and (game.retired_generation is null or game.retired_generation > ${latestPublicationGeneration}) and player.player_entity_id = entity.id)
+  )`);
+  if (query.kinds?.length) statement = statement.where("entity.kind", "in", query.kinds);
+  return statement.orderBy("entity.canonical_name").limit(limit);
 }

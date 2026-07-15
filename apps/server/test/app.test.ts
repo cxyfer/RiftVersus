@@ -253,16 +253,36 @@ describe("HTTP API", () => {
     expect(changedResponse.headers.etag).not.toBe(first.headers.etag);
   });
 
-  it("does not use the SPA fallback for API or media pathnames, including roots with query strings", async () => {
+  it("does not use the SPA fallback for API, media, or avatar pathnames, including roots with query strings", async () => {
     const { app } = createApp({ staticHtml: "<main>RiftVersus</main>" });
 
     await expect(app.inject("/comparison/left/right")).resolves.toMatchObject({ statusCode: 200, body: "<main>RiftVersus</main>" });
     await expect(app.inject("/comparison/100%25")).resolves.toMatchObject({ statusCode: 200, body: "<main>RiftVersus</main>" });
-    for (const url of ["/api", "/api?preview=1", "/api/not-a-route", "/api/not-a-route?preview=1", "/media", "/media?preview=1", "/media/missing.png", "/media/missing.png?preview=1", "/%61pi/unknown", "/api%2Funknown", "/media%2Fmissing", "/%2561pi/unknown"]) {
+    for (const url of ["/api", "/api?preview=1", "/api/not-a-route", "/api/not-a-route?preview=1", "/media", "/media?preview=1", "/media/missing.png", "/media/missing.png?preview=1", "/avatars", "/avatars?preview=1", "/avatars/not-a-route", "/avatars/not-a-route?preview=1", "/%61pi/unknown", "/api%2Funknown", "/media%2Fmissing", "/%61vatars/unknown", "/avatars%2Funknown", "/%2561pi/unknown", "/%2561vatars/unknown"]) {
       const response = await app.inject(url);
       expect(response.statusCode).toBe(404);
       expect(response.json()).toMatchObject({ error: { code: "NOT_FOUND" } });
     }
+  });
+
+  it("fails closed for deeply and mixed-encoded avatar namespaces", async () => {
+    const { app } = createApp({ staticHtml: "<main>RiftVersus</main>" });
+
+    for (const url of [
+      "/%252561vatars/unknown",
+      "/avatars%25252Funknown",
+      "/%61vatars%25252Funknown",
+      "/%252561vatars%252Funknown",
+    ]) {
+      const response = await app.inject(url);
+      expect(response.statusCode, url).toBe(404);
+      expect(response.json(), url).toMatchObject({ error: { code: "NOT_FOUND" } });
+    }
+
+    await expect(app.inject("/comparison/100%25")).resolves.toMatchObject({
+      statusCode: 200,
+      body: "<main>RiftVersus</main>",
+    });
   });
 
   it("returns a safe validation envelope for malformed URI encoding", async () => {

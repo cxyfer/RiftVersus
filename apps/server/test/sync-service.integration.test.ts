@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { Readable } from "node:stream";
 
@@ -43,7 +45,20 @@ describeWithDatabase("Leaguepedia PostgreSQL fixture composition", () => {
     expect(await count("entities")).toMatchObject({ count: "14" });
     expect(await count("series_facts")).toMatchObject({ count: "1" }); expect(await count("game_facts")).toMatchObject({ count: "5" }); expect(await count("game_players")).toMatchObject({ count: "50" });
     expect(await count("source_objects")).toMatchObject({ count: "1" }); expect(await count("media_objects")).toMatchObject({ count: "1" }); expect(await count("media_assets")).toMatchObject({ count: "1" });
-    expect(await count("coverage_status")).toMatchObject({ count: "1" }); expect(await count("dataset_versions")).toMatchObject({ count: "1" }); expect(await count("override_application_runs")).toMatchObject({ count: "2" });
+    expect(await count("coverage_status")).toMatchObject({ count: "1" }); expect(await count("dataset_versions")).toMatchObject({ count: "1" });
+    const publishingRun = await db.selectFrom("sync_runs").select("id").where("reused_dataset_version_id", "is", null).executeTakeFirstOrThrow();
+    const overrideFiles = ["data/overrides/identities.yaml", "data/overrides/regions.yaml", "data/overrides/tournaments.yaml"];
+    const expectedOverrides = await Promise.all(overrideFiles.map(async (overrideFile) => ({
+      override_file: overrideFile,
+      checksum: `sha256:${createHash("sha256").update(await readFile(`${rootDir}/${overrideFile}`)).digest("hex")}`,
+      sync_run_id: publishingRun.id,
+    })));
+    const recordedOverrides = await db.selectFrom("override_application_runs as link")
+      .innerJoin("override_applications as application", "application.id", "link.override_application_id")
+      .select(["application.override_file", "application.checksum", "link.sync_run_id"])
+      .orderBy("application.override_file")
+      .execute();
+    expect(recordedOverrides).toEqual(expectedOverrides);
     expect(await db.selectFrom("coverage_status").select(["status", "detail"]).executeTakeFirstOrThrow()).toMatchObject({ status: "partial", detail: expect.stringContaining("synthetic fixture is not source coverage") });
     const retained = await db.selectFrom("source_objects").select(["source_url", "object_key"]).executeTakeFirstOrThrow();
     expect(retained.source_url).toBe("https://fixture.riftversus.invalid/dataset/leaguepedia-small");

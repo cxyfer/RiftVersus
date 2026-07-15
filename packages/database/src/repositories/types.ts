@@ -55,6 +55,28 @@ export interface DatasetVersion {
   generation: string;
 }
 
+export interface AcceptanceSourceObjectMetadata {
+  id: string; provider: string; sourceUrl: string; objectKey: string; checksum: string;
+  contentType: string | null; byteSize: string | null; retrievedAt: string; parserVersion: string;
+}
+export interface AcceptanceMediaObjectMetadata { objectKey: string; checksum: string; contentType: string; byteSize: string }
+export interface AcceptanceCoverageEvidence {
+  provider: string;
+  competition: string;
+  seasonYear: number;
+  earliestDate: string | null;
+  latestDate: string | null;
+  status: string;
+}
+export interface AcceptanceDatasetEvidence {
+  dataset: { generation: string; publishedAt: string } | null;
+  coverage: AcceptanceCoverageEvidence[];
+  facts: Array<{
+    kind: "series" | "game"; id: string; seriesId?: string; provider: string;
+    publicationGeneration: string; retiredGeneration: string | null; sourceObjectId: string | null;
+  }>;
+}
+
 export interface BeginSyncRunInput {
   provider: string;
   mode: "sync" | "backfill";

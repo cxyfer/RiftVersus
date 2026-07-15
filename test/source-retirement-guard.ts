@@ -56,7 +56,12 @@ export async function collectActiveSourceViolations(root: string): Promise<Sourc
   const violations: SourceReferenceViolation[] = [];
   for (const logicalPath of await trackedFiles(root)) {
     const absolutePath = resolve(root, logicalPath);
-    const stats = await lstat(absolutePath);
+    let stats: Awaited<ReturnType<typeof lstat>>;
+    try { stats = await lstat(absolutePath); }
+    catch (error) {
+      if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") continue;
+      throw error;
+    }
     if (stats.isSymbolicLink()) {
       violations.push(...classifyTrackedEntry(logicalPath, Buffer.alloc(0), "symlink"));
     } else if (!stats.isFile()) {

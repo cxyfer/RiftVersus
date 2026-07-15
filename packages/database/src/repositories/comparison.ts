@@ -8,8 +8,10 @@ import type { ComparisonQuery, ComparisonResponse, ResolvedSubject, SubjectRef }
 import type { Database } from "../types.js";
 import { getDatasetStatus } from "./dataset.js";
 import { latestPublicationGeneration } from "./publication.js";
+import { presentationImageUrl } from "./presentation.js";
 
 type Side = "a" | "b";
+type PresentedSubject = ResolvedSubject & { mediaUrl: string };
 
 interface CandidateRow {
   id: string;
@@ -63,7 +65,7 @@ function encodeCursor(row: CandidateRow): string {
   return Buffer.from(JSON.stringify({ playedAt: row.played_at.toISOString(), id: row.id })).toString("base64url");
 }
 
-async function resolveSubject(subject: SubjectRef, db: Kysely<Database>): Promise<ResolvedSubject> {
+async function resolveSubject(subject: SubjectRef, db: Kysely<Database>): Promise<PresentedSubject> {
   const row = await db.selectFrom("entities as entity")
     .leftJoin("team_eras as era", (join) => subject.teamEraId === undefined
       ? join.on("era.team_entity_id", "=", subject.id).on("era.id", "=", sql.lit(null))
@@ -86,7 +88,7 @@ async function resolveSubject(subject: SubjectRef, db: Kysely<Database>): Promis
   return {
     kind: subject.kind, id: subject.id, displayName: row.era_label ?? row.canonical_name,
     ...(subject.teamEraId === undefined ? {} : { teamEraId: subject.teamEraId, eraLabel: row.era_label ?? row.canonical_name }),
-    ...(row.media_key === null ? {} : { mediaUrl: `/media/${row.media_key}` }),
+    mediaUrl: presentationImageUrl({ kind: subject.kind, entityId: subject.id, retainedObjectKey: row.media_key }),
   };
 }
 
@@ -114,9 +116,24 @@ export function buildComparisonQueryPlan(query: ComparisonQuery) {
     cursor === null ? sql<boolean>`true` : sql<boolean>`(s.played_at, s.id) < (${cursor.playedAt}::timestamptz, ${cursor.id}::uuid)`,
   ];
   const summaryFilters = filters.slice(0, 8);
-  const candidateSql = sql<CandidateRow>`with candidate_series as (select s.id, s.played_at, s.tournament_id, t.name as tournament_name, t.category, s.best_of, s.side_a_team_id, s.side_a_era_id, s.side_a_region_id, s.side_b_team_id, s.side_b_era_id, s.side_b_region_id, s.side_a_score, s.side_b_score, s.winner_team_id from series_facts s join tournaments t on t.id = s.tournament_id where ${sql.join(filters, sql` and `)}) select * from candidate_series order by played_at desc, id desc limit ${query.limit + 1}`;
-  const summarySql = sql<CandidateRow>`with candidate_series as (select s.id, s.played_at, s.tournament_id, t.name as tournament_name, t.category, s.best_of, s.side_a_team_id, s.side_a_era_id, s.side_a_region_id, s.side_b_team_id, s.side_b_era_id, s.side_b_region_id, s.side_a_score, s.side_b_score, s.winner_team_id from series_facts s join tournaments t on t.id = s.tournament_id where ${sql.join(summaryFilters, sql` and `)}) select * from candidate_series`;
-  const directSql = sql<DirectGameRow>`with candidate_series as (select s.id from series_facts s join tournaments t on t.id = s.tournament_id where ${sql.join(summaryFilters, sql` and `)}), direct_games as (select distinct g.id, g.series_id, g.played_at, g.winner_team_id, case when ${sideMatch(query.left, "g", "a")} and ${sideMatch(query.right, "g", "b")} then g.side_a_team_id else g.side_b_team_id end as left_team_id from game_facts g join candidate_series candidate on candidate.id = g.series_id where g.publication_generation <= ${latestPublicationGeneration} and (g.retired_generation is null or g.retired_generation > ${latestPublicationGeneration}) and ${directAssignment}) select * from direct_games`;
+  if (!requiresDirectGame) {
+    const candidateSql = sql<CandidateRow>`with candidate_series as (select s.id, s.played_at, s.tournament_id, t.name as tournament_name, t.category, s.best_of, s.side_a_team_id, s.side_a_era_id, s.side_a_region_id, s.side_b_team_id, s.side_b_era_id, s.side_b_region_id, s.side_a_score, s.side_b_score, s.winner_team_id from series_facts s join tournaments t on t.id = s.tournament_id where ${sql.join(filters, sql` and `)}) select * from candidate_series order by played_at desc, id desc limit ${query.limit + 1}`;
+    const summarySql = sql<CandidateRow>`with candidate_series as (select s.id, s.played_at, s.tournament_id, t.name as tournament_name, t.category, s.best_of, s.side_a_team_id, s.side_a_era_id, s.side_a_region_id, s.side_b_team_id, s.side_b_era_id, s.side_b_region_id, s.side_a_score, s.side_b_score, s.winner_team_id from series_facts s join tournaments t on t.id = s.tournament_id where ${sql.join(summaryFilters, sql` and `)}) select * from candidate_series`;
+    const directSql = sql<DirectGameRow>`with candidate_series as (select s.id from series_facts s join tournaments t on t.id = s.tournament_id where ${sql.join(summaryFilters, sql` and `)}), direct_games as (select distinct g.id, g.series_id, g.played_at, g.winner_team_id, case when ${sideMatch(query.left, "g", "a")} and ${sideMatch(query.right, "g", "b")} then g.side_a_team_id else g.side_b_team_id end as left_team_id from game_facts g join candidate_series candidate on candidate.id = g.series_id where g.publication_generation <= ${latestPublicationGeneration} and (g.retired_generation is null or g.retired_generation > ${latestPublicationGeneration}) and ${directAssignment}) select * from direct_games`;
+    return { candidateSql, summarySql, directSql };
+  }
+
+  const participantGames = query.left.kind === "player" && query.right.kind === "player"
+    ? sql`select left_player.game_id from game_players left_player join game_players right_player on right_player.game_id = left_player.game_id and right_player.side <> left_player.side where left_player.player_entity_id = ${query.left.id} and right_player.player_entity_id = ${query.right.id}`
+    : query.left.kind === "player"
+      ? sql`select player.game_id from game_players player where player.player_entity_id = ${query.left.id}`
+      : sql`select player.game_id from game_players player where player.player_entity_id = ${query.right.id}`;
+  const playerCandidateFilters = [filters[0]!, ...filters.slice(2)];
+  const playerSummaryFilters = [summaryFilters[0]!, ...summaryFilters.slice(2)];
+  const matchedSeries = sql`select distinct g.series_id from participant_games participant join game_facts g on g.id = participant.game_id where g.publication_generation <= ${latestPublicationGeneration} and (g.retired_generation is null or g.retired_generation > ${latestPublicationGeneration}) and ${directAssignment}`;
+  const candidateSql = sql<CandidateRow>`with participant_games as materialized (${participantGames}), matched_series as materialized (${matchedSeries}), candidate_series as (select s.id, s.played_at, s.tournament_id, t.name as tournament_name, t.category, s.best_of, s.side_a_team_id, s.side_a_era_id, s.side_a_region_id, s.side_b_team_id, s.side_b_era_id, s.side_b_region_id, s.side_a_score, s.side_b_score, s.winner_team_id from matched_series matched join series_facts s on s.id = matched.series_id join tournaments t on t.id = s.tournament_id where ${sql.join(playerCandidateFilters, sql` and `)}) select * from candidate_series order by played_at desc, id desc limit ${query.limit + 1}`;
+  const summarySql = sql<CandidateRow>`with participant_games as materialized (${participantGames}), matched_series as materialized (${matchedSeries}), candidate_series as (select s.id, s.played_at, s.tournament_id, t.name as tournament_name, t.category, s.best_of, s.side_a_team_id, s.side_a_era_id, s.side_a_region_id, s.side_b_team_id, s.side_b_era_id, s.side_b_region_id, s.side_a_score, s.side_b_score, s.winner_team_id from matched_series matched join series_facts s on s.id = matched.series_id join tournaments t on t.id = s.tournament_id where ${sql.join(playerSummaryFilters, sql` and `)}) select * from candidate_series`;
+  const directSql = sql<DirectGameRow>`with participant_games as materialized (${participantGames}), matched_series as materialized (${matchedSeries}), candidate_series as (select s.id from matched_series matched join series_facts s on s.id = matched.series_id join tournaments t on t.id = s.tournament_id where ${sql.join(playerSummaryFilters, sql` and `)}), direct_games as (select distinct g.id, g.series_id, g.played_at, g.winner_team_id, case when ${sideMatch(query.left, "g", "a")} and ${sideMatch(query.right, "g", "b")} then g.side_a_team_id else g.side_b_team_id end as left_team_id from participant_games participant join game_facts g on g.id = participant.game_id join candidate_series candidate on candidate.id = g.series_id where g.publication_generation <= ${latestPublicationGeneration} and (g.retired_generation is null or g.retired_generation > ${latestPublicationGeneration}) and ${directAssignment}) select * from direct_games`;
   return { candidateSql, summarySql, directSql };
 }
 
@@ -190,6 +207,6 @@ export async function compareHeadToHead(query: ComparisonQuery, db: Kysely<Datab
     },
     coverageWarnings: status === null ? [{ code: "NO_PUBLISHED_DATASET", message: "No published dataset is available yet." }]
       : status.coverageStatus.filter((coverage) => coverage.status !== "complete").map((coverage) => ({ code: "PARTIAL_EVENT_COVERAGE", message: `${coverage.provider} ${coverage.competition} ${coverage.seasonYear} coverage is ${coverage.status}.` })),
-    mediaUrls: { left: left.mediaUrl ?? "/media/placeholder.svg", right: right.mediaUrl ?? "/media/placeholder.svg" },
+    mediaUrls: { left: left.mediaUrl, right: right.mediaUrl },
   };
 }

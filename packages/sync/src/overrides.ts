@@ -22,31 +22,44 @@ export interface TournamentOverride {
   reviewedNote: string;
 }
 
+export interface RegionOverride {
+  sourceKey: string;
+  canonicalName: string;
+  canonicalId: string;
+  reviewedNote: string;
+}
+
 export interface ReviewedOverrides {
   identities: ReadonlyMap<string, IdentityOverride>;
   tournaments: ReadonlyMap<string, TournamentOverride>;
+  regions: ReadonlyMap<string, RegionOverride>;
   checksums: Readonly<Record<string, string>>;
 }
 
 export interface OverridePaths {
   identities: string;
   tournaments: string;
-  logicalFiles?: { identities: string; tournaments: string };
+  regions: string;
+  logicalFiles?: { identities: string; tournaments: string; regions: string };
 }
 
 export async function loadOverrides(paths: OverridePaths): Promise<ReviewedOverrides> {
-  const [identitiesText, tournamentsText] = await Promise.all([
+  const [identitiesText, tournamentsText, regionsText] = await Promise.all([
     readFile(paths.identities, "utf8"),
     readFile(paths.tournaments, "utf8"),
+    readFile(paths.regions, "utf8"),
   ]);
   const identities = parseOverrideFile(parse(identitiesText), parseIdentity, "identity");
   const tournaments = parseOverrideFile(parse(tournamentsText), parseTournament, "tournament");
+  const regions = parseOverrideFile(parse(regionsText), parseRegion, "region");
   return {
     identities,
     tournaments,
+    regions,
     checksums: {
       [paths.logicalFiles?.identities ?? paths.identities]: checksum(identitiesText),
       [paths.logicalFiles?.tournaments ?? paths.tournaments]: checksum(tournamentsText),
+      [paths.logicalFiles?.regions ?? paths.regions]: checksum(regionsText),
     },
   };
 }
@@ -89,6 +102,16 @@ function parseTournament(input: unknown): TournamentOverride {
     canonicalId: uuid(rule.canonicalId, "tournament canonicalId"),
     category,
     reviewedNote: requiredString(rule.reviewedNote, "tournament reviewedNote"),
+  };
+}
+
+function parseRegion(input: unknown): RegionOverride {
+  const rule = asRecord(input, "region override");
+  return {
+    sourceKey: requiredString(rule.sourceKey, "region sourceKey"),
+    canonicalName: requiredString(rule.canonicalName, "region canonicalName"),
+    canonicalId: uuid(rule.canonicalId, "region canonicalId"),
+    reviewedNote: requiredString(rule.reviewedNote, "region reviewedNote"),
   };
 }
 

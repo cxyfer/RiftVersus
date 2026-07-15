@@ -6,12 +6,14 @@ import { LeaguepediaApiError, LeaguepediaCargoEnvelopeError } from "./client.js"
 import { LeaguepediaSnapshotError, parseLeaguepediaRawInput } from "./fetch.js";
 import { parseLeaguepediaMedia } from "./media.js";
 import { deriveLeaguepediaCoverage, normalizeLeaguepediaSnapshot } from "./normalize.js";
+import { canonicalJson, encodeLeaguepediaRawInput } from "./serialization.js";
 import type { LeaguepediaRawInput, LeaguepediaSnapshot } from "./types.js";
 
 export { LeaguepediaApiError, LeaguepediaCargoEnvelopeError, LeaguepediaClient, LeaguepediaResourceLimitError } from "./client.js";
 export { fetchAllCargoPages, fetchLeaguepediaRawInput, fetchLeaguepediaSnapshot, LeaguepediaSnapshotError, parseLeaguepediaRawInput } from "./fetch.js";
 export type { LeaguepediaReadClient, SnapshotRequest, SnapshotResourceLimits, SnapshotSliceRequest, TraversedRows } from "./fetch.js";
 export { parseLeaguepediaMedia } from "./media.js";
+export { encodeLeaguepediaRawInput } from "./serialization.js";
 export { deriveLeaguepediaCoverage, normalizeLeaguepediaSnapshot } from "./normalize.js";
 export { loadOverrides } from "../../overrides.js";
 export type * from "./types.js";
@@ -23,7 +25,7 @@ export interface LeaguepediaProviderOptions {
 }
 
 export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): SyncProvider {
-  const parserVersion = options.parserVersion ?? "leaguepedia-v1";
+  const parserVersion = options.parserVersion ?? "leaguepedia-v2";
   return {
     id: "leaguepedia",
     parserVersion,
@@ -50,8 +52,7 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
         if (rawInput.rawEvidence.length > 0) throw retainableRawInputError(error, rawInput);
         throw error;
       }
-      const raw = canonicalJson({ format: "riftversus-leaguepedia-raw-v1", input: rawInput });
-      const bytes = new TextEncoder().encode(raw);
+      const bytes = encodeLeaguepediaRawInput(rawInput);
       const digest = createHash("sha256").update(bytes).digest("hex");
       const overrideFiles = reviewedOverrideFiles(options.overrides.checksums);
       const overrideDigest = createHash("sha256").update(canonicalJson(overrideFiles)).digest("hex");
@@ -74,8 +75,20 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
           earliestDate: dates[0]?.slice(0, 10) ?? null,
           latestDate: dates.at(-1)?.slice(0, 10) ?? null,
         });
-        if (rawInput.provenance.kind !== "synthetic-fixture") return derived;
-        return { ...derived, status: derived.status === "complete" ? "partial" as const : derived.status, detail: `${derived.detail ?? ""} synthetic fixture is not source coverage.`.trim() };
+        const malformedOptionalRows = Math.max(0, ...slices.map((slice) => slice.malformedOptionalRows));
+        const malformedOptionalRowKeys = uniqueStrings(slices.flatMap((slice) => slice.malformedOptionalRowKeys)).slice(0, 10);
+        const excludedOptionalDimensionRows = Math.max(0, ...slices.map((slice) => slice.excludedOptionalDimensionRows));
+        const excludedOptionalDimensionRowKeys = uniqueStrings(slices.flatMap((slice) => slice.excludedOptionalDimensionRowKeys)).slice(0, 10);
+        const outOfScopeForwardRenames = Math.max(0, ...slices.map((slice) => slice.outOfScopeForwardRenames));
+        const outOfScopeForwardRenameSamples = uniqueStrings(slices.flatMap((slice) => slice.outOfScopeForwardRenameSamples)).slice(0, 10);
+        const auditDetails = [
+          malformedOptionalRows === 0 ? "" : `Ignored ${malformedOptionalRows} malformed unreferenced optional dimension rows (samples: ${malformedOptionalRowKeys.join(", ")}); raw evidence retained.`,
+          excludedOptionalDimensionRows === 0 ? "" : `Excluded ${excludedOptionalDimensionRows} valid optional dimension rows not referenced by imported facts or rename closure (samples: ${excludedOptionalDimensionRowKeys.join(", ")}); raw evidence retained.`,
+          outOfScopeForwardRenames === 0 ? "" : `Audited ${outOfScopeForwardRenames} forward renames outside imported fact identity scope (samples: ${outOfScopeForwardRenameSamples.join(", ")}); raw evidence retained.`,
+        ].filter(Boolean).join(" ");
+        const audited = auditDetails === "" ? derived : { ...derived, detail: `${derived.detail ?? ""} ${auditDetails}`.trim() };
+        if (rawInput.provenance.kind !== "synthetic-fixture") return audited;
+        return { ...audited, status: audited.status === "complete" ? "partial" as const : audited.status, detail: `${audited.detail ?? ""} synthetic fixture is not source coverage.`.trim() };
       });
       const publicationScopes = snapshot.slices.map((slice) => {
         const unresolvedRows = unresolvedForSlice(snapshot, normalized, slice);
@@ -107,6 +120,7 @@ function inferredCoverage(snapshot: LeaguepediaSnapshot): { competition: string;
   return uniqueCoverageKeys(snapshot.slices.map(({ competition, seasonYear }) => ({ competition, seasonYear })));
 }
 function uniqueCoverageKeys(items: readonly { competition: string; seasonYear: number }[]): { competition: string; seasonYear: number }[] { return [...new Map(items.map((item) => [JSON.stringify([item.competition, item.seasonYear]), item])).values()]; }
+function uniqueStrings(items: readonly string[]): string[] { return [...new Set(items)]; }
 function unresolvedForSlice(snapshot: LeaguepediaSnapshot, normalized: ReturnType<typeof normalizeLeaguepediaSnapshot>, slice: LeaguepediaSnapshot["slices"][number]): number {
   const gameKeys = new Set(slice.gameSourceKeys);
   const unresolvedGames = new Set([...normalized.quarantineAffectedGameKeys, ...normalized.rosterIncompleteGameKeys].filter((key) => gameKeys.has(key)));
@@ -121,7 +135,7 @@ function unresolvedForSlice(snapshot: LeaguepediaSnapshot, normalized: ReturnTyp
     const numbers = seriesGames.map((game) => game.gameNumber);
     if (expected <= 0 || numbers.length !== expected || new Set(numbers).size !== numbers.length || numbers.some((number) => number < 1 || number > expected) || !Array.from({ length: expected }, (_, index) => index + 1).every((number) => numbers.includes(number))) incompleteSeries += 1;
   }
-  return slice.malformedOptionalRows + unresolvedGames.size + incompleteSeries;
+  return unresolvedGames.size + incompleteSeries;
 }
 function reviewedOverrideFiles(checksums: Readonly<Record<string, string>>): { file: string; checksum: `sha256:${string}` }[] {
   return Object.entries(checksums).map(([file, checksum]) => {
@@ -132,13 +146,6 @@ function reviewedOverrideFiles(checksums: Readonly<Record<string, string>>): { f
 }
 function combineTraversal(items: readonly LeaguepediaSnapshot["traversal"][]): LeaguepediaSnapshot["traversal"] { return { requestedPages: items.reduce((sum, item) => sum + item.requestedPages, 0), visitedPages: items.reduce((sum, item) => sum + item.visitedPages, 0), complete: items.every((item) => item.complete) }; }
 function requireHttps(value: string): string { const url = new URL(value); if (url.protocol !== "https:") throw new Error("Leaguepedia source URL must use HTTPS."); return url.toString(); }
-function canonicalJson(value: unknown): string { return JSON.stringify(sortValue(value)); }
-function sortValue(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(sortValue);
-  if (typeof value !== "object" || value === null) return value;
-  return Object.fromEntries(Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [key, sortValue(item)]));
-}
-
 function validateRawEvidence(snapshot: LeaguepediaSnapshot): void {
   if (snapshot.rawEvidence.length === 0) throw new Error("Leaguepedia snapshot has no immutable raw API evidence.");
   const requestIds = new Set<string>();
@@ -146,7 +153,9 @@ function validateRawEvidence(snapshot: LeaguepediaSnapshot): void {
     if (requestIds.has(item.requestId)) throw new Error(`Duplicate raw evidence requestId: ${item.requestId}.`);
     requestIds.add(item.requestId);
     requireHttps(item.sourceUrl);
-    if (typeof item.response !== "object" || item.response === null || Array.isArray(item.response)) throw new Error(`Raw evidence ${item.requestId} response is invalid.`);
+    const validQuery = item.action === "query" && typeof item.response === "object" && item.response !== null && !Array.isArray(item.response);
+    const validCargo = item.action === "cargoexport" && Array.isArray(item.response);
+    if (!validQuery && !validCargo) throw new Error(`Raw evidence ${item.requestId} response is invalid.`);
   }
   const evidenceRevisions = [...new Set(snapshot.rawEvidence.flatMap((item) => item.revisionIds))].sort((a, b) => a - b);
   const declaredRevisions = [...snapshot.revisionIds].sort((a, b) => a - b);

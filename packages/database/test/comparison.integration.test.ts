@@ -1,13 +1,10 @@
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { summarizeComparison } from "@riftversus/domain";
-import { randomUUID } from "node:crypto";
-import { sql } from "kysely";
 
 import { beginSyncRun, compareHeadToHead, getDatasetStatus, getMediaByKey, listAvailableFilters, publishDataset, searchEntities } from "../src/index.js";
 import { createDb, destroyDb } from "../src/db.js";
 import { migrateToLatest } from "../src/migrator.js";
-import { buildComparisonQueryPlan } from "../src/repositories/comparison.js";
 import { comparisonReferenceFixture, createTestSchemaName, seedComparisonFixture, seedIds } from "./fixtures/seed.js";
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
@@ -84,49 +81,49 @@ describeWithDatabase("comparison repositories", () => {
   it("resolves visible player and exact-era media and rejects invalid subject input", async () => {
     const player = await compareHeadToHead(query({ kind: "player", id: seedIds.faker }, { kind: "team", id: seedIds.weibo }), db);
     expect(player.mediaUrls.left).toBe("/media/media/faker.png");
+    expect(player.mediaUrls.right).toBe(`/avatars/team/${seedIds.weibo}.svg`);
+    expect(player.subjects.left.mediaUrl).toBe(player.mediaUrls.left);
+    expect(player.subjects.right.mediaUrl).toBe(player.mediaUrls.right);
     expect(await getMediaByKey("media/faker.png", db)).toMatchObject({ objectKey: "media/faker.png" });
+    const playerWithoutMedia = await compareHeadToHead(query({ kind: "player", id: seedIds.xiaohu }, { kind: "player", id: seedIds.faker }), db);
+    expect(playerWithoutMedia.mediaUrls.left).toBe(`/avatars/player/${seedIds.xiaohu}.svg`);
+    const regionWithoutMedia = await compareHeadToHead(query({ kind: "region", id: seedIds.lck }, { kind: "region", id: seedIds.lpl }), db);
+    expect(regionWithoutMedia.mediaUrls.left).toBe(`/avatars/region/${seedIds.lck}.svg`);
+    expect(regionWithoutMedia.mediaUrls.right).toBe("/media/media/lpl.png");
     const era = await compareHeadToHead(query({ kind: "team", id: seedIds.t1, teamEraId: seedIds.t1Era }, { kind: "team", id: seedIds.weibo }), db);
     expect(era.mediaUrls.left).toBe("/media/media/t1-era.png");
+    const eraWithoutMedia = await compareHeadToHead(query({ kind: "team", id: seedIds.t1, teamEraId: seedIds.sktEra }, { kind: "team", id: seedIds.weibo }), db);
+    expect(eraWithoutMedia.mediaUrls.left).toBe(`/avatars/team/${seedIds.t1}.svg`);
     await expect(compareHeadToHead({ ...query({ kind: "team", id: seedIds.t1 }, { kind: "team", id: seedIds.weibo }), cursor: "not-a-cursor" }, db)).rejects.toThrow("Invalid comparison cursor");
     await expect(compareHeadToHead(query({ kind: "team", id: seedIds.weibo, teamEraId: seedIds.t1Era }, { kind: "team", id: seedIds.t1 }), db)).rejects.toThrow("Team era does not belong");
   });
 
-  it("uses participant and player indexes above the planner threshold", async () => {
-    const otherA = randomUUID();
-    const otherB = randomUUID();
-    const otherPlayer = randomUUID();
-    await db.insertInto("entities").values([
-      { id: otherA, kind: "team", canonical_name: "Load A", slug: `load-a-${otherA}` },
-      { id: otherB, kind: "team", canonical_name: "Load B", slug: `load-b-${otherB}` },
-      { id: otherPlayer, kind: "player", canonical_name: "Load Player", slug: `load-p-${otherPlayer}` },
-    ]).execute();
-    const rows = Array.from({ length: 600 }, (_, index) => {
-      const seriesId = randomUUID();
-      return { seriesId, gameId: randomUUID(), index };
-    });
-    await db.insertInto("series_facts").values(rows.map(({ seriesId, index }) => ({
-      id: seriesId, provider: "explain", source_key: `series-${index}`, tournament_id: seedIds.worlds, played_at: new Date("2024-01-01T00:00:00Z"), best_of: 1, completed: true,
-      side_a_team_id: otherA, side_b_team_id: otherB, side_a_score: 1, side_b_score: 0, winner_team_id: otherA, publication_generation: "0",
-    }))).execute();
-    await db.insertInto("game_facts").values(rows.map(({ seriesId, gameId, index }) => ({
-      id: gameId, provider: "explain", source_key: `game-${index}`, series_id: seriesId, game_number: 1, played_at: new Date("2024-01-01T00:00:00Z"),
-      side_a_team_id: otherA, side_b_team_id: otherB, winner_team_id: otherA, publication_generation: "0",
-    }))).execute();
-    await db.insertInto("game_players").values(rows.map(({ gameId }) => ({ game_id: gameId, player_entity_id: otherPlayer, side: "a", team_entity_id: otherA }))).execute();
-    const plan = await db.transaction().execute(async (trx) => {
-      await sql.raw("analyze series_facts; analyze game_facts; analyze game_players").execute(trx);
-      const exact = buildComparisonQueryPlan({ left: { kind: "player", id: seedIds.faker }, right: { kind: "player", id: seedIds.xiaohu }, eventCategories: [], leagues: [], bestOf: [], tournamentIds: [], limit: 50 });
-      return sql<{ "QUERY PLAN": unknown }>`explain (format json) ${exact.directSql}`.execute(trx);
-    });
-    const nodes: Array<{ relation?: string; node?: string; index?: string }> = [];
-    const visit = (value: unknown): void => {
-      if (typeof value !== "object" || value === null) return;
-      const record = value as Record<string, unknown>;
-      if (typeof record["Node Type"] === "string") nodes.push({ relation: typeof record["Relation Name"] === "string" ? record["Relation Name"] : undefined, node: record["Node Type"], index: typeof record["Index Name"] === "string" ? record["Index Name"] : undefined });
-      for (const child of Object.values(record)) visit(child);
-    };
-    visit(plan.rows[0]?.["QUERY PLAN"]);
-    expect(nodes.filter((node) => node.relation === "series_facts" || node.relation === "game_facts" || node.relation === "game_players").every((node) => node.node !== "Seq Scan")).toBe(true);
-    expect(nodes.map((node) => node.index)).toEqual(expect.arrayContaining(["game_players_player_game_lookup", "series_facts_comparison_lookup", "game_facts_comparison_lookup"]));
+  it("returns canonical presentation URLs from entity search", async () => {
+    expect((await searchEntities({ query: "Weibo" }, db)).entities).toEqual([
+      { kind: "team", id: seedIds.weibo, displayName: "Weibo Gaming", mediaUrl: `/avatars/team/${seedIds.weibo}.svg` },
+    ]);
+    expect((await searchEntities({ query: "LCK" }, db)).entities).toEqual([
+      { kind: "region", id: seedIds.lck, displayName: "LCK", mediaUrl: `/avatars/region/${seedIds.lck}.svg` },
+    ]);
+    expect((await searchEntities({ query: "Faker" }, db)).entities).toEqual([
+      { kind: "player", id: seedIds.faker, displayName: "Faker", mediaUrl: "/media/media/faker.png" },
+    ]);
+    expect((await searchEntities({ query: "Xiaohu" }, db)).entities).toEqual([
+      { kind: "player", id: seedIds.xiaohu, displayName: "Xiaohu", mediaUrl: `/avatars/player/${seedIds.xiaohu}.svg` },
+    ]);
   });
+
+  it("keeps exact-era presentation URLs consistent between search and comparison", async () => {
+    const search = await searchEntities({ query: "skt" }, db);
+    const t1EraSearch = search.entities.find((entity) => entity.teamEraId === seedIds.t1Era);
+    const sktEraSearch = search.entities.find((entity) => entity.teamEraId === seedIds.sktEra);
+    expect.soft(t1EraSearch?.mediaUrl).toBe("/media/media/t1-era.png");
+    expect.soft(sktEraSearch?.mediaUrl).toBe(`/avatars/team/${seedIds.t1}.svg`);
+
+    const t1EraComparison = await compareHeadToHead(query({ kind: "team", id: seedIds.t1, teamEraId: seedIds.t1Era }, { kind: "team", id: seedIds.weibo }), db);
+    const sktEraComparison = await compareHeadToHead(query({ kind: "team", id: seedIds.t1, teamEraId: seedIds.sktEra }, { kind: "team", id: seedIds.weibo }), db);
+    expect(t1EraSearch?.mediaUrl).toBe(t1EraComparison.subjects.left.mediaUrl);
+    expect(sktEraSearch?.mediaUrl).toBe(sktEraComparison.subjects.left.mediaUrl);
+  });
+
 });

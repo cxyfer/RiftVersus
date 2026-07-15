@@ -43,16 +43,41 @@ describe("loadConfig", () => {
       leaguepediaEndpoint: leaguepediaEnvironment.LEAGUEPEDIA_ENDPOINT,
       leaguepediaUserAgent: leaguepediaEnvironment.LEAGUEPEDIA_USER_AGENT,
       mediaDelivery: "proxy",
+      s3AutoCreateBucket: false,
+      leaguepedia: { requestIntervalMs: 1_000, resourceLimits: { maxReviewedPages: 5_000 } },
       s3: undefined,
     });
+  });
+
+  it("allows bucket creation only for an explicitly local S3 endpoint", () => {
+    const local = {
+      DATABASE_URL: databaseUrl,
+      ...leaguepediaEnvironment,
+      S3_ENDPOINT: "http://minio:9000",
+      S3_REGION: "us-east-1",
+      S3_BUCKET: "riftversus",
+      S3_ACCESS_KEY_ID: "local-access",
+      S3_SECRET_ACCESS_KEY: "local-secret",
+      S3_FORCE_PATH_STYLE: "true",
+      S3_AUTO_CREATE_BUCKET: "true",
+    } as const;
+    expect(loadConfig(local).s3AutoCreateBucket).toBe(true);
+    expect(() => loadConfig({ ...local, S3_ENDPOINT: "https://objects.acme.org" })).toThrow(/auto.*local/i);
   });
 
   it("validates bounded Leaguepedia sync settings", () => {
     expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_ENDPOINT: "http://leaguepedia.acme.org/api.php" })).toThrow(/endpoint/i);
     expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_SYNC_YEARS: "" })).toThrow();
-    const config = loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_SYNC_YEARS: "2023,2024", LEAGUEPEDIA_SYNC_COMPETITIONS: "Worlds,MSI", LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":{"2023":"2023 Season World Championship","2024":"2024 Season World Championship"},"MSI":{"2023":"2023 Mid-Season Invitational","2024":"2024 Mid-Season Invitational"}}', LEAGUEPEDIA_MEDIA_HOSTS: "static.acme.org,images.acme.org" });
+    const config = loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_SYNC_YEARS: "2023,2024", LEAGUEPEDIA_SYNC_COMPETITIONS: "Worlds,MSI", LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":{"2023":"Worlds 2023 Main Event","2024":"Worlds 2024 Main Event"},"MSI":{"2023":"2023 Mid-Season Invitational","2024":"2024 Mid-Season Invitational"}}', LEAGUEPEDIA_MEDIA_HOSTS: "static.acme.org,images.acme.org" });
     expect(config.leaguepedia).toMatchObject({ syncYears: [2023, 2024], syncCompetitions: ["Worlds", "MSI"], mediaHosts: ["static.acme.org", "images.acme.org"] });
-    expect(config.leaguepedia.competitionMap.Worlds).toEqual({ "2023": "2023 Season World Championship", "2024": "2024 Season World Championship" });
+    expect(loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_MAX_REVIEWED_PAGES: "123" }).leaguepedia.resourceLimits.maxReviewedPages).toBe(123);
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_MAX_REVIEWED_PAGES: "0" })).toThrow();
+    expect(exampleEnvironmentValue("LEAGUEPEDIA_MAX_REVIEWED_PAGES")).toBe("5000");
+    expect(loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_REQUEST_INTERVAL_MS: "2500" }).leaguepedia.requestIntervalMs).toBe(2_500);
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_REQUEST_INTERVAL_MS: "999" })).toThrow();
+    expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_REQUEST_INTERVAL_MS: "60001" })).toThrow();
+    expect(exampleEnvironmentValue("LEAGUEPEDIA_REQUEST_INTERVAL_MS")).toBe("1000");
+    expect(config.leaguepedia.competitionMap.Worlds).toEqual({ "2023": "Worlds 2023 Main Event", "2024": "Worlds 2024 Main Event" });
     expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":"2024 Season World Championship"}' })).toThrow(/logical competition.*year/i);
   });
 

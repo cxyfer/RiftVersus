@@ -1,9 +1,12 @@
 import { createHash } from "node:crypto";
 
-import type { CargoPage, GamePlayersPageInput, GamesPageInput, LeaguepediaClientOptions, OffsetInput, QueryEvidenceResult, RawApiEvidence } from "./types.js";
+import { decodeCargoExportRows } from "./cargo-export.js";
+import type { CargoPage, GamePlayersPageInput, GamesPageInput, LeaguepediaCargoTable, LeaguepediaClientOptions, MatchSchedulesPageInput, OffsetInput, QueryEvidenceResult, RawApiEvidence } from "./types.js";
 
 const CARGO_LIMIT = 500;
 const MAX_RETRY_AFTER_MS = 30_000;
+const DEFAULT_REQUEST_INTERVAL_MS = 1_000;
+const MAX_REQUEST_INTERVAL_MS = 60_000;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export class LeaguepediaClient {
@@ -12,9 +15,12 @@ export class LeaguepediaClient {
   readonly #fetch: typeof fetch;
   readonly #timeoutMs: number;
   readonly #maxRetries: number;
+  readonly #requestIntervalMs: number;
   readonly #sleep: (milliseconds: number) => Promise<void>;
   readonly #now: () => number;
   readonly #maxResponseBytes: number;
+  #requestStartQueue: Promise<void> = Promise.resolve();
+  #nextRequestStartAt = 0;
 
   constructor(options: LeaguepediaClientOptions) {
     const endpoint = new URL(options.endpoint);
@@ -25,6 +31,8 @@ export class LeaguepediaClient {
     this.#fetch = options.fetch ?? globalThis.fetch;
     this.#timeoutMs = positiveInteger(options.timeoutMs ?? 10_000, "timeoutMs");
     this.#maxRetries = nonNegativeInteger(options.maxRetries ?? 2, "maxRetries");
+    this.#requestIntervalMs = nonNegativeInteger(options.requestIntervalMs ?? DEFAULT_REQUEST_INTERVAL_MS, "requestIntervalMs");
+    if (this.#requestIntervalMs > MAX_REQUEST_INTERVAL_MS) throw new Error(`requestIntervalMs must not exceed ${MAX_REQUEST_INTERVAL_MS}.`);
     this.#sleep = options.sleep ?? (async (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)));
     this.#now = options.now ?? Date.now;
     this.#maxResponseBytes = positiveInteger(options.maxResponseBytes ?? 5_000_000, "maxResponseBytes");
@@ -35,8 +43,16 @@ export class LeaguepediaClient {
   }
 
   async fetchKnownPage(title: string): Promise<Record<string, unknown>> {
-    if (!title.trim() || title.includes("|")) throw new Error("Leaguepedia page title is invalid.");
-    return (await this.#request({ action: "query", prop: "info|revisions", rvprop: "ids|timestamp", titles: title.trim() })).body;
+    return (await this.fetchKnownPagesWithEvidence([title])).data;
+  }
+
+  async fetchKnownPagesWithEvidence(titles: readonly string[]): Promise<QueryEvidenceResult> {
+    if (titles.length === 0 || titles.length > 50 || new Set(titles).size !== titles.length
+      || titles.some((title) => !title.trim() || title !== title.trim() || title.includes("|"))) {
+      throw new Error("Leaguepedia known-page query requires 1 to 50 unique safe titles.");
+    }
+    const result = await this.#request({ action: "query", prop: "info|revisions", rvprop: "ids|timestamp", titles: titles.join("|") });
+    return { data: result.body, rawEvidence: [toRawEvidence(result, { action: "query" })] };
   }
 
   async fetchImageInfo(titles: readonly string[]): Promise<Record<string, unknown>> {
@@ -49,31 +65,43 @@ export class LeaguepediaClient {
   }
 
   fetchTeamsPage(input: OffsetInput): Promise<CargoPage> {
-    return this.#cargo("Teams", "OverviewPage,Name,Aliases,Region,DateStart,DateEnd,Image", "OverviewPage ASC", input.offset);
+    return this.#cargo("Teams", "OverviewPage,Name,Short,Region,OrganizationPage,Image,RenamedTo", "OverviewPage ASC", input.offset);
+  }
+  fetchTeamRedirectsPage(input: OffsetInput): Promise<CargoPage> {
+    return this.#cargo("TeamRedirects", "_pageName,AllName", "_pageName ASC,AllName ASC", input.offset);
   }
   fetchPlayersPage(input: OffsetInput): Promise<CargoPage> {
-    return this.#cargo("Players", "OverviewPage,ID,Name,Aliases,Team,DateStart,DateEnd,Image", "OverviewPage ASC", input.offset);
+    return this.#cargo("Players", "OverviewPage,ID,Name,Player,Team,Image", "OverviewPage ASC", input.offset);
+  }
+  fetchPlayerRedirectsPage(input: OffsetInput): Promise<CargoPage> {
+    return this.#cargo("PlayerRedirects", "OverviewPage,ID,AllName", "OverviewPage ASC,AllName ASC", input.offset);
   }
   fetchTournamentsPage(input: OffsetInput): Promise<CargoPage> {
-    return this.#cargo("Tournaments", "OverviewPage,Name,Region,DateStart,DateEnd", "DateStart ASC,OverviewPage ASC", input.offset);
+    return this.#cargo("Tournaments", "OverviewPage,Name,Region,DateStart,StandardName,BasePage,AlternativeNames", "DateStart ASC,OverviewPage ASC", input.offset);
+  }
+  fetchMatchSchedulesPage(input: MatchSchedulesPageInput): Promise<CargoPage> {
+    if (input.matchIds.length === 0 || input.matchIds.length > 100 || input.matchIds.some((id) => !id.trim())) throw new Error("Leaguepedia match schedule request requires 1 to 100 match IDs.");
+    return this.#cargo("MatchSchedule", "UniqueMatch,MatchId,OverviewPage,DateTime_UTC=DateTimeUTC,Team1,Team2,Team1Score,Team2Score,Winner,BestOf", "DateTime_UTC ASC,MatchId ASC", input.offset, `MatchId IN (${input.matchIds.map(cargoLiteral).join(",")})`);
   }
   fetchGamesPage(input: GamesPageInput): Promise<CargoPage> {
     if (!DATE.test(input.from) || !DATE.test(input.to)) throw new Error("Leaguepedia game range dates must be YYYY-MM-DD.");
     if (input.competitions.length === 0 || input.competitions.length > 50) throw new Error("Leaguepedia game request requires bounded competitions.");
     const where = `DateTime_UTC >= '${input.from}' AND DateTime_UTC < '${input.to}' AND Tournament IN (${input.competitions.map(cargoLiteral).join(",")})`;
-    return this.#cargo("ScoreboardGames", "GameId,MatchId,MatchHistory,Tournament,DateTime_UTC,BestOf,N_GameInMatch,Team1,Team2,Team1Score,Team2Score,Winner", "DateTime_UTC ASC,GameId ASC", input.offset, where);
+    return this.#cargo("ScoreboardGames", "GameId,MatchId,Tournament,DateTime_UTC=DateTimeUTC,N_GameInMatch=GameNumber,Team1,Team2,Winner", "DateTime_UTC ASC,GameId ASC", input.offset, where);
   }
   fetchGamePlayersPage(input: GamePlayersPageInput): Promise<CargoPage> {
     if (input.gameIds.length === 0 || input.gameIds.length > 100 || input.gameIds.some((id) => !id.trim())) throw new Error("Leaguepedia player request requires 1 to 100 game IDs.");
-    return this.#cargo("ScoreboardPlayers", "GameId,PlayerWin,PlayerName,Team", "GameId ASC,PlayerName ASC", input.offset, `GameId IN (${input.gameIds.map(cargoLiteral).join(",")})`);
+    return this.#cargo("ScoreboardPlayers", "GameId,PlayerWin,Name=PlayerDisplayName,Link=PlayerKey,Team", "GameId ASC,Link ASC", input.offset, `GameId IN (${input.gameIds.map(cargoLiteral).join(",")})`);
   }
 
-  async #cargo(table: "Teams" | "Players" | "Tournaments" | "ScoreboardGames" | "ScoreboardPlayers", fields: string, orderBy: string, offset: number, where?: string): Promise<CargoPage> {
+  async #cargo(table: LeaguepediaCargoTable, fields: string, orderBy: string, offset: number, where?: string): Promise<CargoPage> {
     nonNegativeInteger(offset, "offset");
-    const result = await this.#request({ action: "cargoquery", tables: table, fields, order_by: orderBy, limit: String(CARGO_LIMIT), offset: String(offset), ...(where === undefined ? {} : { where }) });
-    const rawEvidence = toRawEvidence(result, { action: "cargoquery", table, offset });
+    const url = new URL("/wiki/Special:CargoExport", this.#endpoint);
+    url.search = new URLSearchParams({ tables: table, fields, order_by: orderBy, limit: String(CARGO_LIMIT), offset: String(offset), format: "json", ...(where === undefined ? {} : { where }) }).toString();
+    const result = await this.#requestUrl(url, "cargoexport");
+    const rawEvidence = toRawEvidence(result, { action: "cargoexport", table, offset });
     try {
-      return { rows: cargoRows(result.body), offset, rawEvidence };
+      return { rows: decodeCargoExportRows(table, result.body), offset, rawEvidence };
     } catch (error) {
       const reason = error instanceof Error ? error : new Error(String(error));
       throw new LeaguepediaCargoEnvelopeError(reason.message, rawEvidence, { cause: reason });
@@ -100,13 +128,20 @@ export class LeaguepediaClient {
     throw new Error("Leaguepedia query exceeded the continuation page limit.");
   }
 
-  async #request(parameters: Readonly<Record<string, string>>): Promise<RequestResult> {
+  async #request(parameters: Readonly<Record<string, string>>): Promise<QueryRequestResult> {
     const action = parameters.action;
-    if (action !== "query" && action !== "cargoquery") throw new Error("Unsupported Leaguepedia action.");
+    if (action !== "query") throw new Error("Unsupported Leaguepedia action.");
     const url = new URL(this.#endpoint);
     url.search = new URLSearchParams({ ...parameters, action, format: "json", formatversion: "2" }).toString();
+    const result = await this.#requestUrl(url, action);
+    if (!isRecord(result.body)) throw new Error("Leaguepedia response must be a JSON object.");
+    return { ...result, body: result.body };
+  }
+
+  async #requestUrl(url: URL, action: "query" | "cargoexport"): Promise<RequestResult> {
     let lastError: Error | undefined;
     for (let attempt = 0; attempt <= this.#maxRetries; attempt += 1) {
+      await this.#paceRequestStart();
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), this.#timeoutMs);
       try {
@@ -116,20 +151,22 @@ export class LeaguepediaClient {
           const error = new Error(`Leaguepedia ${action} request failed (${response.status}).`);
           if (!retryableStatus(response.status) || attempt === this.#maxRetries) throw error;
           lastError = error;
-          await this.#sleep(retryDelay(response.headers.get("Retry-After"), attempt, this.#now()));
+          await this.#sleep(retryDelay(response.headers.get("Retry-After"), attempt, this.#now(), response.status === 429 ? MAX_RETRY_AFTER_MS : undefined));
           continue;
         }
         const decoded = await readJsonBounded(response, this.#maxResponseBytes, url.toString());
         const body: unknown = decoded.body;
-        if (!isRecord(body)) throw new Error("Leaguepedia response must be a JSON object.");
-        if (isRecord(body.error)) {
+        if (action === "query" && !isRecord(body)) throw new Error("Leaguepedia response must be a JSON object.");
+        if (action === "query" && isRecord(body) && isRecord(body.error)) {
           const code = typeof body.error.code === "string" ? body.error.code : "unknown";
           const result = { body, url: url.toString(), responseBytes: decoded.responseBytes };
           const apiError = new LeaguepediaApiError(code, toRawEvidence(result, { action }));
           if ((code === "ratelimited" || code === "maxlag") && attempt < this.#maxRetries) {
             lastError = apiError;
-            const apiDelay = numberField(body.error["retry-after"]) ?? numberField(body.error.lag);
-            await this.#sleep(response.headers.has("Retry-After") ? retryDelay(response.headers.get("Retry-After"), attempt, this.#now()) : Math.min((apiDelay ?? 0.1 * 2 ** attempt) * 1000, MAX_RETRY_AFTER_MS));
+            const retryAfterHeader = response.headers.get("Retry-After");
+            const apiDelay = code === "ratelimited" ? numberField(body.error["retry-after"]) : numberField(body.error.lag);
+            if (code === "ratelimited" && retryAfterHeader === null && apiDelay === null) throw apiError;
+            await this.#sleep(retryAfterHeader !== null ? retryDelay(retryAfterHeader, attempt, this.#now()) : Math.min((apiDelay ?? 0.1 * 2 ** attempt) * 1000, MAX_RETRY_AFTER_MS));
             continue;
           }
           throw apiError;
@@ -146,6 +183,21 @@ export class LeaguepediaClient {
     }
     throw lastError ?? new Error("Leaguepedia request failed.");
   }
+
+  async #paceRequestStart(): Promise<void> {
+    let release: () => void = () => undefined;
+    const previous = this.#requestStartQueue;
+    this.#requestStartQueue = new Promise<void>((resolve) => { release = resolve; });
+    await previous;
+    try {
+      const waitMs = Math.max(this.#nextRequestStartAt - this.#now(), 0);
+      if (waitMs > 0) await this.#sleep(waitMs);
+      const startedAt = this.#now();
+      this.#nextRequestStartAt = Math.max(this.#nextRequestStartAt, startedAt) + this.#requestIntervalMs;
+    } finally {
+      release();
+    }
+  }
 }
 
 export class LeaguepediaCargoEnvelopeError extends Error {
@@ -155,13 +207,14 @@ export class LeaguepediaCargoEnvelopeError extends Error {
   }
 }
 export class LeaguepediaApiError extends Error {
-  constructor(readonly code: string, readonly rawEvidence: RawApiEvidence) { super(`Leaguepedia API error: ${code}.`); this.name = "LeaguepediaApiError"; }
+  constructor(readonly code: string, readonly rawEvidence: RawApiEvidence) { super(code === "ratelimited" ? "Leaguepedia API rate limited the request; retry the sync later." : `Leaguepedia API error: ${code}.`); this.name = "LeaguepediaApiError"; }
 }
 export class LeaguepediaResourceLimitError extends Error { constructor(readonly sourceUrl: string, readonly limit: number) { super(`Leaguepedia response exceeds the ${limit} byte limit.`); this.name = "LeaguepediaResourceLimitError"; } }
 
-interface RequestResult { body: Record<string, unknown>; url: string; responseBytes: number }
+interface RequestResult { body: unknown; url: string; responseBytes: number }
+interface QueryRequestResult extends RequestResult { body: Record<string, unknown> }
 
-function toRawEvidence(result: RequestResult, request: { action: "query" | "cargoquery"; table?: CargoPage["rawEvidence"]["table"]; offset?: number; continuation?: Readonly<Record<string, string>> }): RawApiEvidence {
+function toRawEvidence(result: RequestResult, request: { action: "query" | "cargoexport"; table?: CargoPage["rawEvidence"]["table"]; offset?: number; continuation?: Readonly<Record<string, string>> }): RawApiEvidence {
   const digest = createHash("sha256").update(result.url).digest("hex").slice(0, 16);
   return {
     requestId: `${request.action}:${request.table ?? "mediawiki"}:${request.offset ?? 0}:${digest}`,
@@ -176,14 +229,6 @@ function toRawEvidence(result: RequestResult, request: { action: "query" | "carg
   };
 }
 
-function cargoRows(body: Record<string, unknown>): Record<string, unknown>[] {
-  if (!Array.isArray(body.cargoquery)) throw new Error("Leaguepedia Cargo response must contain a cargoquery array.");
-  return body.cargoquery.map((item, index) => {
-    if (!isRecord(item)) throw new Error(`Leaguepedia Cargo item ${index} must be an object.`);
-    if (!isRecord(item.title)) throw new Error(`Leaguepedia Cargo item ${index} title must be an object.`);
-    return item.title;
-  });
-}
 function cargoLiteral(value: string): string {
   const trimmed = value.trim();
   if (!trimmed || [...trimmed].some((character) => (character.codePointAt(0) ?? 0) < 32)) throw new Error("Unsafe Leaguepedia Cargo value.");
@@ -191,13 +236,13 @@ function cargoLiteral(value: string): string {
 }
 function retryableStatus(status: number): boolean { return status === 429 || status >= 500; }
 function retryableError(error: Error): boolean { return error.name === "AbortError" || error instanceof TypeError; }
-function retryDelay(header: string | null, attempt: number, now: number): number {
+function retryDelay(header: string | null, attempt: number, now: number, fallbackMs = 100 * 2 ** attempt): number {
   if (header !== null && /^\d+$/.test(header)) return Math.min(Number(header) * 1000, MAX_RETRY_AFTER_MS);
   if (header !== null) {
     const date = Date.parse(header);
     if (!Number.isNaN(date)) return Math.min(Math.max(date - now, 0), MAX_RETRY_AFTER_MS);
   }
-  return 100 * 2 ** attempt;
+  return fallbackMs;
 }
 async function readJsonBounded(response: Response, maxBytes: number, sourceUrl: string): Promise<{ body: unknown; responseBytes: number }> { const bytes = await readBounded(response, maxBytes, sourceUrl); return { body: JSON.parse(new TextDecoder().decode(bytes)) as unknown, responseBytes: bytes.byteLength }; }
 async function consumeBounded(response: Response, maxBytes: number, sourceUrl: string): Promise<void> { try { await readBounded(response, maxBytes, sourceUrl); } catch { await response.body?.cancel().catch(() => undefined); } }

@@ -15,8 +15,9 @@ const config = loadConfig({
 });
 
 function dependencies(): CommandDependencies {
+  const close = vi.fn(async () => undefined);
   return {
-    startServer: vi.fn(async () => undefined), migrate: vi.fn(async () => undefined), objectStore: vi.fn(() => store),
+    startServer: vi.fn(async () => ({ close })), migrate: vi.fn(async () => undefined), objectStore: vi.fn(async () => store),
     execute: vi.fn(async () => ({ status: "published" as const, version: "fixture-v1" })),
     schedule: vi.fn((options) => { void options.run(); return { running: false, stop: vi.fn() }; }),
     waitForShutdown: vi.fn(async () => undefined), log: vi.fn(), error: vi.fn(),
@@ -30,11 +31,25 @@ describe("executeCommand", () => {
     expect(deps.startServer).toHaveBeenCalledOnce();
     expect(deps.schedule).not.toHaveBeenCalled();
     expect(deps.execute).not.toHaveBeenCalled();
+    expect(deps.objectStore).not.toHaveBeenCalled();
+    expect(deps.waitForShutdown).toHaveBeenCalledOnce();
+    const server = await (deps.startServer as ReturnType<typeof vi.fn>).mock.results[0]!.value as { close: ReturnType<typeof vi.fn> };
+    expect(server.close).toHaveBeenCalledOnce();
+  });
+
+  it("runs migrations without touching object storage or the scheduler", async () => {
+    const deps = dependencies();
+    await executeCommand({ kind: "migrate" }, config, deps);
+    expect(deps.migrate).toHaveBeenCalledOnce();
+    expect(deps.objectStore).not.toHaveBeenCalled();
+    expect(deps.schedule).not.toHaveBeenCalled();
+    expect(deps.waitForShutdown).not.toHaveBeenCalled();
   });
 
   it("routes the reviewed fixture through the shared runSync composition", async () => {
     const deps = dependencies();
     await executeCommand({ kind: "sync-once", fixture: "leaguepedia-small" }, config, deps);
+    expect(deps.objectStore).toHaveBeenCalledWith(config);
     expect(deps.execute).toHaveBeenCalledWith({ config, objectStore: store, request: { mode: "sync-once" }, fixture: "leaguepedia-small" });
     expect(deps.log).toHaveBeenCalledWith(JSON.stringify({ status: "published", version: "fixture-v1" }));
   });

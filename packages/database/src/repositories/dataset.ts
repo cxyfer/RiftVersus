@@ -1,4 +1,5 @@
 import type { Kysely } from "kysely";
+import { DateSchema } from "@riftversus/contracts";
 
 import type { Database } from "../types.js";
 import type { DatasetStatus } from "./types.js";
@@ -16,12 +17,18 @@ export async function getDatasetStatus(db: Kysely<Database>): Promise<DatasetSta
     .where("dataset_version_id", "=", version.id)
     .orderBy("provider").orderBy("competition").orderBy("season_year")
     .execute();
-  const dates = coverage.flatMap((item) => [item.earliest_date, item.latest_date].filter((date): date is string => date !== null));
+  const normalizedCoverage = coverage.map((item) => ({
+    ...item,
+    earliest_date: item.earliest_date === null ? null : DateSchema.parse(item.earliest_date),
+    latest_date: item.latest_date === null ? null : DateSchema.parse(item.latest_date),
+  }));
+  const dates = normalizedCoverage.flatMap((item) => [item.earliest_date, item.latest_date].filter((date): date is string => date !== null));
+  const sortedDates = [...dates].sort();
   return {
     version: version.version,
     lastSuccessfulSyncAt: (version.finished_at ?? version.published_at).toISOString(),
-    coverage: { from: dates.sort()[0] ?? "1970-01-01", to: dates.sort().at(-1) ?? "1970-01-01" },
-    coverageStatus: coverage.map((item) => ({
+    coverage: { from: sortedDates[0] ?? "1970-01-01", to: sortedDates.at(-1) ?? "1970-01-01" },
+    coverageStatus: normalizedCoverage.map((item) => ({
       provider: item.provider, competition: item.competition, seasonYear: item.season_year,
       earliestDate: item.earliest_date, latestDate: item.latest_date,
       status: item.status as "complete" | "partial" | "missing", detail: item.detail,

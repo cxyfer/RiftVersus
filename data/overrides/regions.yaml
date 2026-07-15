@@ -1,0 +1,10 @@
+version: 1
+rules:
+  - sourceKey: China
+    canonicalName: LPL
+    canonicalId: 33333333-3333-5333-8333-333333333333
+    reviewedNote: Leaguepedia source region China maps to the LPL esports region.
+  - sourceKey: Korea
+    canonicalName: LCK
+    canonicalId: 44444444-4444-5444-8444-444444444444
+    reviewedNote: Leaguepedia source region Korea maps to the LCK esports region.

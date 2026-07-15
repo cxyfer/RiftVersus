@@ -1,5 +1,5 @@
 import { compareHeadToHead, createDb, destroyDb, getDatasetStatus, getMediaByKey, listAvailableFilters, migrateToLatest, searchEntities } from "@riftversus/database";
-import { scheduleSync } from "@riftversus/sync";
+import { bootstrapS3Bucket, scheduleSync } from "@riftversus/sync";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -35,9 +35,10 @@ async function migrate(config: Config) {
   finally { await destroyDb(db); }
 }
 
-function requiredObjectStore(config: Config) {
+async function requiredObjectStore(config: Config) {
   const store = createConfiguredObjectStore(config);
   if (store === undefined) throw new Error("sync and backfill require complete S3 configuration.");
+  await bootstrapS3Bucket(config.s3!, config.s3AutoCreateBucket);
   return store;
 }
 
@@ -55,7 +56,7 @@ export async function runCli(argv: readonly string[], environment: Record<string
 }
 
 export interface CommandDependencies {
-  startServer(config: Config): Promise<unknown>;
+  startServer(config: Config): Promise<{ close(): Promise<unknown> }>;
   migrate(config: Config): Promise<void>;
   objectStore(config: Config): ReturnType<typeof requiredObjectStore>;
   execute(input: Parameters<typeof executeLeaguepediaSync>[0]): ReturnType<typeof executeLeaguepediaSync>;
@@ -71,9 +72,14 @@ const defaultCommandDependencies: CommandDependencies = {
 };
 
 export async function executeCommand(command: CliCommand, config: Config, dependencies: CommandDependencies = defaultCommandDependencies): Promise<void> {
-  if (command.kind === "serve") { await dependencies.startServer(config); return; }
+  if (command.kind === "serve") {
+    const server = await dependencies.startServer(config);
+    try { await dependencies.waitForShutdown(); }
+    finally { await server.close(); }
+    return;
+  }
   if (command.kind === "migrate") { await dependencies.migrate(config); return; }
-  const objectStore = dependencies.objectStore(config);
+  const objectStore = await dependencies.objectStore(config);
   if (command.kind === "sync-once") {
     dependencies.log(JSON.stringify(await dependencies.execute({ config, objectStore, request: { mode: "sync-once" }, fixture: command.fixture })));
     return;

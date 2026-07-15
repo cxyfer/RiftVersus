@@ -140,6 +140,7 @@ const EnvironmentSchema = z
     S3_ACCESS_KEY_ID: z.string().min(1).optional(),
     S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
     S3_FORCE_PATH_STYLE: z.enum(["true", "false"]).optional(),
+    S3_AUTO_CREATE_BUCKET: z.enum(["true", "false"]).default("false"),
     PORT: z.coerce.number().int().min(1).max(65535).default(3000),
     HOST: z.string().min(1).default("0.0.0.0"),
     LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
@@ -147,15 +148,17 @@ const EnvironmentSchema = z
     SYNC_TIMEZONE: z.string().min(1).default("UTC"),
     LEAGUEPEDIA_ENDPOINT: LeaguepediaEndpointSchema,
     LEAGUEPEDIA_USER_AGENT: LeaguepediaUserAgentSchema,
+    LEAGUEPEDIA_REQUEST_INTERVAL_MS: z.coerce.number().int().min(1_000).max(60_000).default(1_000),
     LEAGUEPEDIA_SYNC_YEARS: z.string().min(1).default("2023,2024"),
     LEAGUEPEDIA_SYNC_COMPETITIONS: z.string().min(1).default("Worlds"),
-    LEAGUEPEDIA_COMPETITION_MAP: z.string().min(2).default('{"Worlds":{"2023":"2023 Season World Championship","2024":"2024 Season World Championship"}}'),
+    LEAGUEPEDIA_COMPETITION_MAP: z.string().min(2).default('{"Worlds":{"2023":"Worlds 2023 Main Event","2024":"Worlds 2024 Main Event"}}'),
     LEAGUEPEDIA_MEDIA_HOSTS: z.string().min(1),
     LEAGUEPEDIA_OVERRIDES_DIR: z.string().min(1).default("data/overrides"),
     LEAGUEPEDIA_FIXTURE_PATH: z.string().min(1).default("data/fixtures/leaguepedia-small.json"),
     LEAGUEPEDIA_MAX_BYTES: z.coerce.number().int().positive().max(500_000_000).default(100_000_000),
     LEAGUEPEDIA_MAX_PAGES: z.coerce.number().int().positive().max(10_000).default(2_000),
     LEAGUEPEDIA_MAX_ROWS: z.coerce.number().int().positive().max(2_000_000).default(500_000),
+    LEAGUEPEDIA_MAX_REVIEWED_PAGES: z.coerce.number().int().positive().max(50_000).default(5_000),
     MEDIA_DELIVERY: z.enum(["proxy", "redirect"]).default("proxy"),
   })
   .superRefine((environment, context) => {
@@ -170,6 +173,14 @@ const EnvironmentSchema = z
     }
     if (environment.MEDIA_DELIVERY === "redirect" && configuredS3Variables.length !== S3_VARIABLES.length) {
       context.addIssue({ code: "custom", message: "MEDIA_DELIVERY=redirect requires complete S3 configuration.", path: ["MEDIA_DELIVERY"] });
+    }
+    if (environment.S3_AUTO_CREATE_BUCKET === "true") {
+      if (configuredS3Variables.length !== S3_VARIABLES.length) {
+        context.addIssue({ code: "custom", message: "S3_AUTO_CREATE_BUCKET requires complete S3 configuration.", path: ["S3_AUTO_CREATE_BUCKET"] });
+      } else {
+        const hostname = new URL(environment.S3_ENDPOINT!).hostname.toLowerCase();
+        if (!["localhost", "127.0.0.1", "::1", "minio"].includes(hostname)) context.addIssue({ code: "custom", message: "S3 automatic bucket creation is local-only; remote object stores must be provisioned separately.", path: ["S3_AUTO_CREATE_BUCKET"] });
+      }
     }
   });
 
@@ -192,15 +203,17 @@ export function loadConfig(environment: Environment) {
     leaguepedia: {
       endpoint: parsed.LEAGUEPEDIA_ENDPOINT,
       userAgent: parsed.LEAGUEPEDIA_USER_AGENT,
+      requestIntervalMs: parsed.LEAGUEPEDIA_REQUEST_INTERVAL_MS,
       syncYears: years(parsed.LEAGUEPEDIA_SYNC_YEARS),
       syncCompetitions: csv(parsed.LEAGUEPEDIA_SYNC_COMPETITIONS, "LEAGUEPEDIA_SYNC_COMPETITIONS"),
       competitionMap: parsedCompetitionMap,
       mediaHosts: mediaHosts(parsed.LEAGUEPEDIA_MEDIA_HOSTS),
       overridesDir: parsed.LEAGUEPEDIA_OVERRIDES_DIR,
       fixturePath: parsed.LEAGUEPEDIA_FIXTURE_PATH,
-      resourceLimits: { maxBytes: parsed.LEAGUEPEDIA_MAX_BYTES, maxPages: parsed.LEAGUEPEDIA_MAX_PAGES, maxRows: parsed.LEAGUEPEDIA_MAX_ROWS },
+      resourceLimits: { maxBytes: parsed.LEAGUEPEDIA_MAX_BYTES, maxPages: parsed.LEAGUEPEDIA_MAX_PAGES, maxRows: parsed.LEAGUEPEDIA_MAX_ROWS, maxReviewedPages: parsed.LEAGUEPEDIA_MAX_REVIEWED_PAGES },
     },
     mediaDelivery: parsed.MEDIA_DELIVERY,
+    s3AutoCreateBucket: parsed.S3_AUTO_CREATE_BUCKET === "true",
     s3: hasS3
       ? {
           endpoint: parsed.S3_ENDPOINT!,

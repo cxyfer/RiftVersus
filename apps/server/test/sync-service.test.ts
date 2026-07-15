@@ -23,7 +23,7 @@ function config() {
 describe("Leaguepedia sync composition", () => {
   it("maps every logical competition and year to an exact source key and rejects gaps", () => {
     expect(buildLeaguepediaSlices(config(), { mode: "backfill", years: [2023, 2024], competitions: ["Worlds"] }).map((slice) => slice.sourceCompetition)).toEqual([
-      "2023 Season World Championship", "2024 Season World Championship",
+      "Worlds 2023 Main Event", "Worlds 2024 Main Event",
     ]);
     expect(() => buildLeaguepediaSlices(config(), { mode: "backfill", years: [2025], competitions: ["Worlds"] })).toThrow(/Worlds.*2025/);
   });
@@ -60,7 +60,7 @@ describe("Leaguepedia sync composition", () => {
     expect(published[0]!.media).toEqual([expect.objectContaining({ objectKey: expect.stringMatching(/^media\/[a-f0-9]{64}\.png$/), checksum: expect.stringMatching(/^[a-f0-9]{64}$/), contentType: "image/png", byteSize: "68" })]);
     expect(published[0]!.coverage).toEqual([expect.objectContaining({ competition: "Worlds", seasonYear: 2024, status: "partial", detail: expect.stringContaining("synthetic fixture is not source coverage") })]);
     expect(published[0]!.publicationScopes).toEqual([expect.objectContaining({ tournamentSourceKey: "2024 Season World Championship", status: "partial", unresolvedRows: 0 })]);
-    expect(published[0]!.provenance.overrideFiles.map((item) => item.file)).toEqual(["data/overrides/identities.yaml", "data/overrides/tournaments.yaml"]);
+    expect(published[0]!.provenance.overrideFiles.map((item) => item.file)).toEqual(["data/overrides/identities.yaml", "data/overrides/regions.yaml", "data/overrides/tournaments.yaml"]);
   });
 
   it("rejects a missing year mapping before opening a sync run repository", async () => {

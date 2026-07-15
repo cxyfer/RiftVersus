@@ -1,8 +1,9 @@
 import { Pool } from "pg";
+import { sql } from "kysely";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 
-import { beginSyncRun, completeUnchangedSyncRun, failSyncRun, findDatasetVersion, getDatasetStatus, publishDataset, recordSourceObject, recordSourceObjectWithId, withSyncAdvisoryLock } from "../src/index.js";
+import { beginSyncRun, completeUnchangedSyncRun, failSyncRun, findAcceptanceDatasetEvidence, findDatasetVersion, getDatasetStatus, publishDataset, recordSourceObject, recordSourceObjectWithId, withSyncAdvisoryLock } from "../src/index.js";
 import type { PublishDatasetInput } from "../src/repositories/types.js";
 import { createDb, destroyDb } from "../src/db.js";
 import { migrateToLatest } from "../src/migrator.js";
@@ -31,6 +32,73 @@ describeWithDatabase("sync publication repository", () => {
     expect(second.id).not.toBe(first.id);
   });
 
+  it("normalizes PostgreSQL date scalars before deriving dataset coverage bounds", async () => {
+    const run = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({
+      syncRunId: run.id,
+      version: "date-normalization-v1",
+      coverage: [
+        { provider: "fixture", competition: "Worlds", seasonYear: 2013, earliestDate: "2013-09-15", latestDate: "2013-10-05", status: "complete" },
+        { provider: "fixture", competition: "Worlds", seasonYear: 2022, earliestDate: "2022-10-07", latestDate: "2022-11-06", status: "complete" },
+        { provider: "fixture", competition: "Worlds", seasonYear: 2025, earliestDate: "2025-10-15", latestDate: "2025-11-09", status: "complete" },
+      ],
+    }, db);
+
+    const rawCoverage = await db.selectFrom("coverage_status")
+      .select(["earliest_date", "latest_date"])
+      .where("season_year", "=", 2013)
+      .executeTakeFirstOrThrow();
+    expect(rawCoverage).toEqual({ earliest_date: "2013-09-15", latest_date: "2013-10-05" });
+
+    const status = await getDatasetStatus(db);
+    expect(status?.coverage).toEqual({ from: "2013-09-15", to: "2025-11-09" });
+    expect(status?.coverageStatus.map(({ earliestDate, latestDate }) => ({ earliestDate, latestDate }))).toEqual([
+      { earliestDate: "2013-09-15", latestDate: "2013-10-05" },
+      { earliestDate: "2022-10-07", latestDate: "2022-11-06" },
+      { earliestDate: "2025-10-15", latestDate: "2025-11-09" },
+    ]);
+  });
+
+  it("re-publishes identical dated dimensions without false conflicts or duplicate identities", async () => {
+    const teamId = randomUUID(); const regionId = randomUUID(); const eraId = randomUUID(); const tournamentId = randomUUID();
+    const dimensions = {
+      entities: [{ id: teamId, provider: "leaguepedia", sourceKeys: ["Dated Team"], kind: "team" as const, canonicalName: "Dated Team", aliases: [] }],
+      regions: [{ id: regionId, provider: "leaguepedia", sourceKey: "Dated Region", name: "Dated Region" }],
+      teamEras: [{ id: eraId, provider: "leaguepedia", sourceKey: "Dated Team", teamEntityId: teamId, displayName: "Dated Team", regionId, validFrom: "2013-02-01", validTo: "2019-12-07" }],
+      tournaments: [{ id: tournamentId, provider: "leaguepedia", sourceKey: "Dated Worlds", name: "Dated Worlds", aliases: [], category: "worlds" as const, seasonYear: 2013, validFrom: "2013-09-15", validTo: "2013-10-05" }],
+    };
+    const first = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({ syncRunId: first.id, version: "dated-dimensions-v1", coverage: [], dimensions }, db);
+
+    const selected = await Promise.all([
+      db.selectFrom("team_eras").select(["valid_from", "valid_to"]).where("id", "=", eraId).executeTakeFirstOrThrow(),
+      db.selectFrom("team_region_history").select(["valid_from", "valid_to"]).where("provider", "=", "leaguepedia").where("source_key", "=", "Dated Team").executeTakeFirstOrThrow(),
+      db.selectFrom("tournaments").select(["start_date", "end_date"]).where("id", "=", tournamentId).executeTakeFirstOrThrow(),
+    ]);
+    expect(selected).toEqual([
+      { valid_from: "2013-02-01", valid_to: "2019-12-07" },
+      { valid_from: "2013-02-01", valid_to: "2019-12-07" },
+      { start_date: "2013-09-15", end_date: "2013-10-05" },
+    ]);
+
+    const second = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await expect(publishDataset({ syncRunId: second.id, version: "dated-dimensions-v2", coverage: [], dimensions }, db)).resolves.toBeDefined();
+    await expect(Promise.all([
+      db.selectFrom("team_eras").select(({ fn }) => fn.countAll<number>().as("count")).where("id", "=", eraId).executeTakeFirstOrThrow(),
+      db.selectFrom("team_region_history").select(({ fn }) => fn.countAll<number>().as("count")).where("provider", "=", "leaguepedia").where("source_key", "=", "Dated Team").executeTakeFirstOrThrow(),
+      db.selectFrom("tournaments").select(({ fn }) => fn.countAll<number>().as("count")).where("id", "=", tournamentId).executeTakeFirstOrThrow(),
+    ])).resolves.toEqual([{ count: "1" }, { count: "1" }, { count: "1" }]);
+  });
+
+  it("keeps timestamp and timestamptz codecs delegated to the PostgreSQL defaults", async () => {
+    const result = await sql<{ timestamp_value: unknown; timestamptz_value: unknown }>`
+      select '2025-11-09 12:34:56'::timestamp as timestamp_value,
+             '2025-11-09 12:34:56+00'::timestamptz as timestamptz_value
+    `.execute(db);
+    expect(result.rows[0]?.timestamp_value).toBeInstanceOf(Date);
+    expect(result.rows[0]?.timestamptz_value).toBeInstanceOf(Date);
+  });
+
   it("returns retained source identity and completes unchanged runs without publishing", async () => {
     const source = { provider: "fixture", sourceKey: "unchanged-source", sourceUrl: "https://example.test/unchanged", objectKey: "sources/unchanged", checksum: "unchanged", parserVersion: "test" };
     const first = await recordSourceObjectWithId(source, db);
@@ -53,8 +121,8 @@ describeWithDatabase("sync publication repository", () => {
     await publishDataset({
       syncRunId: run.id, version: "dimension-v1", sourceObjectId: source.id, coverage: [{ provider: "leaguepedia", competition: "Worlds", seasonYear: 2024, status: "complete" }],
       dimensions: {
-        entities: [{ id: teamId, provider: "leaguepedia", sourceKeys: ["T1"], kind: "team", canonicalName: "T1", aliases: ["SKT"] }],
-        regions: [{ id: regionId, provider: "leaguepedia", sourceKey: "LCK", name: "LCK" }],
+        entities: [{ id: teamId, provider: "leaguepedia", sourceKeys: ["T1"], kind: "team", canonicalName: "Dimension Team", aliases: ["SKT"] }],
+        regions: [{ id: regionId, provider: "leaguepedia", sourceKey: "LCK", name: "Dimension Region" }],
         teamEras: [{ id: eraId, provider: "leaguepedia", sourceKey: "T1", teamEntityId: teamId, displayName: "T1", regionId, validFrom: "2019-12-08", validTo: null }],
         tournaments: [{ id: tournamentId, provider: "leaguepedia", sourceKey: "Worlds 2024", name: "Worlds 2024", aliases: [], category: "worlds", seasonYear: 2024, validFrom: "2024-09-01", validTo: "2024-11-02" }],
       },
@@ -64,7 +132,7 @@ describeWithDatabase("sync publication repository", () => {
       ],
       overrideApplications: [{ overrideFile: "data/overrides/identities.yaml", checksum: "sha256:override" }],
     }, db);
-    expect(await db.selectFrom("entities").select("canonical_name").where("id", "=", teamId).executeTakeFirstOrThrow()).toEqual({ canonical_name: "T1" });
+    expect(await db.selectFrom("entities").select("canonical_name").where("id", "=", teamId).executeTakeFirstOrThrow()).toEqual({ canonical_name: "Dimension Team" });
     expect(await db.selectFrom("media_assets as owner").innerJoin("media_objects as object", "object.object_key", "owner.object_key").select(["owner.object_key", "owner.provider", "object.byte_size", "owner.is_current"]).where("owner.entity_id", "=", teamId).executeTakeFirstOrThrow()).toMatchObject({ object_key: "media/leaguepedia/t1", provider: "leaguepedia", byte_size: "3", is_current: true });
     expect(await db.selectFrom("media_objects").select(({ fn }) => fn.countAll<number>().as("count")).where("object_key", "=", "media/leaguepedia/t1").executeTakeFirstOrThrow()).toMatchObject({ count: "1" });
     expect(await db.selectFrom("media_assets").select(({ fn }) => fn.countAll<number>().as("count")).where("object_key", "=", "media/leaguepedia/t1").executeTakeFirstOrThrow()).toMatchObject({ count: "2" });
@@ -141,7 +209,7 @@ describeWithDatabase("sync publication repository", () => {
     expect(published.generation).toBeDefined();
     const counts = await Promise.all([db.selectFrom("series_facts").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow(), db.selectFrom("game_facts").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow(), db.selectFrom("game_players").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow()]);
     const retry = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
-    await publishDataset({ syncRunId: retry.id, version: "facts-v2", sourceObjectId: sourceObject.id, coverage: [], facts });
+    await publishDataset({ syncRunId: retry.id, version: "facts-v2", sourceObjectId: sourceObject.id, coverage: [], facts }, db);
     const retryCounts = await Promise.all([db.selectFrom("series_facts").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow(), db.selectFrom("game_facts").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow(), db.selectFrom("game_players").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow()]);
     expect(retryCounts).toEqual(counts);
     const sourceLess = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
@@ -149,15 +217,15 @@ describeWithDatabase("sync publication repository", () => {
     await expect(publishDataset({ syncRunId: sourceLess.id, version: "no-source-roster", coverage: [], rosterGameIds: [seedIds.t1Game] }, db)).rejects.toThrow("requires sourceObjectId");
     expect(await db.selectFrom("game_players").select("player_entity_id").where("game_id", "=", seedIds.t1Game).execute()).toEqual(rosterBeforeRejection);
     const unlisted = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
-    await expect(publishDataset({ syncRunId: unlisted.id, version: "unlisted-roster", sourceObjectId: sourceObject.id, coverage: [], rosterGameIds: [], facts: { gamePlayers: [players[0]!] } })).rejects.toThrow("rosterGameIds");
+    await expect(publishDataset({ syncRunId: unlisted.id, version: "unlisted-roster", sourceObjectId: sourceObject.id, coverage: [], rosterGameIds: [], facts: { gamePlayers: [players[0]!] } }, db)).rejects.toThrow("rosterGameIds");
     const correction = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
-    await publishDataset({ syncRunId: correction.id, version: "facts-v3", sourceObjectId: sourceObject.id, coverage: [], facts: { series: [input], games: [game], gamePlayers: [] }, rosterGameIds: [seedIds.t1Game] });
+    await publishDataset({ syncRunId: correction.id, version: "facts-v3", sourceObjectId: sourceObject.id, coverage: [], facts: { series: [input], games: [game], gamePlayers: [] }, rosterGameIds: [seedIds.t1Game] }, db);
     expect(await db.selectFrom("game_players").select("player_entity_id").where("game_id", "=", seedIds.t1Game).execute()).toEqual([]);
     const badSource = { provider: "wrong", sourceKey: "t1", sourceUrl: "https://example.test/wrong", objectKey: "sources/wrong", checksum: "wrong", parserVersion: "test" };
     await recordSourceObject(badSource, db);
     const badObject = await db.selectFrom("source_objects").select("id").where("provider", "=", "wrong").executeTakeFirstOrThrow();
     const badRun = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
-    await expect(publishDataset({ syncRunId: badRun.id, version: "bad-source", sourceObjectId: badObject.id, coverage: [], facts: { series: [input] } })).rejects.toThrow("Source object does not match");
+    await expect(publishDataset({ syncRunId: badRun.id, version: "bad-source", sourceObjectId: badObject.id, coverage: [], facts: { series: [input] } }, db)).rejects.toThrow("Source object provider must match");
     const before = await db.selectFrom("series_facts").select("publication_generation").where("id", "=", seedIds.t1Series).executeTakeFirstOrThrow();
     const publishedBeforeFailure = await getDatasetStatus(db);
     const countsBeforeFailure = await db.selectFrom("game_facts").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow();
@@ -203,6 +271,48 @@ describeWithDatabase("sync publication repository", () => {
       .where("fact_table", "=", "series_facts").where("fact_id", "=", seriesId).executeTakeFirstOrThrow();
     expect(audit).toMatchObject({ fact_table: "series_facts", fact_id: seriesId, source_object_id: sourceObject.id, old_payload: {} });
     expect(audit.new_payload).toMatchObject({ id: seriesId, source_key: "fresh-series" });
+    const acceptance = await findAcceptanceDatasetEvidence("fresh-audit", [seriesId], db);
+    expect(acceptance.dataset).toMatchObject({ generation: expect.any(String), publishedAt: expect.stringMatching(/Z$/u) });
+    expect(acceptance.facts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: "series", id: seriesId, sourceObjectId: sourceObject.id }),
+      expect.objectContaining({ kind: "game", id: gameId, seriesId, sourceObjectId: sourceObject.id }),
+    ]));
+    expect(acceptance.facts.every((fact) => fact.publicationGeneration === acceptance.dataset?.generation)).toBe(true);
+  });
+
+  it("returns explicit empty acceptance evidence for an unknown dataset", async () => {
+    await expect(findAcceptanceDatasetEvidence("missing-acceptance-dataset", [randomUUID()], db)).resolves.toEqual({
+      dataset: null,
+      facts: [],
+      coverage: [],
+    });
+  });
+
+  it("returns acceptance coverage only from the requested dataset version", async () => {
+    const adjacentRun = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({
+      syncRunId: adjacentRun.id,
+      version: "acceptance-coverage-adjacent",
+      coverage: [{
+        provider: "leaguepedia", competition: "Worlds", seasonYear: 2024,
+        earliestDate: "2024-10-03", latestDate: "2024-11-02", status: "partial",
+      }],
+    }, db);
+    const run = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({
+      syncRunId: run.id,
+      version: "acceptance-coverage-v1",
+      coverage: [{
+        provider: "leaguepedia", competition: "Worlds", seasonYear: 2025,
+        earliestDate: "2025-10-15", latestDate: "2025-11-09", status: "complete",
+      }],
+    }, db);
+
+    const evidence = await findAcceptanceDatasetEvidence("acceptance-coverage-v1", [], db);
+    expect(evidence.coverage).toEqual([{
+        provider: "leaguepedia", competition: "Worlds", seasonYear: 2025,
+        earliestDate: "2025-10-15", latestDate: "2025-11-09", status: "complete",
+    }]);
   });
 
   it("rejects direct mutation of append-only dataset versions", async () => {

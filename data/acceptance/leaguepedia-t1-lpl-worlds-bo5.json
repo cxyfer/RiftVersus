@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 2,
+  "status": "reviewed",
+  "comparison": {
+    "left": {
+      "kind": "team",
+      "id": "11111111-1111-5111-8111-111111111111"
+    },
+    "right": {
+      "kind": "region",
+      "id": "33333333-3333-5333-8333-333333333333"
+    }
+  },
+  "datasetVersion": "leaguepedia-bbb75c5f7cab4b7693536c3f002feaff09a5f11c894063d6dd151d20f1edb100",
+  "attribution": {
+    "provider": "Leaguepedia",
+    "url": "https://lol.fandom.com/wiki/Leaguepedia%3ACopyrights"
+  },
+  "sources": [
+    {
+      "pageId": 294322,
+      "revisionId": 4477228,
+      "title": "T1",
+      "retrievedAt": "2026-07-14T15:15:58.215Z",
+      "objectKey": "sources/leaguepedia/0f5b3ac9f9a8a30d7d4af25ca1222776505c9d169ccbdd477a8c57f8aa336267",
+      "rawObjectChecksum": "0f5b3ac9f9a8a30d7d4af25ca1222776505c9d169ccbdd477a8c57f8aa336267",
+      "requestId": "query:mediawiki:0:a3a5eda0f731b201",
+      "requestUrl": "https://lol.fandom.com/api.php?action=query&prop=info%7Crevisions&rvprop=ids%7Ctimestamp&titles=Mineski%7CMisfits+Gaming%7CMovistar+KOI%7CNRG%7CNaJin+Black+Sword%7CNaJin+White+Shield%7COh+My+God%7COrigen%7CPSG+Talon%7CPaiN+Gaming%7CPhong+V%C5%A9+Buffalo%7CROX+Tigers%7CRogue+%28European+Team%29%7CRoyal+Club%7CRoyal+Never+Give+Up%7CSK+Gaming%7CSK+Telecom+T1%7CSamsung+Blue%7CSamsung+Galaxy%7CSamsung+White%7CSplyce%7CSuning%7CT1%7CTSM%7CTaipei+Assassins%7CTeam+BDS%7CTeam+Liquid%7CTeam+Secret+Whales%7CTeam+Vitality%7CTeam+Vulcun%7CTeam+WE%7CTop+Esports%7CUnicorns+of+Love.CIS%7CVivo+Keyd+Stars%7CWeibo+Gaming&format=json&formatversion=2"
+    },
+    {
+      "pageId": 196774,
+      "revisionId": 4436217,
+      "title": "SK Telecom T1",
+      "retrievedAt": "2026-07-14T15:15:58.215Z",
+      "objectKey": "sources/leaguepedia/0f5b3ac9f9a8a30d7d4af25ca1222776505c9d169ccbdd477a8c57f8aa336267",
+      "rawObjectChecksum": "0f5b3ac9f9a8a30d7d4af25ca1222776505c9d169ccbdd477a8c57f8aa336267",
+      "requestId": "query:mediawiki:0:a3a5eda0f731b201",
+      "requestUrl": "https://lol.fandom.com/api.php?action=query&prop=info%7Crevisions&rvprop=ids%7Ctimestamp&titles=Mineski%7CMisfits+Gaming%7CMovistar+KOI%7CNRG%7CNaJin+Black+Sword%7CNaJin+White+Shield%7COh+My+God%7COrigen%7CPSG+Talon%7CPaiN+Gaming%7CPhong+V%C5%A9+Buffalo%7CROX+Tigers%7CRogue+%28European+Team%29%7CRoyal+Club%7CRoyal+Never+Give+Up%7CSK+Gaming%7CSK+Telecom+T1%7CSamsung+Blue%7CSamsung+Galaxy%7CSamsung+White%7CSplyce%7CSuning%7CT1%7CTSM%7CTaipei+Assassins%7CTeam+BDS%7CTeam+Liquid%7CTeam+Secret+Whales%7CTeam+Vitality%7CTeam+Vulcun%7CTeam+WE%7CTop+Esports%7CUnicorns+of+Love.CIS%7CVivo+Keyd+Stars%7CWeibo+Gaming&format=json&formatversion=2"
+    }
+  ],
+  "coverage": {
+    "status": "complete",
+    "unresolvedSeries": 0,
+    "from": "2013-09-15",
+    "to": "2025-11-09",
+    "note": "All 13 Worlds season slices from 2013 through 2025 are published as complete; the reviewed comparison contains 12 resolved BO5 series and no coverage warnings.",
+    "rows": [
+      { "provider": "leaguepedia", "competition": "Worlds", "seasonYear": 2013, "earliestDate": "2013-09-15", "latestDate": "2013-10-05", "status": "complete" },
+      { "provider": "leaguepedia", "competition": "Worlds", "seasonYear": 2014, "earliestDate": "2014-09-18", "latestDate": "2014-10-19", "status": "complete" },
+      { "provider": "leaguepedia", "competition": "Worlds", "seasonYear": 2015, "earliestDate": "2015-10-01", "latestDate": "2015-10-31", "status": "complete" },
+      { "provider": "leaguepedia", "competition": "Worlds", "seasonYear": 2016, "earliestDate": "2016-09-29", "latestDate": "2016-10-30", "status": "complete" },
+      { "provider": "leaguepedia", "competition": "Worlds", "seasonYear": 2017, "earliestDate": "2017-10-05", "latestDate": "2017-11-04", "status": "complete" },
+      { "provider": "leaguepedia", "competition": "Worlds", "seasonYear": 2018, "earliestDate": "2018-10-10", "latestDate": "2018-11-03", "status": "complete" },
+      { "provider": "leaguepedia", "competition": "Worlds", "seasonYear": 2019, "earliestDate": "2019-10-12", "latestDate": "2019-11-10", "status": "complete" },
+      { "provider": "leaguepedia", "competition": "Worlds", "seasonYear": 2020, "earliestDate": "2020-10-03", "latestDate": "2020-10-31", "status": "complete" },
+      { "provider": "leaguepedia", "competition": "Worlds", "seasonYear": 2021, "earliestDate": "2021-10-11", "latestDate": "2021-11-06", "status": "complete" },
+      { "provider": "leaguepedia", "competition": "Worlds", "seasonYear": 2022, "earliestDate": "2022-10-07", "latestDate": "2022-11-06", "status": "complete" },
+      { "provider": "leaguepedia", "competition": "Worlds", "seasonYear": 2023, "earliestDate": "2023-10-19", "latestDate": "2023-11-19", "status": "complete" },
+      { "provider": "leaguepedia", "competition": "Worlds", "seasonYear": 2024, "earliestDate": "2024-10-03", "latestDate": "2024-11-02", "status": "complete" },
+      { "provider": "leaguepedia", "competition": "Worlds", "seasonYear": 2025, "earliestDate": "2025-10-15", "latestDate": "2025-11-09", "status": "complete" }
+    ]
+  },
+  "expected": {
+    "leftDisplayName": "T1",
+    "rightDisplayName": "LPL",
+    "seriesWins": 12,
+    "seriesLosses": 0,
+    "gameWins": 36,
+    "gameLosses": 9,
+    "media": {
+      "left": {
+        "kind": "generated-avatar",
+        "entityKind": "team",
+        "entityId": "11111111-1111-5111-8111-111111111111",
+        "algorithm": "canonical-avatar-v1",
+        "checksum": "dfe99ae1ed84135d39dba958e224900889475a0b81a70062662dd2bdbcb478a8",
+        "contentType": "image/svg+xml"
+      },
+      "right": {
+        "kind": "generated-avatar",
+        "entityKind": "region",
+        "entityId": "33333333-3333-5333-8333-333333333333",
+        "algorithm": "canonical-avatar-v1",
+        "checksum": "cb062a78583d7f0fc4fe64cbbc12f05bdb4175ce99750c671abd883589c62e33",
+        "contentType": "image/svg+xml"
+      }
+    },
+    "rows": [
+      {
+        "id": "da023333-c168-5066-8c83-5896a5fae22d",
+        "gameIds": [
+          "c7a08d9f-920b-5e33-8af5-45578b581c8c",
+          "c41b7538-d24d-58e6-86a5-656dac7c3853",
+          "0d72d608-f35e-5588-803f-46100028690e"
+        ],
+        "date": "2025-11-02",
+        "leftScore": 3,
+        "rightScore": 0,
+        "winner": "left"
+      },
+      {
+        "id": "e38e3743-9fce-5e50-8b69-5bb1cb27449a",
+        "gameIds": [
+          "77c50eef-7a0b-5ffa-8a0b-1acb7025ca43",
+          "951e81d5-cc27-5777-8012-2039e37474a1",
+          "b1b38a58-10b9-5c2f-8d84-20001fdbbfa6",
+          "8cf4af64-2f0a-5a60-8495-ccd01c8832f8",
+          "8af15b83-22dd-5aec-87df-17c723b6a31d"
+        ],
+        "date": "2025-10-31",
+        "leftScore": 3,
+        "rightScore": 2,
+        "winner": "left"
+      },
+      {
+        "id": "ddfaf909-c0f0-568d-88bb-41f534b88b32",
+        "gameIds": [
+          "f80ddfb8-a2cb-552c-8845-7458d3c6dc8f",
+          "5f6d3d33-ddcb-5ee1-89a2-fcbf16acc398",
+          "715146c6-7236-5883-8aeb-97be2f45d82d",
+          "fe78ee23-2500-5f8a-8a32-d4080704d6ea",
+          "30baa101-6fd3-5d9d-84e8-dc5b623eb441"
+        ],
+        "date": "2024-11-02",
+        "leftScore": 3,
+        "rightScore": 2,
+        "winner": "left"
+      },
+      {
+        "id": "366718b4-dc26-58e5-8e7a-b25c876c471e",
+        "gameIds": [
+          "beb13e05-6866-580e-8622-74e22dcf3dd7",
+          "64e07220-1e38-533f-8929-8aed37add239",
+          "a27d3963-fd53-5f64-89b8-9df3f0dc4195"
+        ],
+        "date": "2024-10-19",
+        "leftScore": 3,
+        "rightScore": 0,
+        "winner": "left"
+      },
+      {
+        "id": "04c1501a-886a-52bd-8180-3099a17f3e4d",
+        "gameIds": [
+          "38020afb-f2e1-52fa-8776-d735fbfcaffc",
+          "b855d54a-a677-5937-8043-766f072fa5b8",
+          "c603bcbb-7daf-5c84-8053-f6f34d2184e7"
+        ],
+        "date": "2023-11-19",
+        "leftScore": 3,
+        "rightScore": 0,
+        "winner": "left"
+      },
+      {
+        "id": "f84f4b6b-4237-57cc-8b62-d63f50f84f0c",
+        "gameIds": [
+          "9196c970-eaa8-5a93-80f6-40c9d59afea4",
+          "96dee87d-9bce-5731-8507-5d92e707a89c",
+          "a752048a-a2e0-5798-8344-ae99063cd72c",
+          "ffc49e43-e478-57d4-83fa-8d2275d4ac96"
+        ],
+        "date": "2023-11-12",
+        "leftScore": 3,
+        "rightScore": 1,
+        "winner": "left"
+      },
+      {
+        "id": "fa3d354b-11da-58db-8589-9a00406c0415",
+        "gameIds": [
+          "0873afec-2fa0-5f78-8389-e0aa5f39fd3e",
+          "156eedce-b955-5724-86a1-51c33996838c",
+          "a372c16e-86f8-5dc0-8439-cc93e877aee4"
+        ],
+        "date": "2023-11-05",
+        "leftScore": 3,
+        "rightScore": 0,
+        "winner": "left"
+      },
+      {
+        "id": "00bcc25a-e97b-599e-863c-713e83f6e594",
+        "gameIds": [
+          "96dab437-ddb4-5764-8cc2-0e4266370571",
+          "dc08ef69-9bab-5897-8216-ee81fc642aa0",
+          "69499397-c4f5-5fd8-8902-ad57242d8d9b",
+          "3db3046f-ce6d-5046-8612-8cbcc9b84a78"
+        ],
+        "date": "2022-10-29",
+        "leftScore": 3,
+        "rightScore": 1,
+        "winner": "left"
+      },
+      {
+        "id": "1d4bcea2-2193-55b8-8211-5767f1614112",
+        "gameIds": [
+          "5b4de10e-b005-5b3e-8f59-6bfc5b12be0c",
+          "399947dd-2e7c-5d61-8064-e76d54dce01c",
+          "7405d578-ebe2-5329-8f1b-fe5c32894c50"
+        ],
+        "date": "2022-10-21",
+        "leftScore": 3,
+        "rightScore": 0,
+        "winner": "left"
+      },
+      {
+        "id": "76cf608f-5079-5ca3-88dc-38f9e7bf50c0",
+        "gameIds": [
+          "7a4f314d-41fe-5d07-832a-c8c6430293c5",
+          "7e19b521-b909-5860-8eb7-746c839db990",
+          "57c79fae-be35-5bf3-836d-a3c3f0f9bde6",
+          "8fd5d9bc-80de-5ce5-8f8f-42e729e8e18b",
+          "e98efcab-bc31-59e5-8791-2f13d79cc15b"
+        ],
+        "date": "2017-10-28",
+        "leftScore": 3,
+        "rightScore": 2,
+        "winner": "left"
+      },
+      {
+        "id": "321d4ffd-f2f4-53b1-8d60-0c4cb520bd46",
+        "gameIds": [
+          "29d74c82-88ce-542d-87f5-a073ed83186d",
+          "3b321d96-a05a-51f2-8a57-14847f35e3df",
+          "bf4916fb-6c3c-5753-8cda-c6164192108e",
+          "30e07138-fe75-5af6-8495-b59e14658e65"
+        ],
+        "date": "2016-10-14",
+        "leftScore": 3,
+        "rightScore": 1,
+        "winner": "left"
+      },
+      {
+        "id": "9751acc8-bd77-5b70-8f03-de7d3ba8aede",
+        "gameIds": [
+          "5291091e-4192-5145-83c7-5724f6d1eb28",
+          "41dc40fb-cd87-528d-8416-8cb3be790478",
+          "49a9c0b0-745e-5b43-82f8-8d4a1cf1de17"
+        ],
+        "date": "2013-10-05",
+        "leftScore": 3,
+        "rightScore": 0,
+        "winner": "left"
+      }
+    ]
+  },
+  "review": {
+    "reviewedAt": "2026-07-15T11:18:03Z",
+    "reviewer": "codex-independent-coverage-snapshot-review"
+  }
+}

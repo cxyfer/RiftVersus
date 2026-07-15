@@ -4,6 +4,10 @@ export const EntityKindSchema = z.enum(["player", "team", "region"]);
 
 export const UuidSchema = z.uuid();
 
+export const PresentationImageUrlSchema = z.string().min(1).describe(
+  "Same-origin presentation image URL for retained media or a canonical generated avatar.",
+);
+
 export const SubjectRefSchema = z
   .object({
     kind: EntityKindSchema,
@@ -23,7 +27,7 @@ export const SubjectRefSchema = z
 export const ResolvedSubjectSchema = SubjectRefSchema.extend({
   displayName: z.string().min(1),
   eraLabel: z.string().min(1).optional(),
-  mediaUrl: z.string().min(1).optional(),
+  mediaUrl: PresentationImageUrlSchema.optional(),
 });
 
 export type EntityKind = z.infer<typeof EntityKindSchema>;

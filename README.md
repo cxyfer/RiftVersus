@@ -2,11 +2,14 @@
 
 RiftVersus compares League of Legends players, teams, and regions across
 years, competitions, and best-of formats. The MVP imports Leaguepedia into a
-published PostgreSQL generation and serves only retained database and media
-objects; HTTP requests never call the upstream wiki.
+published PostgreSQL generation. HTTP requests use retained PostgreSQL facts
+and same-origin presentation, while immutable source evidence remains in S3.
+Eligible retained media is preferred; otherwise the application serves
+deterministic local avatars. HTTP requests never call the upstream wiki.
 
 ## Operator guide
 
+- [Documentation index](docs/README.md)
 - [Source, coverage, and attribution](docs/source-and-attribution.md)
 - [Sync operations](docs/operations.md)
 - [Deployment](docs/deployment.md)

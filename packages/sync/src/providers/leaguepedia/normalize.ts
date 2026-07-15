@@ -22,6 +22,9 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
   const entityDefinitions = new Map<string, StagedEntityDefinition>();
   const regionDefinitions = new Map<string, StagedRegionDefinition>();
   const teamEras: StagedTeamEraDefinition[] = [];
+  const inferredEraObservations: { sourceKey: string; observed: { from: string; to: string }; validFrom: string | null; validTo: string | null }[] = [];
+  const observedTeamDates = observedTeamFactDates(snapshot);
+  const inferredTeamValidity = inferTeamValidity(snapshot, overrides, observedTeamDates);
 
   for (const entity of snapshot.entities) {
     const override = overrides.identities.get(entity.sourceKey);
@@ -53,11 +56,33 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
       aliases: unique([...(previous?.aliases ?? []), normalized.displayName, ...normalized.aliases]),
     });
     if (entity.kind === "team") {
-      const regionId = entity.region ? stableUuid(`region:${entity.region}`) : null;
-      if (entity.region && regionId) regionDefinitions.set(regionId, { id: regionId, provider: PROVIDER, sourceKey: entity.region, name: entity.region });
-      const eraId = stableUuid(`team-era:${entity.sourceKey}:${normalized.validFrom ?? ""}:${normalized.validTo ?? ""}`);
+      const observed = observedTeamDates.get(entity.sourceKey);
+      const hasReviewedValidity = override?.validFrom !== undefined || override?.validTo !== undefined;
+      if (observed === undefined && !hasReviewedValidity) continue;
+      const regionOverride = entity.region ? overrides.regions.get(entity.region) : undefined;
+      const regionId = entity.region ? regionOverride?.canonicalId ?? stableUuid(`region:${entity.region}`) : null;
+      if (entity.region && regionId) regionDefinitions.set(regionId, { id: regionId, provider: PROVIDER, sourceKey: entity.region, name: regionOverride?.canonicalName ?? entity.region });
+      const inferred = inferredTeamValidity.get(entity.sourceKey);
+      const validFrom = hasReviewedValidity ? normalized.validFrom ?? null : inferred?.validFrom ?? null;
+      const validTo = hasReviewedValidity ? normalized.validTo ?? null : inferred?.validTo ?? null;
+      if (!hasReviewedValidity && observed !== undefined) inferredEraObservations.push({ sourceKey: entity.sourceKey, observed, validFrom, validTo });
+      const eraId = stableUuid(`team-era:${entity.sourceKey}:${validFrom ?? ""}:${validTo ?? ""}`);
       eraIds.set(entity.sourceKey, eraId);
-      teamEras.push({ id: eraId, provider: PROVIDER, sourceKey: entity.sourceKey, teamEntityId: canonicalId, displayName: entity.displayName, regionId, validFrom: normalized.validFrom ?? null, validTo: normalized.validTo ?? null });
+      teamEras.push({ id: eraId, provider: PROVIDER, sourceKey: entity.sourceKey, teamEntityId: canonicalId, displayName: entity.displayName, regionId, validFrom, validTo });
+    }
+  }
+
+  for (const entity of entities) {
+    if (entity.kind !== "team" || !entity.lineage) continue;
+    const sourceId = entityIds.get(entity.sourceKey);
+    const targetId = entityIds.get(entity.lineage);
+    if (sourceId === undefined || targetId === undefined || sourceId !== targetId) {
+      throw new Error(`Official RenamedTo lineage ${entity.sourceKey} -> ${entity.lineage} must resolve to the same reviewed canonical identity.`);
+    }
+  }
+  for (const { sourceKey, observed, validFrom, validTo } of inferredEraObservations) {
+    if ((validFrom !== null && observed.from < validFrom) || (validTo !== null && observed.to > validTo)) {
+      throw new Error(`Team ${sourceKey} observed facts ${observed.from}..${observed.to} fall outside inferred era ${validFrom ?? "open"}..${validTo ?? "open"}.`);
     }
   }
 
@@ -102,7 +127,9 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
     const seriesId = seriesIds.get(item.seriesKey);
     const sourceSeries = seriesByKey.get(item.seriesKey);
     if (seriesId === undefined || sourceSeries === undefined) throw new Error(`Game ${item.sourceKey} references an unknown explicit series.`);
-    if (item.sideATeam !== sourceSeries.sideATeam || item.sideBTeam !== sourceSeries.sideBTeam) throw new Error(`Game ${item.sourceKey} sides conflict with series ${item.seriesKey}.`);
+    const normalOrder = item.sideATeam === sourceSeries.sideATeam && item.sideBTeam === sourceSeries.sideBTeam;
+    const reversedOrder = item.sideATeam === sourceSeries.sideBTeam && item.sideBTeam === sourceSeries.sideATeam;
+    if (!normalOrder && !reversedOrder) throw new Error(`Game ${item.sourceKey} sides conflict with series ${item.seriesKey}.`);
     const sideATeamId = requiredEntityId(entityIds, item.sideATeam, item.sourceKey);
     const sideBTeamId = requiredEntityId(entityIds, item.sideBTeam, item.sourceKey);
     const winnerTeamId = item.winnerTeam === null ? null : requiredEntityId(entityIds, item.winnerTeam, item.sourceKey);
@@ -174,6 +201,70 @@ export function deriveLeaguepediaCoverage(evidence: LeaguepediaCoverageEvidence)
 }
 
 function ambiguousKeys(snapshot: LeaguepediaSnapshot): Set<string> { const owners = new Map<string, Set<string>>(); for (const entity of snapshot.entities) for (const name of [entity.displayName, ...entity.aliases]) { const key = name.trim().toLocaleLowerCase(); if (key) owners.set(key, new Set([...(owners.get(key) ?? []), entity.sourceKey])); } return new Set([...owners.values()].filter((values) => values.size > 1).flatMap((values) => [...values])); }
+function observedTeamFactDates(snapshot: LeaguepediaSnapshot): Map<string, { from: string; to: string }> {
+  const result = new Map<string, { from: string; to: string }>();
+  for (const fact of [...snapshot.series, ...snapshot.games]) {
+    validDate(fact.playedAt, fact.sourceKey);
+    const day = fact.playedAt.slice(0, 10);
+    for (const sourceKey of [fact.sideATeam, fact.sideBTeam]) {
+      const current = result.get(sourceKey);
+      result.set(sourceKey, { from: current === undefined || day < current.from ? day : current.from, to: current === undefined || day > current.to ? day : current.to });
+    }
+  }
+  return result;
+}
+function inferTeamValidity(
+  snapshot: LeaguepediaSnapshot,
+  overrides: ReviewedOverrides,
+  observed: ReadonlyMap<string, { from: string; to: string }>,
+): Map<string, { validFrom: string | null; validTo: string | null }> {
+  const teams = new Map(snapshot.entities.filter((entity) => entity.kind === "team").map((entity) => [entity.sourceKey, entity]));
+  const isStaged = (sourceKey: string): boolean => {
+    const override = overrides.identities.get(sourceKey);
+    return observed.has(sourceKey) || override?.validFrom !== undefined || override?.validTo !== undefined;
+  };
+  const reaches = (sourceKey: string, targetKey: string): boolean => {
+    const visited = new Set<string>();
+    let current = teams.get(sourceKey)?.lineage ?? null;
+    while (current !== null) {
+      if (current === targetKey) return true;
+      if (visited.has(current)) return false;
+      visited.add(current);
+      current = teams.get(current)?.lineage ?? null;
+    }
+    return false;
+  };
+  const nextBoundary = (sourceKey: string): string | null => {
+    const visited = new Set<string>();
+    let current = teams.get(sourceKey)?.lineage ?? null;
+    while (current !== null) {
+      if (visited.has(current)) return null;
+      visited.add(current);
+      const override = overrides.identities.get(current);
+      if (override?.validFrom !== undefined) return override.validFrom;
+      const dates = observed.get(current);
+      if (dates !== undefined) return dates.from;
+      current = teams.get(current)?.lineage ?? null;
+    }
+    return null;
+  };
+  const result = new Map<string, { validFrom: string | null; validTo: string | null }>();
+  for (const [sourceKey, dates] of observed) {
+    const hasStagedPredecessor = [...teams.keys()].some((candidate) => candidate !== sourceKey && isStaged(candidate) && reaches(candidate, sourceKey));
+    const successorBoundary = nextBoundary(sourceKey);
+    result.set(sourceKey, {
+      validFrom: hasStagedPredecessor ? dates.from : null,
+      validTo: successorBoundary === null ? null : previousDay(successorBoundary),
+    });
+  }
+  return result;
+}
+function previousDay(day: string): string {
+  const date = new Date(`${day}T00:00:00Z`);
+  if (Number.isNaN(date.valueOf())) throw new Error(`Invalid inferred team era boundary ${day}.`);
+  date.setUTCDate(date.getUTCDate() - 1);
+  return date.toISOString().slice(0, 10);
+}
 function requiredEntityId(ids: ReadonlyMap<string, string>, key: string, factKey: string): string { const id = ids.get(key); if (id === undefined) throw new Error(`Fact ${factKey} references unresolved or quarantined identity ${key}.`); return id; }
 function selectEra(eras: readonly StagedTeamEraDefinition[], teamEntityId: string, playedAt: string, factKey: string): StagedTeamEraDefinition { const day = playedAt.slice(0, 10); const candidates = eras.filter((era) => era.teamEntityId === teamEntityId && (!era.validFrom || era.validFrom <= day) && (!era.validTo || era.validTo >= day)); if (candidates.length !== 1) throw new Error(`Fact ${factKey} requires exactly one team era at ${day}; found ${candidates.length}.`); return candidates[0]!; }
 function completedScores(bestOf: 1 | 3 | 5, a: number | null, b: number | null, key: string): { a: number; b: number } { if (a === null || b === null || !Number.isInteger(a) || !Number.isInteger(b) || a < 0 || b < 0) throw new Error(`Series ${key} scores are invalid.`); const target = Math.floor(bestOf / 2) + 1; if (!((a === target && b < target) || (b === target && a < target))) throw new Error(`Series ${key} score is inconsistent with BestOf ${bestOf}.`); return { a, b }; }

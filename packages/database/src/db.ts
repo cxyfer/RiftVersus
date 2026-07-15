@@ -1,5 +1,6 @@
 import { Kysely, PostgresDialect } from "kysely";
-import { Pool } from "pg";
+import { DateSchema } from "@riftversus/contracts";
+import { Pool, TypeOverrides, types } from "pg";
 
 import type { Database } from "./types.js";
 
@@ -10,6 +11,16 @@ export interface CreateDbOptions {
 }
 
 const schemaName = /^[a-z_][a-z0-9_]*$/;
+
+export function parsePostgresDateText(value: string): string {
+  return DateSchema.parse(value);
+}
+
+function createPostgresTypeOverrides(): TypeOverrides {
+  const overrides = new TypeOverrides();
+  overrides.setTypeParser(types.builtins.DATE, "text", parsePostgresDateText);
+  return overrides;
+}
 
 export function assertSchemaName(schema: string) {
   if (!schemaName.test(schema)) {
@@ -24,6 +35,7 @@ export function createDb({ databaseUrl, schema }: CreateDbOptions): Kysely<Datab
 
   const pool = new Pool({
     connectionString: databaseUrl,
+    types: createPostgresTypeOverrides(),
     ...(schema === undefined ? {} : { options: `-c search_path=${schema}` }),
   });
 

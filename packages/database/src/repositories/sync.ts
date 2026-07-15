@@ -5,7 +5,9 @@ import type { Kysely } from "kysely";
 
 import type { Database } from "../types.js";
 import type {
-  BeginSyncRunInput, CompleteUnchangedSyncRunInput, DatasetVersion, FailSyncRunInput, GameFactInput, PublishDatasetInput, SeriesFactInput, SourceObjectInput, SyncRun,
+  AcceptanceDatasetEvidence, AcceptanceMediaObjectMetadata, AcceptanceSourceObjectMetadata, BeginSyncRunInput,
+  CompleteUnchangedSyncRunInput, DatasetVersion, FailSyncRunInput, GameFactInput, PublishDatasetInput,
+  SeriesFactInput, SourceObjectInput, SyncRun,
 } from "./types.js";
 
 function toSyncRun(row: { id: string; provider: string; mode: string; status: string; parser_version: string; started_at: Date; finished_at: Date | null; error: string | null }): SyncRun {
@@ -25,6 +27,52 @@ export async function beginSyncRun(input: BeginSyncRunInput, db: Kysely<Database
 
 export async function recordSourceObject(input: SourceObjectInput, db: Kysely<Database>): Promise<"inserted" | "existing"> {
   return (await recordSourceObjectWithId(input, db)).status;
+}
+
+export async function findSourceObjectMetadataByKey(objectKey: string, db: Kysely<Database>): Promise<AcceptanceSourceObjectMetadata[]> {
+  const rows = await db.selectFrom("source_objects").select(["id", "provider", "source_url", "object_key", "checksum", "content_type", "byte_size", "retrieved_at", "parser_version"]).where("object_key", "=", objectKey).execute();
+  return rows.map((row) => ({
+    id: row.id, provider: row.provider, sourceUrl: row.source_url, objectKey: row.object_key, checksum: row.checksum,
+    contentType: row.content_type, byteSize: row.byte_size, retrievedAt: row.retrieved_at.toISOString(), parserVersion: row.parser_version,
+  }));
+}
+
+export async function findMediaObjectMetadataByKey(objectKey: string, db: Kysely<Database>): Promise<AcceptanceMediaObjectMetadata | null> {
+  const row = await db.selectFrom("media_objects").select(["object_key", "checksum", "content_type", "byte_size"]).where("object_key", "=", objectKey).executeTakeFirst();
+  return row === undefined ? null : { objectKey: row.object_key, checksum: row.checksum, contentType: row.content_type, byteSize: row.byte_size };
+}
+
+export async function findAcceptanceDatasetEvidence(version: string, seriesIds: readonly string[], db: Kysely<Database>): Promise<AcceptanceDatasetEvidence> {
+  const dataset = await db.selectFrom("dataset_versions").select(["id", "generation", "published_at"]).where("version", "=", version).executeTakeFirst();
+  if (dataset === undefined) return { dataset: null, facts: [], coverage: [] };
+  const series = seriesIds.length === 0 ? [] : await db.selectFrom("series_facts").select(["id", "provider", "publication_generation", "retired_generation"]).where("id", "in", [...seriesIds]).execute();
+  const games = seriesIds.length === 0 ? [] : await db.selectFrom("game_facts").select(["id", "series_id", "provider", "publication_generation", "retired_generation"]).where("series_id", "in", [...seriesIds]).execute();
+  const coverage = await db.selectFrom("coverage_status")
+    .select(["provider", "competition", "season_year", "earliest_date", "latest_date", "status"])
+    .where("dataset_version_id", "=", dataset.id)
+    .orderBy("provider").orderBy("competition").orderBy("season_year")
+    .execute();
+  const identities = [...series.map((item) => ({ kind: "series" as const, id: item.id })), ...games.map((item) => ({ kind: "game" as const, id: item.id }))];
+  const factIds = identities.map((item) => item.id);
+  const audits = factIds.length === 0 ? [] : await db.selectFrom("fact_mutation_audits").select(["audit_id", "fact_table", "fact_id", "source_object_id"])
+    .where("fact_id", "in", factIds).orderBy("audit_id", "desc").execute();
+  const latestAudit = new Map<string, string | null>();
+  for (const audit of audits) {
+    const kind = audit.fact_table === "series_facts" ? "series" : "game";
+    const key = `${kind}:${audit.fact_id}`;
+    if (!latestAudit.has(key)) latestAudit.set(key, audit.source_object_id);
+  }
+  return {
+    dataset: { generation: dataset.generation, publishedAt: dataset.published_at.toISOString() },
+    coverage: coverage.map((row) => ({
+      provider: row.provider, competition: row.competition, seasonYear: row.season_year,
+      earliestDate: row.earliest_date, latestDate: row.latest_date, status: row.status,
+    })),
+    facts: [
+      ...series.map((item) => ({ kind: "series" as const, id: item.id, provider: item.provider, publicationGeneration: item.publication_generation, retiredGeneration: item.retired_generation, sourceObjectId: latestAudit.get(`series:${item.id}`) ?? null })),
+      ...games.map((item) => ({ kind: "game" as const, id: item.id, seriesId: item.series_id, provider: item.provider, publicationGeneration: item.publication_generation, retiredGeneration: item.retired_generation, sourceObjectId: latestAudit.get(`game:${item.id}`) ?? null })),
+    ],
+  };
 }
 
 export async function recordSourceObjectWithId(input: SourceObjectInput, db: Kysely<Database>): Promise<{ id: string; status: "inserted" | "existing" }> {
@@ -95,9 +143,11 @@ export async function publishDataset(input: PublishDatasetInput, db: Kysely<Data
         if (roster.length === 0) await trx.deleteFrom("game_players").where("game_id", "=", gameId).execute();
         else await trx.deleteFrom("game_players").where("game_id", "=", gameId).where("player_entity_id", "not in", roster.map((player) => player.playerEntityId)).execute();
       }
-      await trx.insertInto("game_players").values(gamePlayers.map((item) => ({
-      game_id: item.gameId, player_entity_id: item.playerEntityId, side: item.side, team_entity_id: item.teamEntityId,
-      }))).onConflict((conflict) => conflict.columns(["game_id", "player_entity_id"]).doUpdateSet((eb) => ({ side: eb.ref("excluded.side"), team_entity_id: eb.ref("excluded.team_entity_id") }))).execute();
+      if (gamePlayers.length > 0) {
+        await trx.insertInto("game_players").values(gamePlayers.map((item) => ({
+          game_id: item.gameId, player_entity_id: item.playerEntityId, side: item.side, team_entity_id: item.teamEntityId,
+        }))).onConflict((conflict) => conflict.columns(["game_id", "player_entity_id"]).doUpdateSet((eb) => ({ side: eb.ref("excluded.side"), team_entity_id: eb.ref("excluded.team_entity_id") }))).execute();
+      }
     }
     const finishedAt = new Date();
     const version = await trx.insertInto("dataset_versions").values({ id: randomUUID(), version: input.version, sync_run_id: input.syncRunId, generation })

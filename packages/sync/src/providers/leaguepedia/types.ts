@@ -2,7 +2,7 @@ import type { CanonicalFacts, CoverageInput } from "@riftversus/database";
 
 import type { StagedDimensions } from "../../types.js";
 
-export const LEAGUEPEDIA_CARGO_TABLES = ["Teams", "Players", "Tournaments", "ScoreboardGames", "ScoreboardPlayers"] as const;
+export const LEAGUEPEDIA_CARGO_TABLES = ["Teams", "TeamRedirects", "Players", "PlayerRedirects", "Tournaments", "MatchSchedule", "ScoreboardGames", "ScoreboardPlayers"] as const;
 export type LeaguepediaCargoTable = (typeof LEAGUEPEDIA_CARGO_TABLES)[number];
 
 export interface LeaguepediaClientOptions {
@@ -11,6 +11,7 @@ export interface LeaguepediaClientOptions {
   fetch?: typeof fetch;
   timeoutMs?: number;
   maxRetries?: number;
+  requestIntervalMs?: number;
   sleep?: (milliseconds: number) => Promise<void>;
   now?: () => number;
   maxResponseBytes?: number;
@@ -18,12 +19,12 @@ export interface LeaguepediaClientOptions {
 
 export interface RawApiEvidence {
   requestId: string;
-  action: "query" | "cargoquery";
+  action: "query" | "cargoexport";
   table?: LeaguepediaCargoTable;
   offset?: number;
   continuation?: Readonly<Record<string, string>>;
   sourceUrl: string;
-  response: Record<string, unknown>;
+  response: unknown;
   responseBytes?: number;
   revisionIds: readonly number[];
   scope?: {
@@ -33,6 +34,7 @@ export interface RawApiEvidence {
     from?: string;
     to?: string;
     gameIds?: readonly string[];
+    matchIds?: readonly string[];
   };
 }
 export interface CargoPage { rows: readonly Record<string, unknown>[]; offset: number; rawEvidence: RawApiEvidence }
@@ -40,6 +42,7 @@ export interface QueryEvidenceResult { data: Record<string, unknown>; rawEvidenc
 export interface OffsetInput { offset: number }
 export interface GamesPageInput extends OffsetInput { from: string; to: string; competitions: readonly string[] }
 export interface GamePlayersPageInput extends OffsetInput { gameIds: readonly string[] }
+export interface MatchSchedulesPageInput extends OffsetInput { matchIds: readonly string[] }
 export interface TraversalEvidence { requestedPages: number; visitedPages: number; complete: boolean }
 
 export interface LeaguepediaEntity {
@@ -119,6 +122,11 @@ export interface LeaguepediaSliceEvidence {
   gameSourceKeys: readonly string[];
   traversal: TraversalEvidence;
   malformedOptionalRows: number;
+  malformedOptionalRowKeys: readonly string[];
+  excludedOptionalDimensionRows: number;
+  excludedOptionalDimensionRowKeys: readonly string[];
+  outOfScopeForwardRenames: number;
+  outOfScopeForwardRenameSamples: readonly string[];
 }
 
 export interface NormalizedLeaguepediaEntity extends LeaguepediaEntity {
