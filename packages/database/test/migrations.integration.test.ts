@@ -39,6 +39,7 @@ describeWithDatabase("initial schema migration", () => {
         expect.objectContaining({ migrationName: "006_fact_retirement", status: "Success" }),
         expect.objectContaining({ migrationName: "007_shared_media_objects", status: "Success" }),
         expect.objectContaining({ migrationName: "008_entity_search_indexes", status: "Success" }),
+        expect.objectContaining({ migrationName: "009_player_public_id", status: "Success" }),
       ]));
 
       const secondRun = await migrateToLatest(db, { schema });
@@ -94,6 +95,7 @@ describeWithDatabase("initial schema migration", () => {
           "entity_aliases_display_name_search",
           "entities_canonical_name_trgm",
           "entities_slug_trgm",
+          "entities_player_id_trgm",
           "entity_aliases_display_name_trgm",
           "tournaments_category_lookup",
           "series_facts_comparison_lookup",
@@ -110,6 +112,62 @@ describeWithDatabase("initial schema migration", () => {
       const currentMediaIndex = indexes.rows.find((index) => index.indexname === "media_assets_current_entity_kind_unique")?.indexdef;
       expect(currentMediaIndex).toContain("WHERE");
       expect(currentMediaIndex).toContain("is_current");
+      const playerIdIndex = await sql<{
+        access_method: string;
+        column_name: string;
+        has_predicate: boolean;
+        operator_class: string;
+        operator_class_schema: string;
+        predicate: string;
+      }>`
+        select access_method.amname as access_method,
+          indexed_attribute.attname as column_name,
+          index_metadata.indpred is not null as has_predicate,
+          operator_class.opcname as operator_class,
+          operator_class_namespace.nspname as operator_class_schema,
+          pg_get_expr(index_metadata.indpred, index_metadata.indrelid) as predicate
+        from pg_class index_relation
+        join pg_namespace table_namespace on table_namespace.oid = index_relation.relnamespace
+        join pg_index index_metadata on index_metadata.indexrelid = index_relation.oid
+        join pg_class table_relation on table_relation.oid = index_metadata.indrelid
+        join pg_am access_method on access_method.oid = index_relation.relam
+        join pg_attribute indexed_attribute
+          on indexed_attribute.attrelid = table_relation.oid
+          and indexed_attribute.attnum = index_metadata.indkey[0]
+        join pg_opclass operator_class on operator_class.oid = index_metadata.indclass[0]
+        join pg_namespace operator_class_namespace on operator_class_namespace.oid = operator_class.opcnamespace
+        where table_namespace.nspname = ${schema}
+          and table_relation.relname = 'entities'
+          and index_relation.relname = 'entities_player_id_trgm'
+      `.execute(db);
+      expect(playerIdIndex.rows).toHaveLength(1);
+      expect(playerIdIndex.rows[0]).toMatchObject({
+        access_method: "gin",
+        column_name: "player_id",
+        has_predicate: true,
+        operator_class: "gin_trgm_ops",
+        operator_class_schema: "public",
+      });
+      expect(playerIdIndex.rows[0]?.predicate).toContain("kind = 'player'::text");
+      expect(playerIdIndex.rows[0]?.predicate).toContain("player_id IS NOT NULL");
+
+      const playerIdColumn = await sql<{ is_nullable: string; data_type: string }>`
+        select is_nullable, data_type
+        from information_schema.columns
+        where table_schema = ${schema} and table_name = 'entities' and column_name = 'player_id'
+      `.execute(db);
+      expect(playerIdColumn.rows).toEqual([{ is_nullable: "YES", data_type: "text" }]);
+
+      const playerIdConstraint = await sql<{ definition: string }>`
+        select pg_get_constraintdef(oid) as definition
+        from pg_constraint
+        where conrelid = ${`${schema}.entities`}::regclass and conname = 'entities_player_id_owner'
+      `.execute(db);
+      expect(playerIdConstraint.rows).toHaveLength(1);
+      expect(playerIdConstraint.rows[0]?.definition).toContain("player_id IS NULL");
+      expect(playerIdConstraint.rows[0]?.definition).toContain("kind = 'player'::text");
+      expect(playerIdConstraint.rows[0]?.definition).toContain("btrim(player_id) = player_id");
+      expect(playerIdConstraint.rows[0]?.definition).toContain("player_id <> ''::text");
 
       await expect(
         db.insertInto("entities").values({
@@ -127,6 +185,46 @@ describeWithDatabase("initial schema migration", () => {
         { id: seedIds.player, kind: "player", canonical_name: "Player", slug: "player" },
         { id: seedIds.region, kind: "region", canonical_name: "Region", slug: "region" },
       ]).execute();
+      await db.updateTable("entities").set({ player_id: "Faker" }).where("id", "=", seedIds.player).execute();
+      expect(
+        await db.selectFrom("entities").select(["canonical_name", "player_id"]).where("id", "=", seedIds.player).executeTakeFirstOrThrow(),
+      ).toEqual({ canonical_name: "Player", player_id: "Faker" });
+
+      const expectPlayerIdentityUnchanged = async () => {
+        const [player, entityCount] = await Promise.all([
+          db.selectFrom("entities").select(["canonical_name", "player_id"]).where("id", "=", seedIds.player).executeTakeFirstOrThrow(),
+          db.selectFrom("entities").select(({ fn }) => fn.countAll<number>().as("count")).executeTakeFirstOrThrow(),
+        ]);
+        expect(player).toEqual({ canonical_name: "Player", player_id: "Faker" });
+        expect(entityCount).toEqual({ count: "5" });
+      };
+
+      for (const [caseName, invalidPlayerId] of [
+        ["leading-whitespace", " Faker"],
+        ["trailing-whitespace", "Faker "],
+        ["empty", ""],
+        ["whitespace-only", "   "],
+      ] as const) {
+        await expect(
+          db.updateTable("entities").set({ player_id: invalidPlayerId }).where("id", "=", seedIds.player).execute(),
+        ).rejects.toThrow();
+        await expectPlayerIdentityUnchanged();
+
+        await expect(
+          db.insertInto("entities").values({
+            id: randomUUID(),
+            kind: "player",
+            canonical_name: `Invalid ${caseName}`,
+            player_id: invalidPlayerId,
+            slug: `invalid-player-id-${caseName}`,
+          }).execute(),
+        ).rejects.toThrow();
+        await expectPlayerIdentityUnchanged();
+      }
+
+      await expect(
+        db.updateTable("entities").set({ player_id: "T1" }).where("id", "=", seedIds.teamA).execute(),
+      ).rejects.toThrow();
       await expect(
         db.insertInto("team_eras").values({
           id: randomUUID(),
@@ -485,6 +583,172 @@ describeWithDatabase("initial schema migration", () => {
   });
 });
 
+describeWithDatabase("player public ID migration downgrade", () => {
+  const adminPool = new Pool({ connectionString: databaseUrl });
+  afterAll(async () => { await adminPool.end(); });
+
+  async function setup() {
+    const schema = createTestSchemaName();
+    await adminPool.query(`create schema ${schema}`);
+    const db = createDb({ databaseUrl: databaseUrl!, schema });
+    await migrateToLatest(db, { schema });
+    return { schema, db };
+  }
+
+  async function cleanup(schema: string, db: ReturnType<typeof createDb>) {
+    await destroyDb(db);
+    await adminPool.query(`drop schema if exists ${schema} cascade`);
+  }
+
+  async function schemaState(schema: string, db: ReturnType<typeof createDb>) {
+    const state = await sql<{
+      column_exists: boolean;
+      constraint_exists: boolean;
+      index_exists: boolean;
+      migration_exists: boolean;
+    }>`
+      select
+        exists (
+          select 1 from information_schema.columns
+          where table_schema = ${schema} and table_name = 'entities' and column_name = 'player_id'
+        ) as column_exists,
+        exists (
+          select 1 from pg_constraint
+          where conrelid = ${`${schema}.entities`}::regclass and conname = 'entities_player_id_owner'
+        ) as constraint_exists,
+        to_regclass(${`${schema}.entities_player_id_trgm`}) is not null as index_exists,
+        exists (
+          select 1 from ${sql.table(`${schema}.kysely_migration`)} where name = '009_player_public_id'
+        ) as migration_exists
+    `.execute(db);
+    return state.rows[0];
+  }
+
+  async function waitForPendingAccessExclusiveLock(schema: string) {
+    const timeoutAt = Date.now() + 5_000;
+    while (Date.now() < timeoutAt) {
+      const result = await adminPool.query<{ waiting: boolean }>(`
+        select exists (
+          select 1 from pg_locks
+          where relation = to_regclass($1)
+            and mode = 'AccessExclusiveLock'
+            and not granted
+        ) as waiting
+      `, [`${schema}.entities`]);
+      if (result.rows[0]?.waiting) return;
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    }
+    throw new Error("Timed out waiting for the downgrade's ACCESS EXCLUSIVE lock request.");
+  }
+
+  it("refuses a lossy downgrade and preserves the player identity", async () => {
+    const context = await setup();
+    const playerId = randomUUID();
+    try {
+      await context.db.insertInto("entities").values({
+        id: playerId,
+        kind: "player",
+        canonical_name: "Lee Sang-hyeok",
+        slug: "lee-sang-hyeok",
+        player_id: "Faker",
+      }).execute();
+
+      const result = await createMigrator(context.db, { schema: context.schema }).migrateDown();
+      expect(result.error).toBeInstanceOf(Error);
+      expect(String((result.error as Error).message)).toMatch(/cannot losslessly downgrade player public ID/i);
+      expect(
+        await context.db.selectFrom("entities").select(["canonical_name", "player_id"]).where("id", "=", playerId).executeTakeFirstOrThrow(),
+      ).toEqual({ canonical_name: "Lee Sang-hyeok", player_id: "Faker" });
+      const migration = await sql<{ name: string }>`
+        select name from ${sql.table(`${context.schema}.kysely_migration`)} where name = '009_player_public_id'
+      `.execute(context.db);
+      expect(migration.rows).toEqual([{ name: "009_player_public_id" }]);
+    } finally {
+      await cleanup(context.schema, context.db);
+    }
+  });
+
+  it("downgrades when every player ID is null and rebuilds the schema", async () => {
+    const context = await setup();
+    try {
+      await context.db.insertInto("entities").values({
+        id: randomUUID(),
+        kind: "player",
+        canonical_name: "Legacy Player",
+        slug: "legacy-player",
+      }).execute();
+
+      const downgrade = await createMigrator(context.db, { schema: context.schema }).migrateDown();
+      expect(downgrade.error).toBeUndefined();
+      expect(downgrade.results).toEqual([
+        expect.objectContaining({ migrationName: "009_player_public_id", direction: "Down", status: "Success" }),
+      ]);
+      expect(await schemaState(context.schema, context.db)).toEqual({
+        column_exists: false,
+        constraint_exists: false,
+        index_exists: false,
+        migration_exists: false,
+      });
+
+      const upgrade = await migrateToLatest(context.db, { schema: context.schema });
+      expect(upgrade.results).toEqual([
+        expect.objectContaining({ migrationName: "009_player_public_id", direction: "Up", status: "Success" }),
+      ]);
+      expect(await schemaState(context.schema, context.db)).toEqual({
+        column_exists: true,
+        constraint_exists: true,
+        index_exists: true,
+        migration_exists: true,
+      });
+    } finally {
+      await cleanup(context.schema, context.db);
+    }
+  });
+
+  it("waits for a concurrent player ID write and then refuses the lossy downgrade", async () => {
+    const context = await setup();
+    const playerId = randomUUID();
+    const writer = await adminPool.connect();
+    let writerTransactionOpen = false;
+    let downgradePromise: ReturnType<ReturnType<typeof createMigrator>["migrateDown"]> | undefined;
+    try {
+      await context.db.insertInto("entities").values({
+        id: playerId,
+        kind: "player",
+        canonical_name: "Lee Sang-hyeok",
+        slug: "concurrent-faker",
+      }).execute();
+
+      await writer.query("begin");
+      writerTransactionOpen = true;
+      await writer.query(`update ${context.schema}.entities set player_id = 'Faker' where id = $1`, [playerId]);
+
+      downgradePromise = createMigrator(context.db, { schema: context.schema }).migrateDown();
+      await waitForPendingAccessExclusiveLock(context.schema);
+
+      await writer.query("commit");
+      writerTransactionOpen = false;
+      const downgrade = await downgradePromise;
+      expect(downgrade.error).toBeInstanceOf(Error);
+      expect(String((downgrade.error as Error).message)).toMatch(/cannot losslessly downgrade player public ID/i);
+      expect(
+        await context.db.selectFrom("entities").select(["canonical_name", "player_id"]).where("id", "=", playerId).executeTakeFirstOrThrow(),
+      ).toEqual({ canonical_name: "Lee Sang-hyeok", player_id: "Faker" });
+      expect(await schemaState(context.schema, context.db)).toEqual({
+        column_exists: true,
+        constraint_exists: true,
+        index_exists: true,
+        migration_exists: true,
+      });
+    } finally {
+      if (writerTransactionOpen) await writer.query("rollback");
+      if (downgradePromise !== undefined) await downgradePromise.catch(() => undefined);
+      writer.release();
+      await cleanup(context.schema, context.db);
+    }
+  });
+});
+
 describeWithDatabase("override provenance migration downgrade", () => {
   const adminPool = new Pool({ connectionString: databaseUrl });
   afterAll(async () => { await adminPool.end(); });
@@ -494,9 +758,7 @@ describeWithDatabase("override provenance migration downgrade", () => {
     await adminPool.query(`create schema ${schema}`);
     const db = createDb({ databaseUrl: databaseUrl!, schema });
     await migrateToLatest(db, { schema });
-    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
-    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
-    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
+    expect((await createMigrator(db, { schema }).migrateTo("005_override_run_provenance")).error).toBeUndefined();
     const applicationId = randomUUID(); const firstRunId = randomUUID(); const secondRunId = randomUUID();
     await db.insertInto("sync_runs").values([
       { id: firstRunId, provider: "leaguepedia", mode: "sync", status: "running", parser_version: "test" },
@@ -549,7 +811,7 @@ describeWithDatabase("shared media objects migration downgrade", () => {
     await adminPool.query(`create schema ${schema}`);
     const db = createDb({ databaseUrl: databaseUrl!, schema });
     await migrateToLatest(db, { schema });
-    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
+    expect((await createMigrator(db, { schema }).migrateTo("007_shared_media_objects")).error).toBeUndefined();
     const entityIds = [randomUUID(), randomUUID()];
     await db.insertInto("entities").values(entityIds.slice(0, ownerCount).map((id, index) => ({ id, kind: "team" as const, canonical_name: `Media Owner ${index}`, slug: `media-owner-${index}` }))).execute();
     await db.insertInto("media_objects").values({ object_key: "media/shared.png", checksum: "sha256:shared", content_type: "image/png", byte_size: "42" }).execute();
@@ -608,8 +870,7 @@ describeWithDatabase("fact retirement migration downgrade", () => {
     await adminPool.query(`create schema ${schema}`);
     const db = createDb({ databaseUrl: databaseUrl!, schema });
     await migrateToLatest(db, { schema });
-    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
-    expect((await createMigrator(db, { schema }).migrateDown()).error).toBeUndefined();
+    expect((await createMigrator(db, { schema }).migrateTo("006_fact_retirement")).error).toBeUndefined();
     return { schema, db };
   }
 

@@ -37,6 +37,7 @@ function createDependencies(overrides: Partial<Parameters<typeof buildApp>[0]> =
     compare: vi.fn(async () => comparison()),
     getDataset: vi.fn(async () => dataset),
     getMedia: vi.fn(async () => null),
+    getAvatarIdentity: vi.fn(async () => null),
     ...overrides,
   };
 }

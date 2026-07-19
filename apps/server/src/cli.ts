@@ -1,4 +1,4 @@
-import { compareHeadToHead, createDb, destroyDb, getDatasetStatus, getMediaByKey, listAvailableFilters, migrateToLatest, searchEntities } from "@riftversus/database";
+import { compareHeadToHead, createDb, destroyDb, getAvatarIdentity, getDatasetStatus, getMediaByKey, listAvailableFilters, migrateToLatest, searchEntities } from "@riftversus/database";
 import { bootstrapS3Bucket, scheduleSync } from "@riftversus/sync";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -24,6 +24,7 @@ export async function startServer(config: Config) {
       searchEntities: (query) => searchEntities(query, db), listFilters: () => listAvailableFilters(db), compare: (query) => compareHeadToHead(query, db),
       getDataset: async () => { const status = await getDatasetStatus(db); return status === null ? null : { version: status.version, lastSuccessfulSyncAt: status.lastSuccessfulSyncAt, coverage: status.coverage }; },
       getMedia: (key) => getMediaByKey(key, db), ...(objectStore === undefined ? {} : { objectStore }), mediaDelivery: config.mediaDelivery, staticDir: resolve(process.cwd(), "apps/web/dist"),
+      getAvatarIdentity: (kind, id) => getAvatarIdentity(kind, id, db),
     }),
     destroyDb,
   });

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "candidateDocs": [
+    "docs/aegis/specs/2026-07-18-comparison-identity-avatar-v2-design.md",
+    "docs/aegis/plans/2026-07-18-comparison-identity-avatar-v2.md"
+  ],
+  "whyRelevant": "Approved design and executable task plan define the accepted behavior.",
+  "missingAuthority": [
+    "Git worktree isolation and commits are unavailable because .git contains no repository metadata."
+  ]
+}

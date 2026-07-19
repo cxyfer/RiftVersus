@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "affectedLayers": [
+    "contracts",
+    "database",
+    "sync",
+    "server",
+    "web"
+  ],
+  "owners": [
+    "entities.player_id and shared presentation semantics"
+  ],
+  "invariants": [
+    "Player canonical_name remains the real name while player_id is the public competitive ID.",
+    "Comparison history rows always name participating teams regardless of compared subject kinds.",
+    "Avatar v2 is deterministic from kind, id, and English label."
+  ],
+  "compatBoundary": "Retire active avatar v1 path unless evidence proves an external compatibility dependency.",
+  "nonGoals": [
+    "Deleting entities or historical records.",
+    "Inferring player or team avatar styling from current region membership."
+  ]
+}

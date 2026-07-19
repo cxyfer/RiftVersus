@@ -22,4 +22,17 @@ describe("migration safety contracts", () => {
     expect(source).toContain("before update or delete on media_objects");
     expect(source).toContain("execute function riftversus_reject_append_only_mutation()");
   });
+
+  it("guards player public ID downgrade before dropping the additive identity column", async () => {
+    const source = await migrationSource("009_player_public_id.ts");
+    const lock = source.indexOf("lock table entities in access exclusive mode");
+    const guard = source.indexOf("Cannot losslessly downgrade player public ID");
+    expect(lock).toBeGreaterThan(-1);
+    expect(guard).toBeGreaterThan(-1);
+    expect(source).toContain("from entities where player_id is not null");
+    expect(lock).toBeLessThan(guard);
+    expect(guard).toBeLessThan(source.indexOf("drop index if exists entities_player_id_trgm"));
+    expect(guard).toBeLessThan(source.indexOf("alter table entities drop constraint if exists entities_player_id_owner"));
+    expect(guard).toBeLessThan(source.indexOf("alter table entities drop column if exists player_id"));
+  });
 });

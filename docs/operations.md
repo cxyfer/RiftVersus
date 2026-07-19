@@ -21,6 +21,232 @@ evidence. `S3_AUTO_CREATE_BUCKET=true` is accepted only for the local
 `minio`/loopback endpoint. Create remote buckets separately and leave the flag
 false.
 
+## 2026-07-16 local historical stack deployment record
+
+This run established a local, live Leaguepedia stack with Worlds 2013-2025 and
+MSI 2015-2026. MSI 2020 is intentionally absent because the event was
+cancelled. MSI 2017-2019 uses the exact `Main Event` source keys; later MSI
+years use the complete event source key available from Leaguepedia.
+
+This is an operator record for a local deployment, not a signed release or a
+replacement for the reviewed release acceptance snapshot. Commands below are
+repository-root relative and omit the local `rtk` command wrapper used by the
+recording environment.
+
+### Scope and reviewed source mappings
+
+The live run used these logical-to-source mappings in
+`LEAGUEPEDIA_COMPETITION_MAP`:
+
+- Worlds 2013: `Worlds Season 3`;
+- Worlds 2014-2016: `Worlds YYYY`;
+- Worlds 2017-2023 and 2025: `Worlds YYYY Main Event`;
+- Worlds 2024: `Worlds 2024 Main Event`;
+- MSI 2015-2016: `MSI YYYY`;
+- MSI 2017-2019: `MSI YYYY Main Event`;
+- MSI 2021-2026: `MSI YYYY`.
+
+Before importing, review the current source pages and update the mapping rather
+than guessing a source key. The run also added explicit reviewed era boundaries
+for these official rename lineages:
+
+| Canonical team | Source era | Validity used by the import |
+| --- | --- | --- |
+| Saigon Buffalo | Phong Vũ Buffalo | through 2019-05-30 |
+| Saigon Buffalo | Saigon Buffalo | from 2020-05-25 |
+| LYON | Movistar R7 | through 2024-10-30 |
+| LYON | LYON | from 2024-10-31 |
+| Movistar KOI | Splyce | through 2019-11-28 |
+| Movistar KOI | MAD Lions KOI | 2019-11-29 through 2024-12-05 |
+| Movistar KOI | Movistar KOI | from 2024-12-06 |
+
+The reviewed evidence is recorded with page/revision notes in
+`data/overrides/identities.yaml`. The relevant current Leaguepedia timelines
+are [Saigon Buffalo](https://lol.fandom.com/wiki/Saigon_Buffalo),
+[Movistar R7](https://lol.fandom.com/wiki/Movistar_R7),
+[LYON](https://lol.fandom.com/wiki/LYON_%282024_American_Team%29), and
+[MAD Lions KOI](https://lol.fandom.com/wiki/MAD_Lions_KOI).
+
+### Build and initialize a clean stack
+
+Use an isolated Compose project when reviewed identity rules change. Published
+entities, aliases, and eras are immutable, so applying a new canonical merge to
+an existing database is expected to fail closed.
+
+```bash
+export COMPOSE_PROJECT_NAME=riftversus-complete-2013-2026
+
+docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml build app
+docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml up -d postgres minio
+docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml run --rm migrate
+```
+
+The migration job must report migrations `001` through `009` as successful.
+Migration `009` additively introduces nullable `entities.player_id` and its
+search index/constraint; it does not delete or rewrite facts, entities, media,
+or source objects. Existing players remain readable through the documented real
+name fallback until a successful fresh Leaguepedia publication populates their
+public IDs.
+Building `app` produces the shared `riftversus:local` image used by `app`,
+`sync`, and `migrate`.
+
+For an existing retained stack, record the running container/image IDs, current
+dataset version, applied migration names, and a backup/rollback location before
+building or migrating. Then apply the additive migration and publish through
+the normal live provider path:
+
+```bash
+docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml build app
+docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml run --rm migrate
+docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml run --rm sync sync --once
+docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml up -d --no-build --force-recreate app
+```
+
+Do not use a fixture for release publication. A failed migration or provider
+run must be investigated without resetting, truncating, dropping, or deleting
+persistent database rows, named volumes, or object-store objects. Publication
+is atomic: a failed run retains the previously visible generation, which is the
+non-destructive rollback while the source/configuration problem is corrected.
+
+### Import Worlds and MSI
+
+Publish Worlds first so its known count can act as a baseline, then publish MSI
+into the same clean database. Both commands use the same fail-closed sync and
+publication path.
+
+```bash
+docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml run --rm sync \
+  backfill \
+  --year 2013 --year 2014 --year 2015 --year 2016 --year 2017 \
+  --year 2018 --year 2019 --year 2020 --year 2021 --year 2022 \
+  --year 2023 --year 2024 --year 2025 \
+  --competition Worlds
+
+docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml run --rm sync \
+  backfill \
+  --year 2015 --year 2016 --year 2017 --year 2018 --year 2019 \
+  --year 2021 --year 2022 --year 2023 --year 2024 --year 2025 \
+  --year 2026 \
+  --competition MSI
+```
+
+Do not add MSI 2020 as a synthetic zero-row event. A cancelled or nonexistent
+event has no source mapping and should not be represented as complete coverage.
+
+### Database verification
+
+Verify active fact counts, generation coverage, retirement state, and team-era
+overlap before starting the HTTP process:
+
+```bash
+docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml exec -T postgres \
+  psql -U riftversus -d riftversus -P pager=off -c \
+  "select t.category, count(distinct s.id) as series, count(g.id) as games
+   from tournaments t
+   join series_facts s on s.tournament_id = t.id
+   join game_facts g on g.series_id = s.id
+   where s.retired_generation is null and g.retired_generation is null
+   group by t.category order by t.category;"
+
+docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml exec -T postgres \
+  psql -U riftversus -d riftversus -P pager=off -c \
+  "select dv.generation, c.competition,
+          count(*) filter (where c.status = 'complete') as complete_years,
+          count(*) as total_years,
+          min(c.season_year) as first_year,
+          max(c.season_year) as last_year
+   from dataset_versions dv
+   join coverage_status c on c.dataset_version_id = dv.id
+   group by dv.generation, c.competition
+   order by dv.generation;"
+
+docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml exec -T postgres \
+  psql -U riftversus -d riftversus -P pager=off -c \
+  "select count(*) as overlapping_team_era_pairs
+   from team_eras a
+   join team_eras b on b.team_entity_id = a.team_entity_id and b.id > a.id
+   where coalesce(a.valid_from, '-infinity'::date) <= coalesce(b.valid_to, 'infinity'::date)
+     and coalesce(b.valid_from, '-infinity'::date) <= coalesce(a.valid_to, 'infinity'::date);"
+```
+
+The recorded run produced:
+
+| Dataset | Complete years | Series | Games |
+| --- | ---: | ---: | ---: |
+| Worlds 2013-2025 | 13/13 | 686 | 1,005 |
+| MSI 2015-2019 and 2021-2026 | 11/11 | 380 | 659 |
+| MSI 2026 only | 1/1 | 20 | 71 |
+
+Additional database checks returned zero retired series, zero retired games,
+and zero overlapping team-era pairs. The published versions were:
+
+- Worlds generation 1:
+  `leaguepedia-355e88d369c654f9f4b3e075a751c2a282c3ef4b15b045ae206848861eb32188`;
+- MSI generation 2:
+  `leaguepedia-a7938870a47288faa79c1e4fdd2b175535c0629f12575555139fbd05ce61284d`.
+
+### Start and verify the preview
+
+Only the HTTP application was started for this local preview. The scheduled
+`sync` service remained stopped so an unreviewed schedule could not alter the
+historical stack.
+
+```bash
+docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml up -d --no-build app
+docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml ps
+
+curl --fail --silent --show-error http://127.0.0.1:3001/health/ready
+curl --fail --silent --show-error http://127.0.0.1:3001/api/dataset
+curl --fail --silent --show-error http://127.0.0.1:3001/api/filters
+```
+
+The recorded deployment exposed `http://localhost:3001`, reported all three
+containers healthy, and returned dataset coverage from `2015-05-07` through
+`2026-07-12`. `/api/filters` listed both `msi` and `worlds`, including
+`MSI 2026`.
+
+### Failures encountered and recovery decisions
+
+1. Docker was initially unavailable. No deployment commands were retried until
+   the daemon was running and responsive.
+2. Sequential Worlds/MSI imports inferred different team-era dates for
+   Movistar KOI and Saigon Buffalo. Exact reviewed dates replaced the
+   scope-dependent inference; the importer was not weakened.
+3. MSI 2026 introduced the official `Movistar R7 -> LYON` lineage. Because an
+   earlier database had already published Movistar R7 under another immutable
+   identity, the final run used a new Compose project and clean named volumes.
+4. A retained failed snapshot and its successful retry used different source
+   keys for the same content-addressed object. `recordSourceObjectWithId` was
+   made idempotent by object key while still requiring provider, checksum,
+   content type, byte size, and parser version to match. The retry path is
+   covered by a PostgreSQL integration test.
+5. Failed imports never advanced the visible dataset generation. Previously
+   published Worlds/MSI generations remained available until the clean stack
+   passed all checks.
+
+No prior named volumes were deleted during this work. The final active project
+is `riftversus-complete-2013-2026`; earlier diagnostic projects were stopped and
+retained as rollback evidence. A temporary pre-MSI checkpoint was also created
+at `/tmp/riftversus-worlds-before-msi.dump` with a matching MinIO copy at
+`/tmp/riftversus-worlds-before-msi-minio`. Because `/tmp` is not durable backup
+storage, move or recreate these backups before relying on them for recovery.
+
+### Verification recorded for this run
+
+- `pnpm test:workspace`: 389 tests passed;
+- `TEST_DATABASE_URL=... pnpm test:integration`: 40 tests passed;
+- `pnpm typecheck`: passed;
+- `pnpm lint`: passed;
+- production Docker build and runtime artifact pruning: passed;
+- Compose `app`, PostgreSQL, and MinIO health checks: passed;
+- database fact, coverage, retirement, and era-overlap checks: passed;
+- HTTP readiness, dataset, filters, and entity-search probes: passed.
+
+The root `pnpm test` source-retirement guard could not execute in the recording
+workspace because `.git` was an empty directory and `git ls-files` rejected the
+checkout. Restore real Git metadata and rerun the root command before treating
+this local deployment record as release evidence.
+
 ## Preflight
 
 Set all required PostgreSQL, S3, and Leaguepedia variables from

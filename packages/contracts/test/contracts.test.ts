@@ -9,6 +9,7 @@ import {
   EntityKindSchema,
   EventCategorySchema,
   LeagueSlugSchema,
+  ResolvedSubjectSchema,
   SubjectRefSchema,
 } from "../src/index.js";
 
@@ -48,6 +49,34 @@ describe("shared runtime contracts", () => {
 
   it("rejects an era restriction for non-team subjects", () => {
     expect(() => SubjectRefSchema.parse({ kind: "player", id: leftId, teamEraId: eraId })).toThrow();
+  });
+
+  it("preserves a player's public ID and real name as separate fields", () => {
+    const subject = {
+      kind: "player" as const,
+      id: leftId,
+      displayName: "Faker",
+      realName: "Lee Sang-hyeok",
+    };
+
+    expect(ResolvedSubjectSchema.parse(subject)).toEqual(subject);
+  });
+
+  it("rejects an empty player real name", () => {
+    expect(
+      ResolvedSubjectSchema.safeParse({
+        kind: "player",
+        id: leftId,
+        displayName: "Faker",
+        realName: "",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("preserves team subjects without a real name", () => {
+    const subject = { kind: "team" as const, id: leftId, displayName: "T1" };
+
+    expect(ResolvedSubjectSchema.parse(subject)).toEqual(subject);
   });
 
   it("normalizes omitted filters and pagination defaults", () => {

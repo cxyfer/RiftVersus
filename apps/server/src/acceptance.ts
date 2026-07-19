@@ -1,12 +1,12 @@
 import type { Readable } from "node:stream";
 
-import { DateSchema, UuidSchema, type ComparisonQuery, type ComparisonResponse, type EntityKind } from "@riftversus/contracts";
+import { DateSchema, UuidSchema, type ComparisonQuery, type ComparisonResponse } from "@riftversus/contracts";
 import type { AcceptanceDatasetEvidence, AcceptanceMediaObjectMetadata, AcceptanceSourceObjectMetadata } from "@riftversus/database";
 import { encodeLeaguepediaRawInput, type LeaguepediaRawInput } from "@riftversus/sync";
 import { z } from "zod";
 
 import { ExpectedPresentationSchema, readAndHash, verifyPresentation } from "./acceptance-media.js";
-import type { CanonicalAvatar } from "./avatar.js";
+import type { AvatarIdentity, CanonicalAvatar } from "./avatar.js";
 
 const TimestampSchema = z.iso.datetime({ offset: true });
 const ChecksumSchema = z.string().regex(/^[a-f0-9]{64}$/u);
@@ -17,8 +17,30 @@ const LocalSubjectRefSchema = z.object({
   if (subject.kind !== "team" && subject.teamEraId !== undefined) context.addIssue({ code: "custom", message: "teamEraId is only valid for team subjects.", path: ["teamEraId"] });
 });
 const ExpectedRowSchema = z.object({
-  id: UuidSchema, gameIds: z.array(UuidSchema).min(1), date: DateSchema, leftScore: z.number().int().nonnegative(), rightScore: z.number().int().nonnegative(), winner: z.enum(["left", "right"]),
+  id: UuidSchema, gameIds: z.array(UuidSchema).min(1), date: DateSchema,
+  leftName: z.string().min(1), rightName: z.string().min(1),
+  leftScore: z.number().int().nonnegative(), rightScore: z.number().int().nonnegative(), winner: z.enum(["left", "right"]),
 }).strict();
+const ExpectedRowsSchema = z.array(ExpectedRowSchema).min(1).max(100).superRefine((rows, context) => {
+  const seriesIds = new Set<string>();
+  const gameIds = new Set<string>();
+  rows.forEach((row, rowIndex) => {
+    const seriesId = row.id.toLowerCase();
+    if (seriesIds.has(seriesId)) {
+      context.addIssue({ code: "custom", message: "Duplicate reviewed series ID.", path: [rowIndex, "id"] });
+    } else {
+      seriesIds.add(seriesId);
+    }
+    row.gameIds.forEach((gameId, gameIndex) => {
+      const canonicalGameId = gameId.toLowerCase();
+      if (gameIds.has(canonicalGameId)) {
+        context.addIssue({ code: "custom", message: "Duplicate reviewed game ID.", path: [rowIndex, "gameIds", gameIndex] });
+      } else {
+        gameIds.add(canonicalGameId);
+      }
+    });
+  });
+});
 const ReviewedCoverageRowSchema = z.object({
   provider: z.literal("leaguepedia"), competition: z.literal("Worlds"),
   seasonYear: z.number().int().min(2013).max(2025),
@@ -56,7 +78,7 @@ const ReviewedSnapshotSchema = z.object({
     seriesWins: z.number().int().nonnegative(), seriesLosses: z.number().int().nonnegative(),
     gameWins: z.number().int().nonnegative(), gameLosses: z.number().int().nonnegative(),
     media: z.object({ left: ExpectedPresentationSchema, right: ExpectedPresentationSchema }).strict(),
-    rows: z.array(ExpectedRowSchema).min(1).max(100),
+    rows: ExpectedRowsSchema,
   }).strict(),
   review: z.object({ reviewedAt: TimestampSchema, reviewer: z.string().min(1) }).strict(),
 }).strict();
@@ -72,7 +94,8 @@ export interface AcceptanceVerificationDependencies {
   getSourceMetadata(key: string): Promise<AcceptanceSourceObjectMetadata[]>;
   getDatasetEvidence(version: string, seriesIds: readonly string[]): Promise<AcceptanceDatasetEvidence>;
   getMediaMetadata(key: string): Promise<AcceptanceMediaObjectMetadata | null>;
-  generateAvatar(kind: EntityKind, id: string): CanonicalAvatar;
+  getAvatarIdentity(kind: AvatarIdentity["kind"], id: string): Promise<AvatarIdentity | null>;
+  generateAvatar(identity: AvatarIdentity): CanonicalAvatar;
 }
 
 export type AcceptanceEvaluation =
@@ -81,6 +104,10 @@ export type AcceptanceEvaluation =
 
 function invalidSnapshot(error: z.ZodError): AcceptanceEvaluation {
   return { status: "blocked", blockers: error.issues.map((issue) => `Invalid acceptance snapshot at ${issue.path.join(".") || "root"}: ${issue.message}`) };
+}
+
+function dependencyFailure(stage: string, error: unknown): string {
+  return `Acceptance dependency verification failed: ${stage}: ${error instanceof Error ? error.message : String(error)}`;
 }
 
 function approvedRequestUrl(requestUrl: string, endpoint: string, title: string): boolean {
@@ -181,8 +208,8 @@ function verifyCanonical(snapshot: ReviewedSnapshot, response: ComparisonRespons
   if (media.some((url) => url === undefined || url.endsWith("placeholder.svg"))) blockers.push("Both canonical subjects must resolve to non-placeholder presentation images.");
   if (response.seriesSummary.wins !== expected.seriesWins || response.seriesSummary.losses !== expected.seriesLosses) blockers.push("Reviewed expectations do not match canonical series totals.");
   if (response.gameSummary.wins !== expected.gameWins || response.gameSummary.losses !== expected.gameLosses) blockers.push("Reviewed expectations do not match canonical game totals.");
-  const observedRows = response.rows.map(({ id, date, leftScore, rightScore, winner }) => ({ id, date, leftScore, rightScore, winner }));
-  const expectedRows = expected.rows.map(({ id, date, leftScore, rightScore, winner }) => ({ id, date, leftScore, rightScore, winner }));
+  const observedRows = response.rows.map(({ id, date, leftName, rightName, leftScore, rightScore, winner }) => ({ id, date, leftName, rightName, leftScore, rightScore, winner }));
+  const expectedRows = expected.rows.map(({ id, date, leftName, rightName, leftScore, rightScore, winner }) => ({ id, date, leftName, rightName, leftScore, rightScore, winner }));
   if (JSON.stringify(observedRows) !== JSON.stringify(expectedRows) || response.nextCursor !== undefined) blockers.push("Canonical chronological series rows do not match the reviewed snapshot.");
   if (response.rows.some((row, index) => index > 0 && row.date > response.rows[index - 1]!.date)) blockers.push("Canonical series rows are not in reverse chronological order.");
   if (response.dataset.version !== snapshot.datasetVersion) blockers.push("Canonical dataset version does not match the reviewed snapshot.");
@@ -241,23 +268,37 @@ export async function verifyAcceptanceSnapshot(input: unknown, dependencies: Acc
     } catch (error) { blockers.push(`Immutable raw object verification failed for ${source.objectKey}: ${error instanceof Error ? error.message : String(error)}`); }
   }
 
+  let response: ComparisonResponse;
   try {
-    const response = await dependencies.compare({
+    response = await dependencies.compare({
       left: snapshot.comparison.left, right: snapshot.comparison.right, eventCategories: ["worlds"], leagues: [], bestOf: [5], tournamentIds: [], limit: 100,
     });
-    verifyCanonical(snapshot, response, blockers);
-    const datasetEvidence = await dependencies.getDatasetEvidence(snapshot.datasetVersion, snapshot.expected.rows.map((row) => row.id));
-    verifyDatasetEvidence(snapshot, datasetEvidence, reviewedSourceIds, blockers);
-    if (response.subjects.left.mediaUrl !== response.mediaUrls.left || response.subjects.right.mediaUrl !== response.mediaUrls.right) blockers.push("Canonical subject media URLs do not match comparison media URLs.");
-    await verifyPresentation("left", response.subjects.left, response.mediaUrls.left, snapshot.expected.media.left, dependencies, blockers);
-    await verifyPresentation("right", response.subjects.right, response.mediaUrls.right, snapshot.expected.media.right, dependencies, blockers);
-    if (blockers.length > 0) return { status: "blocked", blockers };
-    return { status: "ready", blockers: [], observed: {
-      datasetVersion: response.dataset.version, seriesWins: response.seriesSummary.wins, seriesLosses: response.seriesSummary.losses,
-      gameWins: response.gameSummary.wins, gameLosses: response.gameSummary.losses, seriesIds: response.rows.map((row) => row.id),
-    } };
   } catch (error) {
-    blockers.push(`Canonical PostgreSQL comparison failed: ${error instanceof Error ? error.message : String(error)}`);
+    blockers.push(dependencyFailure("comparison", error));
     return { status: "blocked", blockers };
   }
+
+  verifyCanonical(snapshot, response, blockers);
+  try {
+    const datasetEvidence = await dependencies.getDatasetEvidence(snapshot.datasetVersion, snapshot.expected.rows.map((row) => row.id));
+    verifyDatasetEvidence(snapshot, datasetEvidence, reviewedSourceIds, blockers);
+  } catch (error) {
+    blockers.push(dependencyFailure("dataset evidence", error));
+  }
+  if (response.subjects.left.mediaUrl !== response.mediaUrls.left || response.subjects.right.mediaUrl !== response.mediaUrls.right) blockers.push("Canonical subject media URLs do not match comparison media URLs.");
+  try {
+    await verifyPresentation("left", response.subjects.left, response.mediaUrls.left, snapshot.expected.media.left, dependencies, blockers);
+  } catch (error) {
+    blockers.push(dependencyFailure("left presentation", error));
+  }
+  try {
+    await verifyPresentation("right", response.subjects.right, response.mediaUrls.right, snapshot.expected.media.right, dependencies, blockers);
+  } catch (error) {
+    blockers.push(dependencyFailure("right presentation", error));
+  }
+  if (blockers.length > 0) return { status: "blocked", blockers };
+  return { status: "ready", blockers: [], observed: {
+    datasetVersion: response.dataset.version, seriesWins: response.seriesSummary.wins, seriesLosses: response.seriesSummary.losses,
+    gameWins: response.gameSummary.wins, gameLosses: response.gameSummary.losses, seriesIds: response.rows.map((row) => row.id),
+  } };
 }

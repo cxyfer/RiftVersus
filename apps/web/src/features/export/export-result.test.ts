@@ -30,8 +30,8 @@ function row(index: number): SeriesRow {
     date: `2025-11-${String((index % 28) + 1).padStart(2, "0")}`,
     event: { id: `99999999-9999-4999-8999-${String(index).padStart(12, "0")}`, name: `Worlds ${index}`, category: "worlds" },
     bestOf: 5,
-    leftName: "T1 / Unsafe",
-    rightName: "LPL: Elite",
+    leftName: "SK Telecom T1",
+    rightName: "Weibo Gaming",
     leftScore: 3,
     rightScore: index % 2,
     winner: "left",
@@ -121,8 +121,11 @@ describe("browser comparison export", () => {
     const secondRoot = mocks.toPng.mock.calls[1]?.[0] as HTMLElement;
     expect(firstRoot.textContent).toContain("DATASET release/2026.07");
     expect(firstRoot.textContent).toContain("WORLDS · LPL · BO5");
-    expect(firstRoot.textContent).toContain("T1 / Unsafe 3:1 LPL: Elite");
-    expect(secondRoot.textContent).toContain("T1 / Unsafe 3:1 LPL: Elite");
+    expect(firstRoot.textContent).toContain("T1 / Unsafe");
+    expect(firstRoot.textContent).toContain("LPL: Elite");
+    expect(firstRoot.textContent).toContain("SK Telecom T1 3:1 Weibo Gaming");
+    expect(secondRoot.textContent).toContain("SK Telecom T1 3:1 Weibo Gaming");
+    expect(firstRoot.textContent).not.toContain("T1 / Unsafe 3:1 LPL: Elite");
     expect(secondRoot.textContent).toContain("GENERATED 2026-07-12 12:34:56 UTC");
     expect(Array.from(firstRoot.querySelectorAll(".export-sheet__row strong"), (node) => node.textContent)).toEqual(rows.slice(0, 50).map((item) => `${item.leftName} ${item.leftScore}:${item.rightScore} ${item.rightName}`));
     expect(Array.from(secondRoot.querySelectorAll(".export-sheet__row strong"), (node) => node.textContent)).toEqual(rows.slice(50).map((item) => `${item.leftName} ${item.leftScore}:${item.rightScore} ${item.rightName}`));

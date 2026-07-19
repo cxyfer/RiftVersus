@@ -11,6 +11,10 @@ docker build --target production -t riftversus:local .
 The same image runs `serve`, `sync`, `sync --once`, `backfill`, and `migrate`.
 Do not combine the HTTP server and scheduler in one container.
 
+For the exact local Worlds 2013-2025 and MSI 2015-2026 build, backfill,
+verification, recovery, and preview sequence recorded on 2026-07-16, see the
+[local historical stack deployment record](operations.md#2026-07-16-local-historical-stack-deployment-record).
+
 ## Services
 
 RiftVersus requires PostgreSQL and an S3-compatible object store. Build one

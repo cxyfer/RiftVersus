@@ -591,6 +591,27 @@ describe("LeaguepediaClient", () => {
 });
 
 describe("Leaguepedia fetching", () => {
+  it("retains the referenced player ID separately from the real name", async () => {
+    const snapshot = await fixture();
+    expect(snapshot.entities.find((entity) => entity.playerId === "Faker")).toMatchObject({
+      kind: "player",
+      sourceKey: "Faker (Player)",
+      playerId: "Faker",
+      displayName: "Lee Sang-hyeok",
+    });
+  });
+
+  it("fails closed when a referenced player lacks an ID", async () => {
+    const input = await rawFixture();
+    const missingId = {
+      ...input,
+      rawEvidence: input.rawEvidence.map((evidence) => evidence.table === "Players"
+        ? { ...evidence, response: (evidence.response as Record<string, unknown>[]).map((row) => row.ID === "Faker" ? { ...row, ID: undefined } : row) }
+        : evidence),
+    };
+    expect(() => parseLeaguepediaRawInput(missingId)).toThrow(/player Faker \(Player\) ID is required/i);
+  });
+
   it("replays current CargoExport arrays without guessing removed fields", async () => {
     const snapshot = parseLeaguepediaRawInput(await currentCargoExportInput());
     expect(snapshot.series).toEqual([
@@ -598,7 +619,7 @@ describe("Leaguepedia fetching", () => {
     ]);
     expect(snapshot.games).toHaveLength(5);
     expect(snapshot.gamePlayers).toHaveLength(50);
-    expect(snapshot.gamePlayers.find((player) => player.playerKey === "Faker" && player.gameKey === "WORLD24-FINAL-G2")?.playerWin).toBe(true);
+    expect(snapshot.gamePlayers.find((player) => player.playerKey === "Faker (Player)" && player.gameKey === "WORLD24-FINAL-G2")?.playerWin).toBe(true);
     expect(normalizeLeaguepediaSnapshot(snapshot, await overrides()).dimensions.tournaments).toEqual([
       expect.objectContaining({ id: "22222222-2222-5222-8222-222222222222", sourceKey: "2024 Season World Championship/Main Event", name: "Worlds 2024" }),
     ]);
@@ -1283,7 +1304,7 @@ describe("Leaguepedia fetching", () => {
       ]),
       fetchTeamRedirectsPage: async ({ offset }) => teamRedirectPage(offset, [["T1", "T1"], ["Current T1", "Current T1"], ["Bilibili Gaming", "Bilibili Gaming"]]),
       fetchPlayersPage: async ({ offset }) => cargoPage("Players", offset, [
-        { OverviewPage: "Faker", Name: "Faker", Team: "T1" },
+        { OverviewPage: "Faker", ID: "Faker", Name: "Lee Sang-hyeok", Team: "T1" },
         { OverviewPage: "Unrelated Player", Name: "Unrelated Player", Team: "Unrelated Team", Image: "Unrelated Player.png" },
         { OverviewPage: "Malformed Player" },
       ]),
@@ -1377,7 +1398,7 @@ describe("Leaguepedia fetching", () => {
     const loadRawInput = () => fetchLeaguepediaRawInput({
       fetchTeamsPage: async ({ offset }) => cargoPage("Teams", offset, [{ OverviewPage: "T1", Name: "T1" }, { OverviewPage: "Bilibili Gaming", Name: "Bilibili Gaming" }]),
       fetchTeamRedirectsPage: async ({ offset }) => teamRedirectPage(offset),
-      fetchPlayersPage: async ({ offset }) => cargoPage("Players", offset, [{ OverviewPage: "Faker", Name: "Faker" }]),
+      fetchPlayersPage: async ({ offset }) => cargoPage("Players", offset, [{ OverviewPage: "Faker", ID: "Faker", Name: "Lee Sang-hyeok" }]),
       fetchPlayerRedirectsPage: async ({ offset }) => playerRedirectPage(offset),
       fetchTournamentsPage: async ({ offset }) => cargoPage("Tournaments", offset, [{ OverviewPage: "2024 Season World Championship", Name: "Worlds 2024" }]),
       fetchMatchSchedulesPage: async ({ offset }) => matchSchedulePage(offset, [{ UniqueMatch: "M1", MatchId: "M1", OverviewPage: "2024 Season World Championship", DateTime_UTC: "2024-11-02T14:00:00Z", Team1: "T1", Team2: "Bilibili Gaming", Team1Score: 3, Team2Score: 2, Winner: 1, BestOf: 5 }]),
@@ -1460,6 +1481,78 @@ describe("Leaguepedia normalization", () => {
     expect(result.quarantineAffectedGameKeys).toEqual([]);
     expect(result.entities.some((entity) => entity.sourceKey === "Duplicate One")).toBe(false);
     expect(snapshot.slices[0]?.excludedOptionalDimensionRowKeys).toEqual(expect.arrayContaining(["Players:Duplicate One", "Players:Duplicate Two"]));
+  });
+
+  it("stages player ID, real name, and source aliases without conflating canonical identity", async () => {
+    const result = normalizeLeaguepediaSnapshot(await fixture(), await overrides());
+    const normalizedFaker = result.entities.find((entity) => entity.playerId === "Faker");
+    const faker = result.dimensions.entities.find((entity) => entity.playerId === "Faker");
+    const expectedAliases = ["Faker (Player)", "Faker", "Lee Sang-hyeok", "The Unkillable Demon King"];
+    expect(normalizedFaker?.aliases).toEqual(expectedAliases);
+    expect(faker).toMatchObject({
+      kind: "player",
+      playerId: "Faker",
+      canonicalName: "Lee Sang-hyeok",
+    });
+    expect(faker?.aliases).toEqual(expectedAliases);
+    expect(faker?.aliases).not.toContain("");
+    expect(new Set(faker?.aliases).size).toBe(faker?.aliases.length);
+    const team = result.dimensions.entities.find((entity) => entity.kind === "team")!;
+    expect(team.playerId).toBeUndefined();
+    expect("playerId" in team).toBe(false);
+  });
+
+  it("merges the same player ID across source keys mapped to one canonical player", async () => {
+    const snapshot = await fixture();
+    const faker = snapshot.entities.find((entity) => entity.playerId === "Faker")!;
+    const alias = { ...faker, sourceKey: "Faker Alternate Page", aliases: ["Unkillable Demon King"] };
+    const reviewed = await overrides();
+    const identities = new Map(reviewed.identities);
+    const canonicalId = "66666666-6666-5666-8666-666666666666";
+    for (const sourceKey of [faker.sourceKey, alias.sourceKey]) identities.set(sourceKey, {
+      sourceKey, canonicalName: "Lee Sang-hyeok", canonicalId, kind: "player", aliases: [], reviewedNote: "Reviewed player source merge.",
+    });
+
+    for (const mergedPlayers of [[faker, alias], [alias, faker]]) {
+      const result = normalizeLeaguepediaSnapshot({ ...snapshot, entities: [...snapshot.entities.filter((entity) => entity.playerId !== "Faker"), ...mergedPlayers] }, { ...reviewed, identities });
+      const definition = result.dimensions.entities.find((entity) => entity.id === canonicalId);
+      expect(new Set(definition?.sourceKeys)).toEqual(new Set(["Faker (Player)", "Faker Alternate Page"]));
+      expect(definition?.playerId).toBe("Faker");
+      expect(definition?.canonicalName).toBe("Lee Sang-hyeok");
+    }
+  });
+
+  it("fails closed in either order when source keys mapped to one canonical player disagree on player ID", async () => {
+    const snapshot = await fixture();
+    const faker = snapshot.entities.find((entity) => entity.playerId === "Faker")!;
+    const alias = { ...faker, sourceKey: "Faker Alternate Page", playerId: "Hide on bush" };
+    const reviewed = await overrides();
+    const identities = new Map(reviewed.identities);
+    const canonicalId = "66666666-6666-5666-8666-666666666666";
+    for (const sourceKey of [faker.sourceKey, alias.sourceKey]) identities.set(sourceKey, {
+      sourceKey, canonicalName: "Lee Sang-hyeok", canonicalId, kind: "player", aliases: [], reviewedNote: "Reviewed player source merge.",
+    });
+
+    for (const mergedPlayers of [[faker, alias], [alias, faker]]) {
+      expect(() => normalizeLeaguepediaSnapshot({ ...snapshot, entities: [...snapshot.entities.filter((entity) => entity.playerId !== "Faker"), ...mergedPlayers] }, { ...reviewed, identities }))
+        .toThrow(/66666666-6666-5666-8666-666666666666.*Faker \(Player\).*Faker Alternate Page.*Faker.*Hide on bush|66666666-6666-5666-8666-666666666666.*Faker Alternate Page.*Faker \(Player\).*Hide on bush.*Faker/i);
+    }
+  });
+
+  it("fails closed in either order when merged source keys disagree on canonical name", async () => {
+    const snapshot = await fixture();
+    const faker = snapshot.entities.find((entity) => entity.playerId === "Faker")!;
+    const alias = { ...faker, sourceKey: "Faker Alternate Page" };
+    const reviewed = await overrides();
+    const identities = new Map(reviewed.identities);
+    const canonicalId = "66666666-6666-5666-8666-666666666666";
+    identities.set(faker.sourceKey, { sourceKey: faker.sourceKey, canonicalName: "Lee Sang-hyeok", canonicalId, kind: "player", aliases: [], reviewedNote: "Reviewed player source merge." });
+    identities.set(alias.sourceKey, { sourceKey: alias.sourceKey, canonicalName: "Sang-hyeok Lee", canonicalId, kind: "player", aliases: [], reviewedNote: "Conflicting player source merge." });
+
+    for (const mergedPlayers of [[faker, alias], [alias, faker]]) {
+      expect(() => normalizeLeaguepediaSnapshot({ ...snapshot, entities: [...snapshot.entities.filter((entity) => entity.playerId !== "Faker"), ...mergedPlayers] }, { ...reviewed, identities }))
+        .toThrow(/66666666-6666-5666-8666-666666666666.*Faker \(Player\).*Faker Alternate Page.*Lee Sang-hyeok.*Sang-hyeok Lee|66666666-6666-5666-8666-666666666666.*Faker Alternate Page.*Faker \(Player\).*Sang-hyeok Lee.*Lee Sang-hyeok/i);
+    }
   });
 
   it("fails closed when official RenamedTo lineage is not merged by reviewed overrides", async () => {
@@ -1558,7 +1651,7 @@ describe("Leaguepedia normalization", () => {
     expect(result.facts.series?.[0]).toMatchObject({ sourceKey: "WORLD24-FINAL", bestOf: 5, completed: true, sideAScore: 3, sideBScore: 2 });
     expect(result.facts.games?.map((game) => game.winnerTeamId === result.entityIds.get("T1") ? "T1" : "Bilibili Gaming")).toEqual(["Bilibili Gaming", "T1", "Bilibili Gaming", "T1", "T1"]);
     expect(result.facts.gamePlayers).toHaveLength(50);
-    expect(new Set(result.facts.gamePlayers?.map((player) => snapshot.entities.find((entity) => result.entityIds.get(entity.sourceKey) === player.playerEntityId)?.sourceKey))).toEqual(new Set(["Zeus", "Oner", "Faker", "Gumayusi", "Keria", "Bin", "Xun", "knight", "Elk", "ON"]));
+    expect(new Set(result.facts.gamePlayers?.map((player) => snapshot.entities.find((entity) => result.entityIds.get(entity.sourceKey) === player.playerEntityId)?.sourceKey))).toEqual(new Set(["Zeus", "Oner", "Faker (Player)", "Gumayusi", "Keria", "Bin", "Xun", "knight", "Elk", "ON"]));
     expect(result.facts.games?.[0]).toMatchObject({ sourceKey: "WORLD24-FINAL-G1", gameNumber: 1 });
     expect(result.facts.gamePlayers?.[0]?.gameId).toBe(result.facts.games?.[0]?.id);
     expect(result.rosterGameIds).toEqual(result.facts.games?.map((game) => game.id));
@@ -1610,13 +1703,41 @@ describe("Leaguepedia normalization", () => {
     expect(first.checksums).toEqual(second.checksums);
     expect(Object.values(first.checksums).every((checksum) => /^sha256:[a-f0-9]{64}$/.test(checksum))).toBe(true);
     expect(first.identities.get("SK Telecom T1")?.canonicalName).toBe("T1");
+    expect(first.identities.get("Phong Vũ Buffalo")).toMatchObject({
+      canonicalName: "Saigon Buffalo",
+      canonicalId: "ee77cc6b-b3c8-5f06-8068-3c8d96cd4ed7",
+      validTo: "2019-05-30",
+    });
+    expect(first.identities.get("Saigon Buffalo")).toMatchObject({
+      canonicalName: "Saigon Buffalo",
+      canonicalId: "ee77cc6b-b3c8-5f06-8068-3c8d96cd4ed7",
+      validFrom: "2020-05-25",
+    });
+    expect(first.identities.get("Movistar R7")).toMatchObject({
+      canonicalName: "LYON",
+      canonicalId: "0d531ed1-8517-56d4-84a4-742d46d63bb1",
+      validTo: "2024-10-30",
+    });
+    expect(first.identities.get("LYON (2024 American Team)")).toMatchObject({
+      canonicalName: "LYON",
+      canonicalId: "0d531ed1-8517-56d4-84a4-742d46d63bb1",
+      validFrom: "2024-10-31",
+    });
+    expect(first.identities.get("Splyce")).toMatchObject({
+      canonicalName: "Movistar KOI",
+      canonicalId: "35c453b9-1773-5568-8e9b-c7613835f8c8",
+      validTo: "2019-11-28",
+    });
     expect(first.identities.get("MAD Lions KOI")).toMatchObject({
       canonicalName: "Movistar KOI",
       canonicalId: "35c453b9-1773-5568-8e9b-c7613835f8c8",
+      validFrom: "2019-11-29",
+      validTo: "2024-12-05",
     });
-    expect(first.identities.get("MAD Lions KOI")).not.toHaveProperty("validFrom");
-    expect(first.identities.get("MAD Lions KOI")).not.toHaveProperty("validTo");
-    expect(first.identities.get("Movistar KOI")?.canonicalId).toBe("35c453b9-1773-5568-8e9b-c7613835f8c8");
+    expect(first.identities.get("Movistar KOI")).toMatchObject({
+      canonicalId: "35c453b9-1773-5568-8e9b-c7613835f8c8",
+      validFrom: "2024-12-06",
+    });
     expect(first.regions.get("China")?.canonicalName).toBe("LPL");
   });
 
@@ -1624,8 +1745,9 @@ describe("Leaguepedia normalization", () => {
     const loaded = await overrides();
     const snapshot = await fixture();
     const identities = new Map(loaded.identities);
-    identities.set("Faker", { sourceKey: "Faker", canonicalName: "Faker", canonicalId: "33333333-3333-5333-8333-333333333333", kind: "team", aliases: [], reviewedNote: "invalid fixture" });
-    expect(() => normalizeLeaguepediaSnapshot({ ...snapshot, entities: snapshot.entities.filter((entity) => entity.sourceKey === "Faker") }, { ...loaded, identities })).toThrow(/kind/i);
+    identities.set("Faker (Player)", { sourceKey: "Faker (Player)", canonicalName: "Faker", canonicalId: "33333333-3333-5333-8333-333333333333", kind: "team", aliases: [], reviewedNote: "invalid fixture" });
+    expect(() => normalizeLeaguepediaSnapshot({ ...snapshot, entities: snapshot.entities.filter((entity) => entity.playerId === "Faker") }, { ...loaded, identities }))
+      .toThrow(/33333333-3333-5333-8333-333333333333.*Faker \(Player\).*player.*team/i);
   });
 
   it("keeps missing media out and retains required attribution metadata", async () => {

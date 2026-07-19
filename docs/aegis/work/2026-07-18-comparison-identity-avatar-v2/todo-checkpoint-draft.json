@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "2026-07-18-comparison-identity-avatar-v2",
+  "currentTodo": "Hand off the completed identity, row-label, avatar-v2, runtime, and governance work without creating a commit.",
+  "completedTodos": [
+    "Tasks 1-7 implementation, reviews, fresh gen4 publication, strict acceptance, release E2E, ADR amendment, and baseline snapshot."
+  ],
+  "activeSlice": "Complete; final review and handoff",
+  "evidenceRefs": [
+    "docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/90-evidence.md"
+  ],
+  "blockedOn": "No active blocker; commit intentionally deferred pending explicit user direction.",
+  "nextStep": "Review final diff and deliver handoff.",
+  "updatedAt": "2026-07-18"
+}

@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { compareHeadToHead, createDb, destroyDb, findAcceptanceDatasetEvidence, findMediaObjectMetadataByKey, findSourceObjectMetadataByKey } from "@riftversus/database";
+import { compareHeadToHead, createDb, destroyDb, findAcceptanceDatasetEvidence, findMediaObjectMetadataByKey, findSourceObjectMetadataByKey, getAvatarIdentity } from "@riftversus/database";
 
 import { verifyAcceptanceSnapshot, type AcceptanceEvaluation } from "./acceptance.js";
 import { loadConfig, type Environment } from "./config.js";
@@ -28,6 +28,7 @@ export async function runProductionAcceptanceCheck(path = DEFAULT_SNAPSHOT, envi
       getSourceMetadata: (key) => findSourceObjectMetadataByKey(key, db!),
       getDatasetEvidence: (version, seriesIds) => findAcceptanceDatasetEvidence(version, seriesIds, db!),
       getMediaMetadata: (key) => findMediaObjectMetadataByKey(key, db!),
+      getAvatarIdentity: (kind, id) => getAvatarIdentity(kind, id, db!),
       generateAvatar: generateCanonicalAvatar,
     });
   } catch (error) {

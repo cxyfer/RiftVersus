@@ -36,6 +36,17 @@ fields. A player redirect collision is accepted only when structural parsing
 leaves exactly one valid Players row; zero or multiple valid targets fail
 closed and all source rows remain in immutable evidence.
 
+Leaguepedia `Players.ID` and `Players.Name` have separate owners in the
+published identity model. `player_id` stores the public competitive ID (for
+example, `Faker`), while `canonical_name` stores the real name (for example,
+`Lee Sang-hyeok`). Search may match either value and presents
+`ID (real name)` when both are available; comparison subjects and avatar labels
+use the public ID. A legacy player published before migration `009` may retain a
+null `player_id` and temporarily falls back to `canonical_name`, but every
+referenced player in a new Leaguepedia publication requires both source fields.
+A conflicting non-null public ID stops publication rather than silently
+renaming an existing player.
+
 `MatchSchedule` is the sole series identity/completion metadata owner. Every imported
 `ScoreboardGames.MatchId` must join exactly one retained schedule row; the
 schedule provides tournament identity, scheduled provenance, teams, `BestOf`,
@@ -44,6 +55,13 @@ sequence, and winners and must exactly explain that final. Canonical series
 `playedAt` is the earliest actual game timestamp for the exact `MatchId`.
 Missing, duplicate, orphan, or conflicting schedule evidence stops the run. The
 importer does not infer a series score or `BestOf` from `ScoreboardGames` fields.
+
+Comparison subjects describe what the user selected; historical series rows
+describe the teams that actually participated. Each row's `leftName` and
+`rightName` are resolved from its participating side's team era, preserving
+historical names such as `SK Telecom T1`. If a source fact has no team-era ID,
+the row falls back only to that participating team's canonical name. It never
+substitutes a selected player, region, or current team affiliation.
 
 ## Coverage meaning
 
@@ -84,10 +102,27 @@ responses never expose the upstream image URL.
 
 Licensed retained media is the preferred presentation image. When the reviewed
 upstream response does not supply redistribution evidence, the API returns the
-same-origin deterministic `/avatars/{kind}/{canonical-entity-id}.svg` URL. The
-generated avatar contains no upstream image bytes, logo, portrait, display
-name, license claim, or provider attribution and is not stored in PostgreSQL or
-S3. `/media-placeholder.svg` remains image-load error recovery only.
+same-origin deterministic
+`/avatars/v2/{kind}/{canonical-entity-id}.svg` URL. The v2 algorithm identifier
+is `canonical-avatar-v2`. It derives a safe two- or three-character ASCII
+abbreviation from the database-owned canonical label: compact labels such as
+`T1` and `LCK` remain intact, multi-word labels use up to three initials, and a
+long single word uses its first three characters. A one-character result is
+duplicated; labels without ASCII alphanumerics use `PL`, `TM`, or `RG`. Only
+this validated abbreviation reaches the SVG, never the raw source label.
+
+Known region labels `LCK`, `LPL`, `LEC`, and `LCS` use distinct reviewed
+palette-and-pattern styles. Other regions use a deterministic digest-selected
+style. Player and team styles are keyed by kind and canonical entity ID and do
+not inherit a current region, because affiliations change over time.
+
+Generated v2 responses use checksum ETags and
+`Cache-Control: public, no-cache`, so clients revalidate when a typed player ID
+changes the canonical label at the same URL. Licensed retained media still has
+precedence. Generated avatars contain no upstream image bytes, logo, portrait,
+license claim, or provider attribution and are not stored in PostgreSQL, S3, or
+the media-evidence model. `/media-placeholder.svg` remains image-load error
+recovery only.
 
 An acceptance snapshot must link to the exact
 `/wiki/Leaguepedia:Copyrights` legal page on the configured Leaguepedia source
@@ -95,8 +130,8 @@ origin and retain the API request URL, response checksum,
 page/revision IDs when supplied, retrieval timestamp, attribution, coverage
 status, exact series/game IDs, and publication source lineage. Each subject's
 presentation evidence is either licensed retained media with its checksum and
-content type, or `canonical-avatar-v1` with the exact entity kind, canonical
-entity ID, SVG content type, and generated-byte checksum. Operators remain
+content type, or `canonical-avatar-v2` with the exact entity kind, canonical
+entity ID, v2 URL, SVG content type, and generated-byte checksum. Operators remain
 responsible for reviewing the source page's current license and attribution
 requirements before redistributing retained media.
 

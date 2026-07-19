@@ -46,6 +46,23 @@ Entries are workspace records, not authoritative runtime decisions.
 | 2026-07-15 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-docker-release-gates.json | 2026-07-12-riftversus-mvp evidence task5-docker-release-gates |
 | 2026-07-15 | adr | docs/aegis/adr/ADR-0001-leaguepedia-facts-and-fail-closed-presentation.md | ADR-0001 - Leaguepedia facts and fail-closed presentation ownership |
 | 2026-07-15 | baseline | docs/aegis/baseline/2026-07-15-riftversus-release.md | RiftVersus release architecture baseline |
+| 2026-07-18 | baseline | docs/aegis/baseline/2026-07-18-riftversus-comparison-identity-avatar-v2.md | RiftVersus comparison identity and canonical avatar v2 baseline |
 | 2026-07-15 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-signed-release-final.json | 2026-07-12-riftversus-mvp evidence task5-signed-release-final |
 | 2026-07-15 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-slice-coverage-fail-closed.json | 2026-07-12-riftversus-mvp evidence task5-slice-coverage-fail-closed |
 | 2026-07-15 | artifact | docs/aegis/work/2026-07-12-riftversus-mvp/evidence-bundle-draft-task5-exact-coverage-contract.json | 2026-07-12-riftversus-mvp evidence task5-exact-coverage-contract |
+| 2026-07-18 | spec | docs/aegis/specs/2026-07-18-comparison-identity-avatar-v2-design.md | Comparison Identity and Canonical Avatar v2 Design |
+| 2026-07-18 | plan | docs/aegis/plans/2026-07-18-comparison-identity-avatar-v2.md | Comparison Identity and Canonical Avatar v2 Implementation Plan |
+| 2026-07-18 | work | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/10-intent.md | Comparison Identity and Canonical Avatar v2 intent |
+| 2026-07-18 | work | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/20-checkpoint.md | Comparison Identity and Canonical Avatar v2 checkpoint |
+| 2026-07-18 | work | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/90-evidence.md | Comparison Identity and Canonical Avatar v2 evidence |
+| 2026-07-18 | work | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/99-reflection.md | Comparison Identity and Canonical Avatar v2 reflection |
+| 2026-07-18 | artifact | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/task-intent-draft.json | Comparison Identity and Canonical Avatar v2 task intent draft |
+| 2026-07-18 | artifact | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/baseline-read-set-hint.json | Comparison Identity and Canonical Avatar v2 baseline read-set hint |
+| 2026-07-18 | artifact | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/baseline-usage-draft.json | Comparison Identity and Canonical Avatar v2 baseline usage draft |
+| 2026-07-18 | artifact | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/impact-statement-draft.json | Comparison Identity and Canonical Avatar v2 impact statement draft |
+| 2026-07-18 | artifact | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/todo-checkpoint-draft.json | Comparison Identity and Canonical Avatar v2 todo checkpoint draft |
+| 2026-07-18 | artifact | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/drift-check-draft.json | Comparison Identity and Canonical Avatar v2 drift check draft |
+| 2026-07-18 | artifact | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/gate-input-pack.json | 2026-07-18-comparison-identity-avatar-v2 gate input pack |
+| 2026-07-18 | work | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/proof-bundle.md | 2026-07-18-comparison-identity-avatar-v2 proof bundle |
+| 2026-07-18 | artifact | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/resume-state-hint.json | 2026-07-18-comparison-identity-avatar-v2 resume state hint |
+| 2026-07-18 | artifact | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/evidence-bundle-draft-task7-runtime-gen4-release.json | 2026-07-18-comparison-identity-avatar-v2 evidence task7-runtime-gen4-release |

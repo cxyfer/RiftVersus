@@ -13,6 +13,8 @@ test("compares T1 against LPL with Worlds BO5", async ({ page }) => {
   await expect(page).toHaveURL(/events=worlds/);
   await expect(page).toHaveURL(/bestOf=5/);
   await expect(page.getByText("3 series wins")).toBeVisible();
+  await expect(page.getByText("T1 3:1 Weibo Gaming")).toBeVisible();
+  await expect(page.getByText("SK Telecom T1 3:2 Weibo Gaming")).toBeVisible();
 });
 
 test("exports a short fixture as a PNG", async ({ page }) => {

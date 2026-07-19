@@ -395,6 +395,7 @@ function referencedPlayerSourceKeys(playerRows: readonly Record<string, unknown>
       return allName !== null && redirectLookupKey(allName) === key;
     }).flatMap((row) => stringValue(row.OverviewPage) ?? []));
     const candidates = targets.flatMap((target) => playerRows.filter((row) => stringValue(row.OverviewPage) === target));
+    if (candidates.length === 1) parseEntity("player", candidates[0]!, 0);
     const valid = candidates.filter((row, index) => { try { parseEntity("player", row, index); return true; } catch { return false; } });
     if (valid.length !== 1) throw new Error(`Player ${playerKey} lacks exactly one valid PlayerRedirects target.`);
     return [playerKey, requiredString(valid[0]!.OverviewPage, `PlayerRedirects target for ${playerKey}`)] as const;
@@ -456,6 +457,7 @@ function parseEntity(kind: "team" | "player", row: Record<string, unknown>, inde
     kind,
     sourceKey,
     displayName: requiredString(row.Name, `${kind} ${sourceKey} Name`),
+    ...(kind === "player" ? { playerId: requiredString(row.ID, `player ${sourceKey} ID`) } : {}),
     aliases: [...splitAliases(row.Short), ...splitAliases(row.Aliases)],
     ...(kind === "team" ? { region: stringValue(row.Region) } : {}),
     ...(kind === "team" ? { lineage: stringValue(row.RenamedTo) } : {}),

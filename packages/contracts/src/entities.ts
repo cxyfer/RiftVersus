@@ -26,6 +26,7 @@ export const SubjectRefSchema = z
 
 export const ResolvedSubjectSchema = SubjectRefSchema.extend({
   displayName: z.string().min(1),
+  realName: z.string().min(1).optional(),
   eraLabel: z.string().min(1).optional(),
   mediaUrl: PresentationImageUrlSchema.optional(),
 });

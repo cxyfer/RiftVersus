@@ -21,6 +21,18 @@ function subjectOption(subject: ResolvedSubject): EntityOption {
   return { ...subject, subtitle: kindLabel[subject.kind] };
 }
 
+export function optionLabel(subject: Pick<ResolvedSubject, "kind" | "displayName" | "realName">): string {
+  return subject.kind === "player" && subject.realName !== undefined && subject.realName !== subject.displayName
+    ? `${subject.displayName} (${subject.realName})`
+    : subject.displayName;
+}
+
+export function optionSubtitle(option: Pick<EntityOption, "kind" | "subtitle">): string {
+  return option.subtitle === kindLabel[option.kind]
+    ? option.subtitle
+    : `${option.subtitle} · ${kindLabel[option.kind]}`;
+}
+
 function unknownOption(kind: EntityKind, id: string): EntityOption {
   return { kind, id, displayName: id.slice(0, 8), subtitle: kindLabel[kind] };
 }
@@ -41,19 +53,20 @@ function EntityCombobox({ value, onPick, label, api }: { value: EntityOption; on
   const search = useQuery({ queryKey: ["entities", debouncedTerm], queryFn: () => api.searchEntities(debouncedTerm, []), enabled: open && debouncedTerm.trim().length > 0 });
   const options = search.data ?? [];
   const activeOptionId = open && debouncedTerm && options[active] ? `${inputId}-option-${active}` : undefined;
-  const pick = (option: EntityOption) => { onPick(option); setTerm(""); setDebouncedTerm(""); setOpen(false); setActive(0); };
+  const close = () => { setTerm(""); setDebouncedTerm(""); setOpen(false); setActive(0); };
+  const pick = (option: EntityOption) => { onPick(option); close(); };
   return <div className="entity-combobox">
     <label htmlFor={inputId}>{label}</label>
-    <div className="entity-input"><Avatar src={value.mediaUrl} name={value.displayName} /><input id={inputId} role="combobox" aria-expanded={open} aria-controls={`${inputId}-options`} aria-activedescendant={activeOptionId} value={open ? term : value.displayName} onFocus={() => { setOpen(true); setTerm(""); }} onChange={(event) => { setTerm(event.target.value); setOpen(true); setActive(0); }} onKeyDown={(event) => {
+    <div className="entity-input"><Avatar src={value.mediaUrl} name={value.displayName} /><input id={inputId} role="combobox" aria-autocomplete="list" aria-expanded={open} aria-controls={`${inputId}-options`} aria-activedescendant={activeOptionId} value={open ? term : optionLabel(value)} onFocus={() => { setOpen(true); setTerm(""); }} onBlur={close} onChange={(event) => { setTerm(event.target.value); setOpen(true); setActive(0); }} onKeyDown={(event) => {
       if (!open) return;
       if (event.key === "ArrowDown") { event.preventDefault(); setActive((current) => Math.min(current + 1, Math.max(options.length - 1, 0))); }
       if (event.key === "ArrowUp") { event.preventDefault(); setActive((current) => Math.max(current - 1, 0)); }
       if (event.key === "Enter") { event.preventDefault(); if (options[active]) pick(options[active]); }
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") close();
     }} /><Search aria-hidden="true" size={16} /></div>
     {open && <ul id={`${inputId}-options`} className="entity-options" role="listbox" aria-label={`${label} 搜尋結果`}>
       {search.isLoading && <li className="entity-empty">搜尋中</li>}
-      {!search.isLoading && debouncedTerm && options.map((option, index) => <li id={`${inputId}-option-${index}`} key={option.id} role="option" aria-selected={index === active} className={index === active ? "is-active" : ""}><button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => pick(option)}><Avatar src={option.mediaUrl} name={option.displayName} /><span><strong>{option.displayName}</strong><small>{option.subtitle} · {kindLabel[option.kind]}</small></span></button></li>)}
+      {!search.isLoading && debouncedTerm && options.map((option, index) => <li id={`${inputId}-option-${index}`} key={option.id} role="option" aria-selected={index === active} className={index === active ? "is-active" : ""} onMouseDown={(event) => event.preventDefault()} onMouseMove={() => setActive(index)} onClick={() => pick(option)}><Avatar src={option.mediaUrl} name={option.displayName} /><span><strong>{optionLabel(option)}</strong><small>{optionSubtitle(option)}</small></span></li>)}
       {!search.isLoading && debouncedTerm && options.length === 0 && <li className="entity-empty">沒有符合的對象</li>}
     </ul>}
   </div>;
@@ -96,11 +109,12 @@ function ComparisonWorkspace({ api }: { api: ComparisonApi }) {
   const comparison = useInfiniteQuery({ queryKey: ["comparison", serializeRouteState(submitted).toString()], initialPageParam: undefined as string | undefined, queryFn: ({ pageParam }) => api.compare({ ...query, ...(pageParam ? { cursor: pageParam } : {}) }), getNextPageParam: (page) => page.nextCursor });
   const pages = comparison.data?.pages ?? [];
   const firstPage = pages[0];
-  const result = firstPage ? { ...firstPage, rows: pages.flatMap((page) => page.rows), ...(pages.at(-1)?.nextCursor ? { nextCursor: pages.at(-1)!.nextCursor } : {}) } : undefined;
+  const result = firstPage ? { ...firstPage, rows: pages.flatMap((page) => page.rows), nextCursor: pages.at(-1)?.nextCursor } : undefined;
   useEffect(() => { setDraft(submitted); if (parsed.recovered || paramsKey !== serializeRouteState(submitted).toString()) setParams(serializeRouteState(submitted), { replace: true }); }, [paramsKey, parsed.recovered, setParams, submitted]);
   useEffect(() => { if (!firstPage) return; setKnown((current) => {
     const left = subjectOption(firstPage.subjects.left); const right = subjectOption(firstPage.subjects.right);
-    if (current.get(left.id)?.displayName === left.displayName && current.get(right.id)?.displayName === right.displayName) return current;
+    if (current.get(left.id)?.displayName === left.displayName && current.get(left.id)?.realName === left.realName
+      && current.get(right.id)?.displayName === right.displayName && current.get(right.id)?.realName === right.realName) return current;
     return new Map(current).set(left.id, left).set(right.id, right);
   }); }, [firstPage]);
   const entity = (kind: EntityKind, id: string) => known.get(id) ?? unknownOption(kind, id);

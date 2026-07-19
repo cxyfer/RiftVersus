@@ -94,7 +94,7 @@ export interface SourceObjectInput {
   parserVersion: string;
 }
 
-export interface StagedEntityInput { id: string; provider: string; sourceKeys: readonly string[]; kind: "team" | "player"; canonicalName: string; aliases: readonly string[] }
+export interface StagedEntityInput { id: string; provider: string; sourceKeys: readonly string[]; kind: "team" | "player"; canonicalName: string; playerId?: string | null; aliases: readonly string[] }
 export interface StagedRegionInput { id: string; provider: string; sourceKey: string; name: string }
 export interface StagedTeamEraInput { id: string; provider: string; sourceKey: string; teamEntityId: string; displayName: string; regionId?: string | null; validFrom?: string | null; validTo?: string | null }
 export interface StagedTournamentInput { id: string; provider: string; sourceKey: string; name: string; aliases: readonly string[]; category: "league" | "fst" | "msi" | "worlds" | "other"; seasonYear?: number | null; validFrom?: string | null; validTo?: string | null }

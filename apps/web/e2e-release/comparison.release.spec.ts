@@ -15,6 +15,15 @@ interface ReviewedSnapshot {
     seriesLosses: number;
     gameWins: number;
     gameLosses: number;
+    rows: Array<{
+      id: string;
+      date: string;
+      leftName: string;
+      rightName: string;
+      leftScore: number;
+      rightScore: number;
+      winner: "left" | "right";
+    }>;
   };
 }
 
@@ -61,7 +70,15 @@ test("renders the reviewed T1 versus LPL Worlds BO5 publication", async ({
     };
     seriesSummary: { wins: number; losses: number; total: number };
     gameSummary: { wins: number; losses: number; total: number };
-    rows: unknown[];
+    rows: Array<{
+      id: string;
+      date: string;
+      leftName: string;
+      rightName: string;
+      leftScore: number;
+      rightScore: number;
+      winner: "left" | "right";
+    }>;
     dataset: { version: string };
     coverageWarnings: unknown[];
     mediaUrls: { left: string; right: string };
@@ -80,31 +97,37 @@ test("renders the reviewed T1 versus LPL Worlds BO5 publication", async ({
   expect(payload.seriesSummary).toEqual({ wins: 12, losses: 0, total: 12, winRate: 1 });
   expect(payload.gameSummary).toEqual({ wins: 36, losses: 9, total: 45, winRate: 0.8 });
   expect(payload.rows).toHaveLength(12);
+  expect(payload.rows.map(({ id, date, leftName, rightName, leftScore, rightScore, winner }) => ({
+    id, date, leftName, rightName, leftScore, rightScore, winner,
+  }))).toEqual(snapshot.expected.rows.map(({ id, date, leftName, rightName, leftScore, rightScore, winner }) => ({
+    id, date, leftName, rightName, leftScore, rightScore, winner,
+  })));
   expect(payload.dataset.version).toBe(snapshot.datasetVersion);
   expect(payload.coverageWarnings).toEqual([]);
   expect(payload.mediaUrls).toEqual({
-    left: `/avatars/team/${snapshot.comparison.left.id}.svg`,
-    right: `/avatars/region/${snapshot.comparison.right.id}.svg`,
+    left: `/avatars/v2/team/${snapshot.comparison.left.id}.svg`,
+    right: `/avatars/v2/region/${snapshot.comparison.right.id}.svg`,
   });
 
   await expect(page.getByRole("combobox", { name: "比較對象" })).toHaveValue("T1");
   await expect(page.getByRole("combobox", { name: "對戰對象" })).toHaveValue("LPL");
   await expect(page.getByText("12 series wins")).toBeVisible();
   await expect(page.getByText("Games 36-9")).toBeVisible();
-  await expect(
-    page.getByRole("table", { name: "對戰紀錄" }).getByRole("row"),
-  ).toHaveCount(13);
+  const matchTable = page.getByRole("table", { name: "對戰紀錄" });
+  await expect(matchTable.getByText("T1 3:0 Top Esports").first()).toBeVisible();
+  await expect(matchTable.getByText("SK Telecom T1 3:0 Royal Club").first()).toBeVisible();
+  await expect(matchTable.getByRole("row")).toHaveCount(13);
   await expect(page).toHaveURL(comparisonPath);
 
   const images = page.locator(".result-summary img");
   await expect(images).toHaveCount(2);
   await expect(images.nth(0)).toHaveAttribute(
     "src",
-    `/avatars/team/${snapshot.comparison.left.id}.svg`,
+    `/avatars/v2/team/${snapshot.comparison.left.id}.svg`,
   );
   await expect(images.nth(1)).toHaveAttribute(
     "src",
-    `/avatars/region/${snapshot.comparison.right.id}.svg`,
+    `/avatars/v2/region/${snapshot.comparison.right.id}.svg`,
   );
   await expect
     .poll(() =>

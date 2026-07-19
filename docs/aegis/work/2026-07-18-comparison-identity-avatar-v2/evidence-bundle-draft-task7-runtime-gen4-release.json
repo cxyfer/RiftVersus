@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "task7-runtime-gen4-release",
+  "type": "release-verification",
+  "source": "gen4 Leaguepedia backfill, Docker app runtime, data/acceptance/leaguepedia-t1-lpl-worlds-bo5.json, production acceptance CLI, Playwright release E2E",
+  "summary": "Fresh gen4 publication leaguepedia-a9277cebd9d2be1006b8e35d41d41af06d599507741c0770615a76489d33c7a passed 13/13 Worlds coverage, strict acceptance ready, release E2E 4/4, integration 63/63, and v2/v1 runtime probes.",
+  "verifier": "root; codex-task7-gen4-independent-spec-review; codex-task7-independent-snapshot-review"
+}

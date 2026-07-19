@@ -8,6 +8,7 @@ import { z } from "zod";
 import {
   CANONICAL_AVATAR_ALGORITHM,
   CANONICAL_AVATAR_CONTENT_TYPE,
+  type AvatarIdentity,
   type CanonicalAvatar,
 } from "./avatar.js";
 
@@ -23,6 +24,8 @@ export const ExpectedPresentationSchema = z.discriminatedUnion("kind", [
     kind: z.literal("generated-avatar"),
     entityKind: z.enum(["player", "team", "region"]),
     entityId: UuidSchema,
+    label: z.string().min(1),
+    abbreviation: z.string().regex(/^[A-Z0-9]{2,3}$/u),
     algorithm: z.literal(CANONICAL_AVATAR_ALGORITHM),
     checksum: ChecksumSchema,
     contentType: z.literal(CANONICAL_AVATAR_CONTENT_TYPE),
@@ -35,7 +38,8 @@ export interface AcceptancePresentationDependencies {
   maxMediaObjectBytes: number;
   getRawObject(key: string): Promise<Readable | null>;
   getMediaMetadata(key: string): Promise<AcceptanceMediaObjectMetadata | null>;
-  generateAvatar(kind: EntityKind, id: string): CanonicalAvatar;
+  getAvatarIdentity(kind: EntityKind, id: string): Promise<AvatarIdentity | null>;
+  generateAvatar(identity: AvatarIdentity): CanonicalAvatar;
 }
 
 export async function readAndHash(stream: Readable, maxBytes: number): Promise<{ checksum: string; body: Buffer }> {
@@ -95,16 +99,16 @@ async function verifyRetainedMedia(
   if (metadata.objectKey !== key || metadata.byteSize !== String(retained.body.byteLength)) blockers.push(`Canonical media metadata does not match retained object for ${side}.`);
 }
 
-function verifyGeneratedAvatar(
+async function verifyGeneratedAvatar(
   side: "left" | "right",
   subject: ResolvedSubject,
   mediaUrl: string,
   expected: Extract<ExpectedPresentation, { kind: "generated-avatar" }>,
   dependencies: AcceptancePresentationDependencies,
   blockers: string[],
-): void {
+): Promise<void> {
   const canonicalId = expected.entityId.toLowerCase();
-  const expectedUrl = `/avatars/${expected.entityKind}/${canonicalId}.svg`;
+  const expectedUrl = `/avatars/v2/${expected.entityKind}/${canonicalId}.svg`;
   if (subject.kind !== expected.entityKind || subject.id.toLowerCase() !== canonicalId) {
     blockers.push(`Generated avatar subject identity does not match reviewed evidence for ${side}.`);
     return;
@@ -114,10 +118,20 @@ function verifyGeneratedAvatar(
     return;
   }
 
-  const avatar = dependencies.generateAvatar(expected.entityKind, canonicalId);
+  const identity = await dependencies.getAvatarIdentity(expected.entityKind, canonicalId);
+  if (identity === null
+    || identity.kind !== expected.entityKind
+    || identity.id.toLowerCase() !== canonicalId
+    || identity.label !== expected.label) {
+    blockers.push(`Generated avatar repository identity does not match reviewed evidence for ${side}.`);
+    return;
+  }
+
+  const avatar = dependencies.generateAvatar(identity);
   const bodyChecksum = createHash("sha256").update(avatar.body).digest("hex");
   if (avatar.algorithm !== CANONICAL_AVATAR_ALGORITHM || avatar.algorithm !== expected.algorithm) blockers.push(`Generated avatar algorithm does not match reviewed evidence for ${side}.`);
   if (avatar.contentType !== CANONICAL_AVATAR_CONTENT_TYPE || avatar.contentType !== expected.contentType) blockers.push(`Generated avatar content type does not match reviewed evidence for ${side}.`);
+  if (avatar.abbreviation !== expected.abbreviation) blockers.push(`Generated avatar abbreviation does not match reviewed evidence for ${side}.`);
   if (avatar.body.byteLength === 0 || avatar.checksum !== bodyChecksum) blockers.push(`Generated avatar checksum does not match its bytes for ${side}.`);
   if (avatar.checksum !== expected.checksum || bodyChecksum !== expected.checksum) blockers.push(`Generated avatar does not match reviewed checksum for ${side}.`);
 }
@@ -134,5 +148,5 @@ export async function verifyPresentation(
     await verifyRetainedMedia(side, mediaUrl, expected, dependencies, blockers);
     return;
   }
-  verifyGeneratedAvatar(side, subject, mediaUrl, expected, dependencies, blockers);
+  await verifyGeneratedAvatar(side, subject, mediaUrl, expected, dependencies, blockers);
 }

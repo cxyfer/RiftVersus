@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "2026-07-18-comparison-identity-avatar-v2",
+  "requiredBaselineRefs": [
+    "docs/aegis/baseline/2026-07-18-riftversus-comparison-identity-avatar-v2.md"
+  ],
+  "deliveredContextRefs": [
+    "docs/aegis/baseline/2026-07-18-riftversus-comparison-identity-avatar-v2.md"
+  ],
+  "acknowledgedBeforePlanRefs": [
+    "docs/aegis/baseline/2026-07-18-riftversus-comparison-identity-avatar-v2.md"
+  ],
+  "citedInPlanRefs": [
+    "docs/aegis/baseline/2026-07-18-riftversus-comparison-identity-avatar-v2.md"
+  ],
+  "missingRefs": [],
+  "decision": "continue"
+}

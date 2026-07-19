@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "2026-07-18-comparison-identity-avatar-v2",
+  "lastCheckpointRef": "docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/todo-checkpoint-draft.json",
+  "resumeInstruction": "If resumed, inspect current git diff and rerun targeted gates before any further mutation.",
+  "knownPartialWork": [
+    "Tasks 1-7 implementation, reviews, fresh gen4 publication, strict acceptance, release E2E, ADR amendment, and baseline snapshot."
+  ],
+  "mustReadBeforeContinuing": [
+    "docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/10-intent.md",
+    "docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/20-checkpoint.md",
+    "docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/todo-checkpoint-draft.json"
+  ],
+  "unsafeToAssume": [
+    "Do not assume a commit is authorized; do not reset or delete runtime data."
+  ]
+}

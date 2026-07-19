@@ -49,6 +49,7 @@ export interface LeaguepediaEntity {
   kind: "team" | "player";
   sourceKey: string;
   displayName: string;
+  playerId?: string;
   aliases: readonly string[];
   region?: string | null;
   validFrom?: string | null;

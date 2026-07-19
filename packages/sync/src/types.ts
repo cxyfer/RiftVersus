@@ -35,6 +35,7 @@ export interface StagedEntityDefinition {
   sourceKeys: readonly string[];
   kind: "team" | "player";
   canonicalName: string;
+  playerId?: string;
   aliases: readonly string[];
 }
 

@@ -14,6 +14,7 @@ export interface EntitiesTable {
   id: string;
   kind: EntityKind;
   canonical_name: string;
+  player_id: string | null;
   slug: string;
   created_at: DefaultTimestamp;
   updated_at: DefaultTimestamp;

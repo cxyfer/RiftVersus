@@ -70,50 +70,63 @@
       "response": [
         {
           "OverviewPage": "Zeus",
+          "ID": "Zeus",
           "Name": "Zeus"
         },
         {
           "OverviewPage": "Oner",
+          "ID": "Oner",
           "Name": "Oner"
         },
         {
-          "OverviewPage": "Faker",
-          "Name": "Faker"
+          "OverviewPage": "Faker (Player)",
+          "ID": "Faker",
+          "Name": "Lee Sang-hyeok",
+          "Aliases": " Faker ; The Unkillable Demon King ; ; Faker / The Unkillable Demon King "
         },
         {
           "OverviewPage": "Gumayusi",
+          "ID": "Gumayusi",
           "Name": "Gumayusi"
         },
         {
           "OverviewPage": "Keria",
+          "ID": "Keria",
           "Name": "Keria"
         },
         {
           "OverviewPage": "Bin",
+          "ID": "Bin",
           "Name": "Bin"
         },
         {
           "OverviewPage": "Xun",
+          "ID": "Xun",
           "Name": "Xun"
         },
         {
           "OverviewPage": "knight",
+          "ID": "knight",
           "Name": "knight"
         },
         {
           "OverviewPage": "Elk",
+          "ID": "Elk",
           "Name": "Elk"
         },
         {
           "OverviewPage": "ON",
+          "ID": "ON",
           "Name": "ON"
         },
         {
           "OverviewPage": "Duplicate One",
+          "ID": "DuplicateOne",
           "Name": "Rookie"
         },
         {
           "OverviewPage": "Duplicate Two",
+          "ID": "DuplicateTwo",
           "Name": "Rookie"
         }
       ],
@@ -128,7 +141,7 @@
       "response": [
         { "OverviewPage": "Zeus", "ID": "Zeus", "AllName": "Zeus" },
         { "OverviewPage": "Oner", "ID": "Oner", "AllName": "Oner" },
-        { "OverviewPage": "Faker", "ID": "Faker", "AllName": "Faker" },
+        { "OverviewPage": "Faker (Player)", "ID": "Faker", "AllName": "Faker" },
         { "OverviewPage": "Gumayusi", "ID": "Gumayusi", "AllName": "Gumayusi" },
         { "OverviewPage": "Keria", "ID": "Keria", "AllName": "Keria" },
         { "OverviewPage": "Bin", "ID": "Bin", "AllName": "Bin" },

@@ -22,8 +22,10 @@ const leftMediaBytes = Buffer.from("left-media");
 const rightMediaBytes = Buffer.from("right-media");
 const leftMediaChecksum = createHash("sha256").update(leftMediaBytes).digest("hex");
 const rightMediaChecksum = createHash("sha256").update(rightMediaBytes).digest("hex");
-const leftAvatar = generateCanonicalAvatar("team", leftId);
-const rightAvatar = generateCanonicalAvatar("region", rightId);
+const leftIdentity = { kind: "team", id: leftId, label: "T1" } as const;
+const rightIdentity = { kind: "region", id: rightId, label: "LPL" } as const;
+const leftAvatar = generateCanonicalAvatar(leftIdentity);
+const rightAvatar = generateCanonicalAvatar(rightIdentity);
 const requestId = "query:mediawiki:0:acceptance";
 const requestUrl = `${endpoint}?action=query&prop=info%7Crevisions&rvprop=ids%7Ctimestamp&titles=T1&format=json&formatversion=2`;
 const rawInput: LeaguepediaRawInput = {
@@ -77,8 +79,8 @@ function canonicalResponse(): ComparisonResponse {
 
 function generatedResponse(): ComparisonResponse {
   const response = canonicalResponse();
-  response.subjects.left.mediaUrl = `/avatars/team/${leftId}.svg`;
-  response.subjects.right.mediaUrl = `/avatars/region/${rightId}.svg`;
+  response.subjects.left.mediaUrl = `/avatars/v2/team/${leftId}.svg`;
+  response.subjects.right.mediaUrl = `/avatars/v2/region/${rightId}.svg`;
   response.mediaUrls.left = response.subjects.left.mediaUrl;
   response.mediaUrls.right = response.subjects.right.mediaUrl;
   return response;
@@ -88,11 +90,13 @@ const retainedLeft = { kind: "retained-media", checksum: leftMediaChecksum, cont
 const retainedRight = { kind: "retained-media", checksum: rightMediaChecksum, contentType: "image/png" } as const;
 const generatedLeft = {
   kind: "generated-avatar", entityKind: "team", entityId: leftId,
-  algorithm: "canonical-avatar-v1", checksum: leftAvatar.checksum, contentType: "image/svg+xml",
+  label: "T1", abbreviation: "T1",
+  algorithm: "canonical-avatar-v2", checksum: leftAvatar.checksum, contentType: "image/svg+xml",
 } as const;
 const generatedRight = {
   kind: "generated-avatar", entityKind: "region", entityId: rightId,
-  algorithm: "canonical-avatar-v1", checksum: rightAvatar.checksum, contentType: "image/svg+xml",
+  label: "LPL", abbreviation: "LPL",
+  algorithm: "canonical-avatar-v2", checksum: rightAvatar.checksum, contentType: "image/svg+xml",
 } as const;
 
 function reviewedSnapshot(overrides: Record<string, unknown> = {}) {
@@ -117,7 +121,10 @@ function reviewedSnapshot(overrides: Record<string, unknown> = {}) {
         left: retainedLeft,
         right: retainedRight,
       },
-      rows: [{ id: seriesId, gameIds: [gameId, gameId2, gameId3], date: "2024-11-02", leftScore: 3, rightScore: 0, winner: "left" }],
+      rows: [{
+        id: seriesId, gameIds: [gameId, gameId2, gameId3], date: "2024-11-02",
+        leftName: "T1", rightName: "LPL", leftScore: 3, rightScore: 0, winner: "left",
+      }],
     },
     review: { reviewedAt: "2026-07-13T00:00:00.000Z", reviewer: "independent-reviewer" },
     ...overrides,
@@ -145,7 +152,10 @@ function dependencies(response: ComparisonResponse = canonicalResponse()): Mocke
     getMediaMetadata: vi.fn(async (key: string) => key === "media/t1.png"
       ? { objectKey: key, checksum: leftMediaChecksum, contentType: "image/png", byteSize: String(leftMediaBytes.byteLength) }
       : key === "media/lpl.png" ? { objectKey: key, checksum: rightMediaChecksum, contentType: "image/png", byteSize: String(rightMediaBytes.byteLength) } : null),
-    generateAvatar: vi.fn((kind, id) => generateCanonicalAvatar(kind, id)),
+    getAvatarIdentity: vi.fn(async (kind, id) => kind === "team" && id === leftId
+      ? leftIdentity
+      : kind === "region" && id === rightId ? rightIdentity : null),
+    generateAvatar: vi.fn((identity) => generateCanonicalAvatar(identity)),
   };
 }
 
@@ -156,7 +166,7 @@ describe("historical acceptance evidence gate", () => {
     expect(snapshot).toMatchObject({
       schemaVersion: 2,
       status: "reviewed",
-      datasetVersion: "leaguepedia-bbb75c5f7cab4b7693536c3f002feaff09a5f11c894063d6dd151d20f1edb100",
+      datasetVersion: "leaguepedia-a9277cebd9d2be1006b8e35d41d41af06d599507741c0770615a76489d33c7a2",
       attribution: {
         provider: "Leaguepedia",
         url: "https://lol.fandom.com/wiki/Leaguepedia%3ACopyrights",
@@ -169,25 +179,37 @@ describe("historical acceptance evidence gate", () => {
         media: {
           left: {
             kind: "generated-avatar", entityKind: "team", entityId: "11111111-1111-5111-8111-111111111111",
-            algorithm: "canonical-avatar-v1", checksum: "dfe99ae1ed84135d39dba958e224900889475a0b81a70062662dd2bdbcb478a8",
+            label: "T1", abbreviation: "T1", algorithm: "canonical-avatar-v2",
+            checksum: "d5b14ff6984ca747067f2e650adeb74e823d12d8b1a111e3f47dc3c96f959da5",
             contentType: "image/svg+xml",
           },
           right: {
             kind: "generated-avatar", entityKind: "region", entityId: "33333333-3333-5333-8333-333333333333",
-            algorithm: "canonical-avatar-v1", checksum: "cb062a78583d7f0fc4fe64cbbc12f05bdb4175ce99750c671abd883589c62e33",
+            label: "LPL", abbreviation: "LPL", algorithm: "canonical-avatar-v2",
+            checksum: "b133e02a7168778e265c2df168efb2f326729a3a4183ff9c350a2bba6aa90d43",
             contentType: "image/svg+xml",
           },
         },
       },
-      review: { reviewer: expect.stringMatching(/\S/u) },
+      review: {
+        reviewedAt: "2026-07-18T09:54:06Z",
+        reviewer: "codex-task7-gen4-independent-spec-review",
+      },
     });
     expect(snapshot.sources).toEqual(expect.arrayContaining([
-      expect.objectContaining({ pageId: 294322, revisionId: 4477228, title: "T1" }),
+      expect.objectContaining({ pageId: 294322, revisionId: 4486594, title: "T1" }),
       expect.objectContaining({ pageId: 196774, revisionId: 4436217, title: "SK Telecom T1" }),
     ]));
     expect(snapshot.coverage).toMatchObject({
       from: "2013-09-15", to: "2025-11-09", rows: reviewedCoverageRows,
     });
+    expect((snapshot.expected as { rows: Array<{ leftName?: string; rightName?: string }> }).rows)
+      .toEqual(expect.arrayContaining([
+        expect.objectContaining({ leftName: "T1", rightName: "Top Esports" }),
+        expect.objectContaining({ leftName: "SK Telecom T1", rightName: "Royal Club" }),
+      ]));
+    expect((snapshot.expected as { rows: Array<{ leftName?: string; rightName?: string }> }).rows
+      .every((row) => Boolean(row.leftName?.trim()) && Boolean(row.rightName?.trim()))).toBe(true);
     expect(JSON.stringify(snapshot)).not.toMatch(/synthetic|leaguepedia-small/iu);
   });
 
@@ -205,6 +227,57 @@ describe("historical acceptance evidence gate", () => {
     await expect(module.verifyAcceptanceSnapshot(reviewedSnapshot(), deps)).resolves.toMatchObject({ status: "ready", blockers: [] });
     expect(deps.compare).toHaveBeenCalledWith(expect.objectContaining({ eventCategories: ["worlds"], bestOf: [5], limit: 100 }));
     expect(deps.getRawObject).toHaveBeenCalledWith("sources/leaguepedia/raw.json");
+  });
+
+  it("blocks a reviewed row when either historical team name differs from PostgreSQL", async () => {
+    const module = await import("../src/acceptance.js");
+    const base = reviewedSnapshot();
+    for (const row of [
+      { ...base.expected.rows[0]!, leftName: "SK Telecom T1" },
+      { ...base.expected.rows[0]!, rightName: "Top Esports" },
+    ]) {
+      const snapshot = reviewedSnapshot({ expected: { ...base.expected, rows: [row] } });
+      await expect(module.verifyAcceptanceSnapshot(snapshot, dependencies())).resolves.toMatchObject({
+        status: "blocked",
+        blockers: expect.arrayContaining([expect.stringMatching(/chronological series rows/i)]),
+      });
+    }
+  });
+
+  it("rejects duplicate reviewed series and game IDs before invoking runtime dependencies", async () => {
+    const module = await import("../src/acceptance.js");
+    const base = reviewedSnapshot();
+    const row = base.expected.rows[0]!;
+    const cases = [
+      {
+        rows: [row, { ...row, gameIds: [tournamentId] }],
+        blocker: /expected\.rows\.1\.id: Duplicate reviewed series ID/u,
+      },
+      {
+        rows: [{ ...row, gameIds: [gameId, gameId] }],
+        blocker: /expected\.rows\.0\.gameIds\.1: Duplicate reviewed game ID/u,
+      },
+      {
+        rows: [row, { ...row, id: tournamentId, gameIds: [gameId] }],
+        blocker: /expected\.rows\.1\.gameIds\.0: Duplicate reviewed game ID/u,
+      },
+    ];
+
+    for (const { rows, blocker } of cases) {
+      const deps = dependencies();
+      const snapshot = reviewedSnapshot({ expected: { ...base.expected, rows } });
+      await expect(module.verifyAcceptanceSnapshot(snapshot, deps)).resolves.toMatchObject({
+        status: "blocked",
+        blockers: expect.arrayContaining([expect.stringMatching(blocker)]),
+      });
+      expect(deps.compare).not.toHaveBeenCalled();
+      expect(deps.getRawObject).not.toHaveBeenCalled();
+      expect(deps.getSourceMetadata).not.toHaveBeenCalled();
+      expect(deps.getDatasetEvidence).not.toHaveBeenCalled();
+      expect(deps.getMediaMetadata).not.toHaveBeenCalled();
+      expect(deps.getAvatarIdentity).not.toHaveBeenCalled();
+      expect(deps.generateAvatar).not.toHaveBeenCalled();
+    }
   });
 
   it("requires the reviewed snapshot to declare exactly complete Leaguepedia Worlds coverage for 2013 through 2025", async () => {
@@ -292,8 +365,10 @@ describe("historical acceptance evidence gate", () => {
     });
 
     await expect(module.verifyAcceptanceSnapshot(snapshot, deps)).resolves.toMatchObject({ status: "ready", blockers: [] });
-    expect(deps.generateAvatar).toHaveBeenCalledWith("team", leftId);
-    expect(deps.generateAvatar).toHaveBeenCalledWith("region", rightId);
+    expect(deps.getAvatarIdentity).toHaveBeenCalledWith("team", leftId);
+    expect(deps.getAvatarIdentity).toHaveBeenCalledWith("region", rightId);
+    expect(deps.generateAvatar).toHaveBeenCalledWith(leftIdentity);
+    expect(deps.generateAvatar).toHaveBeenCalledWith(rightIdentity);
     expect(deps.getMediaMetadata).not.toHaveBeenCalled();
     expect(deps.getRawObject).toHaveBeenCalledTimes(1);
   });
@@ -312,23 +387,35 @@ describe("historical acceptance evidence gate", () => {
     expect(deps.getMediaMetadata).toHaveBeenCalledTimes(1);
     expect(deps.getMediaMetadata).toHaveBeenCalledWith("media/t1.png");
     expect(deps.generateAvatar).toHaveBeenCalledTimes(1);
-    expect(deps.generateAvatar).toHaveBeenCalledWith("region", rightId);
+    expect(deps.getAvatarIdentity).toHaveBeenCalledWith("region", rightId);
+    expect(deps.generateAvatar).toHaveBeenCalledWith(rightIdentity);
   });
 
-  it("rejects generated evidence with the wrong entity UUID, kind, algorithm, checksum, or content type", async () => {
+  it("rejects generated evidence with missing/wrong identity fields, v1 algorithm, checksum, or content type", async () => {
     const module = await import("../src/acceptance.js");
     const wrongId = "99999999-9999-4999-8999-999999999999";
+    const missingLabel = {
+      kind: generatedLeft.kind, entityKind: generatedLeft.entityKind, entityId: generatedLeft.entityId,
+      abbreviation: generatedLeft.abbreviation, algorithm: generatedLeft.algorithm,
+      checksum: generatedLeft.checksum, contentType: generatedLeft.contentType,
+    };
     const cases = [
-      { ...generatedLeft, entityId: wrongId },
-      { ...generatedLeft, entityKind: "player" },
-      { ...generatedLeft, algorithm: "canonical-avatar-v2" },
-      { ...generatedLeft, checksum: "0".repeat(64) },
-      { ...generatedLeft, contentType: "image/png" },
+      { left: missingLabel, blocker: /expected\.media\.left\.label/i },
+      { left: { ...generatedLeft, label: "SK Telecom T1" }, blocker: /repository identity/i },
+      { left: { ...generatedLeft, abbreviation: "SKT" }, blocker: /avatar abbreviation/i },
+      { left: { ...generatedLeft, abbreviation: "t1" }, blocker: /expected\.media\.left\.abbreviation/i },
+      { left: { ...generatedLeft, entityId: wrongId }, blocker: /subject identity/i },
+      { left: { ...generatedLeft, entityKind: "player" }, blocker: /subject identity/i },
+      { left: { ...generatedLeft, algorithm: "canonical-avatar-v1" }, blocker: /expected\.media\.left\.algorithm/i },
+      { left: { ...generatedLeft, checksum: "0".repeat(64) }, blocker: /reviewed checksum/i },
+      { left: { ...generatedLeft, contentType: "image/png" }, blocker: /expected\.media\.left\.contentType/i },
     ];
 
-    for (const left of cases) {
+    for (const { left, blocker } of cases) {
       const snapshot = reviewedSnapshot({ expected: { ...reviewedSnapshot().expected, media: { left, right: generatedRight } } });
-      await expect(module.verifyAcceptanceSnapshot(snapshot, dependencies(generatedResponse()))).resolves.toMatchObject({ status: "blocked" });
+      await expect(module.verifyAcceptanceSnapshot(snapshot, dependencies(generatedResponse()))).resolves.toMatchObject({
+        status: "blocked", blockers: expect.arrayContaining([expect.stringMatching(blocker)]),
+      });
     }
   });
 
@@ -348,7 +435,12 @@ describe("historical acceptance evidence gate", () => {
       expected: { ...reviewedSnapshot().expected, media: { left: generatedLeft, right: generatedRight } },
     });
 
-    for (const mediaUrl of [`/avatars/team/${rightId}.svg`, "/media-placeholder.svg"]) {
+    for (const mediaUrl of [
+      `/avatars/v2/team/${rightId}.svg`,
+      `/avatars/team/${leftId}.svg`,
+      `/avatars/v2/team/${leftId}.svg?cache=1`,
+      "/media-placeholder.svg",
+    ]) {
       const response = generatedResponse();
       response.subjects.left.mediaUrl = mediaUrl;
       response.mediaUrls.left = mediaUrl;
@@ -364,7 +456,7 @@ describe("historical acceptance evidence gate", () => {
       expected: { ...reviewedSnapshot().expected, media: { left: generatedLeft, right: generatedRight } },
     });
     const variants = [
-      { ...leftAvatar, algorithm: "canonical-avatar-v2" as typeof leftAvatar.algorithm },
+      { ...leftAvatar, algorithm: "canonical-avatar-v1" as typeof leftAvatar.algorithm },
       { ...leftAvatar, contentType: "image/png" as typeof leftAvatar.contentType },
       { ...leftAvatar, checksum: "0".repeat(64) },
       { ...leftAvatar, body: Buffer.from("tampered") },
@@ -372,7 +464,7 @@ describe("historical acceptance evidence gate", () => {
 
     for (const avatar of variants) {
       const deps = dependencies(generatedResponse());
-      deps.generateAvatar.mockImplementation((kind, id) => kind === "team" && id === leftId ? avatar : generateCanonicalAvatar(kind, id));
+      deps.generateAvatar.mockImplementation((identity) => identity.kind === "team" && identity.id === leftId ? avatar : generateCanonicalAvatar(identity));
       await expect(module.verifyAcceptanceSnapshot(snapshot, deps)).resolves.toMatchObject({
         status: "blocked", blockers: expect.arrayContaining([expect.stringMatching(/generated avatar/i)]),
       });
@@ -459,7 +551,10 @@ describe("historical acceptance evidence gate", () => {
   it("blocks database failures, placeholder media, coverage warnings, and row drift", async () => {
     const module = await import("../src/acceptance.js");
     const failed = dependencies(); failed.compare.mockRejectedValueOnce(new Error("database unavailable"));
-    await expect(module.verifyAcceptanceSnapshot(reviewedSnapshot(), failed)).resolves.toMatchObject({ status: "blocked", blockers: expect.arrayContaining([expect.stringMatching(/database unavailable/i)]) });
+    await expect(module.verifyAcceptanceSnapshot(reviewedSnapshot(), failed)).resolves.toMatchObject({
+      status: "blocked",
+      blockers: expect.arrayContaining(["Acceptance dependency verification failed: comparison: database unavailable"]),
+    });
 
     const drifted = canonicalResponse();
     drifted.mediaUrls.left = "/media/placeholder.svg";
@@ -467,6 +562,34 @@ describe("historical acceptance evidence gate", () => {
     drifted.rows[0] = { ...drifted.rows[0]!, id: "55555555-5555-4555-8555-555555555555" };
     const result = await module.verifyAcceptanceSnapshot(reviewedSnapshot(), dependencies(drifted));
     expect(result).toMatchObject({ status: "blocked", blockers: expect.arrayContaining([expect.stringMatching(/both canonical subjects.*presentation/i), expect.stringMatching(/coverage warnings/i), expect.stringMatching(/chronological series rows/i)]) });
+  });
+
+  it("reports the failing acceptance dependency stage without mislabeling it as comparison", async () => {
+    const module = await import("../src/acceptance.js");
+
+    const dataset = dependencies();
+    dataset.getDatasetEvidence.mockRejectedValueOnce(new Error("dataset audit unavailable"));
+    await expect(module.verifyAcceptanceSnapshot(reviewedSnapshot(), dataset)).resolves.toMatchObject({
+      status: "blocked",
+      blockers: expect.arrayContaining(["Acceptance dependency verification failed: dataset evidence: dataset audit unavailable"]),
+    });
+
+    const snapshot = reviewedSnapshot({
+      expected: { ...reviewedSnapshot().expected, media: { left: generatedLeft, right: generatedRight } },
+    });
+    const resolver = dependencies(generatedResponse());
+    resolver.getAvatarIdentity.mockRejectedValueOnce(new Error("avatar identity unavailable"));
+    await expect(module.verifyAcceptanceSnapshot(snapshot, resolver)).resolves.toMatchObject({
+      status: "blocked",
+      blockers: expect.arrayContaining(["Acceptance dependency verification failed: left presentation: avatar identity unavailable"]),
+    });
+
+    const generator = dependencies(generatedResponse());
+    generator.generateAvatar.mockImplementationOnce(() => { throw new Error("avatar generation failed"); });
+    await expect(module.verifyAcceptanceSnapshot(snapshot, generator)).resolves.toMatchObject({
+      status: "blocked",
+      blockers: expect.arrayContaining(["Acceptance dependency verification failed: left presentation: avatar generation failed"]),
+    });
   });
 
   it("blocks missing or checksum-mismatched immutable source objects", async () => {

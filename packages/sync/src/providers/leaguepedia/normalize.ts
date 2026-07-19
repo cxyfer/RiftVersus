@@ -28,15 +28,21 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
 
   for (const entity of snapshot.entities) {
     const override = overrides.identities.get(entity.sourceKey);
-    if (override !== undefined && override.kind !== undefined && override.kind !== entity.kind) throw new Error(`Reviewed override kind conflicts with ${entity.sourceKey}.`);
+    const canonicalId = override?.canonicalId ?? stableUuid(`entity:${entity.kind}:${entity.sourceKey}`);
+    if (override !== undefined && override.kind !== undefined && override.kind !== entity.kind) {
+      throw new Error(`Canonical entity ${canonicalId} kind conflicts for source key [${entity.sourceKey}]: source "${entity.kind}", reviewed override "${override.kind}".`);
+    }
     if (collisionKeys.has(entity.sourceKey) && override === undefined) {
       quarantine.push({ sourceKey: entity.sourceKey, reason: "ambiguous_name" });
       continue;
     }
-    const canonicalId = override?.canonicalId ?? stableUuid(`entity:${entity.kind}:${entity.sourceKey}`);
     const normalized: NormalizedLeaguepediaEntity = {
       ...entity,
-      aliases: unique([...(override?.aliases ?? []), ...entity.aliases]),
+      aliases: unique([
+        ...(override?.aliases ?? []),
+        ...(entity.kind === "player" ? [entity.sourceKey, entity.playerId ?? "", entity.displayName] : []),
+        ...entity.aliases,
+      ]),
       canonicalId,
       canonicalName: override?.canonicalName ?? entity.displayName,
       precedence: override === undefined ? "leaguepedia" : "override",
@@ -46,14 +52,26 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
     entities.push(normalized);
     entityIds.set(entity.sourceKey, canonicalId);
     const previous = entityDefinitions.get(canonicalId);
-    if (previous !== undefined && previous.kind !== entity.kind) throw new Error(`Canonical identity ${canonicalId} mixes entity kinds.`);
+    const previousSourceKeys = previous?.sourceKeys.join(", ") ?? "none";
+    if (previous !== undefined && previous.kind !== entity.kind) {
+      throw new Error(`Canonical entity ${canonicalId} kind conflicts for source keys [${previousSourceKeys}] and [${entity.sourceKey}]: existing "${previous.kind}", incoming "${entity.kind}".`);
+    }
+    if (previous !== undefined && previous.canonicalName !== normalized.canonicalName) {
+      throw new Error(`Canonical entity ${canonicalId} name conflicts for source keys [${previousSourceKeys}] and [${entity.sourceKey}]: existing "${previous.canonicalName}", incoming "${normalized.canonicalName}".`);
+    }
+    const playerId = entity.kind === "player" ? entity.playerId : undefined;
+    if (previous?.playerId !== undefined && playerId !== undefined && previous.playerId !== playerId) {
+      throw new Error(`Canonical entity ${canonicalId} player ID conflicts for source keys [${previousSourceKeys}] and [${entity.sourceKey}]: existing "${previous.playerId}", incoming "${playerId}".`);
+    }
+    const mergedPlayerId = playerId ?? previous?.playerId;
     entityDefinitions.set(canonicalId, {
       id: canonicalId,
       provider: PROVIDER,
       sourceKeys: unique([...(previous?.sourceKeys ?? []), entity.sourceKey]),
-      kind: entity.kind,
-      canonicalName: normalized.canonicalName,
-      aliases: unique([...(previous?.aliases ?? []), normalized.displayName, ...normalized.aliases]),
+      kind: previous?.kind ?? entity.kind,
+      canonicalName: previous?.canonicalName ?? normalized.canonicalName,
+      ...(entity.kind === "player" && mergedPlayerId !== undefined ? { playerId: mergedPlayerId } : {}),
+      aliases: unique([...(previous?.aliases ?? []), entity.sourceKey, normalized.playerId ?? "", normalized.displayName, ...normalized.aliases]),
     });
     if (entity.kind === "team") {
       const observed = observedTeamDates.get(entity.sourceKey);

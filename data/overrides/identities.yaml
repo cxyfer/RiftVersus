@@ -18,24 +18,63 @@ rules:
       - SKT
     validFrom: 2019-12-08
     reviewedNote: Current T1 identity continues the reviewed SKT lineage.
+  - sourceKey: Phong Vũ Buffalo
+    canonicalName: Saigon Buffalo
+    canonicalId: ee77cc6b-b3c8-5f06-8068-3c8d96cd4ed7
+    kind: team
+    aliases:
+      - PVB
+      - Dashing Buffalo
+    validTo: 2019-05-30
+    reviewedNote: Leaguepedia Teams RenamedTo resolves through TeamRedirects to Saigon Buffalo; the reviewed Leaguepedia timeline records the Phong Vũ Buffalo to Dashing Buffalo rename on 2019-05-31.
+  - sourceKey: Saigon Buffalo
+    canonicalName: Saigon Buffalo
+    canonicalId: ee77cc6b-b3c8-5f06-8068-3c8d96cd4ed7
+    kind: team
+    aliases:
+      - SGB
+      - Dashing Buffalo
+    validFrom: 2020-05-25
+    reviewedNote: Reviewed Leaguepedia page 235370 revision 4352765 as the official forward target used by the MSI lineage; the Leaguepedia timeline records the Dashing Buffalo to Saigon Buffalo rename on 2020-05-25.
+  - sourceKey: Movistar R7
+    canonicalName: LYON
+    canonicalId: 0d531ed1-8517-56d4-84a4-742d46d63bb1
+    kind: team
+    aliases:
+      - R7
+      - MR7
+    validTo: 2024-10-30
+    reviewedNote: Reviewed Leaguepedia page 213232 revision 4394944; its timeline records the Movistar R7 and Six Karma partnership forming LYON on 2024-10-31.
+  - sourceKey: LYON (2024 American Team)
+    canonicalName: LYON
+    canonicalId: 0d531ed1-8517-56d4-84a4-742d46d63bb1
+    kind: team
+    aliases:
+      - LYON
+    validFrom: 2024-10-31
+    reviewedNote: Reviewed Leaguepedia page 928951 revision 4471044 as the official forward target formed from the Movistar R7 partnership on 2024-10-31.
   - sourceKey: Splyce
     canonicalName: Movistar KOI
     canonicalId: 35c453b9-1773-5568-8e9b-c7613835f8c8
     kind: team
     aliases:
       - SPY
-    reviewedNote: Leaguepedia Teams RenamedTo resolves through TeamRedirects to MAD Lions KOI; reviewed page 198334 revision 4125518 confirms the forward rename without an exact boundary date.
+    validTo: 2019-11-28
+    reviewedNote: Leaguepedia Teams RenamedTo resolves through TeamRedirects to MAD Lions KOI; the reviewed Leaguepedia timeline records the Splyce to MAD Lions rebrand on 2019-11-29.
   - sourceKey: MAD Lions KOI
     canonicalName: Movistar KOI
     canonicalId: 35c453b9-1773-5568-8e9b-c7613835f8c8
     kind: team
     aliases:
       - MDK
-    reviewedNote: Leaguepedia Teams RenamedTo points to Movistar KOI; reviewed page 349575 revision 4347260 confirms the forward rename without an exact boundary date.
+    validFrom: 2019-11-29
+    validTo: 2024-12-05
+    reviewedNote: This source page carries the MAD Lions history after the Splyce rebrand; the reviewed Leaguepedia timeline records that lineage from 2019-11-29 until the Movistar KOI rebrand on 2024-12-06.
   - sourceKey: Movistar KOI
     canonicalName: Movistar KOI
     canonicalId: 35c453b9-1773-5568-8e9b-c7613835f8c8
     kind: team
     aliases:
       - MKOI
-    reviewedNote: Reviewed Leaguepedia page 183371 revision 4478621 as the official forward target; no exact boundary date is asserted.
+    validFrom: 2024-12-06
+    reviewedNote: Reviewed Leaguepedia page 183371 revision 4478621 as the official forward target; the Leaguepedia timeline records the Movistar KOI rebrand on 2024-12-06.

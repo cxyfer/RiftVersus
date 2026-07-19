@@ -6,6 +6,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
 import { isMissingSubjectError, notFoundError, validationError } from "../errors.js";
+import { ifNoneMatchMatches } from "../http-cache.js";
 import type { AppDependencies } from "../types.js";
 
 const CursorPayloadSchema = z.object({ playedAt: z.iso.datetime(), id: UuidSchema });
@@ -67,13 +68,6 @@ function canonicalJson(value: unknown): string {
 function etag(query: ReturnType<typeof normalizeQuery>, datasetVersion: string) {
   const payload = canonicalJson({ datasetVersion, query });
   return `"${createHash("sha256").update(payload).digest("hex")}"`;
-}
-
-function ifNoneMatchMatches(header: string | undefined, current: string) {
-  return header?.split(",").some((value) => {
-    const tag = value.trim();
-    return tag === "*" || (tag.startsWith("W/") ? tag.slice(2).trim() : tag) === current;
-  }) ?? false;
 }
 
 export function registerComparisonRoutes(app: FastifyInstance, dependencies: AppDependencies) {

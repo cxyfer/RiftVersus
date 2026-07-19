@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "requestedOutcome": "Implement team-only historical row labels, player ID plus real-name search presentation, and text-based canonical avatar v2.",
+  "goal": "Implement team-only historical row labels, player ID plus real-name search presentation, and text-based canonical avatar v2.",
+  "successEvidence": [
+    "Focused tests pass for contracts, sync publication, search UI, comparison rows, avatar v2, acceptance, and workspace governance."
+  ],
+  "stopCondition": "All seven plan tasks pass implementation and review; otherwise record the exact external blocker.",
+  "nonGoals": [
+    "Deleting entities or historical records.",
+    "Inferring player or team avatar styling from current region membership."
+  ],
+  "scope": "Execute docs/aegis/plans/2026-07-18-comparison-identity-avatar-v2.md without persistent deletions or unsupported compatibility fallbacks.",
+  "changeKinds": [
+    "cross-layer feature"
+  ],
+  "riskHints": [
+    "Schema migration, identity semantics, historical attribution, and public avatar route contract."
+  ]
+}

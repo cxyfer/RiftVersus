@@ -5,7 +5,7 @@ import type { Kysely } from "kysely";
 
 import type { Database } from "../types.js";
 import type {
-  AcceptanceDatasetEvidence, AcceptanceMediaObjectMetadata, AcceptanceSourceObjectMetadata, BeginSyncRunInput,
+  AcceptanceDatasetEvidence, AcceptanceMediaObjectMetadata, AcceptanceSourceObjectMetadata, BeginSyncRunInput, CanonicalFacts,
   CompleteUnchangedSyncRunInput, DatasetVersion, FailSyncRunInput, GameFactInput, PublishDatasetInput,
   SeriesFactInput, SourceObjectInput, SyncRun,
 } from "./types.js";
@@ -81,11 +81,19 @@ export async function recordSourceObjectWithId(input: SourceObjectInput, db: Kys
     id, provider: input.provider, source_key: input.sourceKey, source_url: input.sourceUrl,
     object_key: input.objectKey, checksum: input.checksum, content_type: input.contentType ?? null,
     byte_size: input.byteSize ?? null, parser_version: input.parserVersion,
-  }).onConflict((conflict) => conflict.columns(["provider", "source_key"]).doNothing()).returning("id").executeTakeFirst();
+  }).onConflict((conflict) => conflict.doNothing()).returning("id").executeTakeFirst();
   if (inserted !== undefined) return { id, status: "inserted" };
-  const existing = await db.selectFrom("source_objects").select(["id", "source_url", "object_key", "checksum", "content_type", "byte_size", "parser_version"])
-    .where("provider", "=", input.provider).where("source_key", "=", input.sourceKey).executeTakeFirstOrThrow();
-  if (existing.source_url !== input.sourceUrl || existing.object_key !== input.objectKey || existing.checksum !== input.checksum || existing.content_type !== (input.contentType ?? null) || existing.byte_size !== (input.byteSize ?? null) || existing.parser_version !== input.parserVersion) throw new Error("Immutable source object metadata conflicts with an existing source key.");
+  const existingBySource = await db.selectFrom("source_objects").select(["id", "provider", "source_url", "object_key", "checksum", "content_type", "byte_size", "parser_version"])
+    .where("provider", "=", input.provider).where("source_key", "=", input.sourceKey).executeTakeFirst();
+  const existingByObject = await db.selectFrom("source_objects").select(["id", "provider", "source_url", "object_key", "checksum", "content_type", "byte_size", "parser_version"])
+    .where("object_key", "=", input.objectKey).executeTakeFirst();
+  if (existingBySource !== undefined && existingByObject !== undefined && existingBySource.id !== existingByObject.id) throw new Error("Immutable source object metadata conflicts across source and object identities.");
+  if (existingBySource !== undefined) {
+    if (existingBySource.source_url !== input.sourceUrl || existingBySource.object_key !== input.objectKey || existingBySource.checksum !== input.checksum || existingBySource.content_type !== (input.contentType ?? null) || existingBySource.byte_size !== (input.byteSize ?? null) || existingBySource.parser_version !== input.parserVersion) throw new Error("Immutable source object metadata conflicts with an existing source key.");
+    return { id: existingBySource.id, status: "existing" };
+  }
+  const existing = existingByObject;
+  if (existing === undefined || existing.provider !== input.provider || existing.checksum !== input.checksum || existing.content_type !== (input.contentType ?? null) || existing.byte_size !== (input.byteSize ?? null) || existing.parser_version !== input.parserVersion) throw new Error("Immutable source object metadata conflicts with an existing object key.");
   return { id: existing.id, status: "existing" };
 }
 
@@ -122,6 +130,7 @@ export async function publishDataset(input: PublishDatasetInput, db: Kysely<Data
     const latest = await trx.selectFrom("dataset_versions").select("generation").orderBy("generation", "desc").executeTakeFirst();
     const generation = (BigInt(latest?.generation ?? "0") + 1n).toString();
     await publishDimensions(input, trx);
+    await validateFactTeamEraOwnership(facts, trx);
     await publishOverrideApplications(input, trx);
     await publishMedia(input, trx);
     for (const item of facts?.series ?? []) await upsertSeries(item, generation, input.sourceObjectId!, trx);
@@ -173,6 +182,21 @@ function validateProviderBinding(input: PublishDatasetInput, provider: string): 
   if (values.some((value) => value !== provider)) throw new Error(`Published dataset provider must match sync run provider ${provider}.`);
 }
 
+async function validateFactTeamEraOwnership(facts: CanonicalFacts | undefined, trx: Kysely<Database>): Promise<void> {
+  const factRows = [...(facts?.series ?? []), ...(facts?.games ?? [])];
+  const eraIds = [...new Set(factRows.flatMap((fact) => [fact.sideAEraId, fact.sideBEraId]).filter((id): id is string => id !== null && id !== undefined))];
+  if (eraIds.length === 0) return;
+  const eras = await trx.selectFrom("team_eras").select(["id", "team_entity_id"]).where("id", "in", eraIds).execute();
+  const teamByEra = new Map(eras.map((era) => [era.id, era.team_entity_id]));
+  for (const fact of factRows) {
+    for (const [side, eraId, teamId] of [["A", fact.sideAEraId, fact.sideATeamId], ["B", fact.sideBEraId, fact.sideBTeamId]] as const) {
+      if (eraId !== null && eraId !== undefined && teamByEra.get(eraId) !== teamId) {
+        throw new Error(`Canonical fact ${fact.id} side ${side} team era ${eraId} does not belong to team ${teamId}.`);
+      }
+    }
+  }
+}
+
 async function retireMissingFacts(input: PublishDatasetInput, generation: string, trx: Kysely<Database>): Promise<void> {
   const scopes = (input.publicationScopes ?? []).filter((scope) => scope.status === "complete" && scope.unresolvedRows === 0);
   if (scopes.length === 0) return;
@@ -204,22 +228,72 @@ function slug(value: string): string {
   return result;
 }
 
-async function assertImmutableEntity(id: string, expected: { kind: "team" | "player" | "region"; canonicalName: string; slug: string }, trx: Kysely<Database>): Promise<void> {
-  const row = await trx.selectFrom("entities").select(["kind", "canonical_name", "slug"]).where("id", "=", id).executeTakeFirst();
-  if (row !== undefined && (row.kind !== expected.kind || row.canonical_name !== expected.canonicalName || row.slug !== expected.slug)) throw new Error(`Immutable canonical identity ${id} conflicts with staged data.`);
+interface PublicationEntityRow {
+  id: string;
+  provider: string;
+  sourceKeys: readonly string[];
+  kind: "team" | "player" | "region";
+  canonicalName: string;
+  slug: string;
+  playerId: string | null;
+}
+
+async function assertImmutableEntity(id: string, expected: PublicationEntityRow, trx: Kysely<Database>): Promise<void> {
+  const row = await trx.selectFrom("entities").select(["kind", "canonical_name", "slug", "player_id"]).where("id", "=", id).executeTakeFirst();
+  if (row === undefined) return;
+  const sourceRows = async () => (await trx.selectFrom("entity_aliases").select("source_key").where("entity_id", "=", id).orderBy("source_key").execute()).map((item) => item.source_key);
+  if (row.kind !== expected.kind) {
+    throw new Error(`Published entity ${id} kind conflicts for source keys [${(await sourceRows()).join(", ")}] and [${expected.sourceKeys.join(", ")}]: existing "${row.kind}", incoming "${expected.kind}".`);
+  }
+  if (row.canonical_name !== expected.canonicalName) {
+    throw new Error(`Published entity ${id} canonical name conflicts for source keys [${(await sourceRows()).join(", ")}] and [${expected.sourceKeys.join(", ")}]: existing "${row.canonical_name}", incoming "${expected.canonicalName}".`);
+  }
+  if (row.slug !== expected.slug) {
+    throw new Error(`Published entity ${id} slug conflicts for source keys [${(await sourceRows()).join(", ")}] and [${expected.sourceKeys.join(", ")}]: existing "${row.slug}", incoming "${expected.slug}".`);
+  }
+  if (row.player_id !== null && expected.playerId !== null && row.player_id !== expected.playerId) {
+    throw new Error(`Published entity ${id} player ID conflicts for source keys [${(await sourceRows()).join(", ")}] and [${expected.sourceKeys.join(", ")}]: existing "${row.player_id}", incoming "${expected.playerId}".`);
+  }
+}
+
+function mergeConsistentStagedEntities(rows: readonly PublicationEntityRow[]): PublicationEntityRow[] {
+  const entities = new Map<string, PublicationEntityRow>();
+  for (const row of rows) {
+    const previous = entities.get(row.id);
+    if (previous === undefined) {
+      entities.set(row.id, row);
+      continue;
+    }
+    const sources = `source keys [${previous.sourceKeys.join(", ")}] and [${row.sourceKeys.join(", ")}]`;
+    if (previous.kind !== row.kind) throw new Error(`Staged entity ${row.id} kind conflicts for ${sources}: existing "${previous.kind}", incoming "${row.kind}".`);
+    if (previous.canonicalName !== row.canonicalName) throw new Error(`Staged entity ${row.id} canonical name conflicts for ${sources}: existing "${previous.canonicalName}", incoming "${row.canonicalName}".`);
+    if (previous.slug !== row.slug) throw new Error(`Staged entity ${row.id} slug conflicts for ${sources}: existing "${previous.slug}", incoming "${row.slug}".`);
+    if (previous.playerId !== null && row.playerId !== null && previous.playerId !== row.playerId) {
+      throw new Error(`Staged entity ${row.id} player ID conflicts for ${sources}: existing "${previous.playerId}", incoming "${row.playerId}".`);
+    }
+    entities.set(row.id, {
+      ...previous,
+      sourceKeys: [...new Set([...previous.sourceKeys, ...row.sourceKeys])],
+      playerId: previous.playerId ?? row.playerId,
+    });
+  }
+  return [...entities.values()];
 }
 
 async function publishDimensions(input: PublishDatasetInput, trx: Kysely<Database>): Promise<void> {
   const dimensions = input.dimensions;
   if (dimensions === undefined) return;
-  const entityRows = [
-    ...dimensions.regions.map((item) => ({ id: item.id, kind: "region" as const, canonicalName: item.name, slug: slug(item.name) })),
-    ...dimensions.entities.map((item) => ({ id: item.id, kind: item.kind, canonicalName: item.canonicalName, slug: slug(item.canonicalName) })),
+  const entityRows: PublicationEntityRow[] = [
+    ...dimensions.regions.map((item) => ({ id: item.id, provider: item.provider, sourceKeys: [item.sourceKey], kind: "region" as const, canonicalName: item.name, slug: slug(item.name), playerId: null })),
+    ...dimensions.entities.map((item) => ({ id: item.id, provider: item.provider, sourceKeys: item.sourceKeys, kind: item.kind, canonicalName: item.canonicalName, slug: slug(item.canonicalName), playerId: item.playerId ?? null })),
   ];
-  for (const item of entityRows) {
-    await assertImmutableEntity(item.id, item, trx);
-    await trx.insertInto("entities").values({ id: item.id, kind: item.kind, canonical_name: item.canonicalName, slug: item.slug }).onConflict((conflict) => conflict.column("id").doNothing()).execute();
-  }
+  const canonicalEntityRows = mergeConsistentStagedEntities(entityRows);
+  for (const item of canonicalEntityRows) await assertImmutableEntity(item.id, item, trx);
+  for (const item of canonicalEntityRows) await trx.insertInto("entities").values({
+    id: item.id, kind: item.kind, canonical_name: item.canonicalName, slug: item.slug, player_id: item.playerId,
+  }).onConflict((conflict) => conflict.column("id").doUpdateSet((eb) => ({
+    player_id: eb.fn.coalesce(eb.ref("entities.player_id"), eb.ref("excluded.player_id")),
+  }))).execute();
   for (const entity of dimensions.entities) {
     const aliases = [...new Set([...entity.sourceKeys, ...entity.aliases, entity.canonicalName])];
     for (const [index, displayName] of aliases.entries()) {

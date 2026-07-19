@@ -67,9 +67,9 @@ export async function seedComparisonFixture(db: Kysely<Database>) {
     { id: seedIds.t1, kind: "team", canonical_name: "T1", slug: "t1" },
     { id: seedIds.weibo, kind: "team", canonical_name: "Weibo Gaming", slug: "weibo" },
     { id: seedIds.genG, kind: "team", canonical_name: "Gen.G", slug: "geng" },
-    { id: seedIds.faker, kind: "player", canonical_name: "Faker", slug: "faker" },
+    { id: seedIds.faker, kind: "player", canonical_name: "Lee Sang-hyeok", player_id: "Faker", slug: "lee-sang-hyeok" },
     { id: seedIds.xiaohu, kind: "player", canonical_name: "Xiaohu", slug: "xiaohu" },
-    { id: seedIds.substitute, kind: "player", canonical_name: "Substitute", slug: "substitute" },
+    { id: seedIds.substitute, kind: "player", canonical_name: "Substitute", player_id: "Substitute", slug: "substitute" },
     { id: seedIds.lpl, kind: "region", canonical_name: "LPL", slug: "lpl" },
     { id: seedIds.lck, kind: "region", canonical_name: "LCK", slug: "lck" },
   ]).execute();
@@ -77,9 +77,10 @@ export async function seedComparisonFixture(db: Kysely<Database>) {
     { id: seedIds.sktEra, team_entity_id: seedIds.t1, display_name: "SK Telecom T1", slug: "skt" },
     { id: seedIds.t1Era, team_entity_id: seedIds.t1, display_name: "T1", slug: "t1" },
   ]).execute();
-  await db.insertInto("entity_aliases").values({
-    id: randomUUID(), entity_id: seedIds.t1, provider: "fixture", source_key: "skt", display_name: "SKT T1",
-  }).execute();
+  await db.insertInto("entity_aliases").values([
+    { id: randomUUID(), entity_id: seedIds.t1, provider: "fixture", source_key: "skt", display_name: "SKT T1" },
+    { id: randomUUID(), entity_id: seedIds.faker, provider: "fixture", source_key: "hide-on-bush", display_name: "Hide on bush" },
+  ]).execute();
   await db.insertInto("media_objects").values([
     { object_key: "media/t1.png", checksum: "fixture-t1", content_type: "image/png", byte_size: "1" },
     { object_key: "media/lpl.png", checksum: "fixture-lpl", content_type: "image/png", byte_size: "1" },

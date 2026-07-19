@@ -114,6 +114,27 @@ describeWithDatabase("sync publication repository", () => {
     expect(await db.selectFrom("sync_runs").select(["status", "finished_at"]).where("id", "=", run.id).executeTakeFirstOrThrow()).toMatchObject({ status: "succeeded" });
   });
 
+  it("reuses a retained content-addressed object under a retry source key", async () => {
+    const retained = {
+      provider: "leaguepedia",
+      sourceKey: "failed:sha256:retry-object",
+      sourceUrl: "https://lol.example/cargo",
+      objectKey: "sources/leaguepedia/retry-object",
+      checksum: "retry-object",
+      contentType: "application/json",
+      byteSize: "42",
+      parserVersion: "test",
+    };
+    const first = await recordSourceObjectWithId(retained, db);
+    const retry = await recordSourceObjectWithId({
+      ...retained,
+      sourceKey: "leaguepedia:retry-batch",
+      sourceUrl: "https://lol.example/api.php",
+    }, db);
+    expect(first.status).toBe("inserted");
+    expect(retry).toEqual({ id: first.id, status: "existing" });
+  });
+
   it("publishes dimensions, media and coverage in the canonical transaction", async () => {
     const teamId = randomUUID(); const regionId = randomUUID(); const eraId = randomUUID(); const tournamentId = randomUUID();
     const source = await recordSourceObjectWithId({ provider: "leaguepedia", sourceKey: "dimension-source", sourceUrl: "https://lol.example/wiki", objectKey: "sources/dimension", checksum: "dimension", parserVersion: "test" }, db);
@@ -160,6 +181,171 @@ describeWithDatabase("sync publication repository", () => {
     await expect(db.deleteFrom("override_application_runs").where("override_application_id", "=", application.id).execute()).rejects.toThrow();
   });
 
+  it.each([
+    ["null then value", [null, "Faker"], "Faker"],
+    ["value then null", ["Faker", null], "Faker"],
+    ["same then same", ["Faker", "Faker"], "Faker"],
+  ] as const)("publishes duplicate canonical player rows order-independently: %s", async (label, playerIds, expectedPlayerId) => {
+    const id = randomUUID();
+    const canonicalName = `Order Player ${id}`;
+    const sourceKeys = [`Faker Order 0 ${id}`, `Faker Order 1 ${id}`] as const;
+    const run = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({
+      syncRunId: run.id,
+      version: `player-id-order-${label.replaceAll(" ", "-")}-${id}`,
+      coverage: [],
+      dimensions: {
+        entities: playerIds.map((playerId, index) => ({
+          id, provider: "leaguepedia", sourceKeys: [sourceKeys[index]!], kind: "player" as const,
+          canonicalName, playerId, aliases: [],
+        })),
+        regions: [], teamEras: [], tournaments: [],
+      },
+    }, db);
+    expect(await db.selectFrom("entities").select(["canonical_name", "player_id"]).where("id", "=", id).executeTakeFirstOrThrow())
+      .toEqual({ canonical_name: canonicalName, player_id: expectedPlayerId });
+    expect(await db.selectFrom("entities").select(({ fn }) => fn.countAll<number>().as("count")).where("id", "=", id).executeTakeFirstOrThrow()).toEqual({ count: "1" });
+    expect(new Set((await db.selectFrom("entity_aliases").select("display_name").where("entity_id", "=", id).execute()).map((alias) => alias.display_name)))
+      .toEqual(new Set([...sourceKeys, canonicalName]));
+  });
+
+  it.each([
+    ["Faker", "Hide on bush"],
+    ["Hide on bush", "Faker"],
+  ] as const)("rejects conflicting player IDs before an initial publication in either order: %s then %s", async (firstPlayerId, secondPlayerId) => {
+    const id = randomUUID();
+    const firstSourceKey = `${firstPlayerId} Source`;
+    const secondSourceKey = `${secondPlayerId} Source`;
+    const version = `player-id-initial-conflict-${id}`;
+    const run = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await expect(publishDataset({
+      syncRunId: run.id,
+      version,
+      coverage: [],
+      dimensions: {
+        entities: [
+          { id, provider: "leaguepedia", sourceKeys: [firstSourceKey], kind: "player", canonicalName: "Lee Sang-hyeok", playerId: firstPlayerId, aliases: [] },
+          { id, provider: "leaguepedia", sourceKeys: [secondSourceKey], kind: "player", canonicalName: "Lee Sang-hyeok", playerId: secondPlayerId, aliases: [] },
+        ],
+        regions: [], teamEras: [], tournaments: [],
+      },
+    }, db)).rejects.toThrow(new RegExp(`${id}.*${firstSourceKey}.*${secondSourceKey}.*${firstPlayerId}.*${secondPlayerId}`, "i"));
+    expect(await db.selectFrom("entities").select("id").where("id", "=", id).executeTakeFirst()).toBeUndefined();
+    expect(await db.selectFrom("entity_aliases").select("id").where("entity_id", "=", id).execute()).toEqual([]);
+    expect(await db.selectFrom("dataset_versions").select("id").where("version", "=", version).executeTakeFirst()).toBeUndefined();
+  });
+
+  it("rejects conflicting canonical identity fields before initial publication in either order", async () => {
+    for (const field of ["kind", "canonicalName"] as const) {
+      for (const reverse of [false, true]) {
+        const id = randomUUID();
+        const version = `canonical-${field}-${reverse ? "reverse" : "forward"}-${id}`;
+        const first = { id, provider: "leaguepedia", sourceKeys: ["Canonical Source A"], kind: "player" as const, canonicalName: "Lee Sang-hyeok", playerId: null, aliases: [] };
+        const conflicting = field === "kind"
+          ? { ...first, sourceKeys: ["Canonical Source B"], kind: "team" as const }
+          : { ...first, sourceKeys: ["Canonical Source B"], canonicalName: "Sang-hyeok Lee" };
+        const entities = reverse ? [conflicting, first] : [first, conflicting];
+        const expectedValues = field === "kind" ? entities.map((entity) => entity.kind) : entities.map((entity) => entity.canonicalName);
+        const run = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+        await expect(publishDataset({
+          syncRunId: run.id,
+          version,
+          coverage: [],
+          dimensions: { entities, regions: [], teamEras: [], tournaments: [] },
+        }, db)).rejects.toThrow(new RegExp(`${id}.*${entities[0]!.sourceKeys[0]}.*${entities[1]!.sourceKeys[0]}.*${expectedValues[0]}.*${expectedValues[1]}`, "i"));
+        expect(await db.selectFrom("entities").select("id").where("id", "=", id).executeTakeFirst()).toBeUndefined();
+        expect(await db.selectFrom("entity_aliases").select("id").where("entity_id", "=", id).execute()).toEqual([]);
+        expect(await db.selectFrom("dataset_versions").select("id").where("version", "=", version).executeTakeFirst()).toBeUndefined();
+      }
+    }
+  });
+
+  it("validates player ID publication and rejects inconsistent batches before mutation", async () => {
+    const playerId = randomUUID();
+    const preflightRejectedTeamId = randomUUID();
+    const canonicalName = `Task Two Player ${playerId}`;
+    const player = { id: playerId, provider: "leaguepedia", sourceKeys: ["Faker"], kind: "player" as const, canonicalName, aliases: ["Faker", canonicalName] };
+
+    const initial = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({ syncRunId: initial.id, version: "player-id-null", coverage: [], dimensions: { entities: [player], regions: [], teamEras: [], tournaments: [] } }, db);
+    expect(await db.selectFrom("entities").select(["canonical_name", "player_id"]).where("id", "=", playerId).executeTakeFirstOrThrow()).toEqual({ canonical_name: canonicalName, player_id: null });
+
+    const populate = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({ syncRunId: populate.id, version: "player-id-populated", coverage: [], dimensions: { entities: [{ ...player, playerId: "Faker" }], regions: [], teamEras: [], tournaments: [] } }, db);
+    expect(await db.selectFrom("entities").select(["canonical_name", "player_id"]).where("id", "=", playerId).executeTakeFirstOrThrow()).toEqual({ canonical_name: canonicalName, player_id: "Faker" });
+
+    const replay = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await expect(publishDataset({
+      syncRunId: replay.id,
+      version: "player-id-replay",
+      coverage: [],
+      dimensions: {
+        entities: [
+          { ...player, sourceKeys: ["Faker (Player)"], playerId: "Faker" },
+          { ...player, sourceKeys: ["Faker Alternate Page"], playerId: "Faker" },
+        ],
+        regions: [], teamEras: [], tournaments: [],
+      },
+    }, db)).resolves.toBeDefined();
+    expect(await db.selectFrom("entities").select(({ fn }) => fn.countAll<number>().as("count")).where("id", "=", playerId).executeTakeFirstOrThrow()).toEqual({ count: "1" });
+    expect(await db.selectFrom("entity_aliases").select("display_name").where("entity_id", "=", playerId).execute()).toEqual(expect.arrayContaining([
+      { display_name: "Faker (Player)" },
+      { display_name: "Faker Alternate Page" },
+    ]));
+
+    const aliasesBeforeConflict = await db.selectFrom("entity_aliases").select(["source_key", "display_name"]).where("entity_id", "=", playerId).orderBy("source_key").execute();
+    const conflict = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await expect(publishDataset({
+      syncRunId: conflict.id,
+      version: "player-id-conflict",
+      coverage: [],
+      dimensions: {
+        entities: [
+          { id: preflightRejectedTeamId, provider: "leaguepedia", sourceKeys: ["Rollback Team"], kind: "team", canonicalName: "Rollback Team", aliases: [] },
+          { ...player, sourceKeys: ["Conflicting Faker Page"], playerId: "Faker" },
+          { ...player, sourceKeys: ["Conflicting Hide on bush Page"], playerId: "Hide on bush" },
+        ],
+        regions: [], teamEras: [], tournaments: [],
+      },
+    }, db)).rejects.toThrow(/player ID.*conflicts/i);
+    expect(await db.selectFrom("entities").select("id").where("id", "=", preflightRejectedTeamId).executeTakeFirst()).toBeUndefined();
+    expect(await db.selectFrom("entities").select(["canonical_name", "player_id"]).where("id", "=", playerId).executeTakeFirstOrThrow()).toEqual({ canonical_name: canonicalName, player_id: "Faker" });
+    expect(await db.selectFrom("entity_aliases").select(["source_key", "display_name"]).where("entity_id", "=", playerId).orderBy("source_key").execute()).toEqual(aliasesBeforeConflict);
+    expect(await db.selectFrom("dataset_versions").select("id").where("version", "=", "player-id-conflict").executeTakeFirst()).toBeUndefined();
+
+    const invalidTeam = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await expect(publishDataset({
+      syncRunId: invalidTeam.id,
+      version: "team-player-id-rejected",
+      coverage: [],
+      dimensions: {
+        entities: [{ id: randomUUID(), provider: "leaguepedia", sourceKeys: ["Invalid Team"], kind: "team", canonicalName: "Invalid Team", playerId: "NotAPlayer", aliases: [] }],
+        regions: [], teamEras: [], tournaments: [],
+      },
+    }, db)).rejects.toThrow();
+    expect(await db.selectFrom("dataset_versions").select("id").where("version", "=", "team-player-id-rejected").executeTakeFirst()).toBeUndefined();
+  });
+
+  it("rejects a conflicting player ID against the existing database row without changing state", async () => {
+    const id = seedIds.faker;
+    const player = { id, provider: "leaguepedia", sourceKeys: ["Existing Faker Page"], kind: "player" as const, canonicalName: "Lee Sang-hyeok", playerId: "Faker", aliases: ["Faker"] };
+    const initial = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({ syncRunId: initial.id, version: `existing-player-id-${id}`, coverage: [], dimensions: { entities: [player], regions: [], teamEras: [], tournaments: [] } }, db);
+    const rowBefore = await db.selectFrom("entities").selectAll().where("id", "=", id).executeTakeFirstOrThrow();
+    const aliasesBefore = await db.selectFrom("entity_aliases").selectAll().where("entity_id", "=", id).orderBy("source_key").execute();
+
+    const conflict = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await expect(publishDataset({
+      syncRunId: conflict.id,
+      version: `existing-player-id-conflict-${id}`,
+      coverage: [],
+      dimensions: { entities: [{ ...player, sourceKeys: ["Incoming Faker Page"], playerId: "Hide on bush" }], regions: [], teamEras: [], tournaments: [] },
+    }, db)).rejects.toThrow(new RegExp(`${id}.*Existing Faker Page.*Incoming Faker Page.*Faker.*Hide on bush`, "i"));
+    expect(await db.selectFrom("entities").selectAll().where("id", "=", id).executeTakeFirstOrThrow()).toEqual(rowBefore);
+    expect(await db.selectFrom("entity_aliases").selectAll().where("entity_id", "=", id).orderBy("source_key").execute()).toEqual(aliasesBefore);
+    expect(await db.selectFrom("dataset_versions").select("id").where("version", "=", `existing-player-id-conflict-${id}`).executeTakeFirst()).toBeUndefined();
+  });
+
   it("retires only complete exact scopes, preserves other years, and restores reappearing facts", async () => {
     const source = await recordSourceObjectWithId({ provider: "fixture", sourceKey: "retirement", sourceUrl: "https://example.test/retirement", objectKey: "sources/retirement", checksum: "retirement", parserVersion: "test" }, db);
     const scope = { provider: "fixture", tournamentSourceKey: "worlds", from: "2024-01-01", to: "2025-01-01", status: "partial" as const, unresolvedRows: 1 };
@@ -194,6 +380,39 @@ describeWithDatabase("sync publication repository", () => {
       { syncRunId: run.id, version: "cross-provider-scope", coverage: [], publicationScopes: [{ provider: "wrong", tournamentSourceKey: "worlds", from: "2024-01-01", to: "2025-01-01", status: "complete", unresolvedRows: 0 }] },
     ];
     for (const input of invalidInputs) await expect(publishDataset(input, db)).rejects.toThrow(/provider.*sync run/i);
+  });
+
+  it("rejects mismatched team-era facts before mutating any fact in the batch", async () => {
+    const source = await recordSourceObjectWithId({ provider: "fixture", sourceKey: "team-era-invariant", sourceUrl: "https://example.test/team-era-invariant", objectKey: "sources/team-era-invariant", checksum: "team-era-invariant", parserVersion: "test" }, db);
+    const validSeriesId = randomUUID();
+    const mismatchedSeriesId = randomUUID();
+    const seriesRun = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    const series = (id: string, sideATeamId: string) => ({
+      id, provider: "fixture", sourceKey: id, tournamentId: seedIds.worlds, playedAt: new Date("2025-01-01T00:00:00Z"),
+      bestOf: 1 as const, completed: true, sideATeamId, sideAEraId: seedIds.t1Era, sideBTeamId: seedIds.weibo,
+      sideAScore: 1, sideBScore: 0, winnerTeamId: sideATeamId,
+    });
+    await expect(publishDataset({
+      syncRunId: seriesRun.id, version: "mismatched-series-era", sourceObjectId: source.id, coverage: [],
+      facts: { series: [series(validSeriesId, seedIds.t1), series(mismatchedSeriesId, seedIds.genG)] },
+    }, db)).rejects.toThrow(/team era.*does not belong to team/i);
+    expect(await db.selectFrom("series_facts").select("id").where("id", "in", [validSeriesId, mismatchedSeriesId]).execute()).toEqual([]);
+    expect(await findDatasetVersion("mismatched-series-era", db)).toBeNull();
+
+    const validGameId = randomUUID();
+    const mismatchedGameId = randomUUID();
+    const gameRun = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    const game = (id: string, sideBEraId: string | null) => ({
+      id, provider: "fixture", sourceKey: id, seriesId: seedIds.t1Series, gameNumber: id === validGameId ? 10 : 11,
+      playedAt: new Date("2025-01-01T00:00:00Z"), sideATeamId: seedIds.t1, sideAEraId: seedIds.t1Era,
+      sideBTeamId: seedIds.weibo, sideBEraId, winnerTeamId: seedIds.t1,
+    });
+    await expect(publishDataset({
+      syncRunId: gameRun.id, version: "mismatched-game-era", sourceObjectId: source.id, coverage: [],
+      facts: { games: [game(validGameId, null), game(mismatchedGameId, seedIds.t1Era)] },
+    }, db)).rejects.toThrow(/team era.*does not belong to team/i);
+    expect(await db.selectFrom("game_facts").select("id").where("id", "in", [validGameId, mismatchedGameId]).execute()).toEqual([]);
+    expect(await findDatasetVersion("mismatched-game-era", db)).toBeNull();
   });
 
   it("atomically upserts canonical facts and rolls staged changes back on validation failure", async () => {

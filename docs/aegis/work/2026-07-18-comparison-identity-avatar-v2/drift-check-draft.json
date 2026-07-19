@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "2026-07-18-comparison-identity-avatar-v2",
+  "taskIntentRef": "docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/task-intent-draft.json",
+  "baselineRefs": [
+    "docs/aegis/baseline/2026-07-18-riftversus-comparison-identity-avatar-v2.md"
+  ],
+  "scopeStatus": "verified",
+  "compatStatus": "verified",
+  "retirementStatus": "verified",
+  "newRiskSignals": [
+    "The original 7/14 snapshot was absent locally; gen4 was independently reviewed and promoted instead of rewriting provenance."
+  ],
+  "decision": "continue"
+}

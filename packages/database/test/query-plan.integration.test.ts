@@ -4,7 +4,7 @@ import { Kysely, PostgresDialect } from "kysely";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { beginSyncRun, publishDataset, searchEntities } from "../src/index.js";
+import { beginSyncRun, getAvatarIdentity, publishDataset, searchEntities } from "../src/index.js";
 import { createDb, destroyDb } from "../src/db.js";
 import { migrateToLatest } from "../src/migrator.js";
 import { buildComparisonQueryPlan } from "../src/repositories/comparison.js";
@@ -94,6 +94,7 @@ describeWithDatabase("repository query-plan budgets", () => {
   const canonicalTarget = randomUUID();
   const slugTarget = randomUUID();
   const aliasTarget = randomUUID();
+  const playerIdTarget = randomUUID();
 
   beforeAll(async () => {
     await adminPool.query(`create schema ${schema}`);
@@ -107,6 +108,7 @@ describeWithDatabase("repository query-plan budgets", () => {
       { id: canonicalTarget, kind: "team" as const, canonical_name: "Plan Canonical Needle", slug: "canonical-target" },
       { id: slugTarget, kind: "team" as const, canonical_name: "Slug Search Target", slug: "plan-slug-needle" },
       { id: aliasTarget, kind: "team" as const, canonical_name: "Alias Search Target", slug: "alias-target" },
+      { id: playerIdTarget, kind: "player" as const, canonical_name: "Public Identity Target", player_id: "Plan Handle Needle", slug: "public-identity-target" },
     ];
     for (const batch of chunks([...noiseEntities, ...searchTargets], 2_000)) await db.insertInto("entities").values(batch).execute();
     const aliases = noiseEntities.map((entity, index) => ({
@@ -143,6 +145,12 @@ describeWithDatabase("repository query-plan budgets", () => {
         { game_id: gameId, player_entity_id: noisePlayerB, side: "b" as const, team_entity_id: noiseTeamB },
       ])).execute();
     }
+    await db.insertInto("game_players").values({
+      game_id: comparisonRows[0]!.gameId,
+      player_entity_id: playerIdTarget,
+      side: "a",
+      team_entity_id: noiseTeamA,
+    }).execute();
     await db.insertInto("series_facts").values([canonicalTarget, slugTarget, aliasTarget].map((target, index) => ({
       id: randomUUID(), provider: "plan", source_key: `search-target-${index}`, tournament_id: seedIds.worlds,
       played_at: new Date(`2024-02-0${index + 1}T00:00:00Z`), best_of: 1 as const, completed: true,
@@ -175,11 +183,33 @@ describeWithDatabase("repository query-plan budgets", () => {
     ["canonical name", "canonical needle", canonicalTarget, "entities_canonical_name_trgm"],
     ["slug", "slug-needle", slugTarget, "entities_slug_trgm"],
     ["alias", "alias needle", aliasTarget, "entity_aliases_display_name_trgm"],
+    ["player ID", "handle needle", playerIdTarget, "entities_player_id_trgm"],
   ])("keeps %s entity search selective and within the CI budget", async (_label, term, targetId, requiredIndex) => {
     const plan = await explainCapturedSearch(term, targetId);
     expectSelectivePlan(plan, { criticalRelations: ["entities", "entity_aliases"], executionBudgetMs: 500, outputRowBudget: 20, scannedRowBudget: 100, removedRowBudget: 200 });
     expect(plan.nodes.some((node) => node.index === requiredIndex)).toBe(true);
     console.info(JSON.stringify({ gate: `entity-${_label}`, executionTimeMs: plan.executionTimeMs, actualRows: plan.rootActualRows, indexes: plan.nodes.flatMap((node) => node.index === undefined ? [] : [node.index]) }));
+  }, 10_000);
+
+  it("keeps avatar identity resolution on the entity PK with publication visibility", async () => {
+    capturedQueries.length = 0;
+    await expect(getAvatarIdentity("team", canonicalTarget, loggedDb)).resolves.toEqual({
+      kind: "team", id: canonicalTarget, label: "Plan Canonical Needle",
+    });
+    expect(capturedQueries).toHaveLength(1);
+    const captured = capturedQueries[0]!;
+    expect(captured.sql).toContain("publication_generation");
+    expect(captured.sql).toContain("retired_generation");
+    const result = await planPool.query({
+      text: `explain (analyze, buffers, format json) ${captured.sql}`,
+      values: [...captured.parameters],
+    });
+    const plan = readExplain(result.rows[0]?.["QUERY PLAN"]);
+    expectSelectivePlan(plan, {
+      criticalRelations: ["entities"], executionBudgetMs: 250, outputRowBudget: 1,
+      scannedRowBudget: 1, removedRowBudget: 1,
+    });
+    expect(plan.nodes.some((node) => node.index === "entities_pkey")).toBe(true);
   }, 10_000);
 
   it("keeps the production player comparison joins selective and within CI budgets", async () => {
