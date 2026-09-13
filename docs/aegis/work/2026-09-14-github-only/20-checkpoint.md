@@ -126,6 +126,8 @@ Historical JSON implementation evidence only; superseded by SQLite S1 below.
 
 ## SQLite S1 verified
 
+Commit: `214d9cc`.
+
 - Normalized SQLite v2 replaces the uncommitted JSON shards and browser JS
   comparison engine. Node 24 exports indexed 4096-byte pages, ANALYZE/VACUUM,
   integrity checks, a physical DB SHA, and a separate logical snapshot ID.
@@ -142,3 +144,31 @@ Historical JSON implementation evidence only; superseded by SQLite S1 below.
   hashing; the integrity/digest checks remain enforced.
 - Focused data suite: 43 passed. Domain suite: 25 passed. Build and lint passed.
 - Existing production containers/volumes and unrelated .gitignore preserved.
+
+## SQLite S2 verified
+
+- Vite production and development use real sql.js-httpvfs 0.8.12; worker JS and
+  WASM are hashed external assets. Browser search/filter/aggregation/pagination
+  run shared parameterized SQLite SQL, with no JSON facts or HTTP API fallback.
+- Range preflight validates HTTP 206, Content-Range, identity encoding, SQLite
+  header and 4096-byte pages. Internal snapshot identity is JSON-decoded and
+  compared to the manifest before exposing the executor.
+- Upstream hides the native Worker. Pre-Worker failures retry; post-start errors
+  are latched and the DB is closed where available. Reload recovery releases the
+  page-owned Worker. We do not claim an unavailable terminate API.
+- Real homepage testing caught synthetic default UUIDs. UI and synthetic fixture
+  now share the reviewed canonical T1/LPL identities, with a regression test
+  against the unchanged reviewed acceptance document.
+- Real-data cold default query: desktop and mobile each read 876,644 database
+  response bytes out of 6,889,472 bytes (12.724%). HTTPVFS also performs a bodyless
+  HEAD; data GETs are HTTP 206. Worker/WASM load, no API calls or page errors.
+- Measured readiness was approximately 2.49s desktop / 2.14s mobile on this local
+  run including startup. These are single-run observations, not p95 guarantees.
+- Reproducer: scripts/measure-static-sqlite.mjs. Evidence directory:
+  /tmp/riftversus-sqlite-real-measurement (desktop/mobile PNG and measurement JSON).
+- Real-data preview: http://127.0.0.1:4188/RiftVersus/;
+  files: /tmp/riftversus-sqlite-site-ZisSUW. No synthetic data in this preview.
+- Production synthetic Playwright covers search, historical labels, sharing,
+  PNG, 101-series ZIP, bad Range rejection/reload and mobile layout.
+- Fresh full unit/workspace test run passed 600 tests; build and lint passed.
+  Actual Pages hosting and production credentials remain untested.

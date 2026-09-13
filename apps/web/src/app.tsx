@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from "react";
 import { QueryClient, QueryClientProvider, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { BrowserRouter, useSearchParams } from "react-router-dom";
-import { ArrowLeftRight, Bookmark, CalendarDays, Check, ChevronDown, Database, Search, Trophy, Trash2, X } from "lucide-react";
+import { ArrowLeftRight, Bookmark, CalendarDays, Check, ChevronDown, Database, RefreshCw, Search, Trophy, Trash2, X } from "lucide-react";
 import type { BestOf, ComparisonResponse, EntityKind, EventCategory, ResolvedSubject } from "@riftversus/contracts";
 
 import { api as runtimeApi } from "@riftversus/api-runtime";
@@ -11,11 +11,12 @@ import { loadSavedComparisons, removeSavedComparison, saveComparison, type Saved
 import type { ComparisonApi, EntityOption } from "./api/types.js";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 5_000 } } });
-const placeholderMedia = "/media-placeholder.svg";
+const placeholderMedia = `${import.meta.env.BASE_URL}media-placeholder.svg`;
 const kindLabel: Record<EntityKind, string> = { player: "選手", team: "戰隊", region: "賽區" };
 const eventOptions: Array<[EventCategory, string]> = [["league", "聯賽"], ["fst", "FST"], ["msi", "MSI"], ["worlds", "Worlds"]];
 const leagueOptions: LeagueCode[] = ["lck", "lpl", "lec", "lcs"];
 const bestOfOptions: BestOf[] = [1, 3, 5];
+const reloadPage = () => window.location.reload();
 
 function subjectOption(subject: ResolvedSubject): EntityOption {
   return { ...subject, subtitle: kindLabel[subject.kind] };
@@ -90,12 +91,16 @@ function Results({ result, onMore, loadingMore }: { result: ComparisonResponse; 
   </section>;
 }
 
+function DataLoadError({ onReload }: { onReload: () => void }) {
+  return <section className="loading" role="alert" aria-live="assertive"><div><strong>資料目前無法取得</strong><p>請重新載入頁面以重試。</p><button className="apply-button" type="button" onClick={onReload}><RefreshCw size={16} aria-hidden="true" />重新載入資料</button></div></section>;
+}
+
 function SavedDrawer({ items, names, onLoad, onRemove, onClose }: { items: SavedComparison[]; names: Map<string, EntityOption>; onLoad: (state: ComparisonRouteState) => void; onRemove: (id: string) => void; onClose: () => void }) {
   const label = (id: string) => names.get(id)?.displayName ?? id.slice(0, 8);
   return <aside className="saved-drawer" aria-label="已保存結果"><div className="drawer-heading"><h2>保存結果</h2><button type="button" className="icon-button" onClick={onClose} aria-label="關閉保存結果" title="關閉"><X size={18} /></button></div>{items.length === 0 ? <p className="empty-state">目前沒有保存的比較。</p> : <ul>{items.map((item) => { const left = label(item.state.leftId); const right = label(item.state.rightId); return <li key={item.id}><button type="button" className="saved-load" onClick={() => onLoad(item.state)}>{left} <ArrowLeftRight size={13} /> {right}<small>{new Date(item.createdAt).toLocaleDateString("zh-TW")}</small></button><button type="button" className="icon-button" onClick={() => onRemove(item.id)} aria-label={`刪除 ${left} 與 ${right} 的保存結果`} title="刪除"><Trash2 size={16} /></button></li>; })}</ul>}</aside>;
 }
 
-function ComparisonWorkspace({ api }: { api: ComparisonApi }) {
+function ComparisonWorkspace({ api, onReload }: { api: ComparisonApi; onReload: () => void }) {
   const [params, setParams] = useSearchParams();
   const paramsKey = params.toString();
   const parsed = useMemo(() => parseRouteState(new URLSearchParams(paramsKey)), [paramsKey]);
@@ -124,10 +129,10 @@ function ComparisonWorkspace({ api }: { api: ComparisonApi }) {
   const resetDraft = () => { setValidationMessage(null); setDraft(submitted); };
   const save = () => setSaved(saveComparison(submitted));
   const load = (state: ComparisonRouteState) => { setDraft(state); setParams(serializeRouteState(state)); setSavedOpen(false); };
-  return <main className="terminal-shell"><header className="topbar"><a className="wordmark" href="/" aria-label="RiftVersus 首頁"><span>RIFT</span><b>VERSUS</b></a><div className="topbar-actions"><span className="dataset-status"><i />資料已發布</span><button type="button" className="icon-button" onClick={save} aria-label="保存目前比較" title="保存目前比較"><Bookmark size={18} /></button><button type="button" className="icon-button" onClick={() => setSavedOpen(true)} aria-label="查看保存結果" title="保存結果"><Trophy size={18} /></button></div></header>
+  return <main className="terminal-shell"><header className="topbar"><a className="wordmark" href={import.meta.env.BASE_URL} aria-label="RiftVersus 首頁"><span>RIFT</span><b>VERSUS</b></a><div className="topbar-actions"><span className="dataset-status"><i />資料已發布</span><button type="button" className="icon-button" onClick={save} aria-label="保存目前比較" title="保存目前比較"><Bookmark size={18} /></button><button type="button" className="icon-button" onClick={() => setSavedOpen(true)} aria-label="查看保存結果" title="保存結果"><Trophy size={18} /></button></div></header>
     <form className="compare-panel" aria-label="比較條件" onSubmit={submit}><div className="panel-heading"><p>HEAD-TO-HEAD ARCHIVE</p><h1>賽事對戰紀錄</h1></div><div className="subject-grid"><EntityCombobox label="比較對象" value={entity(draft.leftKind, draft.leftId)} onPick={(option) => pick("left", option)} api={api} /><button className="swap-button" type="button" onClick={() => setDraft(swapRouteState(draft))} aria-label="交換比較雙方" title="交換比較雙方"><ArrowLeftRight size={19} /></button><EntityCombobox label="對戰對象" value={entity(draft.rightKind, draft.rightId)} onPick={(option) => pick("right", option)} api={api} /></div><div className="filters"><label className="date-field"><span>起始日期</span><input type="date" value={draft.from ?? ""} onChange={(event) => setDraft((current) => event.target.value ? { ...current, from: event.target.value } : (() => { const next = { ...current }; delete next.from; return next; })())} /></label><label className="date-field"><span>結束日期</span><input type="date" value={draft.to ?? ""} onChange={(event) => setDraft((current) => event.target.value ? { ...current, to: event.target.value } : (() => { const next = { ...current }; delete next.to; return next; })())} /></label><ToggleGroup label="賽事類型" values={eventOptions.map(([value]) => value)} selected={draft.events} onChange={(values) => updateDraft({ events: values })} format={(value) => eventOptions.find(([item]) => item === value)?.[1] ?? value} /><ToggleGroup label="聯賽" values={leagueOptions} selected={draft.leagues} onChange={(values) => updateDraft({ leagues: values })} format={(value) => value.toUpperCase()} /><ToggleGroup label="賽制" values={bestOfOptions} selected={draft.bestOf} onChange={(values) => updateDraft({ bestOf: values })} format={(value) => `BO${value}`} /></div><div className="form-actions"><button className="apply-button" type="submit">套用篩選</button>{validationMessage && <><p className="validation-error" role="alert">{validationMessage}</p><button type="button" className="reset-button" onClick={resetDraft}>重設</button></>}</div></form>
-    {comparison.isLoading && <section className="loading">正在彙整對戰紀錄</section>}{comparison.isError && <section className="loading">資料目前無法取得</section>}{result && firstPage && <><Summary result={result} /><ExportButton api={api} query={query} initial={firstPage} /><Results result={result} onMore={() => void comparison.fetchNextPage()} loadingMore={comparison.isFetchingNextPage} /></>}{savedOpen && <SavedDrawer items={saved} names={known} onLoad={load} onRemove={(id) => setSaved(removeSavedComparison(id))} onClose={() => setSavedOpen(false)} />}
+    {comparison.isLoading && <section className="loading">正在彙整對戰紀錄</section>}{comparison.isError && <DataLoadError onReload={onReload} />}{result && firstPage && <><Summary result={result} /><ExportButton api={api} query={query} initial={firstPage} /><Results result={result} onMore={() => void comparison.fetchNextPage()} loadingMore={comparison.isFetchingNextPage} /></>}{savedOpen && <SavedDrawer items={saved} names={known} onLoad={load} onRemove={(id) => setSaved(removeSavedComparison(id))} onClose={() => setSavedOpen(false)} />}
   </main>;
 }
 
-export function App({ api = runtimeApi }: { api?: ComparisonApi }) { return <QueryClientProvider client={queryClient}><BrowserRouter><ComparisonWorkspace api={api} /></BrowserRouter></QueryClientProvider>; }
+export function App({ api = runtimeApi, onReload = reloadPage }: { api?: ComparisonApi; onReload?: () => void }) { return <QueryClientProvider client={queryClient}><BrowserRouter basename={import.meta.env.BASE_URL}><ComparisonWorkspace api={api} onReload={onReload} /></BrowserRouter></QueryClientProvider>; }

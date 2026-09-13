@@ -5,13 +5,18 @@ import { defineConfig } from "vite";
 
 const source = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => ({
   plugins: [react()],
   resolve: {
     alias: {
       "@riftversus/contracts": source("../../packages/contracts/src/index.ts"),
-      "@riftversus/api-runtime": source(mode === "development" || mode === "test" ? "./src/api/mock-runtime.ts" : "./src/api/http-runtime.ts"),
+      "@riftversus/domain": source("../../packages/domain/src/index.ts"),
+      "@riftversus/api-runtime": source("./src/api/static-runtime.ts"),
     },
+  },
+  base: process.env.VITE_BASE_PATH ?? "/",
+  build: {
+    assetsInlineLimit: 0,
   },
   test: {
     environment: "jsdom",

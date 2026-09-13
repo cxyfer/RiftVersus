@@ -9,8 +9,12 @@
 - [Attribution](attribution.md): retained media/source attribution obligations.
 - [GitHub Pages + Actions proposal](github-pages-actions-proposal.md): research
   target for GitHub-only hosting and build-time data processing; not deployed yet.
-- [GitHub-only migration plan](aegis/plans/2026-09-14-github-only-migration.md):
-  new workflows, data recovery, implementation batches, and legacy retirement.
+- [SQLite / HTTPVFS migration plan](aegis/plans/2026-09-14-sqlite-httpvfs-migration.md):
+  active implementation batches and cutover gates.
+- [SQLite development](sqlite-development.md): production static builds,
+  synthetic browser tests, retained-data verification and recovery behavior.
+- [Original migration plan](aegis/plans/2026-09-14-github-only-migration.md):
+  retained recovery/retirement requirements; JSON query design is superseded.
 
 The `leaguepedia-small` fixture is synthetic plumbing evidence. It cannot prove
 historical coverage, query latency, image size, memory use, or the motivating T1

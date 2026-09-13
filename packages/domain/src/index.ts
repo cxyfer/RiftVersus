@@ -1,4 +1,5 @@
 export * from "./comparison.js";
+export * from "./default-comparison.js";
 export * from "./series-grouping.js";
 export * from "./sqlite-query.js";
 export * from "./sqlite-schema.js";

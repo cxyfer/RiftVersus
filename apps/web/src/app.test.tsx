@@ -6,9 +6,9 @@ import { mockApi } from "./api/mock-runtime.js";
 import { App, optionLabel, optionSubtitle } from "./app.js";
 import { defaultRouteState, SUBJECT_IDS, toContractQuery } from "./model.js";
 
-function renderApp(search = "", api = mockApi) {
+function renderApp(search = "", api = mockApi, onReload?: () => void) {
   window.history.replaceState({}, "", `/${search}`);
-  return render(<App api={api} />);
+  return render(onReload === undefined ? <App api={api} /> : <App api={api} onReload={onReload} />);
 }
 
 describe("optionLabel", () => {
@@ -42,6 +42,19 @@ describe("comparison workspace", () => {
     expect((await screen.findAllByText("World Championship")).length).toBeGreaterThan(0);
     expect(screen.getByText(/3 series wins/)).toBeInTheDocument();
     expect(screen.getByText(/Games 9-3/)).toBeInTheDocument();
+  });
+
+  it("offers a page reload when comparison data cannot be loaded", async () => {
+    const user = userEvent.setup();
+    const reload = vi.fn();
+    const compare = vi.fn(async () => { throw new Error("snapshot unavailable"); });
+    renderApp(`?leftKind=team&leftId=${SUBJECT_IDS.t1}&rightKind=region&rightId=${SUBJECT_IDS.lpl}&from=2020-01-01&to=2020-12-31`, { ...mockApi, compare }, reload);
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("資料目前無法取得");
+    expect(alert).toHaveTextContent("請重新載入頁面以重試");
+    await user.click(within(alert).getByRole("button", { name: "重新載入資料" }));
+    expect(reload).toHaveBeenCalledTimes(1);
   });
 
   it("keeps selected subjects in the summary while rows show historical teams", async () => {
@@ -135,6 +148,7 @@ describe("comparison workspace", () => {
     const user = userEvent.setup();
     renderApp("", { ...mockApi, compare });
     await screen.findAllByText("World Championship");
+    compare.mockClear();
     await user.click(screen.getByRole("button", { name: "Worlds" }));
     const input = screen.getByRole("combobox", { name: "比較對象" });
     await user.click(input);

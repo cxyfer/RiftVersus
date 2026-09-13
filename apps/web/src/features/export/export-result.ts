@@ -9,7 +9,7 @@ const EXPORT_PAGE_SIZE = 50;
 const EXPORT_ROW_CAP = 1_000;
 const EXPORT_WIDTH = 1_200;
 const EXPORT_PIXEL_RATIO = 2;
-const PLACEHOLDER_MEDIA = "/media-placeholder.svg";
+const PLACEHOLDER_MEDIA = `${import.meta.env.BASE_URL}media-placeholder.svg`;
 type SeriesRow = ComparisonResponse["rows"][number];
 
 export interface ExportInput {

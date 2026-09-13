@@ -8,6 +8,8 @@ describe("release Playwright deployment URL", () => {
     ["http://localhost:3000/", "http://localhost:3000/"],
     ["http://riftversus.example/", "http://riftversus.example/"],
     ["https://riftversus.example/", "https://riftversus.example/"],
+    ["https://pages.example/RiftVersus", "https://pages.example/RiftVersus/"],
+    ["https://pages.example/RiftVersus/", "https://pages.example/RiftVersus/"],
   ])("accepts the root deployment URL %s", (input, expected) => {
     expect(parseReleaseBaseUrl(input)).toBe(expected);
   });
@@ -16,7 +18,12 @@ describe("release Playwright deployment URL", () => {
     undefined,
     "not-a-url?token=secret-value",
     "ftp://riftversus.example/",
-    "https://riftversus.example/subpath",
+    "https://riftversus.example/one/two",
+    "https://riftversus.example/RiftVersus/../private",
+    "https://riftversus.example/Rift%2FVersus/",
+    "https://riftversus.example/RiftVersus?",
+    "https://riftversus.example/RiftVersus#",
+    "https://riftversus.example/Rift%20Versus/",
     "https://riftversus.example/?token=secret-value",
     "https://riftversus.example/#secret-fragment",
     "https://secret-user:secret-pass@riftversus.example/",

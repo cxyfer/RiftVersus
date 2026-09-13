@@ -8,11 +8,14 @@
     "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
-      "@riftversus/api-runtime": ["src/api/runtime.ts"]
+      "@riftversus/api-runtime": ["src/api/static-runtime.ts"],
+      "@riftversus/contracts": ["../../packages/contracts/src/index.ts"],
+      "@riftversus/domain": ["../../packages/domain/src/index.ts"]
     }
   },
   "include": ["src"],
   "references": [
-    { "path": "../../packages/contracts" }
+    { "path": "../../packages/contracts" },
+    { "path": "../../packages/domain" }
   ]
 }

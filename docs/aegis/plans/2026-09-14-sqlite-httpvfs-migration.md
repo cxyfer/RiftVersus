@@ -13,6 +13,9 @@ User's unrelated `.gitignore` change remains untouched.
 
 ## S1: SQLite Data And Queries
 
+Status: verified and committed as `214d9cc`; 375 real-data parity cases and five
+PostgreSQL integration tests passed, current SQLite acceptance ready.
+
 - Replace public JSON shard contract with schema v2 SQLite manifest.
 - Export normalized indexed SQLite using Node 24 `node:sqlite`; no extra DB server.
 - PostgreSQL stays build-only for established ingestion/publication/provenance.
@@ -23,6 +26,10 @@ User's unrelated `.gitignore` change remains untouched.
 - Commit this phase only after verification; record any blocked archive evidence.
 
 ## S2: Browser HTTPVFS
+
+Status: implemented and locally verified with actual worker/WASM and retained
+data. Cold default query reads 876,644 / 6,889,472 database bytes on both tested
+viewports. Commit/evidence tracked in the migration checkpoint.
 
 - Pin `sql.js-httpvfs@0.8.12`; bundle actual worker JS and WASM with Vite asset URLs.
 - Read only small manifest before opening immutable SQLite over HTTP Range.
@@ -35,6 +42,10 @@ User's unrelated `.gitignore` change remains untouched.
 
 ## S3: Archive And CI Adaptation
 
+Status: PR CI and SQLite site archive tools implemented locally. Single-writer
+publishing orchestration, persistent failed-attempt archives and actual Actions
+runs remain pending; this phase is not declared complete.
+
 - Change site allowlist/validation from JSON shards to SQLite + worker/WASM.
 - Preserve current and previous immutable DB/assets in each deployable site.
 - PR CI uses explicit synthetic SQLite fixture without production credentials.
@@ -45,6 +56,9 @@ User's unrelated `.gitignore` change remains untouched.
 - Commit verified workflow/packaging phase separately.
 
 ## S4: Bootstrap, Cutover And Retirement
+
+Status: not started; website/private archive repository identities and remote
+configuration have not been provided. No existing service has been retired.
 
 - Need explicit website/data repository identities; checkout currently has no remote.
 - Configure private archive token and Pages permissions; do not expose token publicly.

@@ -1,4 +1,5 @@
 import { ComparisonQuerySchema, type BestOf, type ComparisonQuery, type EntityKind, type EventCategory, type LeagueSlug } from "@riftversus/contracts";
+import { DEFAULT_COMPARISON_SUBJECTS } from "@riftversus/domain";
 
 export type LeagueCode = LeagueSlug;
 
@@ -17,13 +18,13 @@ export interface ComparisonRouteState {
 }
 
 export const SUBJECT_IDS = {
-  t1: "11111111-1111-4111-8111-111111111111",
+  t1: DEFAULT_COMPARISON_SUBJECTS.left.id,
   geng: "22222222-2222-4222-8222-222222222222",
   blg: "33333333-3333-4333-8333-333333333333",
   faker: "44444444-4444-4444-8444-444444444444",
   knight: "55555555-5555-4555-8555-555555555555",
   lck: "66666666-6666-4666-8666-666666666666",
-  lpl: "77777777-7777-4777-8777-777777777777",
+  lpl: DEFAULT_COMPARISON_SUBJECTS.right.id,
 } as const;
 
 export const defaultRouteState: ComparisonRouteState = {
