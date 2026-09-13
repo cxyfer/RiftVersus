@@ -7,6 +7,7 @@ describe("parseCliCommand", () => {
     [["serve"], { kind: "serve" }],
     [["migrate"], { kind: "migrate" }],
     [["sync"], { kind: "sync-scheduled" }],
+    [["sync-map-check"], { kind: "sync-map-check" }],
     [["sync", "--once"], { kind: "sync-once", fixture: null }],
     [["sync", "--once", "--fixture", "leaguepedia-small"], { kind: "sync-once", fixture: "leaguepedia-small" }],
     [["backfill", "--year", "2024", "--competition", "Worlds"], { kind: "backfill", years: [2024], competitions: ["Worlds"], fixture: null }],

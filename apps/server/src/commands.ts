@@ -2,6 +2,9 @@ export type CliCommand =
   | { kind: "serve" }
   | { kind: "migrate" }
   | { kind: "sync-scheduled" }
+  | { kind: "sync-health" }
+  | { kind: "sync-map-check" }
+  | { kind: "sync-history-once" }
   | { kind: "sync-once"; fixture: "leaguepedia-small" | null }
   | { kind: "backfill"; years: number[]; competitions: string[]; fixture: "leaguepedia-small" | null };
 
@@ -9,6 +12,9 @@ export const cliUsage = `Usage:
   riftversus serve
   riftversus migrate
   riftversus sync
+  riftversus sync --history-once
+  riftversus sync-health
+  riftversus sync-map-check
   riftversus sync --once [--fixture leaguepedia-small]
   riftversus backfill --year YYYY [--year YYYY] --competition NAME [--competition NAME] [--fixture leaguepedia-small]`;
 
@@ -19,13 +25,14 @@ function fixtureValue(value: string | undefined): "leaguepedia-small" {
 
 export function parseCliCommand(argv: readonly string[]): CliCommand {
   const [command, ...args] = argv;
-  if (command === "serve" || command === "migrate") {
+  if (command === "serve" || command === "migrate" || command === "sync-health" || command === "sync-map-check") {
     if (args.length) throw new Error(`${command} does not accept arguments.`);
     return { kind: command };
   }
   if (command === "sync") {
     if (args.length === 0) return { kind: "sync-scheduled" };
-    if (args[0] !== "--once") throw new Error("sync accepts only --once and an optional reviewed fixture.");
+    if (args.length === 1 && args[0] === "--history-once") return { kind: "sync-history-once" };
+    if (args[0] !== "--once") throw new Error("sync accepts --history-once or --once with an optional reviewed fixture.");
     if (args.length === 1) return { kind: "sync-once", fixture: null };
     if (args.length === 3 && args[1] === "--fixture") return { kind: "sync-once", fixture: fixtureValue(args[2]) };
     throw new Error("Invalid sync arguments.");

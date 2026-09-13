@@ -290,6 +290,173 @@ node apps/server/dist/cli.js backfill --year 2024 --competition Worlds --fixture
 `sync --once` and `backfill` execute the same provider-neutral runner once.
 Run scheduled sync and HTTP serving as separate processes/containers.
 
+### Automatic refresh and freshness checks
+
+The `sync` process owns both schedules. Configure these runtime variables:
+
+```dotenv
+SYNC_CRON=0 3 * * *
+SYNC_TIMEZONE=UTC
+SYNC_HISTORY_CRON=0 5 * * 0
+SYNC_RUN_ON_START=true
+SYNC_MAX_AGE_HOURS=36
+SYNC_HISTORY_MAX_AGE_HOURS=192
+SYNC_FAILURE_THRESHOLD=3
+LEAGUEPEDIA_SYNC_YEARS=2026
+LEAGUEPEDIA_SYNC_COMPETITIONS=MSI
+```
+
+This runs the active scope daily at 11:00 Asia/Taipei and historical refresh
+on Sundays at 13:00 Asia/Taipei. Leave `SYNC_HISTORY_CRON` unset to disable
+history. The history job takes only explicitly mapped years older than the
+oldest active sync year, grouped by competition (at most 20 years per group).
+Thus an absent MSI 2020 mapping is not invented, and future mappings are not
+implicitly activated. Review `LEAGUEPEDIA_COMPETITION_MAP` and overrides before
+adding a new competition/year; years do not advance automatically.
+
+`SYNC_RUN_ON_START=true` performs one current refresh after startup. It does not
+replay missed cron ticks or run the entire historical job on every restart.
+Current and historical ticks cannot overlap within the scheduler; a busy tick
+is logged and skipped. The database provider lock also protects against other
+processes. History continues remaining groups after a group failure, then
+reports batch failure. Shutdown stops new groups and waits for the active one;
+Compose allows ten minutes before forced termination.
+
+Before enabling the schedules, validate both paths using the same image/env:
+
+```bash
+docker compose run --rm --no-deps sync sync --once
+docker compose run --rm --no-deps sync sync --history-once
+docker compose up -d --no-deps app sync
+docker compose exec -T sync node apps/server/dist/cli.js sync-health
+docker compose logs --since 24h --timestamps sync
+curl --fail http://localhost:3001/health/sync
+```
+
+Use the deployment's existing Compose project name (`-p`) and port. The local
+historical stack uses `-p riftversus-complete-2013-2026`. Never start a second
+project against new volumes by accidentally omitting that name.
+
+`/health/sync` returns 200 only when all configured current/history scopes have
+fresh, complete coverage and neither enabled mode has reached the consecutive
+failure threshold. Otherwise it returns 503, including per-scope check times,
+coverage and mode failure counts. Successful unchanged checks refresh the
+scope timestamp. A fresh historical check cannot hide stale current data.
+Failure counts are consecutive failed database runs per mode, reset by that
+mode's next success; scope age remains independently enforced. No raw upstream
+errors or credentials are exposed by this endpoint.
+
+The same check runs in Docker every five minutes after a ten-minute startup
+grace period. `unhealthy` is an observable alert signal, not a Docker restart
+policy or an email/webhook notification. Wire HTTP 503 or container health to
+the operator's monitoring system for external delivery. `/health/ready`
+continues to describe HTTP availability so stale retained data remains usable.
+
+`sync_result` logs include mode, outcome, dataset version and elapsed
+milliseconds. The importer still reads bounded snapshots and shared dimension
+tables; this is not incremental ingestion. Measure real durations before
+increasing frequency. Dataset coverage is the latest retained status for each
+competition/year, rather than just the most recently updated group.
+
+### League mapping workflow
+
+Leaguepedia's `Tournament` field is an exact source key. A logical competition
+and year may map to one key or to an array of keys when the year contains
+separate Spring, Summer, Playoffs, Championship, or Regional Finals events.
+Each key becomes a bounded slice; coverage is aggregated by logical
+competition/year and publication keeps the source scope for retirement.
+
+Before adding a league to the automatic schedule:
+
+1. Use the Leaguepedia tournament page and Cargo data to verify every exact
+   `Tournament` value, including historical renames such as EU LCS/LCS.
+2. Add the reviewed key(s) to `LEAGUEPEDIA_COMPETITION_MAP`. Use an array for
+   multiple split/playoff keys, for example:
+
+   ```json
+   {"LCK":{"2024":["LCK 2024 Spring","LCK 2024 Spring Playoffs","LCK 2024 Summer","LCK 2024 Summer Playoffs"]}}
+   ```
+
+3. Set the audit scope with `LEAGUEPEDIA_MAPPING_COMPETITIONS` and
+   `LEAGUEPEDIA_MAPPING_YEARS`, then run:
+
+   ```bash
+   docker compose run --rm --no-deps sync sync-map-check
+   ```
+
+   The command exits nonzero and lists every missing competition/year pair.
+   It does not contact Leaguepedia and never treats an empty mapping as valid.
+4. Run a bounded import for one year, inspect `coverage_status` for complete
+   coverage and unresolved rows, then expand the mapping year by year.
+5. Add only verified mappings to the scheduled `LEAGUEPEDIA_SYNC_COMPETITIONS`
+   set. A missing source key fails before a sync run opens; a source returning
+   no games remains visible as missing/partial coverage.
+
+The current deployment's audit scope is `LCK,LPL,LEC,LCS,MSI,Worlds` for
+2011-2026. Its active data map is intentionally incomplete: Worlds starts in
+2013, MSI has no 2020 event, and regional-league split/playoff keys have not
+yet been reviewed. Run `sync-map-check` before claiming full 2011-2026 league
+coverage. This explicit gate prevents guessed page names from entering the
+canonical publication.
+
+Release browser tests keep the reviewed historical match expectations, but
+compare version metadata and export names against the current API publication.
+Run them without a concurrent publication. The separate `acceptance:check`
+still verifies the pinned source/revision snapshot; a browser pass does not
+renew that historical provenance evidence.
+
+### 2026-09-13 container-owned refresh deployment
+
+The existing `riftversus-complete-2013-2026` project now runs the dedicated
+`sync` service alongside app, PostgreSQL and MinIO. No host scheduler or LLM
+agent is part of recurring execution. Both app and sync use
+`riftversus:scheduled-refresh-20260913`, image ID
+`sha256:b6dbce31d4049685fac8e91a90c2f5b4613921def129dd813c24a73bfb9ea7b6`,
+with `restart: unless-stopped`. Local `.env` pins that image, daily MSI 2026,
+and the daily/weekly UTC schedules documented above.
+
+Before publishing, the live PostgreSQL database was backed up to
+`/tmp/riftversus-before-scheduled-refresh-20260913.dump`, SHA-256
+`7a97c431586cc98a0cde0c9f40656b5735c0d863eecedf55a309d7c1f4ab3e94`.
+No live volumes or source objects were deleted and no schema migration was
+needed. The temporary PostgreSQL test container and its volume were removed.
+
+Initial live verification, before starting the resident scheduler:
+
+| Scope | Outcome | Duration | Generation |
+| --- | --- | --- | --- |
+| MSI 2026 | complete | 157.254 seconds | 5 |
+| Worlds 2013-2025 | 13 complete years | 223.995 seconds | 6 |
+| MSI 2015-2025, excluding unmapped 2020 | 10 complete years | 197.673 seconds | 7 |
+
+The current-scope snapshot retained 156 API responses (not a count of retries)
+and 8,417,327 bytes. Active facts remained 1,066 series and 1,664 games.
+`/health/sync` returned HTTP 200 with 24/24 fresh complete scopes and zero
+consecutive failures. `/api/dataset` retained coverage from 2013-09-15 through
+2026-07-12, despite the final job updating only historical MSI.
+
+Validation passed: `pnpm test` (503 tests plus consumer checks), real
+PostgreSQL integration (64 tests, no skips), typecheck, lint, Docker build and
+production browser E2E (4 tests). The final coverage-query adjustment also
+passed 25 targeted PostgreSQL tests. Both app and sync reported Docker
+`healthy` on the same image. The scheduler emitted `sync_started` itself on
+startup and logged the daily and historical cron registrations.
+Its independently triggered startup run then completed as `unchanged` in
+156,666 ms and advanced MSI 2026's successful check time to
+`2026-09-13T15:13:20.993Z`. HTTP sync health stayed 200 with all 24 scopes fresh.
+This verifies container-owned execution and unchanged-run freshness without
+issuing a one-off sync command to the resident container.
+
+Rebuild/recreate using the same project and retain the private `.env`:
+
+```bash
+docker build --target production -t riftversus:scheduled-refresh-20260913 .
+docker compose -p riftversus-complete-2013-2026 up -d --no-deps app sync
+```
+
+This command is deployment maintenance, not a recurring update requirement.
+Normal daily/weekly refresh is entirely inside the running sync container.
+
 ## Shutdown and recovery
 
 `docker compose stop app sync` sends the containers a termination signal. The

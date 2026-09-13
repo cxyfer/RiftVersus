@@ -20,6 +20,14 @@ function exampleEnvironmentValue(name: string): string {
 }
 
 describe("loadConfig", () => {
+  it("validates scheduler health thresholds and explicit startup opt-in", () => {
+    const environment = { DATABASE_URL: databaseUrl, ...leaguepediaEnvironment };
+    expect(loadConfig(environment)).toMatchObject({ syncRunOnStart: false, syncMaxAgeHours: 36, syncHistoryMaxAgeHours: 192, syncFailureThreshold: 3 });
+    for (const key of ["SYNC_MAX_AGE_HOURS", "SYNC_HISTORY_MAX_AGE_HOURS", "SYNC_FAILURE_THRESHOLD"]) {
+      expect(() => loadConfig({ ...environment, [key]: "0" })).toThrow();
+    }
+    expect(() => loadConfig({ ...environment, SYNC_RUN_ON_START: "yes" })).toThrow();
+  });
   it("requires DATABASE_URL", () => {
     expect(() => loadConfig({})).toThrow();
   });
@@ -79,6 +87,13 @@ describe("loadConfig", () => {
     expect(exampleEnvironmentValue("LEAGUEPEDIA_REQUEST_INTERVAL_MS")).toBe("1000");
     expect(config.leaguepedia.competitionMap.Worlds).toEqual({ "2023": "Worlds 2023 Main Event", "2024": "Worlds 2024 Main Event" });
     expect(() => loadConfig({ DATABASE_URL: databaseUrl, ...leaguepediaEnvironment, LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":"2024 Season World Championship"}' })).toThrow(/logical competition.*year/i);
+  });
+
+  it("accepts multiple exact source keys for one competition and year", () => {
+    const config = loadConfig({ ...leaguepediaEnvironment, DATABASE_URL: databaseUrl,
+      LEAGUEPEDIA_COMPETITION_MAP: '{"LCK":{"2024":["LCK 2024 Spring","LCK 2024 Spring Playoffs"]}}',
+      LEAGUEPEDIA_MAPPING_COMPETITIONS: "LCK", LEAGUEPEDIA_MAPPING_YEARS: "2024" });
+    expect(config.leaguepedia.competitionMap.LCK?.["2024"]).toEqual(["LCK 2024 Spring", "LCK 2024 Spring Playoffs"]);
   });
 
   it.each([

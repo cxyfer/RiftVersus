@@ -28,3 +28,18 @@ node apps/server/dist/cli.js --help
 Oracle is not part of the MVP.
 PostgreSQL provenance remains provider-neutral, but adding another upstream requires a new reviewed source
 and architecture decision.
+
+## Automatic updates
+
+The Compose `sync` container owns its own daily/current and optional
+weekly/historical schedules. Once the stack is running with reviewed source
+settings, updates require no host cron, external command runner, or LLM agent.
+`SYNC_RUN_ON_START=true` also refreshes current data when the container starts;
+Docker restarts the process after failures. PostgreSQL and S3/MinIO remain
+required services, and Docker must be running for scheduled work to execute.
+
+See [automatic refresh and freshness checks](docs/operations.md#automatic-refresh-and-freshness-checks)
+for configuration, health monitoring, and the explicit competition/year scope.
+League additions use the exact-key workflow in
+[League mapping workflow](docs/operations.md#league-mapping-workflow); split and
+playoff seasons can be represented by multiple keys in one year.

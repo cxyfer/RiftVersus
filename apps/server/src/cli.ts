@@ -1,4 +1,4 @@
-import { compareHeadToHead, createDb, destroyDb, getAvatarIdentity, getDatasetStatus, getMediaByKey, listAvailableFilters, migrateToLatest, searchEntities } from "@riftversus/database";
+import { compareHeadToHead, createDb, destroyDb, getAvatarIdentity, getDatasetStatus, getSyncStatus, getMediaByKey, listAvailableFilters, migrateToLatest, searchEntities } from "@riftversus/database";
 import { bootstrapS3Bucket, scheduleSync } from "@riftversus/sync";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -9,6 +9,9 @@ import { loadConfig, type Config } from "./config.js";
 import { startListeningServer } from "./server.js";
 import { createConfiguredObjectStore } from "./storage.js";
 import { executeLeaguepediaSync } from "./sync-service.js";
+import { evaluateSyncHealth, readSyncHealth } from "./sync-health.js";
+import { runHistory, runSchedules } from "./sync-schedules.js";
+import { checkLeaguepediaMappings } from "./mapping-check.js";
 
 declare const process: {
   argv: string[]; cwd(): string; env: Record<string, string | undefined>; exitCode?: number;
@@ -23,6 +26,7 @@ export async function startServer(config: Config) {
     buildApp: (db) => buildApp({
       searchEntities: (query) => searchEntities(query, db), listFilters: () => listAvailableFilters(db), compare: (query) => compareHeadToHead(query, db),
       getDataset: async () => { const status = await getDatasetStatus(db); return status === null ? null : { version: status.version, lastSuccessfulSyncAt: status.lastSuccessfulSyncAt, coverage: status.coverage }; },
+      getSyncHealth: async () => evaluateSyncHealth(config, await getSyncStatus(db)),
       getMedia: (key) => getMediaByKey(key, db), ...(objectStore === undefined ? {} : { objectStore }), mediaDelivery: config.mediaDelivery, staticDir: resolve(process.cwd(), "apps/web/dist"),
       getAvatarIdentity: (kind, id) => getAvatarIdentity(kind, id, db),
     }),
@@ -65,11 +69,12 @@ export interface CommandDependencies {
   waitForShutdown(): Promise<void>;
   log(value: string): void;
   error(value: unknown): void;
+  syncHealth: typeof readSyncHealth;
 }
 
 const defaultCommandDependencies: CommandDependencies = {
   startServer, migrate, objectStore: requiredObjectStore, execute: executeLeaguepediaSync,
-  schedule: scheduleSync, waitForShutdown, log: (value) => console.log(value), error: (value) => console.error(value),
+  schedule: scheduleSync, waitForShutdown, log: (value) => console.log(value), error: (value) => console.error(value), syncHealth: readSyncHealth,
 };
 
 export async function executeCommand(command: CliCommand, config: Config, dependencies: CommandDependencies = defaultCommandDependencies): Promise<void> {
@@ -80,7 +85,20 @@ export async function executeCommand(command: CliCommand, config: Config, depend
     return;
   }
   if (command.kind === "migrate") { await dependencies.migrate(config); return; }
+  if (command.kind === "sync-health") {
+    const health = await dependencies.syncHealth(config);
+    dependencies.log(JSON.stringify(health));
+    if (health.status !== "healthy") throw new Error("Sync health check failed.");
+    return;
+  }
+  if (command.kind === "sync-map-check") {
+    const check = checkLeaguepediaMappings(config);
+    dependencies.log(JSON.stringify({ event: "sync_mapping_check", ...check, status: check.missing.length === 0 ? "complete" : "incomplete" }));
+    if (check.missing.length > 0) throw new Error(`${check.missing.length} required Leaguepedia mapping(s) are missing.`);
+    return;
+  }
   const objectStore = await dependencies.objectStore(config);
+  if (command.kind === "sync-history-once") { await runHistory(config, objectStore, dependencies); return; }
   if (command.kind === "sync-once") {
     dependencies.log(JSON.stringify(await dependencies.execute({ config, objectStore, request: { mode: "sync-once" }, fixture: command.fixture })));
     return;
@@ -89,12 +107,7 @@ export async function executeCommand(command: CliCommand, config: Config, depend
     dependencies.log(JSON.stringify(await dependencies.execute({ config, objectStore, request: { mode: "backfill", years: command.years, competitions: command.competitions }, fixture: command.fixture })));
     return;
   }
-  const handle = dependencies.schedule({ cron: config.syncCron, timezone: config.syncTimezone, run: () => dependencies.execute({ config, objectStore, request: { mode: "sync" }, fixture: null }), onError: dependencies.error });
-  try { await dependencies.waitForShutdown(); }
-  finally {
-    handle.stop();
-    while (handle.running) await new Promise((resolveWait) => setTimeout(resolveWait, 25));
-  }
+  await runSchedules(config, objectStore, dependencies);
 }
 
 async function main() {

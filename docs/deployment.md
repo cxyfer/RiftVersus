@@ -25,6 +25,16 @@ application image, then run separate commands from it:
 - scheduler process: `node apps/server/dist/cli.js sync`;
 - one-off import job: `node apps/server/dist/cli.js sync --once` or `backfill`.
 
+The scheduler also supports optional weekly historical refresh, startup current
+refresh, and database-backed freshness checks. See
+[automatic refresh](operations.md#automatic-refresh-and-freshness-checks) for
+variables, first-run validation, health semantics, and failure handling.
+`node apps/server/dist/cli.js sync --history-once` validates the historical plan;
+`node apps/server/dist/cli.js sync-health` exits nonzero for stale, incomplete,
+or repeatedly failing sync. Compose runs this healthcheck on the sync container.
+`node apps/server/dist/cli.js sync-map-check` audits the required league/year
+mapping scope before a new competition is enabled.
+
 The scheduler and one-off jobs require complete S3 settings because immutable
 Leaguepedia raw source envelopes must exist before publication. Eligible
 licensed retained media is preferred and also uses S3; when no image passes the

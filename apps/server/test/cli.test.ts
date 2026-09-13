@@ -21,10 +21,44 @@ function dependencies(): CommandDependencies {
     execute: vi.fn(async () => ({ status: "published" as const, version: "fixture-v1" })),
     schedule: vi.fn((options) => { void options.run(); return { running: false, stop: vi.fn() }; }),
     waitForShutdown: vi.fn(async () => undefined), log: vi.fn(), error: vi.fn(),
+    syncHealth: vi.fn(async () => ({ status: "healthy" as const, failureThreshold: 3, runs: [], scopes: [] })),
   };
 }
 
 describe("executeCommand", () => {
+  it("checks sync health without starting a scheduler or opening storage", async () => {
+    const deps = dependencies();
+    await executeCommand({ kind: "sync-health" }, config, deps);
+    expect(deps.objectStore).not.toHaveBeenCalled();
+    expect(deps.schedule).not.toHaveBeenCalled();
+    deps.syncHealth = vi.fn(async () => ({ status: "unhealthy", failureThreshold: 3, runs: [], scopes: [] }));
+    await expect(executeCommand({ kind: "sync-health" }, config, deps)).rejects.toThrow("health check failed");
+  });
+
+  it("continues historical groups after failure and reports a failed batch", async () => {
+    const deps = dependencies();
+    const historical = { ...config, leaguepedia: { ...config.leaguepedia, syncYears: [2026], competitionMap: { Worlds: { "2025": "Worlds 2025" }, MSI: { "2024": "MSI 2024" } } } };
+    deps.execute = vi.fn().mockRejectedValueOnce(new Error("source unavailable")).mockResolvedValueOnce({ status: "published" });
+    await expect(executeCommand({ kind: "sync-history-once" }, historical, deps)).rejects.toThrow("1 historical");
+    expect(deps.execute).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not overlap current and historical ticks", async () => {
+    const deps = dependencies();
+    const options: Parameters<CommandDependencies["schedule"]>[0][] = [];
+    let release!: () => void;
+    deps.execute = vi.fn(() => new Promise((resolve) => { release = () => resolve({ status: "published" }); }));
+    deps.schedule = vi.fn((option) => { options.push(option); return { running: false, stop: vi.fn() }; });
+    deps.waitForShutdown = async () => {
+      const current = options[1]!.run();
+      await options[0]!.run();
+      expect(deps.execute).toHaveBeenCalledOnce();
+      release();
+      await current;
+    };
+    await executeCommand({ kind: "sync-scheduled" }, { ...config, syncHistoryCron: "0 5 * * 0" }, deps);
+    expect(deps.log).toHaveBeenCalledWith(expect.stringContaining('"reason":"busy"'));
+  });
   it("keeps serve isolated from sync scheduling", async () => {
     const deps = dependencies();
     await executeCommand({ kind: "serve" }, config, deps);

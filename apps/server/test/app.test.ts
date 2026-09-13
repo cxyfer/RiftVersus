@@ -56,6 +56,15 @@ function createApp(overrides: Partial<Parameters<typeof buildApp>[0]> = {}) {
 }
 
 describe("HTTP API", () => {
+  it("returns uncached sync health independently of HTTP readiness", async () => {
+    const health = { status: "unhealthy" as const, failureThreshold: 3, runs: [], scopes: [] };
+    const { app } = createApp({ getSyncHealth: async () => health });
+    const response = await app.inject("/health/sync");
+    expect(response.statusCode).toBe(503);
+    expect(response.headers["cache-control"]).toBe("no-store");
+    expect(response.json()).toEqual(health);
+    expect((await app.inject("/health/ready")).statusCode).toBe(200);
+  });
   it("normalizes an entity query before passing it to the repository", async () => {
     const { app, dependencies } = createApp();
 

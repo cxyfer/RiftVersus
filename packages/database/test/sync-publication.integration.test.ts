@@ -52,7 +52,7 @@ describeWithDatabase("sync publication repository", () => {
 
     const status = await getDatasetStatus(db);
     expect(status?.coverage).toEqual({ from: "2013-09-15", to: "2025-11-09" });
-    expect(status?.coverageStatus.map(({ earliestDate, latestDate }) => ({ earliestDate, latestDate }))).toEqual([
+    expect(status?.coverageStatus.filter((item) => item.competition === "Worlds").map(({ earliestDate, latestDate }) => ({ earliestDate, latestDate }))).toEqual([
       { earliestDate: "2013-09-15", latestDate: "2013-10-05" },
       { earliestDate: "2022-10-07", latestDate: "2022-11-06" },
       { earliestDate: "2025-10-15", latestDate: "2025-11-09" },

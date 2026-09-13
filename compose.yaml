@@ -34,6 +34,13 @@ services:
     env_file: .env
     command: ["sync"]
     init: true
+    stop_grace_period: 10m
+    healthcheck:
+      test: ["CMD", "node", "apps/server/dist/cli.js", "sync-health"]
+      interval: 5m
+      timeout: 30s
+      retries: 1
+      start_period: 10m
     depends_on:
       postgres:
         condition: service_healthy

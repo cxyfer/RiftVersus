@@ -223,6 +223,19 @@ describe("sync request validation", () => {
 });
 
 describe("scheduleSync", () => {
+  it("runs immediately when enabled and prevents a tick from overlapping startup", async () => {
+    let callback!: () => void;
+    let finish!: () => void;
+    const run = vi.fn(() => new Promise<void>((resolve) => { finish = resolve; }));
+    const handle = scheduleSync({ cron: "0 3 * * *", timezone: "UTC", runOnStart: true, run, onError: vi.fn(), createSchedule: (_cron, _timezone, tick) => { callback = tick; return { stop() {} }; } });
+    expect(handle.running).toBe(true);
+    callback();
+    expect(run).toHaveBeenCalledOnce();
+    handle.stop();
+    finish();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(handle.running).toBe(false);
+  });
   it("does not overlap ticks and observes rejected runs", async () => {
     let tick: (() => void) | undefined;
     let resolveRun: (() => void) | undefined;

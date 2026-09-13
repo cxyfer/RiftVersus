@@ -20,6 +20,12 @@ function config() {
   });
 }
 
+it("expands split and playoff source keys into independently scoped slices", () => {
+  const mapped = config();
+  mapped.leaguepedia.competitionMap = { LCK: { "2024": ["LCK 2024 Spring", "LCK 2024 Spring Playoffs"] } };
+  expect(buildLeaguepediaSlices(mapped, { mode: "backfill", years: [2024], competitions: ["LCK"] }).map((slice) => slice.sourceCompetition)).toEqual(["LCK 2024 Spring", "LCK 2024 Spring Playoffs"]);
+});
+
 describe("Leaguepedia sync composition", () => {
   it("maps every logical competition and year to an exact source key and rejects gaps", () => {
     expect(buildLeaguepediaSlices(config(), { mode: "backfill", years: [2023, 2024], competitions: ["Worlds"] }).map((slice) => slice.sourceCompetition)).toEqual([

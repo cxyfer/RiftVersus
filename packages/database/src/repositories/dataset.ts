@@ -7,15 +7,17 @@ import type { DatasetStatus } from "./types.js";
 export async function getDatasetStatus(db: Kysely<Database>): Promise<DatasetStatus | null> {
   const version = await db.selectFrom("dataset_versions")
     .innerJoin("sync_runs", "sync_runs.id", "dataset_versions.sync_run_id")
-    .select(["dataset_versions.id", "dataset_versions.version", "dataset_versions.published_at", "sync_runs.finished_at"])
+    .select(["dataset_versions.id", "dataset_versions.version", "dataset_versions.generation", "dataset_versions.published_at", "sync_runs.finished_at"])
     .orderBy("dataset_versions.generation", "desc")
     .orderBy("dataset_versions.id", "desc")
     .executeTakeFirst();
   if (version === undefined) return null;
   const coverage = await db.selectFrom("coverage_status")
+    .innerJoin("dataset_versions", "dataset_versions.id", "coverage_status.dataset_version_id")
+    .distinctOn(["provider", "competition", "season_year"])
     .select(["provider", "competition", "season_year", "earliest_date", "latest_date", "status", "detail"])
-    .where("dataset_version_id", "=", version.id)
-    .orderBy("provider").orderBy("competition").orderBy("season_year")
+    .where("dataset_versions.generation", "<=", version.generation)
+    .orderBy("provider").orderBy("competition").orderBy("season_year").orderBy("dataset_versions.generation", "desc")
     .execute();
   const normalizedCoverage = coverage.map((item) => ({
     ...item,

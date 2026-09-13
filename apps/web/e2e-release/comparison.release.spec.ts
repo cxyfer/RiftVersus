@@ -54,8 +54,11 @@ const comparisonPath = (() => {
 })();
 
 test("renders the reviewed T1 versus LPL Worlds BO5 publication", async ({
-  page,
+  page, request,
 }) => {
+  const datasetResponse = await request.get("/api/dataset");
+  expect(datasetResponse.ok()).toBe(true);
+  const dataset = await datasetResponse.json() as { version: string };
   const comparisonResponse = page.waitForResponse((response) => {
     const url = new URL(response.url());
     return url.pathname === "/api/comparisons" && response.status() === 200;
@@ -102,7 +105,7 @@ test("renders the reviewed T1 versus LPL Worlds BO5 publication", async ({
   }))).toEqual(snapshot.expected.rows.map(({ id, date, leftName, rightName, leftScore, rightScore, winner }) => ({
     id, date, leftName, rightName, leftScore, rightScore, winner,
   })));
-  expect(payload.dataset.version).toBe(snapshot.datasetVersion);
+  expect(payload.dataset.version).toBe(dataset.version);
   expect(payload.coverageWarnings).toEqual([]);
   expect(payload.mediaUrls).toEqual({
     left: `/avatars/v2/team/${snapshot.comparison.left.id}.svg`,
@@ -164,7 +167,9 @@ test("falls back to neutral media when published avatars fail", async ({
     return route.fulfill({ status: 404, body: "missing" });
   });
 
+  const comparisonResponse = page.waitForResponse((response) => new URL(response.url()).pathname === "/api/comparisons" && response.status() === 200);
   await page.goto(comparisonPath);
+  const payload = await (await comparisonResponse).json() as { dataset: { version: string } };
   await expect(page.getByText("12 series wins")).toBeVisible();
 
   const images = page.locator(".result-summary img");
@@ -189,7 +194,7 @@ test("falls back to neutral media when published avatars fail", async ({
   const file = await download;
   const path = await file.path();
   expect(file.suggestedFilename()).toBe(
-    `riftversus-t1-vs-lpl-${snapshot.datasetVersion.slice(0, 56)}.png`,
+    `riftversus-t1-vs-lpl-${payload.dataset.version.slice(0, 56)}.png`,
   );
   expect((await readFile(path!)).subarray(0, 8)).toEqual(
     Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),

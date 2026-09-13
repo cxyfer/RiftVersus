@@ -10,6 +10,7 @@ export interface ScheduleOptions {
   timezone: string;
   run(): Promise<unknown>;
   onError(error: unknown): void;
+  runOnStart?: boolean;
   createSchedule?(cron: string, timezone: string, callback: () => void): { stop(): void };
 }
 
@@ -47,6 +48,7 @@ export function scheduleSync(options: ScheduleOptions): ScheduleHandle {
       .finally(() => { running = false; });
   };
   const schedule = (options.createSchedule ?? defaultSchedule)(options.cron, options.timezone, tick);
+  if (options.runOnStart) tick();
   return {
     get running() { return running; },
     stop() {

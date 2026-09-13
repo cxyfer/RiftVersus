@@ -41,10 +41,11 @@ export function createDatabaseSyncRepository(db: ReturnType<typeof createDb>): S
 export function buildLeaguepediaSlices(config: Config, request: SyncRequest) {
   const years = request.mode === "backfill" ? request.years : config.leaguepedia.syncYears;
   const competitions = request.mode === "backfill" ? request.competitions : config.leaguepedia.syncCompetitions;
-  return competitions.flatMap((competition) => years.map((year) => {
-    const sourceCompetition = config.leaguepedia.competitionMap[competition]?.[String(year)];
-    if (sourceCompetition === undefined) throw new Error(`No exact Leaguepedia source mapping exists for ${competition} ${year}.`);
-    return { competition, sourceCompetition, seasonYear: year, from: `${year}-01-01`, to: `${year + 1}-01-01` };
+  return competitions.flatMap((competition) => years.flatMap((year) => {
+    const mapped = config.leaguepedia.competitionMap[competition]?.[String(year)];
+    if (mapped === undefined) throw new Error(`No exact Leaguepedia source mapping exists for ${competition} ${year}.`);
+    const sourceCompetitions = Array.isArray(mapped) ? mapped : [mapped];
+    return sourceCompetitions.map((sourceCompetition) => ({ competition, sourceCompetition, seasonYear: year, from: `${year}-01-01`, to: `${year + 1}-01-01` }));
   }));
 }
 
