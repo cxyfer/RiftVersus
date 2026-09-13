@@ -11,8 +11,14 @@ import { runArchiveCommand } from "./archive-commands.js";
 import { runSnapshotCommand } from "./snapshot-commands.js";
 import { verifyCurrentSnapshot } from "./current-snapshot-acceptance.js";
 import { runSiteCommand } from "./site-commands.js";
+import { runPublication, recordDeploymentFailure } from "./publish-run.js";
+import { guardPublication, readDeployedSite } from "./publish-github.js";
+import { requiredPublishValue } from "./publish-plan.js";
+import { runAttemptCommand } from "./attempt-commands.js";
 
 export type DataCommand =
+  | { kind: "publish"; mode: "prepare" | "guard" | "verify-deployed" | "record-deploy-failure" }
+  | { kind: "attempt"; directory: string }
   | { kind: "site"; mode: "publish" | "download"; directory: string }
   | { kind: "snapshot"; mode: "export" | "verify"; directory: string }
   | { kind: "archive"; mode: "resolve" | "publish"; directory: string }
@@ -31,12 +37,24 @@ export const dataUsage = `Usage:
   riftversus-data archive resolve|publish DIRECTORY
   riftversus-data snapshot export|verify DIRECTORY
   riftversus-data site publish|download DIRECTORY
+  riftversus-data attempt publish DIRECTORY
+  riftversus-data publish prepare|guard|verify-deployed|record-deploy-failure
   riftversus-data acceptance
 
 Data writes require OBJECT_STORE_DIR. No server or scheduler is started.`;
 
 export function parseDataCommand(argv: readonly string[]): DataCommand {
   const [command, ...args] = argv;
+  if (command === "publish") {
+    const [mode] = args;
+    if (args.length !== 1 || (mode !== "prepare" && mode !== "guard" && mode !== "verify-deployed" && mode !== "record-deploy-failure")) throw new Error("publish requires prepare|guard|verify-deployed|record-deploy-failure.");
+    return { kind: "publish", mode };
+  }
+  if (command === "attempt") {
+    const [mode, directory] = args;
+    if (args.length !== 2 || mode !== "publish" || !directory?.trim()) throw new Error("attempt requires publish and a directory.");
+    return { kind: "attempt", directory };
+  }
   if (command === "site") {
     const [mode, directory] = args;
     if (args.length !== 2 || !directory?.trim() || (mode !== "publish" && mode !== "download")) throw new Error("site requires publish|download and a directory.");
@@ -80,6 +98,17 @@ export function parseDataCommand(argv: readonly string[]): DataCommand {
 export async function runDataCli(argv: readonly string[], environment: Record<string, string | undefined> = process.env) {
   if (argv.length === 1 && (argv[0] === "--help" || argv[0] === "-h")) { console.log(dataUsage); return; }
   const command = parseDataCommand(argv);
+  if (command.kind === "attempt") { await runAttemptCommand(command.directory, environment); return; }
+  if (command.kind === "publish") {
+    if (command.mode === "guard") await guardPublication(environment);
+    else if (command.mode === "prepare") console.log(JSON.stringify(await runPublication(environment, runDataCli)));
+    else if (command.mode === "record-deploy-failure") await recordDeploymentFailure(environment, runDataCli);
+    else {
+      const manifest = await readDeployedSite(requiredPublishValue(environment, "PAGES_BASE_URL"), false);
+      if (manifest?.siteId !== requiredPublishValue(environment, "EXPECTED_SITE_ID")) throw new Error("Deployed site identity does not match the verified archive.");
+    }
+    return;
+  }
   if (command.kind === "site") { await runSiteCommand(command.mode, command.directory, environment); return; }
   if (command.kind === "snapshot") { await runSnapshotCommand(command.mode, command.directory, environment); return; }
   if (command.kind === "archive") { await runArchiveCommand(command.mode, command.directory, environment); return; }
@@ -122,10 +151,11 @@ export async function runDataCli(argv: readonly string[], environment: Record<st
   const errors: unknown[] = [];
   for (const request of requests) {
     try {
-      const result = await executeLeaguepediaSync({ config, objectStore, request, fixture: command.kind === "sync" ? command.fixture : null });
+      const result = await executeLeaguepediaSync({ config, objectStore, request, fixture: command.kind === "sync" ? command.fixture : null,
+        requireComplete: environment.PUBLISH_REQUIRE_COMPLETE === "true" });
       console.log(JSON.stringify({ ...result, request }));
       if (result.status === "locked") throw new Error("Sync could not acquire the publication lock.");
-    } catch (error) { errors.push(error); console.error(error); }
+    } catch (error) { errors.push(error); console.error(environment.PUBLISH_PRIVATE_DIAGNOSTICS === "true" ? { status: "failed", request } : error); }
   }
   if (errors.length) throw new AggregateError(errors, "Data synchronization failed; do not promote this candidate.");
 }

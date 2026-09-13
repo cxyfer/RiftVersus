@@ -2,7 +2,8 @@
 
 These commands archive or restore verified static websites in the private data
 repository. They do not deploy Pages, synchronize data, or modify checkpoint
-lineage. The single-writer publishing workflow is still pending.
+lineage. The [single-writer publishing workflow](github-publishing.md) composes
+these commands and remains opt-in until repository bootstrap/cutover is verified.
 
 ## Publish A Site Archive
 

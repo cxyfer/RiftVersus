@@ -1,0 +1,180 @@
+name: Publish
+
+on:
+  push:
+  schedule:
+    - cron: '17 19 * * *'
+    - cron: '47 20 * * 6'
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [current, history, backfill, reexport, rebuild, rollback]
+        default: rebuild
+      year:
+        type: string
+      competition:
+        type: string
+      site_id:
+        description: Explicit archived site for rollback or redeployment
+        type: string
+      initial_site:
+        description: Permit a missing deployed site manifest; never bootstrap data
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# One writer for data, website deployment, rollback, and post-deploy verification.
+concurrency:
+  group: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && 'riftversus-publication' || format('riftversus-nonpublication-{0}', github.ref) }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: vars.PUBLISH_ENABLED == 'true' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    permissions:
+      contents: read
+      pages: read
+    outputs:
+      site_id: ${{ steps.prepare.outputs.site_id }}
+      base_url: ${{ steps.prepare.outputs.base_url }}
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: candidate
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d candidate"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
+        with:
+          version: 10.28.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: 24.x
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install PostgreSQL 17 clients
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends ca-certificates curl
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl --fail --silent --show-error --location https://www.postgresql.org/media/keys/ACCC4CF8.asc --output /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+          . /etc/os-release
+          printf '%s\n' 'Types: deb' 'URIs: https://apt.postgresql.org/pub/repos/apt' "Suites: ${VERSION_CODENAME}-pgdg" 'Architectures: amd64' 'Components: main' 'Signed-By: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc' | sudo tee /etc/apt/sources.list.d/pgdg.sources >/dev/null
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends postgresql-client-17
+          echo '/usr/lib/postgresql/17/bin' >> "$GITHUB_PATH"
+      - run: pnpm --filter @riftversus/web exec playwright install --with-deps chromium
+      - run: pnpm build
+      - name: Verify code before accessing production archives
+        run: |
+          pnpm lint
+          pnpm test
+      - name: Create empty restore-validation database
+        env:
+          PGPASSWORD: postgres
+        run: psql --host=127.0.0.1 --username=postgres --dbname=candidate --command='CREATE DATABASE validation'
+      # Official configure-pages v5, metadata only; never enable Pages implicitly.
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
+        id: pages
+      - name: Prepare verified SQLite publication
+        id: prepare
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RIFTVERSUS_DATA_TOKEN: ${{ secrets.RIFTVERSUS_DATA_TOKEN }}
+          DATA_REPOSITORY: ${{ vars.DATA_REPOSITORY }}
+          ARCHIVE_TARGET_COMMITISH: ${{ vars.ARCHIVE_TARGET_COMMITISH }}
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/candidate
+          CHECKPOINT_RESTORE_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/validation
+          PUBLISH_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || github.event_name == 'push' && 'rebuild' || github.event.schedule == '47 20 * * 6' && 'history' || 'current' }}
+          PUBLISH_WORKDIR: ${{ runner.temp }}/publication-${{ github.run_id }}-${{ github.run_attempt }}
+          PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
+          ALLOW_INITIAL_SITE: ${{ inputs.initial_site || false }}
+          BACKFILL_YEAR: ${{ inputs.year }}
+          BACKFILL_COMPETITION: ${{ inputs.competition }}
+          ROLLBACK_SITE_ID: ${{ inputs.site_id }}
+          LEAGUEPEDIA_ENDPOINT: ${{ vars.LEAGUEPEDIA_ENDPOINT }}
+          LEAGUEPEDIA_USER_AGENT: ${{ vars.LEAGUEPEDIA_USER_AGENT }}
+          LEAGUEPEDIA_MEDIA_HOSTS: ${{ vars.LEAGUEPEDIA_MEDIA_HOSTS }}
+          LEAGUEPEDIA_SYNC_YEARS: ${{ vars.LEAGUEPEDIA_SYNC_YEARS }}
+          LEAGUEPEDIA_SYNC_COMPETITIONS: ${{ vars.LEAGUEPEDIA_SYNC_COMPETITIONS }}
+          LEAGUEPEDIA_COMPETITION_MAP: ${{ vars.LEAGUEPEDIA_COMPETITION_MAP }}
+          LEAGUEPEDIA_MAPPING_YEARS: ${{ vars.LEAGUEPEDIA_MAPPING_YEARS }}
+          LEAGUEPEDIA_MAPPING_COMPETITIONS: ${{ vars.LEAGUEPEDIA_MAPPING_COMPETITIONS }}
+        run: pnpm data publish prepare
+      # Official upload-pages-artifact v4; only the downloaded, verified public site.
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
+        with:
+          path: ${{ steps.prepare.outputs.artifact_dir }}
+      - name: Archive Pages upload failure
+        if: failure() && steps.prepare.outcome == 'success'
+        env:
+          RIFTVERSUS_DATA_TOKEN: ${{ secrets.RIFTVERSUS_DATA_TOKEN }}
+          DATA_REPOSITORY: ${{ vars.DATA_REPOSITORY }}
+          ARCHIVE_TARGET_COMMITISH: ${{ vars.ARCHIVE_TARGET_COMMITISH }}
+          PUBLISH_WORKDIR: ${{ runner.temp }}/upload-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          PAGES_BASE_URL: ${{ steps.prepare.outputs.base_url }}
+          FAILED_STAGE: pages-upload
+        run: pnpm data publish record-deploy-failure
+
+  deploy:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
+        with:
+          version: 10.28.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: 24.x
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm --filter @riftversus/web exec playwright install --with-deps chromium
+      - name: Reject stale queued deployment
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: pnpm data publish guard
+      # Official deploy-pages v4; deployment does not change data lineage.
+      - uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
+        id: deployment
+      - name: Verify deployed identity and real HTTPVFS transport
+        env:
+          PAGES_BASE_URL: ${{ needs.prepare.outputs.base_url }}
+          EXPECTED_SITE_ID: ${{ needs.prepare.outputs.site_id }}
+        run: |
+          pnpm data publish verify-deployed
+          node scripts/measure-static-sqlite.mjs "$PAGES_BASE_URL" "$RUNNER_TEMP/pages-browser-evidence"
+      - name: Archive Pages deployment or smoke failure
+        if: failure()
+        env:
+          RIFTVERSUS_DATA_TOKEN: ${{ secrets.RIFTVERSUS_DATA_TOKEN }}
+          DATA_REPOSITORY: ${{ vars.DATA_REPOSITORY }}
+          ARCHIVE_TARGET_COMMITISH: ${{ vars.ARCHIVE_TARGET_COMMITISH }}
+          PUBLISH_WORKDIR: ${{ runner.temp }}/deploy-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          PAGES_BASE_URL: ${{ needs.prepare.outputs.base_url }}
+          FAILED_STAGE: ${{ steps.deployment.outcome == 'success' && 'pages-smoke' || 'pages-deploy' }}
+        run: pnpm data publish record-deploy-failure

@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest";
 import { parseDataCommand } from "../src/cli.js";
 
 describe("one-shot data commands", () => {
+  it("exposes publication control and forensic attempts without implicit modes", () => {
+    for (const mode of ["prepare", "guard", "verify-deployed", "record-deploy-failure"]) expect(parseDataCommand(["publish", mode])).toEqual({ kind: "publish", mode });
+    expect(parseDataCommand(["attempt", "publish", "candidate"])).toEqual({ kind: "attempt", directory: "candidate" });
+    for (const args of [["publish"], ["publish", "prepare", "extra"], ["publish", "delete"], ["attempt", "restore", "x"], ["attempt", "publish"]]) expect(() => parseDataCommand(args)).toThrow();
+  });
   it("requires explicit site archive operations and directories", () => {
     for (const mode of ["publish", "download"]) {
       expect(parseDataCommand(["site", mode, "/tmp/site"])).toEqual({ kind: "site", mode, directory: "/tmp/site" });

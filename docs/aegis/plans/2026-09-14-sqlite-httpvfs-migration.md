@@ -42,9 +42,30 @@ viewports. Commit/evidence tracked in the migration checkpoint.
 
 ## S3: Archive And CI Adaptation
 
-Status: PR CI and SQLite site archive tools implemented locally. Single-writer
-publishing orchestration, persistent failed-attempt archives and actual Actions
-runs remain pending; this phase is not declared complete.
+Status: local implementation and verification complete. PR CI, SQLite site
+archives, single-writer publishing and persistent failed-attempt archives are
+implemented. Full suite 634, build/lint, actionlint and real local HTTPVFS smoke
+passed; independent spec/quality reviews have no remaining blockers. Actual
+Actions runs, permissions and hosted Pages transport remain S4 evidence.
+
+Continuation implementation boundaries:
+
+- `publish-plan.ts` owns validated modes and paths; `publish-run.ts` owns ordered
+  staging/archive composition with injected operations for failure tests.
+- GitHub preflight checks the current default-branch revision and private archive
+  repository before writes. Repeat revision checks before irreversible promotion.
+- One `publish.yml` workflow lock spans preparation, deployment and smoke. Tokens
+  are limited to trusted archive steps; frontend build subprocesses receive an
+  explicit non-secret environment allowlist.
+- Modes: current/history/backfill/reexport/rebuild and explicit site rollback.
+  Retries use GitHub run ID plus run attempt; no overwrite or implicit bootstrap.
+- Failed staging checkpoints are forensic `attempt-*` archives, never sync bases.
+  Failure indexes contain stage codes, not raw exceptions or environment values.
+- New owner files are necessary to separate execution policy, private archive
+  transport and CLI wiring. Existing CLI receives dispatch-only changes; existing
+  checkpoint/schema/source identities are not redefined.
+- Local validation covers failure ordering and real retained-data static serving.
+  Actual GitHub bootstrap, permissions, schedules and cutover remain S4 evidence.
 
 - Change site allowlist/validation from JSON shards to SQLite + worker/WASM.
 - Preserve current and previous immutable DB/assets in each deployable site.

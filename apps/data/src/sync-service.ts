@@ -56,6 +56,9 @@ async function loadFixture(config: Config, rootDir: string): Promise<Leaguepedia
 }
 
 interface OpenRepository { repository: SyncRepository; close(): Promise<void> }
+export function requireCompleteCoverage(coverage: readonly { status: string }[]): void {
+  if (coverage.length === 0 || coverage.some(scope => scope.status !== "complete")) throw new Error("Publication requires complete coverage for every requested scope.");
+}
 export interface LeaguepediaSyncCompositionDependencies {
   rootDir?: string;
   openRepository?(databaseUrl: string): Promise<OpenRepository>;
@@ -73,6 +76,7 @@ export async function executeLeaguepediaSync(input: {
   objectStore: ObjectStore;
   request: SyncRequest;
   fixture: "leaguepedia-small" | null;
+  requireComplete?: boolean;
 }, dependencies: LeaguepediaSyncCompositionDependencies = {}): Promise<{ status: "locked" | "published" | "unchanged"; version?: string }> {
   const rootDir = dependencies.rootDir ?? process.cwd();
   // Build and validate every live slice before a sync run is opened.
@@ -101,6 +105,7 @@ export async function executeLeaguepediaSync(input: {
       repository: opened.repository,
       validate(batch) {
         dependencies.observeBatch?.(batch);
+        if (input.requireComplete) requireCompleteCoverage(batch.coverage);
         if (batch.coverage.length === 0) throw new Error("Leaguepedia publication requires explicit bounded coverage evidence.");
         if (batch.coverage.some((item) => item.status === "complete" && item.earliestDate === null && item.latestDate === null)) throw new Error("Zero-row coverage cannot be complete.");
       },

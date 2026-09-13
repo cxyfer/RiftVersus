@@ -193,3 +193,41 @@ Commit: `d217293`.
 - S3 remains partial: single-writer publish workflow, persistent failed-attempt
   evidence and its failure/retry scenarios are not yet implemented. S4 remains
   pending repository configuration and real bootstrap/cutover verification.
+
+## S3 continuation: publishing and forensic attempts
+
+- Implemented opt-in Publish workflow with a production-only concurrency group,
+  default-branch/private-repository checks, and repeated SHA guards. Nondefault
+  skipped runs cannot replace a pending production run. Default single pending
+  slot semantics and manual retriggers are documented, not hidden.
+- Preparation composes verified restore, bounded current/history/backfill or
+  reexport, complete requested coverage, SQLite acceptance, validated checkpoint
+  archive, secret-free frontend build/smoke, site archive and verified download.
+- Rebuild does not implicitly migrate; rollback never restores or mutates a DB.
+  Upload/deploy/smoke failures can archive attempt metadata with durable state.
+- Attempt archives preserve verified failed staging DB/objects, never checkpoint
+  lineage. Index-only verified summaries count data failures since a baseline.
+  Oversized payloads are rejected before allocation/download (index 2 MiB,
+  ZIP/uncompressed 256 MiB); unavailable evidence remains explicitly unknown.
+- Full unit/workspace suite after quality fixes: 634 passed. Data 80 and workflow
+  contract 4 passed. Build/typecheck and lint passed.
+- Real production build/smoke operations (not injected browser mocks) passed on
+  retained SQLite: /tmp/riftversus-publish-runtime-mnkfWx; both desktop/mobile
+  read 876,644 / 6,889,472 bytes through 166 Range GETs and one bodyless HEAD.
+- actionlint 1.7.12 passed syntax/expression validation for both workflows;
+  external shellcheck integration was disabled. Download SHA matched the
+  official release checksums. Pages action SHAs verified from upstream git tags.
+- Spec review passed after pre-allocation bounds fixes. Quality review reproduced
+  forged ZIP inflation and a Node adapter shutdown race. Both archive readers now
+  share bounded internalStream extraction with pause and guarded callbacks;
+  child-process regression covers a forged 64 MiB entry without uncaught errors.
+  In-flight inflater output is bounded overhead, not a strict process RSS budget.
+  Independent final quality recheck passed: forged 64/257 MiB entries both stop
+  after 16,842,752 bytes of in-flight output with no uncaught errors or continuing
+  chunks; observed helper RSS growth was 17.8/14.9 MiB, not full-payload growth.
+- Drift: SQLite/HTTPVFS remains sole public query path; raw data stays private;
+  no remote exists, no Actions/Release/Pages operation or legacy shutdown ran.
+- S3 local implementation is verified; activation remains disabled. Next: commit
+  this stage and obtain explicit website/private-archive repository identities
+  for S4 activation. Remote permissions and hosted behavior are unverified
+  (confidence B); no cutover or retirement is authorized by local test evidence.

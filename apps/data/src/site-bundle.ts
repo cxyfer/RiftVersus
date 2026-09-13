@@ -8,6 +8,7 @@ import JSZip from "jszip";
 import { z } from "zod";
 
 import { verifyPublicSnapshot } from "./export-snapshot.js";
+import { readBoundedZipEntry, type BoundedZipBudget, type BoundedZipEntry } from "./bounded-zip.js";
 import type { Release, ReleaseAsset, ReleaseStore } from "./release-store.js";
 
 const SITE_BUNDLE_SCHEMA_VERSION = 1;
@@ -414,24 +415,17 @@ async function inspectZip(bytes: Uint8Array, manifest: SiteBundleManifest): Prom
   if (entries.length > MAX_SITE_FILES) throw new Error(`Site bundle exceeds ${MAX_SITE_FILES} files.`);
   const expected = new Map(manifest.files.map((entry) => [entry.file, entry]));
   const files = new Map<string, Uint8Array>();
-  let totalBytes = 0;
+  const budget: BoundedZipBudget = { used: 0, limit: MAX_SITE_UNCOMPRESSED_BYTES };
   for (const entry of entries) {
     if (entry.dir) throw new Error(`Site bundle contains a directory entry: ${entry.name}`);
     const unsafeOriginalName = (entry as unknown as { unsafeOriginalName?: unknown }).unsafeOriginalName;
     if (typeof unsafeOriginalName === "string" && unsafeOriginalName !== entry.name) throw new Error(`Site bundle ZIP path is unsafe: ${unsafeOriginalName}`);
     assertAllowedPath(entry.name);
     if (files.has(entry.name)) throw new Error(`Site bundle contains a duplicate file: ${entry.name}`);
-    const estimatedSize = (entry as unknown as { _data?: { uncompressedSize?: unknown } })._data?.uncompressedSize;
-    if (typeof estimatedSize === "number" && Number.isSafeInteger(estimatedSize) && estimatedSize > MAX_SITE_UNCOMPRESSED_BYTES) {
-      throw new Error("Site bundle ZIP entry exceeds the uncompressed size limit.");
-    }
-    const fileBytes = await entry.async("uint8array");
-    totalBytes += fileBytes.byteLength;
-    if (!Number.isSafeInteger(totalBytes) || totalBytes > MAX_SITE_UNCOMPRESSED_BYTES) throw new Error(`Site bundle exceeds ${MAX_SITE_UNCOMPRESSED_BYTES} uncompressed bytes.`);
     const expectedEntry = expected.get(entry.name);
     if (expectedEntry === undefined) throw new Error(`Site bundle ZIP contains an unindexed file: ${entry.name}`);
-    if (fileBytes.byteLength !== expectedEntry.byteSize || checksum(fileBytes) !== expectedEntry.checksum) throw new Error(`Site bundle file checksum mismatch: ${entry.name}`);
-    files.set(entry.name, new Uint8Array(fileBytes));
+    const fileBytes = await readBoundedZipEntry(entry as unknown as BoundedZipEntry, expectedEntry, budget, entry.name);
+    files.set(entry.name, fileBytes);
   }
   if (files.size !== expected.size) throw new Error("Site bundle ZIP does not contain exactly the indexed files.");
   const rawSiteManifest = files.get(SITE_MANIFEST_FILE);

@@ -27,6 +27,19 @@ function bytes(value: string): Uint8Array {
   return new TextEncoder().encode(value);
 }
 
+function forgeCentralDirectoryUncompressedSizes(input: Uint8Array, declaredSize: number): Uint8Array {
+  const result = new Uint8Array(input);
+  const view = new DataView(result.buffer, result.byteOffset, result.byteLength);
+  let entries = 0;
+  for (let offset = 0; offset + 46 <= result.byteLength; offset += 1) {
+    if (view.getUint32(offset, true) !== 0x02014b50) continue;
+    view.setUint32(offset + 24, declaredSize, true);
+    entries += 1;
+  }
+  if (entries === 0) throw new Error("ZIP fixture has no central directory entries.");
+  return result;
+}
+
 const projection: Omit<PublicSnapshot, "snapshotId"> = {
   schemaVersion: 1,
   dataset: { version: "site-fixture", lastSuccessfulSyncAt: "2026-01-01T00:00:00.000Z", coverage: { from: "2024-01-01", to: "2025-12-31" } },
@@ -196,6 +209,33 @@ describe("site bundle protocol", () => {
       const releaseStore = new FakeReleaseStore();
       await releaseStore.seedPublished(maliciousManifest, maliciousBytes);
       await expect(downloadSiteBundle({ tag: maliciousManifest.siteId, releaseStore, directory: join(root, "malicious-restore") })).rejects.toThrow(/directory|unsafe|unindexed/i);
+    });
+  });
+
+  it("does not trust forged central-directory uncompressed sizes", async () => {
+    await withRoot(async (root) => {
+      const { bundle } = await buildFixture(root);
+      const forgedBytes = forgeCentralDirectoryUncompressedSizes(bundle.bytes, 1);
+      const forgedManifest: SiteBundleManifest = { ...bundle.manifest, zip: { checksum: digest(forgedBytes), byteSize: forgedBytes.byteLength } };
+      const releaseStore = new FakeReleaseStore();
+      await releaseStore.seedPublished(forgedManifest, forgedBytes);
+      await expect(downloadSiteBundle({ tag: forgedManifest.siteId, releaseStore, directory: join(root, "forged-restore") })).rejects.toThrow(/uncompressed data size mismatch|indexed byte size/);
+    });
+  });
+
+  it("bounds actual ZIP extraction by indexed bytes", async () => {
+    await withRoot(async (root) => {
+      const { bundle } = await buildFixture(root);
+      const forgedBytes = forgeCentralDirectoryUncompressedSizes(bundle.bytes, 1);
+      const oversizedEntry = bundle.manifest.files.find((entry) => entry.byteSize > 1)!;
+      const boundedManifest: SiteBundleManifest = {
+        ...bundle.manifest,
+        zip: { checksum: digest(forgedBytes), byteSize: forgedBytes.byteLength },
+        files: bundle.manifest.files.map((entry) => entry.file === oversizedEntry.file ? { ...entry, byteSize: 1, checksum: digest(bytes("x")) } : entry),
+      };
+      const releaseStore = new FakeReleaseStore();
+      await releaseStore.seedPublished(boundedManifest, forgedBytes);
+      await expect(downloadSiteBundle({ tag: boundedManifest.siteId, releaseStore, directory: join(root, "bounded-restore") })).rejects.toThrow("exceeds the indexed byte size");
     });
   });
 

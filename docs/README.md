@@ -15,6 +15,8 @@
   synthetic browser tests, retained-data verification and recovery behavior.
 - [SQLite site archives](site-archives.md): immutable website bundles and
   current/previous asset retention; archive commands do not deploy Pages.
+- [GitHub publishing](github-publishing.md): opt-in single-writer workflow,
+  failed-attempt evidence, deployment/retry/rollback and activation prerequisites.
 - [Original migration plan](aegis/plans/2026-09-14-github-only-migration.md):
   retained recovery/retirement requirements; JSON query design is superseded.
 
