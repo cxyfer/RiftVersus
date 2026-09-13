@@ -1,5 +1,15 @@
 # GitHub-only execution checkpoint
 
+## Active User Correction
+
+User explicitly requires SQLite / SQL.js-HTTPVFS. The JSON shard/browser-array
+engine implementation is superseded and is being removed, not kept as fallback.
+Active plan: docs/aegis/plans/2026-09-14-sqlite-httpvfs-migration.md.
+P2 committed as 44535e8. P0-P2 backup/ingestion work remains valid.
+The earlier P3/P4 results below describe the abandoned JSON implementation only;
+they are not evidence that the SQLite replacement passes.
+All subagents were idle at the correction; new bounded SQLite tasks were assigned.
+
 ## Intent and authority
 
 User authorized implementation of P0-P7 and one verified commit per stage.

@@ -1,5 +1,9 @@
 # RiftVersus GitHub-only 遷移計畫
 
+> 已被使用者要求的 [SQLite / SQL.js-HTTPVFS 計畫](2026-09-14-sqlite-httpvfs-migration.md)
+> 取代公開資料與查詢層設計。以下 JSON 分片內容僅保留作歷史決策紀錄，不可繼續實作。
+> P0-P2 checkpoint 成果與原始資料保護邊界沿用。
+
 日期：2026-09-14（Asia/Taipei）。狀態：使用者已授權實作與逐階段 commit；P0 已驗證，P1 進行中。
 需求：完全使用 GitHub 維運與保存資料，明列新增、替代、保留與移除的流程。
 設計依據：[目標設計](../../github-pages-actions-proposal.md)。
@@ -215,6 +219,26 @@ P1 增加 `@riftversus/data` 的 workspace test 並搬移合法 CLI 測試；`ac
 integration 使用新建 PG17、正確測試 DB 環境與 migration，移除 `--passWithNoTests`，缺 DB／零測試／skip 不可代表正式驗證成功。
 P4 將 `test:e2e` 改成 production 靜態 build 的 preview，使用可用 port；`test:e2e:release` 保留指定 base URL 入口，但不再透過 API 讀 dataset version。
 保留 pinned 歷史 provenance acceptance；新增 snapshot acceptance，不能只改 expected 值讓新版本通過。
+
+### 執行時釐清：歷史封存與當前版本驗收
+
+P0/P1 的實測確認，既有 reviewed gen4 驗收同時固定 global dataset version、
+coverage 及 fact generation；因此正常發布 gen7 後，對當前 DB 執行它也必然失敗。
+這不能透過更新 reviewed JSON、忽略 mismatch 或宣稱舊驗收通過來處理。
+
+P3 將驗收分成兩個明確用途：
+
+- **Pinned archival acceptance**：保留原 verifier 與原 reviewed JSON，只對相符的
+  歷史 checkpoint 執行。對 gen7 的結果仍是 blocked，完整保留診斷。
+- **Current snapshot acceptance**：公開 snapshot 必須完整對應當前 published DB
+  projection；每個 active series/game 必須有有效 publication/audit/source 連結，
+  引用 raw bytes 必須符合 checksum/size/content type。靜態圖片須符合生成器 identity
+  或 retained media 授權及 bytes。歷史對戰結果在原 reviewed 日期範圍內，直接使用
+  原 expected rows、勝負及媒體 checksum 核對，不改寫預期內容。
+
+這是修正驗收適用範圍，不是放寬來源或歷史結果要求。正式新版本以 current gate
+驗證；沒有相符 gen4 checkpoint 時，不宣稱完成 gen4 冷還原或 pinned archival gate。
+ADR 與正式 runtime baseline 在 P6/P7 實際切換後更新，這裡先記錄分支上的遷移決策。
 
 ## 7. 移除與保留清單
 
