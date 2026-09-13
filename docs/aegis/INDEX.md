@@ -5,6 +5,9 @@ Entries are workspace records, not authoritative runtime decisions.
 
 | Date | Kind | Path | Title |
 | --- | --- | --- | --- |
+| 2026-09-14 | work | docs/aegis/work/2026-09-14-github-only/20-checkpoint.md | GitHub-only execution checkpoint and evidence |
+| 2026-09-14 | plan | docs/aegis/plans/2026-09-14-github-only-migration.md | GitHub-only migration and legacy retirement |
+| 2026-09-13 | plan | docs/aegis/plans/2026-09-13-scheduled-data-refresh.md | Scheduled data refresh and freshness monitoring |
 | 2026-07-12 | spec | docs/aegis/specs/2026-07-12-riftversus-design.md | RiftVersus Design Spec |
 | 2026-07-12 | plan | docs/aegis/plans/2026-07-12-riftversus-mvp.md | RiftVersus MVP Implementation Plan |
 | 2026-07-12 | work | docs/aegis/work/2026-07-12-riftversus-mvp/10-intent.md | RiftVersus MVP execution intent |
