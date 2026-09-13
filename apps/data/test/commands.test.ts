@@ -2,6 +2,14 @@ import { describe, expect, it } from "vitest";
 import { parseDataCommand } from "../src/cli.js";
 
 describe("one-shot data commands", () => {
+  it("requires explicit site archive operations and directories", () => {
+    for (const mode of ["publish", "download"]) {
+      expect(parseDataCommand(["site", mode, "/tmp/site"])).toEqual({ kind: "site", mode, directory: "/tmp/site" });
+    }
+    for (const args of [["site"], ["site", "delete", "x"], ["site", "publish"], ["site", "download", "x", "extra"]]) {
+      expect(() => parseDataCommand(args)).toThrow();
+    }
+  });
   it.each([[], ["serve"], ["sync"], ["sync", "--once", "--year", "2025"], ["backfill", "--year", "2025"], ["migrate", "extra"]])("rejects unsupported or incomplete command %j", (args) => {
     expect(() => parseDataCommand(args)).toThrow();
   });

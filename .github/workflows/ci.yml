@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Build, test, and static SQLite E2E
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      # This is a disposable service database for integration tests only.
+      TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/riftversus_test
+      CHECKPOINT_TEST_SOURCE_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/riftversus_checkpoint_source
+      CHECKPOINT_TEST_TARGET_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/riftversus_checkpoint_target
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: riftversus_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d riftversus_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      # actions/checkout v5.0.1, pinned to the official upstream commit.
+      # Source tag: https://github.com/actions/checkout/tree/v5.0.1
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+
+      # pnpm/action-setup v4, pinned to the official upstream commit.
+      # Source tag: https://github.com/pnpm/action-setup/tree/v4
+      - name: Set up pnpm
+        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
+        with:
+          version: 10.28.0
+
+      # actions/setup-node v5.0.0, pinned to the official upstream commit.
+      # Source tag: https://github.com/actions/setup-node/tree/v5.0.0
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: 24.x
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Ubuntu 24.04 currently ships PostgreSQL 16 client tools. Use the
+      # PostgreSQL Apt Repository so pg_dump/pg_restore match the PG17 service.
+      # Repository setup follows https://www.postgresql.org/download/linux/ubuntu/
+      - name: Install PostgreSQL 17 client tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends ca-certificates curl
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl --fail --silent --show-error --location \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            --output /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+          . /etc/os-release
+          printf '%s\n' \
+            'Types: deb' \
+            'URIs: https://apt.postgresql.org/pub/repos/apt' \
+            "Suites: ${VERSION_CODENAME}-pgdg" \
+            'Architectures: amd64' \
+            'Components: main' \
+            'Signed-By: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc' \
+            | sudo tee /etc/apt/sources.list.d/pgdg.sources >/dev/null
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+          export PATH="/usr/lib/postgresql/17/bin:$PATH"
+          pg_dump --version | grep --extended-regexp '^pg_dump \(PostgreSQL\) 17\.'
+          pg_restore --version | grep --extended-regexp '^pg_restore \(PostgreSQL\) 17\.'
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter @riftversus/web exec playwright install --with-deps chromium
+
+      - name: Build workspaces
+        run: pnpm build
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Run full unit and workspace suites
+        run: pnpm test
+
+      - name: Create disposable checkpoint databases
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql --host=127.0.0.1 --username=postgres --dbname=riftversus_test --command='CREATE DATABASE riftversus_checkpoint_source'
+          psql --host=127.0.0.1 --username=postgres --dbname=riftversus_test --command='CREATE DATABASE riftversus_checkpoint_target'
+
+      - name: Run PostgreSQL 17 integration suites
+        run: pnpm exec vitest run --config vitest.integration.config.ts
+
+      - name: Build production web bundle
+        run: pnpm --filter @riftversus/web build
+
+      - name: Run production static SQLite E2E with synthetic fixture
+        env:
+          VITE_BASE_PATH: /RiftVersus/
+        run: pnpm test:e2e

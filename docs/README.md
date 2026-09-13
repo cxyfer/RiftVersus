@@ -13,6 +13,8 @@
   active implementation batches and cutover gates.
 - [SQLite development](sqlite-development.md): production static builds,
   synthetic browser tests, retained-data verification and recovery behavior.
+- [SQLite site archives](site-archives.md): immutable website bundles and
+  current/previous asset retention; archive commands do not deploy Pages.
 - [Original migration plan](aegis/plans/2026-09-14-github-only-migration.md):
   retained recovery/retirement requirements; JSON query design is superseded.
 

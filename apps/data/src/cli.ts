@@ -10,8 +10,10 @@ import { runCheckpointCommand } from "./checkpoint-commands.js";
 import { runArchiveCommand } from "./archive-commands.js";
 import { runSnapshotCommand } from "./snapshot-commands.js";
 import { verifyCurrentSnapshot } from "./current-snapshot-acceptance.js";
+import { runSiteCommand } from "./site-commands.js";
 
 export type DataCommand =
+  | { kind: "site"; mode: "publish" | "download"; directory: string }
   | { kind: "snapshot"; mode: "export" | "verify"; directory: string }
   | { kind: "archive"; mode: "resolve" | "publish"; directory: string }
   | { kind: "checkpoint"; mode: "pack" | "verify" | "restore"; directory: string }
@@ -28,12 +30,18 @@ export const dataUsage = `Usage:
   riftversus-data checkpoint pack|verify|restore DIRECTORY
   riftversus-data archive resolve|publish DIRECTORY
   riftversus-data snapshot export|verify DIRECTORY
+  riftversus-data site publish|download DIRECTORY
   riftversus-data acceptance
 
 Data writes require OBJECT_STORE_DIR. No server or scheduler is started.`;
 
 export function parseDataCommand(argv: readonly string[]): DataCommand {
   const [command, ...args] = argv;
+  if (command === "site") {
+    const [mode, directory] = args;
+    if (args.length !== 2 || !directory?.trim() || (mode !== "publish" && mode !== "download")) throw new Error("site requires publish|download and a directory.");
+    return { kind: "site", mode, directory };
+  }
   if (command === "snapshot") {
     const [mode, directory] = args;
     if (args.length !== 2 || !directory?.trim() || (mode !== "export" && mode !== "verify")) throw new Error("snapshot requires export|verify and a directory.");
@@ -72,6 +80,7 @@ export function parseDataCommand(argv: readonly string[]): DataCommand {
 export async function runDataCli(argv: readonly string[], environment: Record<string, string | undefined> = process.env) {
   if (argv.length === 1 && (argv[0] === "--help" || argv[0] === "-h")) { console.log(dataUsage); return; }
   const command = parseDataCommand(argv);
+  if (command.kind === "site") { await runSiteCommand(command.mode, command.directory, environment); return; }
   if (command.kind === "snapshot") { await runSnapshotCommand(command.mode, command.directory, environment); return; }
   if (command.kind === "archive") { await runArchiveCommand(command.mode, command.directory, environment); return; }
   if (command.kind === "checkpoint") { await runCheckpointCommand(command.mode, command.directory, environment); return; }

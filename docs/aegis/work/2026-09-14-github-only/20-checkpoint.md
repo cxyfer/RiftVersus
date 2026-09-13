@@ -147,6 +147,8 @@ Commit: `214d9cc`.
 
 ## SQLite S2 verified
 
+Commit: `d217293`.
+
 - Vite production and development use real sql.js-httpvfs 0.8.12; worker JS and
   WASM are hashed external assets. Browser search/filter/aggregation/pagination
   run shared parameterized SQLite SQL, with no JSON facts or HTTP API fallback.
@@ -172,3 +174,22 @@ Commit: `214d9cc`.
   PNG, 101-series ZIP, bad Range rejection/reload and mobile layout.
 - Fresh full unit/workspace test run passed 600 tests; build and lint passed.
   Actual Pages hosting and production credentials remain untested.
+
+## SQLite S3 partial: CI and site archive tools
+
+- Added read-only PR/main CI: locked Node 24/pnpm install, build/typecheck/lint,
+  unit suites, temporary PostgreSQL 17 integration, matching PG17 client tools,
+  and production synthetic SQLite Playwright with Chromium installation.
+- Site archives permit SQLite and WASM, reject JSON fact shards/private dumps,
+  and verify the ZIP/index/data/presentation before publication and download.
+- Explicit site publish/download CLI does not deploy Pages or rewind data.
+  Previous-site retention copies only the prior build's own checksum inventory;
+  three-deployment regression proves older inherited assets do not accumulate.
+- Latest full suite: 600 unit/workspace tests passed, including 50 data tests and
+  four CI contract tests. Production browser E2E: five passed after canonical
+  homepage IDs and base-path preview fixes. Build/lint/diff checks passed.
+- No live Actions run, Release upload or Pages deployment occurred. CI contract
+  tests validate configuration, not remote permissions or hosted runner behavior.
+- S3 remains partial: single-writer publish workflow, persistent failed-attempt
+  evidence and its failure/retry scenarios are not yet implemented. S4 remains
+  pending repository configuration and real bootstrap/cutover verification.
