@@ -3,7 +3,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Readable } from "node:stream";
 import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 
-import type { ImmutableObject, ObjectStore, S3ObjectStoreConfig, StoredObjectMetadata } from "../storage.js";
+import type { ImmutableObject, SignedObjectStore, S3ObjectStoreConfig, StoredObjectMetadata } from "../storage.js";
 
 interface S3ClientLike {
   send(command: GetObjectCommand | HeadObjectCommand | PutObjectCommand): Promise<{ Body?: unknown; Metadata?: Record<string, string>; ContentLength?: number; ContentType?: string }>;
@@ -35,7 +35,7 @@ function toNodeReadable(body: unknown): Readable | null {
   return null;
 }
 
-export function createS3ObjectStore(config: S3ObjectStoreConfig, dependencies?: { client?: S3ClientLike; sign?: Signer }): ObjectStore {
+export function createS3ObjectStore(config: S3ObjectStoreConfig, dependencies?: { client?: S3ClientLike; sign?: Signer }): SignedObjectStore {
   const client = dependencies?.client ?? new S3Client({
     endpoint: config.endpoint,
     region: config.region,

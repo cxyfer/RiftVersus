@@ -10,7 +10,7 @@ import {
   LeaguepediaClient, createLeaguepediaProvider, downloadBounded, fetchLeaguepediaRawInput, loadOverrides, runSync,
   type LeaguepediaRawInput, type LeaguepediaReadClient, type ObjectStore, type SnapshotRequest, type StagedSyncBatch, type SyncRepository, type SyncRequest,
 } from "@riftversus/sync";
-import type { Config } from "./config.js";
+import type { SyncConfig as Config } from "@riftversus/sync";
 
 export function createDatabaseSyncRepository(db: ReturnType<typeof createDb>): SyncRepository {
   return {

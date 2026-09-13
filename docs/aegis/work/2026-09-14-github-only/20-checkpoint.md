@@ -19,9 +19,10 @@ TDD mode off: meaningful regression and restore checks, no prescribed strict TDD
 
 ## Stages
 
-- P0 verified: isolated database restore and all referenced objects exported.
-- P1 active: filesystem object store and build-time data CLI.
-- P2-P7 pending.
+- P0 committed: 42199d4, isolated database restore and referenced object export.
+- P1 verified: filesystem object store and build-time data CLI; committing.
+- P2 active: local checkpoint bundle and Release transport.
+- P3-P7 pending.
 
 ## P0 evidence
 
@@ -43,7 +44,29 @@ TDD mode off: meaningful regression and restore checks, no prescribed strict TDD
 
 P0 supports beginning implementation. Live source access is not needed for P1.
 Remote repository and archive credentials remain prerequisites for P6, not P1.
-Next: implement immutable filesystem storage, relocate CLI-owned logic without
-duplicating it, validate fixture and retained-data reads, then commit P1.
+Next: checkpoint bundle and verified restore, then GitHub Release transport.
 Strict historical acceptance and SQL/static parity belong to P3, before any
 HTTP/SQL retirement. No claimed data or presentation semantics have changed.
+
+## P1 evidence and known baseline gap
+
+- Core ObjectStore no longer requires signedGetUrl; old S3 HTTP delivery keeps
+  a narrow SignedObjectStore until P7. Filesystem storage rejects corrupt bytes,
+  conflicting metadata, traversal and linked files; atomic directory publication.
+- apps/data owns sync composition, history scope planning, mapping, freshness,
+  avatar generation and acceptance logic. Server imports this single owner.
+- New CLI supports migrate, bounded backfill, sync --once/--history-once,
+  mapping and freshness. No server or scheduler is started by this CLI.
+- Build and lint passed; full pnpm test passed: root 60, contracts 12, domain 19,
+  sync 190, data 7, server 187, web 52. Consumer TypeScript checks passed.
+- Fresh PostgreSQL 17 integration passed 64/64, zero skips.
+- Isolated fixture migrated all nine migrations, published once then returned
+  unchanged on retry using only filesystem ObjectStore.
+- Imported all P0 source bytes into the filesystem store and ran acceptance
+  against restored gen7. Result matched the existing deployed S3 CLI exactly.
+- Strict pinned historical acceptance remains BLOCKED on both old/new CLIs:
+  pinned snapshot version/coverage and fact provenance do not match gen7.
+  No expectations were changed. This is an existing baseline mismatch, not a
+  successful release acceptance; P3/P6 must resolve with authentic evidence.
+- P1 audit script: /tmp/riftversus-p1-check.mjs; it removes only its own test
+  container. Production app/sync/PostgreSQL/MinIO and user .gitignore preserved.

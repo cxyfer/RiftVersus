@@ -8,6 +8,7 @@
     "test": "vitest run --config ../../vitest.unit.config.ts"
   },
   "dependencies": {
+    "@riftversus/data": "workspace:*",
     "@fastify/sensible": "6.0.4",
     "@fastify/static": "10.1.0",
     "@riftversus/contracts": "workspace:*",

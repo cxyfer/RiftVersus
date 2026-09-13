@@ -2,7 +2,7 @@ import { EntityKindSchema, UuidSchema } from "@riftversus/contracts";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
-import { generateCanonicalAvatar } from "../avatar.js";
+import { generateCanonicalAvatar } from "@riftversus/data";
 import { notFoundError } from "../errors.js";
 import { ifNoneMatchMatches } from "../http-cache.js";
 import type { AppDependencies } from "../types.js";

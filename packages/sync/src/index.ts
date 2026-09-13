@@ -13,7 +13,10 @@ export type {
   StagedTournamentDefinition, StagedVersionProvenance, SyncDependencies, SyncProvider, SyncPublicationInput, SyncRepository, SyncRequest, SyncResult,
   PublicationScope,
 } from "./types.js";
-export type { ImmutableObject, ObjectStore, StoredObjectMetadata } from "./storage.js";
+export type { ImmutableObject, ObjectStore, SignedObjectStore, StoredObjectMetadata } from "./storage.js";
+export { createFilesystemObjectStore } from "./storage/filesystem.js";
+export { loadSyncConfig } from "./config.js";
+export type { SyncConfig } from "./config.js";
 export { createS3ObjectStore } from "./storage/s3.js";
 export { bootstrapS3Bucket } from "./storage/bootstrap.js";
 export type { S3ObjectStoreConfig } from "./storage.js";

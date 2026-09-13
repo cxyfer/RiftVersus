@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkLeaguepediaMappings } from "../src/mapping-check.js";
+import { checkLeaguepediaMappings } from "../../data/src/mapping-check.js";
 import { loadConfig } from "../src/config.js";
 
 const base = { DATABASE_URL: "postgresql://example.test/db", LEAGUEPEDIA_ENDPOINT: "https://leaguepedia.acme.org/api.php", LEAGUEPEDIA_USER_AGENT: "RiftVersus/0.1 ops@acme.org", LEAGUEPEDIA_MEDIA_HOSTS: "static.acme.org" };

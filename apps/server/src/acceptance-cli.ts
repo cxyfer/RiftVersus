@@ -4,10 +4,10 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { compareHeadToHead, createDb, destroyDb, findAcceptanceDatasetEvidence, findMediaObjectMetadataByKey, findSourceObjectMetadataByKey, getAvatarIdentity } from "@riftversus/database";
 
-import { verifyAcceptanceSnapshot, type AcceptanceEvaluation } from "./acceptance.js";
+import { verifyAcceptanceSnapshot, type AcceptanceEvaluation } from "@riftversus/data";
 import { loadConfig, type Environment } from "./config.js";
 import { createConfiguredObjectStore } from "./storage.js";
-import { generateCanonicalAvatar } from "./avatar.js";
+import { generateCanonicalAvatar } from "@riftversus/data";
 
 const DEFAULT_SNAPSHOT = fileURLToPath(new URL("../../../data/acceptance/leaguepedia-t1-lpl-worlds-bo5.json", import.meta.url));
 

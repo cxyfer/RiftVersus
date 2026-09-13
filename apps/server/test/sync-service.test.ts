@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ObjectStore, SyncPublicationInput, SyncRepository } from "@riftversus/sync";
 import { loadConfig } from "../src/config.js";
-import { buildLeaguepediaSlices, executeLeaguepediaSync } from "../src/sync-service.js";
+import { buildLeaguepediaSlices, executeLeaguepediaSync } from "../../data/src/sync-service.js";
 
 const rootDir = fileURLToPath(new URL("../../..", import.meta.url));
 

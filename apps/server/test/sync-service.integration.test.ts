@@ -10,7 +10,7 @@ import { createDb, destroyDb, migrateToLatest, type Database } from "@riftversus
 import type { Kysely } from "kysely";
 import type { ObjectStore, StagedSyncBatch, StoredObjectMetadata } from "@riftversus/sync";
 import { loadConfig } from "../src/config.js";
-import { createDatabaseSyncRepository, executeLeaguepediaSync } from "../src/sync-service.js";
+import { createDatabaseSyncRepository, executeLeaguepediaSync } from "../../data/src/sync-service.js";
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
 const describeWithDatabase = databaseUrl ? describe : describe.skip;

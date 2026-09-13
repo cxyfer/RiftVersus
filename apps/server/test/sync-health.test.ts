@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { loadConfig } from "../src/config.js";
-import { evaluateSyncHealth } from "../src/sync-health.js";
-import { historyRequests } from "../src/sync-plan.js";
+import { evaluateSyncHealth } from "../../data/src/sync-health.js";
+import { historyRequests } from "../../data/src/sync-plan.js";
 
 const config = loadConfig({
   DATABASE_URL: "postgresql://example.test/db", LEAGUEPEDIA_ENDPOINT: "https://leaguepedia.acme.org/api.php",
@@ -34,8 +34,8 @@ describe("sync health and scope planning", () => {
     expect(evaluateSyncHealth(config, { runs, scopes: [scope] }, now).status).toBe("unhealthy");
   });
   it("applies the historical age threshold only when history scheduling is enabled", () => {
-    expect(evaluateSyncHealth({ ...config, syncHistoryCron: "0 5 * * 0" }, { runs: [], scopes: [scope] }, now).status).toBe("unhealthy");
+    expect(evaluateSyncHealth({ ...config, historyEnabled: true }, { runs: [], scopes: [scope] }, now).status).toBe("unhealthy");
     const history = historyRequests(config).flatMap((request) => request.years.map((seasonYear) => ({ competition: request.competitions[0]!, seasonYear, status: "complete", checkedAt: "2026-09-07T00:00:00Z" })));
-    expect(evaluateSyncHealth({ ...config, syncHistoryCron: "0 5 * * 0" }, { runs: [], scopes: [scope, ...history] }, now).status).toBe("healthy");
+    expect(evaluateSyncHealth({ ...config, historyEnabled: true }, { runs: [], scopes: [scope, ...history] }, now).status).toBe("healthy");
   });
 });

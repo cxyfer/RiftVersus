@@ -33,6 +33,25 @@ importers:
         specifier: 2.8.2
         version: 2.8.2
 
+  apps/data:
+    dependencies:
+      '@riftversus/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@riftversus/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@riftversus/sync':
+        specifier: workspace:*
+        version: link:../../packages/sync
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: 24.10.0
+        version: 24.10.0
+
   apps/server:
     dependencies:
       '@fastify/sensible':
@@ -44,6 +63,9 @@ importers:
       '@riftversus/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@riftversus/data':
+        specifier: workspace:*
+        version: link:../data
       '@riftversus/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -179,6 +201,9 @@ importers:
       yaml:
         specifier: 2.8.2
         version: 2.8.2
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
     devDependencies:
       '@types/node':
         specifier: 24.10.0

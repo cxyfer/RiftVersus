@@ -1,8 +1,8 @@
 import { scheduleSync, type ObjectStore } from "@riftversus/sync";
 import type { CommandDependencies } from "./cli.js";
 import type { Config } from "./config.js";
-import { historyRequests } from "./sync-plan.js";
-import { buildLeaguepediaSlices } from "./sync-service.js";
+import { historyRequests } from "@riftversus/data";
+import { buildLeaguepediaSlices } from "@riftversus/data";
 
 export async function runHistory(config: Config, objectStore: ObjectStore, dependencies: CommandDependencies, stopping = () => false) {
   const errors: unknown[] = [];

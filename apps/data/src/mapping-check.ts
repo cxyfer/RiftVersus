@@ -1,4 +1,4 @@
-import type { Config } from "./config.js";
+import type { SyncConfig as Config } from "@riftversus/sync";
 
 export interface MappingCheck {
   required: Array<{ competition: string; year: number }>;

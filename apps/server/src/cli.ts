@@ -8,10 +8,10 @@ import { cliUsage, parseCliCommand, type CliCommand } from "./commands.js";
 import { loadConfig, type Config } from "./config.js";
 import { startListeningServer } from "./server.js";
 import { createConfiguredObjectStore } from "./storage.js";
-import { executeLeaguepediaSync } from "./sync-service.js";
-import { evaluateSyncHealth, readSyncHealth } from "./sync-health.js";
+import { executeLeaguepediaSync } from "@riftversus/data";
+import { evaluateSyncHealth, readSyncHealth } from "@riftversus/data";
 import { runHistory, runSchedules } from "./sync-schedules.js";
-import { checkLeaguepediaMappings } from "./mapping-check.js";
+import { checkLeaguepediaMappings } from "@riftversus/data";
 
 declare const process: {
   argv: string[]; cwd(): string; env: Record<string, string | undefined>; exitCode?: number;

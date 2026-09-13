@@ -1,5 +1,5 @@
 import type { SyncRequest } from "@riftversus/sync";
-import type { Config } from "./config.js";
+import type { SyncConfig as Config } from "@riftversus/sync";
 
 export function historyRequests(config: Config): Extract<SyncRequest, { mode: "backfill" }>[] {
   const cutoff = Math.min(...config.leaguepedia.syncYears);

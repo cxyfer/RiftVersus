@@ -11,7 +11,7 @@ const lowercaseId = "abcdefab-cdef-4abc-8def-abcdefabcdef";
 const uppercaseId = "ABCDEFAB-CDEF-4ABC-8DEF-ABCDEFABCDEF";
 
 function avatarModule() {
-  return import("../src/avatar.js");
+  return import("../../data/src/avatar.js");
 }
 
 function createApp(overrides: Partial<Parameters<typeof buildApp>[0]> = {}) {
