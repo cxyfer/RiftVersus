@@ -20,9 +20,13 @@ TDD mode off: meaningful regression and restore checks, no prescribed strict TDD
 ## Stages
 
 - P0 committed: 42199d4, isolated database restore and referenced object export.
-- P1 verified: filesystem object store and build-time data CLI; committing.
-- P2 active: local checkpoint bundle and Release transport.
-- P3-P7 pending.
+- P1 committed: 93a443b, filesystem object store and build-time data CLI.
+- P2 local implementation verified: checkpoint bundle, Release transport and
+  empty-database restore; preparing commit. Live archive bootstrap remains P6.
+- P3 active: static projection and SQL parity verified; pinned provenance gate
+  remains blocked on the preexisting generation mismatch described below.
+- P4 active: static browser runtime and production fixture E2E.
+- P5-P7 pending. No old runtime has been retired or stopped.
 
 ## P0 evidence
 
@@ -70,3 +74,40 @@ HTTP/SQL retirement. No claimed data or presentation semantics have changed.
   successful release acceptance; P3/P6 must resolve with authentic evidence.
 - P1 audit script: /tmp/riftversus-p1-check.mjs; it removes only its own test
   container. Production app/sync/PostgreSQL/MinIO and user .gitignore preserved.
+
+## P2 evidence
+
+- `checkpoint pack|verify|restore` uses PostgreSQL 17 exported snapshots and
+  immutable filesystem objects. Full bundle validation precedes restoration;
+  nonempty staging databases are rejected rather than overwritten.
+- `archive resolve|publish` uses a private GitHub data repository, hashed index
+  assets and ordered chunks of at most 256 MiB. Unchanged raw chunks reference
+  existing verified asset IDs. Database dumps are uploaded per checkpoint.
+- Publication is draft -> download index and all referenced bytes -> verify ->
+  restore a separate empty PostgreSQL database -> publish. Failures leave drafts.
+- Resolver ignores drafts and rejects duplicate sequences or broken lineage.
+  No deletion, overwrite, mutable latest tag, or timestamp ordering is exposed.
+- Fresh build, focused ESLint and diff whitespace checks passed. Focused P2
+  suite passed 28 tests including lineage and uploaded-index corruption checks.
+  An actual 256 MiB split-boundary allocation has not been exercised locally.
+- Real PostgreSQL 17 cold-restore integration passed (1 test, zero skips),
+  including corrupt dump rejection and nonempty target rejection.
+  Reproducer: /tmp/riftversus-p2-check.mjs. Host lacks PG client tools, so the
+  test invokes real pg_dump/pg_restore in its disposable PostgreSQL container.
+- Operations: docs/checkpoints.md. No Git remote exists and no live GitHub
+  archive operation was attempted. Cross-repo permission validation is pending.
+
+## P3 evidence in progress
+
+- Fresh P0 restore: 375 real-data SQL/static comparisons matched exactly after
+  excluding deliberately snapshot-bound cursor bytes. Five fixture PostgreSQL
+  integration tests passed, including search, eras, players and pagination.
+- Public export: 818 entity/era entries, 1,066 series, 1,664 games, 24 shards,
+  2,589,223 data bytes. No raw objects or database dumps in the public directory.
+- Public data directory: /tmp/riftversus-p3-public-5j83yN. The manifest and each
+  shard are content-verified. V2 avatars are materialized as hashed assets under
+  /RiftVersus/presentation/. Freshness and attribution are separate metadata.
+- Reproducer: /tmp/riftversus-p3-check.mjs. It restores only a task-owned
+  temporary PostgreSQL container, verifies, then removes that container.
+- Reviewed gen4 acceptance remains unchanged. These parity checks do not turn
+  the known gen7 provenance mismatch into a passing release gate.

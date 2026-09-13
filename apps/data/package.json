@@ -10,6 +10,7 @@
     "test": "vitest run --config ../../vitest.unit.config.ts"
   },
   "dependencies": {
+    "kysely": "0.29.3",
     "@riftversus/contracts": "workspace:*",
     "@riftversus/database": "workspace:*",
     "@riftversus/sync": "workspace:*",

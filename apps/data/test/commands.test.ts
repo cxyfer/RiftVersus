@@ -10,4 +10,17 @@ describe("one-shot data commands", () => {
     expect(parseDataCommand(["backfill", "--year", "2025", "--competition", "Worlds"])).toEqual({ kind: "sync", request: { mode: "backfill", years: [2025], competitions: ["Worlds"] }, fixture: null });
     expect(() => parseDataCommand(["backfill", "--year", "2025", "--year", "2025", "--competition", "Worlds"])).toThrow();
   });
+  it("requires an explicit checkpoint operation and directory", () => {
+    for (const mode of ["pack", "verify", "restore"]) {
+      expect(parseDataCommand(["checkpoint", mode, "/tmp/candidate"])).toEqual({ kind: "checkpoint", mode, directory: "/tmp/candidate" });
+    }
+    for (const args of [["checkpoint"], ["checkpoint", "delete", "x"], ["checkpoint", "restore"], ["checkpoint", "pack", "x", "extra"]]) {
+      expect(() => parseDataCommand(args)).toThrow();
+    }
+  });
+  it("does not expose archive deletion or implicit bootstrap", () => {
+    expect(parseDataCommand(["archive", "resolve", "candidate"])).toEqual({ kind: "archive", mode: "resolve", directory: "candidate" });
+    expect(parseDataCommand(["archive", "publish", "candidate"])).toEqual({ kind: "archive", mode: "publish", directory: "candidate" });
+    for (const args of [["archive"], ["archive", "delete", "x"], ["archive", "publish"], ["archive", "resolve", "x", "y"]]) expect(() => parseDataCommand(args)).toThrow();
+  });
 });

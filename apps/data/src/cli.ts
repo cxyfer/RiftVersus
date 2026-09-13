@@ -6,8 +6,12 @@ import { executeLeaguepediaSync } from "./sync-service.js";
 import { checkLeaguepediaMappings } from "./mapping-check.js";
 import { historyRequests } from "./sync-plan.js";
 import { readSyncHealth } from "./sync-health.js";
+import { runCheckpointCommand } from "./checkpoint-commands.js";
+import { runArchiveCommand } from "./archive-commands.js";
 
 export type DataCommand =
+  | { kind: "archive"; mode: "resolve" | "publish"; directory: string }
+  | { kind: "checkpoint"; mode: "pack" | "verify" | "restore"; directory: string }
   | { kind: "migrate" | "sync-map-check" | "freshness" | "history" }
   | { kind: "sync"; request: SyncRequest; fixture: "leaguepedia-small" | null };
 
@@ -18,11 +22,23 @@ export const dataUsage = `Usage:
   riftversus-data backfill --year YYYY --competition NAME [--fixture leaguepedia-small]
   riftversus-data sync-map-check
   riftversus-data freshness
+  riftversus-data checkpoint pack|verify|restore DIRECTORY
+  riftversus-data archive resolve|publish DIRECTORY
 
 Data writes require OBJECT_STORE_DIR. No server or scheduler is started.`;
 
 export function parseDataCommand(argv: readonly string[]): DataCommand {
   const [command, ...args] = argv;
+  if (command === "archive") {
+    const [mode, directory] = args;
+    if (args.length !== 2 || !directory?.trim() || (mode !== "resolve" && mode !== "publish")) throw new Error("archive requires resolve|publish and a directory.");
+    return { kind: "archive", mode, directory };
+  }
+  if (command === "checkpoint") {
+    const [mode, directory] = args;
+    if (args.length !== 2 || !directory?.trim() || (mode !== "pack" && mode !== "verify" && mode !== "restore")) throw new Error("checkpoint requires pack|verify|restore and a directory.");
+    return { kind: "checkpoint", mode, directory };
+  }
   if (command === "migrate" || command === "sync-map-check" || command === "freshness") {
     if (args.length) throw new Error(`${command} does not accept arguments.`);
     return { kind: command };
@@ -46,6 +62,8 @@ export function parseDataCommand(argv: readonly string[]): DataCommand {
 export async function runDataCli(argv: readonly string[], environment: Record<string, string | undefined> = process.env) {
   if (argv.length === 1 && (argv[0] === "--help" || argv[0] === "-h")) { console.log(dataUsage); return; }
   const command = parseDataCommand(argv);
+  if (command.kind === "archive") { await runArchiveCommand(command.mode, command.directory, environment); return; }
+  if (command.kind === "checkpoint") { await runCheckpointCommand(command.mode, command.directory, environment); return; }
   if (command.kind === "migrate") {
     const databaseUrl = environment.DATABASE_URL;
     if (!databaseUrl) throw new Error("DATABASE_URL is required.");
