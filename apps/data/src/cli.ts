@@ -1,4 +1,4 @@
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 import { createDb, migrateToLatest } from "@riftversus/database";
 import { createFilesystemObjectStore, loadSyncConfig, validateSyncRequest, type SyncRequest } from "@riftversus/sync";
@@ -8,11 +8,14 @@ import { historyRequests } from "./sync-plan.js";
 import { readSyncHealth } from "./sync-health.js";
 import { runCheckpointCommand } from "./checkpoint-commands.js";
 import { runArchiveCommand } from "./archive-commands.js";
+import { runSnapshotCommand } from "./snapshot-commands.js";
+import { verifyCurrentSnapshot } from "./current-snapshot-acceptance.js";
 
 export type DataCommand =
+  | { kind: "snapshot"; mode: "export" | "verify"; directory: string }
   | { kind: "archive"; mode: "resolve" | "publish"; directory: string }
   | { kind: "checkpoint"; mode: "pack" | "verify" | "restore"; directory: string }
-  | { kind: "migrate" | "sync-map-check" | "freshness" | "history" }
+  | { kind: "migrate" | "sync-map-check" | "freshness" | "history" | "acceptance" }
   | { kind: "sync"; request: SyncRequest; fixture: "leaguepedia-small" | null };
 
 export const dataUsage = `Usage:
@@ -24,11 +27,18 @@ export const dataUsage = `Usage:
   riftversus-data freshness
   riftversus-data checkpoint pack|verify|restore DIRECTORY
   riftversus-data archive resolve|publish DIRECTORY
+  riftversus-data snapshot export|verify DIRECTORY
+  riftversus-data acceptance
 
 Data writes require OBJECT_STORE_DIR. No server or scheduler is started.`;
 
 export function parseDataCommand(argv: readonly string[]): DataCommand {
   const [command, ...args] = argv;
+  if (command === "snapshot") {
+    const [mode, directory] = args;
+    if (args.length !== 2 || !directory?.trim() || (mode !== "export" && mode !== "verify")) throw new Error("snapshot requires export|verify and a directory.");
+    return { kind: "snapshot", mode, directory };
+  }
   if (command === "archive") {
     const [mode, directory] = args;
     if (args.length !== 2 || !directory?.trim() || (mode !== "resolve" && mode !== "publish")) throw new Error("archive requires resolve|publish and a directory.");
@@ -39,7 +49,7 @@ export function parseDataCommand(argv: readonly string[]): DataCommand {
     if (args.length !== 2 || !directory?.trim() || (mode !== "pack" && mode !== "verify" && mode !== "restore")) throw new Error("checkpoint requires pack|verify|restore and a directory.");
     return { kind: "checkpoint", mode, directory };
   }
-  if (command === "migrate" || command === "sync-map-check" || command === "freshness") {
+  if (command === "migrate" || command === "sync-map-check" || command === "freshness" || command === "acceptance") {
     if (args.length) throw new Error(`${command} does not accept arguments.`);
     return { kind: command };
   }
@@ -62,6 +72,7 @@ export function parseDataCommand(argv: readonly string[]): DataCommand {
 export async function runDataCli(argv: readonly string[], environment: Record<string, string | undefined> = process.env) {
   if (argv.length === 1 && (argv[0] === "--help" || argv[0] === "-h")) { console.log(dataUsage); return; }
   const command = parseDataCommand(argv);
+  if (command.kind === "snapshot") { await runSnapshotCommand(command.mode, command.directory, environment); return; }
   if (command.kind === "archive") { await runArchiveCommand(command.mode, command.directory, environment); return; }
   if (command.kind === "checkpoint") { await runCheckpointCommand(command.mode, command.directory, environment); return; }
   if (command.kind === "migrate") {
@@ -75,6 +86,16 @@ export async function runDataCli(argv: readonly string[], environment: Record<st
     return;
   }
   const config = loadSyncConfig(environment);
+  if (command.kind === "acceptance") {
+    if (!environment.OBJECT_STORE_DIR?.trim() || !environment.PUBLIC_SNAPSHOT_DIR?.trim()) throw new Error("SQLite acceptance requires OBJECT_STORE_DIR and PUBLIC_SNAPSHOT_DIR.");
+    const result = await verifyCurrentSnapshot({ databaseUrl: config.databaseUrl, directory: resolve(environment.PUBLIC_SNAPSHOT_DIR),
+      store: createFilesystemObjectStore(resolve(environment.OBJECT_STORE_DIR)), approvedLeaguepediaEndpoint: config.leaguepedia.endpoint,
+      reviewedPath: environment.REVIEWED_ACCEPTANCE_PATH ?? fileURLToPath(new URL("../../../data/acceptance/leaguepedia-t1-lpl-worlds-bo5.json", import.meta.url)),
+    });
+    console.log(JSON.stringify(result));
+    if (result.status !== "ready") throw new Error("Current SQLite acceptance failed; do not publish.");
+    return;
+  }
   if (command.kind === "sync-map-check") {
     const result = checkLeaguepediaMappings(config); console.log(JSON.stringify(result));
     if (result.missing.length) throw new Error(`${result.missing.length} required mappings are missing.`);

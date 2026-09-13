@@ -109,6 +109,8 @@ HTTP/SQL retirement. No claimed data or presentation semantics have changed.
 
 ## P3 evidence in progress
 
+Historical JSON implementation evidence only; superseded by SQLite S1 below.
+
 - Fresh P0 restore: 375 real-data SQL/static comparisons matched exactly after
   excluding deliberately snapshot-bound cursor bytes. Five fixture PostgreSQL
   integration tests passed, including search, eras, players and pagination.
@@ -121,3 +123,22 @@ HTTP/SQL retirement. No claimed data or presentation semantics have changed.
   temporary PostgreSQL container, verifies, then removes that container.
 - Reviewed gen4 acceptance remains unchanged. These parity checks do not turn
   the known gen7 provenance mismatch into a passing release gate.
+
+## SQLite S1 verified
+
+- Normalized SQLite v2 replaces the uncommitted JSON shards and browser JS
+  comparison engine. Node 24 exports indexed 4096-byte pages, ANALYZE/VACUUM,
+  integrity checks, a physical DB SHA, and a separate logical snapshot ID.
+- Fresh retained-data PostgreSQL restore: 375 PostgreSQL/SQLite comparisons
+  matched; five actual PostgreSQL integration tests passed with zero skips.
+- Public SQLite contains 818 entity/era variants, 1,066 series and 1,664 games;
+  database size is 6,889,472 bytes. Reproducer: /tmp/riftversus-p3-check.mjs.
+  Public output: /tmp/riftversus-sqlite-public-IJ6dhp.
+- Current SQLite acceptance returned ready with no blockers after checking
+  active provenance, source bytes and unchanged reviewed historical outcomes.
+  Pinned gen4 archival acceptance remains separate and is not claimed passed.
+- Real-data round-trip initially caught duplicate aliases normalized by SQLite
+  uniqueness. Canonical projection hashing now deduplicates aliases before
+  hashing; the integrity/digest checks remain enforced.
+- Focused data suite: 43 passed. Domain suite: 25 passed. Build and lint passed.
+- Existing production containers/volumes and unrelated .gitignore preserved.

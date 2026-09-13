@@ -23,4 +23,12 @@ describe("one-shot data commands", () => {
     expect(parseDataCommand(["archive", "publish", "candidate"])).toEqual({ kind: "archive", mode: "publish", directory: "candidate" });
     for (const args of [["archive"], ["archive", "delete", "x"], ["archive", "publish"], ["archive", "resolve", "x", "y"]]) expect(() => parseDataCommand(args)).toThrow();
   });
+  it("requires explicit static snapshot directories", () => {
+    expect(parseDataCommand(["acceptance"])).toEqual({ kind: "acceptance" });
+    expect(() => parseDataCommand(["acceptance", "ignore-errors"])).toThrow();
+    expect(parseDataCommand(["snapshot", "export", "public"])).toEqual({ kind: "snapshot", mode: "export", directory: "public" });
+    expect(parseDataCommand(["snapshot", "verify", "public"])).toEqual({ kind: "snapshot", mode: "verify", directory: "public" });
+    expect(() => parseDataCommand(["snapshot", "export"])).toThrow();
+    expect(() => parseDataCommand(["snapshot", "delete", "public"])).toThrow();
+  });
 });

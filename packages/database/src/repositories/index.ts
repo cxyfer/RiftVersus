@@ -7,3 +7,5 @@ export { getMediaByKey } from "./media.js";
 export { entityPresentation, getAvatarIdentity } from "./presentation.js";
 export { beginSyncRun, completeUnchangedSyncRun, failSyncRun, findAcceptanceDatasetEvidence, findDatasetVersion, findMediaObjectMetadataByKey, findSourceObjectMetadataByKey, publishDataset, recordSourceObject, recordSourceObjectWithId, withSyncAdvisoryLock } from "./sync.js";
 export type * from "./types.js";
+export { exportSnapshotFacts } from "./snapshot.js";
+export type { SnapshotProjection } from "./snapshot.js";

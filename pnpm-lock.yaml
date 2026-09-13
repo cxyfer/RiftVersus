@@ -41,9 +41,15 @@ importers:
       '@riftversus/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@riftversus/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@riftversus/sync':
         specifier: workspace:*
         version: link:../../packages/sync
+      jszip:
+        specifier: 3.10.1
+        version: 3.10.1
       kysely:
         specifier: 0.29.3
         version: 0.29.3
@@ -97,6 +103,9 @@ importers:
       '@riftversus/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@riftversus/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@tanstack/react-query':
         specifier: 5.90.20
         version: 5.90.20(react@19.2.4)
@@ -118,6 +127,9 @@ importers:
       react-router-dom:
         specifier: 7.13.1
         version: 7.13.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      sql.js-httpvfs:
+        specifier: 0.8.12
+        version: 0.8.12
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -1269,6 +1281,9 @@ packages:
     resolution: {integrity: sha512-NUPRluOfOiTKBKvWPtSD4PhFvWCqOi0BGStNWs57X9js7XGTprSmFoz5F0tWhR4WPjNeR9jXqdC7/UpSJTnlRg==}
     engines: {node: '>=18'}
 
+  comlink@4.4.2:
+    resolution: {integrity: sha512-OxGdvBmJuNKSCMO4NTl1L47VRp6xn2wG4F/2hYzB6tiCb709otOxtEYCSvK80PtjODfXXZu8ds+Nw5kVCjqd2g==}
+
   content-disposition@2.0.1:
     resolution: {integrity: sha512-e+H0ZXHSWYrENhQzw1LPuP4oF5MzVKmDU6d3hxlvaPEYLLg62MxtQNPRx4SYSuYJSBUgnQIG4HIN2tEtNv7Dog==}
     engines: {node: '>=18'}
@@ -2082,6 +2097,9 @@ packages:
   split2@4.2.0:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
+
+  sql.js-httpvfs@0.8.12:
+    resolution: {integrity: sha512-lcEBc2q0psFRfdCx8Di22oUIkkv5MUIaVO/fGCj/Jjx6YQDKVylQEcjd7NSSbmINHTRwVkm/vWP8uuevT7Rkkw==}
 
   stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
@@ -3468,6 +3486,8 @@ snapshots:
 
   chai@6.2.2: {}
 
+  comlink@4.4.2: {}
+
   content-disposition@2.0.1: {}
 
   content-type@2.0.0: {}
@@ -4276,6 +4296,10 @@ snapshots:
   source-map-js@1.2.1: {}
 
   split2@4.2.0: {}
+
+  sql.js-httpvfs@0.8.12:
+    dependencies:
+      comlink: 4.4.2
 
   stackback@0.0.2: {}
 
