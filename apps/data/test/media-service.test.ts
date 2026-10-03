@@ -32,4 +32,10 @@ describe("reviewed media identity binding", () => {
     const manifest = ReviewedMediaManifestSchema.parse({ version: 1, status: "reviewed", assets: [asset, asset] });
     expect(() => bindReviewedMedia(manifest, inventory)).toThrow(/Conflicting/);
   });
+  it("accepts a reviewed display name only with its exact recorded source page", () => {
+    const manifest = ReviewedMediaManifestSchema.parse({ version: 1, status: "reviewed", assets: [{ ...asset, owners: [{ kind: "team", id: team, sourceKey: "Evil Geniuses", sourcePage: "Evil Geniuses.NA" }] }] });
+    const teams = { ...inventory, entities: [{ id: team, kind: "team", canonicalName: "Evil Geniuses" }], aliases: [{ entityId: team, sourceKey: "Evil Geniuses.NA" }] };
+    expect(bindReviewedMedia(manifest, teams)).toHaveLength(1);
+    expect(() => bindReviewedMedia(manifest, { ...teams, aliases: [] })).toThrow(/match/);
+  });
 });

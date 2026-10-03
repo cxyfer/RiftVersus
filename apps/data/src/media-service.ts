@@ -14,7 +14,7 @@ export const ReviewedMediaManifestSchema = z.object({
     sourceUrl: z.url().refine(value => new URL(value).origin === "https://static.wikia.nocookie.net", "Expected Leaguepedia CDN media."),
     attribution: z.string().trim().min(1),
     rightsBasis: MediaRightsBasisSchema,
-    owners: z.array(z.object({ id: UuidSchema, kind: z.enum(["player", "team", "team-era"]), sourceKey: z.string().trim().min(1) }).strict()).min(1),
+    owners: z.array(z.object({ id: UuidSchema, kind: z.enum(["player", "team", "team-era"]), sourceKey: z.string().trim().min(1), sourcePage: z.string().trim().min(1).optional() }).strict()).min(1),
   }).strict()).min(1).max(1000),
 }).strict();
 
@@ -34,10 +34,12 @@ export function bindReviewedMedia(manifest: ReviewedMediaManifest, inventory: Me
     used.add(key);
     if (owner.kind === "team-era") {
       const era = inventory.eras.find(item => item.id === owner.id);
-      if (era === undefined || era.displayName !== owner.sourceKey || !inventory.entities.some(item => item.id === era.teamEntityId && item.kind === "team")) throw new Error(`Reviewed logo does not match the exact historical era: ${key}.`);
+      if (era === undefined || era.displayName !== owner.sourceKey || !inventory.entities.some(item => item.id === era.teamEntityId && item.kind === "team")
+        || (owner.sourcePage !== undefined && !inventory.aliases.some(item => item.entityId === era.teamEntityId && item.sourceKey === owner.sourcePage))) throw new Error(`Reviewed logo does not match the exact historical era: ${key}.`);
     } else {
       const entity = inventory.entities.find(item => item.id === owner.id && item.kind === owner.kind);
-      if (entity === undefined || !inventory.aliases.some(item => item.entityId === owner.id && item.sourceKey === owner.sourceKey)
+      if (entity === undefined || !inventory.aliases.some(item => item.entityId === owner.id && item.sourceKey === (owner.sourcePage ?? owner.sourceKey))
+        || (owner.kind === "player" && owner.sourcePage !== undefined && owner.sourcePage !== owner.sourceKey)
         || (owner.kind === "team" && entity.canonicalName !== owner.sourceKey)) throw new Error(`Reviewed image source does not match its published entity: ${key}.`);
     }
     output.push({ sourceUrl: asset.sourceUrl, attribution: asset.attribution, license: null, rightsBasis: asset.rightsBasis,

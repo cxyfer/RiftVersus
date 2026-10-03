@@ -64,9 +64,10 @@ try {
   }
   for (const entity of projection.entities.filter(item => item.kind === "team")) {
     const name = entity.teamEraId === undefined ? entity.canonicalName : entity.eraLabel;
-    const matches = teams.filter(item => item.OverviewPage === name && typeof item.Image === "string" && item.Image.trim());
+    const matches = teams.filter(item => (item.OverviewPage === name || item.Name === name) && typeof item.Image === "string" && item.Image.trim()
+      && aliases.some(alias => alias.entity_id === entity.id && alias.source_key === item.OverviewPage));
     if (matches.length !== 1) { issues.push({ kind: entity.teamEraId ? "team-era" : "team", id: entity.teamEraId ?? entity.id, name, reason: "missing or ambiguous exact team source" }); continue; }
-    candidates.push({ title: matches[0].Image, owner: { id: entity.teamEraId ?? entity.id, kind: entity.teamEraId ? "team-era" : "team", sourceKey: name } });
+    candidates.push({ title: matches[0].Image, owner: { id: entity.teamEraId ?? entity.id, kind: entity.teamEraId ? "team-era" : "team", sourceKey: name, ...(matches[0].OverviewPage === name ? {} : { sourcePage: matches[0].OverviewPage }) } });
   }
   const files = new Map();
   const titles = [...new Set(candidates.map(item => item.title))].sort();
@@ -89,6 +90,7 @@ try {
     }
     const variant = info.thumburl ? "thumbnail" : "original";
     const original = new URL(info.thumburl ?? info.url);
+    if (original.origin !== "https://static.wikia.nocookie.net") throw new Error("Unexpected thumbnail origin.");
     original.searchParams.set("format", "original");
     const sourceUrl = original.toString();
     const path = join(directory, `image-${sha(sourceUrl)}.bin`);

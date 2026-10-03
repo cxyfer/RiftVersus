@@ -149,3 +149,28 @@ fixed to original file format. Store the upstream original SHA-1 separately
 from the delivered image SHA-256 and explicitly label the thumbnail variant.
 Do not compare a derivative's bytes to the original checksum or claim they are
 the same file. This keeps published pictures bounded without losing provenance.
+
+Stage 2 source review completed on 2026-10-04: 683 checksum-pinned files bind
+to 579 players, all 99 canonical teams and all 104 historical eras. Total
+delivered image bytes: 112,268,780. `media-inventory.json` records the 22 players
+without an exact profile binding. Cargo numeric IDs 369/957 are normalized only
+for profile matching. Team display-name/source-page differences require an exact
+recorded alias; no broad fuzzy matching or player-identity merge is introduced.
+Faker, current T1 and historical SKT were visually reviewed separately. The T1
+acceptance preference pins PNG checksum
+`fa41e6a553710ceece948001a8cb691f4b2b17357ac93e301630821564828585` while preserving
+the archived generated-avatar expectation.
+
+Local media-only composition restored checkpoint 3 and used the audited cache
+as transport input; it published all 782 owner assignments and exported public
+SQLite. Before/after hashes were identical for 1,066 series, 1,664 games, 16,640
+game-player rows, entities/aliases, public IDs, eras, and coverage. Fact sync
+health and scope checked-at times were identical. Evidence:
+`/tmp/riftversus-media-local/verification.json`. This is cache-transport evidence;
+the normal GitHub publication must independently download and verify the pins.
+
+Fresh verification after the matching corrections: build/lint and the full
+unit/workspace suite passed, including 183 sync tests. The PostgreSQL integration
+suite passed 72 tests with one checkpoint test skipped because its dedicated
+database environment variables were absent locally. The final PR CI enables
+those databases and must pass before merge. Final hosted release remains pending.

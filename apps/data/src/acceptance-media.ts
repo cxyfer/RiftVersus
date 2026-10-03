@@ -150,6 +150,10 @@ export async function verifyPresentation(
     return;
   }
   if (expected.retainedPreference !== undefined && mediaUrl.startsWith("/media/")) {
+    if (subject.kind !== expected.entityKind || subject.id.toLowerCase() !== expected.entityId.toLowerCase()) {
+      blockers.push(`Retained preference subject identity does not match reviewed evidence for ${side}.`);
+      return;
+    }
     await verifyRetainedMedia(side, mediaUrl, { kind: "retained-media", ...expected.retainedPreference }, dependencies, blockers);
     return;
   }

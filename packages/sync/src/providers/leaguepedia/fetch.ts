@@ -334,9 +334,12 @@ export function selectPlayerProfiles(
   redirectRows: readonly Record<string, unknown>[],
 ): ReadonlyMap<string, string> {
   const candidates = new Map<string, Record<string, unknown>[]>();
+  const profileKey = (value: unknown): unknown => typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? String(value) : value;
+  const redirects = redirectRows.map(row => ({ ...row, OverviewPage: profileKey(row.OverviewPage), AllName: profileKey(row.AllName) }));
   for (const row of rows) {
     if (!isProfileImage(row)) continue;
-    const sourceKey = playerImageSourceKey(row, redirectRows);
+    const normalized = { ...row, PlayerPage: profileKey(row.PlayerPage), PlayerRedirect: profileKey(row.PlayerRedirect), PlayerLink: profileKey(row.PlayerLink), Link: profileKey(row.Link) };
+    const sourceKey = playerImageSourceKey(normalized, redirects);
     const title = stringValue(row.FileName);
     if (sourceKey === null || title === null) continue;
     candidates.set(sourceKey, [...(candidates.get(sourceKey) ?? []), row]);

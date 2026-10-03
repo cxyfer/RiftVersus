@@ -1,0 +1,141 @@
+{
+  "publishedPlayers": 601,
+  "publishedTeamVariants": 203,
+  "candidates": 782,
+  "assets": 683,
+  "owners": 782,
+  "issues": [
+    {
+      "kind": "player",
+      "id": "1bc72eb5-9f13-525e-8355-4ed68f01aed7",
+      "name": "Piccaboo",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "1d377501-0fa0-5c7f-8f1a-724937b5aa1c",
+      "name": "DeadlyBrother",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "3b184e56-68d1-5c67-8e21-9e4fd747e724",
+      "name": "Theokoles",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "3fb49224-7c28-55bb-8760-61a18af73da5",
+      "name": "GodV",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "4815a8d0-6eca-537b-8830-a0ccb685f340",
+      "name": "Time",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "4d024911-4aa2-5e73-8b50-ada2dcf8c31e",
+      "name": "Touch",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "536664fe-8539-53a9-815a-ea8db5de6aa6",
+      "name": "Inspirro",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "561b4222-38de-5a06-8f65-4f8b56cdd198",
+      "name": "dans",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "5cb91d90-8856-5c0f-8a1f-d14ee6262d3a",
+      "name": "Nevan",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "68cb9034-701c-56ac-84b9-495821d951d2",
+      "name": "Lep",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "7c9906c0-dd32-5490-8b7c-1ab2c91a7908",
+      "name": "Onesh0tiq",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "810bf250-e44c-5ae7-806f-b884439c3023",
+      "name": "Nbs",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "83b289aa-9079-547d-8445-3b10ada5daef",
+      "name": "Doran",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "8783f2e6-dc5f-5012-89ae-025146f918d4",
+      "name": "Nardeus",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "9cfb168e-ef8c-5290-852a-abf3c176b9d8",
+      "name": "Korol",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "b00f845a-7b48-5f0a-8efe-2fd0ed071e0e",
+      "name": "PvPStejos",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "b3711f84-09cc-5858-874f-56fa2216960a",
+      "name": "Hojin",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "b627d424-f30d-542a-8fcf-fd41acdb49b0",
+      "name": "Kira",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "c19a44fa-d53e-5709-81af-91486aec148d",
+      "name": "Sya",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "c622917a-f865-5a51-8ec5-0af339cb5539",
+      "name": "Danagorn",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "c7d394b2-1e87-5fe0-8d08-e90116816de1",
+      "name": "Sirt",
+      "reason": "no profile image"
+    },
+    {
+      "kind": "player",
+      "id": "f2a88788-a19a-5d4a-8746-bc551720d038",
+      "name": "Likkrit",
+      "reason": "no profile image"
+    }
+  ]
+}
