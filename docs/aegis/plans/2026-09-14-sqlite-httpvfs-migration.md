@@ -78,8 +78,10 @@ Continuation implementation boundaries:
 
 ## S4: Bootstrap, Cutover And Retirement
 
-Status: not started; website/private archive repository identities and remote
-configuration have not been provided. No existing service has been retired.
+Status: remote preparation in progress. Private website `cxyfer/RiftVersus` and
+archive `cxyfer/RiftVersus-data` now exist; Pages workflow hosting is enabled and
+initial remote CI is running. Archive-only Actions credential, real bootstrap
+and hosted transport verification remain pending. No existing service retired.
 
 - Need explicit website/data repository identities; checkout currently has no remote.
 - Configure private archive token and Pages permissions; do not expose token publicly.

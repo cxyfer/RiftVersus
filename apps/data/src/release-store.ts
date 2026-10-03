@@ -9,6 +9,7 @@ const PAGE_SIZE = 100;
 const MAX_REDIRECTS = 5;
 export const MAX_UPLOAD_BYTES = (2 * 1024 ** 3) - 1;
 const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TRANSFER_TIMEOUT_MS = 10 * 60_000;
 const SHA256 = /^[a-f0-9]{64}$/;
 const RELEASE_TAG_PREFIXES = ["checkpoint-", "attempt-", "site-"] as const;
 const SAFE_REPOSITORY_SEGMENT = /^(?!\.{1,2}$)[A-Za-z0-9_.-]+$/u;
@@ -62,6 +63,7 @@ export interface ReleaseStoreOptions {
   token: string;
   fetch?: typeof globalThis.fetch;
   timeoutMs?: number;
+  transferTimeoutMs?: number;
 }
 
 export interface ReleaseStore {
@@ -79,6 +81,7 @@ interface RequestOptions {
   url: URL;
   headers?: Record<string, string>;
   body?: BodyInit;
+  signal?: AbortSignal;
 }
 
 function assertRepository(repository: string): void {
@@ -96,9 +99,9 @@ function assertId(value: number, label: string): void {
   if (!Number.isSafeInteger(value) || value <= 0) throw new Error(`${label} must be a positive safe integer.`);
 }
 
-function assertTimeout(value: number): void {
+function assertTimeout(value: number, label: string): void {
   if (!Number.isFinite(value) || !Number.isSafeInteger(value) || value <= 0) {
-    throw new Error("timeoutMs must be a positive finite safe integer.");
+    throw new Error(`${label} must be a positive finite safe integer.`);
   }
 }
 
@@ -243,14 +246,16 @@ export function createReleaseStore(options: ReleaseStoreOptions): ReleaseStore {
   assertRepository(options.repository);
   if (typeof options.token !== "string" || options.token.trim().length === 0) throw new Error("GitHub token is required.");
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  assertTimeout(timeoutMs);
+  const transferTimeoutMs = options.transferTimeoutMs ?? options.timeoutMs ?? DEFAULT_TRANSFER_TIMEOUT_MS;
+  assertTimeout(timeoutMs, "timeoutMs");
+  assertTimeout(transferTimeoutMs, "transferTimeoutMs");
   const fetchImplementation = options.fetch ?? globalThis.fetch;
   if (typeof fetchImplementation !== "function") throw new Error("A fetch implementation is required.");
 
   const repositoryPath = options.repository.split("/").map(encodeURIComponent).join("/");
 
   async function request(request: RequestOptions): Promise<Response> {
-    const signal = AbortSignal.timeout(timeoutMs);
+    const signal = request.signal ?? AbortSignal.timeout(timeoutMs);
     const init: RequestInit = {
       method: request.method,
       redirect: "manual",
@@ -335,6 +340,7 @@ export function createReleaseStore(options: ReleaseStoreOptions): ReleaseStore {
           "Content-Length": String(input.bytes.byteLength),
         }),
         body: bodyBytes(input.bytes),
+        signal: AbortSignal.timeout(transferTimeoutMs),
       });
       await expectStatus(response, 201, "POST", url);
       return parseJson(response, ReleaseAssetSchema, "POST", url);
@@ -345,8 +351,9 @@ export function createReleaseStore(options: ReleaseStoreOptions): ReleaseStore {
       assertExpected(expected);
       let url = requestUrl(API_ORIGIN, repositoryPath, `/releases/assets/${assetId}`);
       let token: string | null = options.token;
+      const transferSignal = AbortSignal.timeout(transferTimeoutMs);
       for (let redirects = 0; ; redirects += 1) {
-        const response = await request({ method: "GET", url, headers: assetDownloadHeaders(token) });
+        const response = await request({ method: "GET", url, headers: assetDownloadHeaders(token), signal: transferSignal });
         if (response.status >= 300 && response.status < 400) {
           const location = response.headers.get("location");
           await cancelBody(response);
@@ -367,7 +374,7 @@ export function createReleaseStore(options: ReleaseStoreOptions): ReleaseStore {
           continue;
         }
         await expectStatus(response, 200, "GET", url);
-        return readVerifiedAsset(response, expected, pathFor(url), AbortSignal.timeout(timeoutMs));
+        return readVerifiedAsset(response, expected, pathFor(url), transferSignal);
       }
     },
 

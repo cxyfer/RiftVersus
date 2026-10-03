@@ -27,6 +27,38 @@ function requestUrl(input: RequestInfo | URL): URL {
   return new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
 }
 
+function delay(milliseconds: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, milliseconds);
+    const onAbort = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", onAbort);
+      reject(signal?.reason ?? new Error("aborted"));
+    };
+    if (signal?.aborted) onAbort();
+    else signal?.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
+function delayedResponse(bytes: Uint8Array, milliseconds: number): Response {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) {
+      timer = setTimeout(() => {
+        controller.enqueue(bytes);
+        controller.close();
+      }, milliseconds);
+    },
+    cancel() {
+      if (timer !== undefined) clearTimeout(timer);
+    },
+  });
+  return new Response(body, { status: 200, headers: { "content-length": String(bytes.byteLength) } });
+}
+
 describe("GitHub release store", () => {
   it("rejects empty credentials and malformed repositories", () => {
     expect(() => createReleaseStore({ repository: "", token, fetch: vi.fn() })).toThrow("repository");
@@ -34,6 +66,11 @@ describe("GitHub release store", () => {
     expect(() => createReleaseStore({ repository: "owner/../repo", token, fetch: vi.fn() })).toThrow("repository");
     expect(() => createReleaseStore({ repository: "owner/.", token, fetch: vi.fn() })).toThrow("repository");
     expect(() => createReleaseStore({ repository, token: "  ", fetch: vi.fn() })).toThrow("token");
+  });
+
+  it("validates API and transfer timeout options independently", () => {
+    expect(() => createReleaseStore({ repository, token, timeoutMs: 0, fetch: vi.fn() })).toThrow("timeoutMs");
+    expect(() => createReleaseStore({ repository, token, transferTimeoutMs: 0, fetch: vi.fn() })).toThrow("transferTimeoutMs");
   });
 
   it("paginates releases and assets with stable GitHub headers", async () => {
@@ -120,9 +157,10 @@ describe("GitHub release store", () => {
     const fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = requestUrl(input);
       calls.push({ url, init: init ?? {} });
+      await delay(25, init?.signal);
       return json(asset(12, "database.dump", 3), 201);
     });
-    const store = createReleaseStore({ repository, token, fetch });
+    const store = createReleaseStore({ repository, token, timeoutMs: 5, transferTimeoutMs: 100, fetch });
     const bytes = new TextEncoder().encode("dump");
 
     await expect(store.uploadAsset(9, { name: "database.dump", bytes, contentType: "application/octet-stream" })).resolves.toMatchObject({ id: 12, name: "database.dump" });
@@ -141,6 +179,48 @@ describe("GitHub release store", () => {
     Object.defineProperty(oversized, "byteLength", { value: MAX_UPLOAD_BYTES + 1 });
     await expect(store.uploadAsset(9, { name: "large.bin", bytes: oversized, contentType: "application/octet-stream" })).rejects.toThrow("smaller than 2 GiB");
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses the transfer timeout for slow bodies while metadata keeps the API timeout", async () => {
+    const bytes = new TextEncoder().encode("slow asset");
+    const metadata = createReleaseStore({
+      repository,
+      token,
+      timeoutMs: 5,
+      transferTimeoutMs: 100,
+      fetch: vi.fn(async (_input, init) => {
+        await delay(25, init?.signal);
+        return json([release(1)]);
+      }),
+    });
+    await expect(metadata.listReleases()).rejects.toMatchObject({ name: "TimeoutError" });
+
+    const assetStore = createReleaseStore({
+      repository,
+      token,
+      timeoutMs: 5,
+      transferTimeoutMs: 100,
+      fetch: vi.fn(async () => delayedResponse(bytes, 25)),
+    });
+    await expect(assetStore.downloadAsset(12, { byteSize: bytes.byteLength, checksum: digest(bytes) })).resolves.toEqual(bytes);
+  });
+
+  it("shares one transfer deadline across redirects and body streaming", async () => {
+    const bytes = new TextEncoder().encode("slow asset");
+    const signals: AbortSignal[] = [];
+    const fetch = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      signals.push(init?.signal as AbortSignal);
+      if (signals.length === 1) {
+        await delay(20);
+        return new Response(null, { status: 302, headers: { location: "https://release-assets.githubusercontent.com/asset/12" } });
+      }
+      return delayedResponse(bytes, 20);
+    });
+    const store = createReleaseStore({ repository, token, timeoutMs: 5, transferTimeoutMs: 30, fetch });
+
+    await expect(store.downloadAsset(12, { byteSize: bytes.byteLength, checksum: digest(bytes) })).rejects.toMatchObject({ name: "TimeoutError" });
+    expect(signals).toHaveLength(2);
+    expect(signals[0]).toBe(signals[1]);
   });
 
   it("follows trusted asset redirects without forwarding Authorization", async () => {

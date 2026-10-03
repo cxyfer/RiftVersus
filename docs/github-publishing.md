@@ -108,9 +108,40 @@ To redeploy a known good website, choose `rollback` and its explicit site tag.
 ## Verification Status
 
 The migration has local contract/order/failure tests and real static browser
-evidence. No live GitHub Actions run, archive bootstrap, Pages deployment or
-current/history source synchronization has been performed by this continuation.
-Repository identities/settings/secrets and the final handoff are still required.
+evidence. Initial remote CI and repository setup are now verified. Archive
+bootstrap, first Pages deployment and current/history source synchronization
+remain in progress; see the remote evidence below.
+
+### Remote preparation on 2026-10-03
+
+- Website: private `cxyfer/RiftVersus`, default branch `main`, remote `origin`.
+- Archive: private `cxyfer/RiftVersus-data`, archive target `main`, immutable
+  Releases enabled. Contents read/write PAT configured as `RIFTVERSUS_DATA_TOKEN`.
+- Pages: Actions build, HTTPS enforced, `https://cxyfer.github.io/RiftVersus/`.
+  The `github-pages` environment accepts only `main`. Main requires the CI check
+  and rejects force pushes/deletion; administrators can bypass required checks.
+- Remote CI [37106630815](https://github.com/cxyfer/RiftVersus/actions/runs/37106630815)
+  passed build/typecheck/lint, unit suites, PostgreSQL integration and production
+  SQLite E2E. Publishing was skipped until explicit activation.
+- Source variables were copied from reviewed local configuration. Current sync
+  scope and its mapping preflight are explicitly `2026 / MSI`; the competition
+  map retains reviewed historical MSI/Worlds entries. Unmapped domestic leagues
+  are not configured as current imports. This does not resolve the wider mapping
+  audit gaps recorded in the old deployment.
+- Fresh production generation 8 was backed up to
+  `/tmp/riftversus-s4-20261003/production-backup.dump` and cold-restored separately.
+  SQLite current acceptance returned ready with no blockers: 714 entities,
+  1,066 series, 1,664 games, 16,640 players-in-games, 8 source objects.
+  Original app/sync remained stopped. PostgreSQL/MinIO were temporarily started
+  for export and returned to their stopped state; volumes were preserved.
+- Bootstrap draft `checkpoint-1-bootstrap-20261003` uploaded all assets but
+  timed out during download verification. It is not a published baseline.
+  Download timing investigation and a fresh immutable retry are in progress.
+- Live diagnosis reproduced a 9,700,869-byte download taking 42.4 seconds while
+  passing its SHA-256 check. Asset transfers now have a separate bounded deadline
+  from metadata calls: 30-second API requests and 10 minutes for upload/download,
+  with one deadline spanning download redirects and body. Data tests (83), full
+  build and lint passed after the fix.
 
 Official workflow references inspected: GitHub's custom Pages workflow guide,
 Actions concurrency guide and the pinned official Pages action definitions.

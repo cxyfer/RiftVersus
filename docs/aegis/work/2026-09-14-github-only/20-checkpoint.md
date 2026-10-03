@@ -231,3 +231,56 @@ Commit: `d217293`.
   this stage and obtain explicit website/private-archive repository identities
   for S4 activation. Remote permissions and hosted behavior are unverified
   (confidence B); no cutover or retirement is authorized by local test evidence.
+
+## S4 remote deployment continuation (2026-10-03)
+
+- User explicitly requested continuing deployment after creating the private
+  website repository `cxyfer/RiftVersus`.
+- `origin` now targets that repository; verified S3 HEAD `af9bfcd` was pushed
+  as its initial `main` branch. CI run 37106630815 is in progress. Publish run
+  37106630840 was skipped because publication is disabled.
+- Pages creation succeeded with `build_type=workflow`, HTTPS enforced and URL
+  `https://cxyfer.github.io/RiftVersus/`. No site artifact has been deployed yet.
+- Created separate private `cxyfer/RiftVersus-data` with a `main` branch and
+  enabled immutable Releases. Website variables name that archive and revision.
+- `github-pages` environment permits only `main` branch deployments.
+- `PUBLISH_ENABLED=false` remains the active activation boundary. Requested an
+  archive-only fine-grained Contents read/write PAT in `RIFTVERSUS_DATA_TOKEN`.
+  The general local gh OAuth token will not be persisted as an Actions secret.
+- Active slice: verify retained authentic data and bootstrap/cold restore a
+  private checkpoint; inspect remote CI, then prepare first Pages publication.
+- Current host has no running RiftVersus containers. Inventory is read-only;
+  no old volumes or unrelated containers have been changed.
+- Drift: same SQLite/HTTPVFS/public artifact contract; no fallback or new query
+  engine. Remote CI, checkpoint and hosted transport evidence are still pending.
+
+### S4 first remote evidence
+
+- CI run 37106630815 completed successfully, including real PostgreSQL integration
+  and production SQLite/HTTPVFS E2E. Archive-only Actions secret is installed.
+- Current import remains the reviewed 2026 MSI scope. Mapping preflight variables
+  now follow this requested current scope; historical plans still derive only
+  exact reviewed MSI/Worlds keys. Wider domestic-league mapping audit stays open.
+- Preserved volumes contain generation 8, newer than the prior generation 7 P0.
+  Temporarily started only PostgreSQL/MinIO, dumped a fresh consistent snapshot,
+  restored it into a disposable PG17 instance and verified all 8 source objects.
+  SQLite current acceptance: ready, no blockers. Counts: 714 entities, 1,066
+  series, 1,664 games, 16,640 game_players and 8 generations.
+- Dump: 1,270,508 bytes; SHA256
+  63e8ff7cd17118eee80736c75e552bd25353d63824ac0014a4ce3f9088fe32ea.
+  Independent local backup and checkpoint live under /tmp/riftversus-s4-20261003.
+- First bootstrap uploaded all 9 chunks and index but failed download validation
+  with the transport's 30-second timeout. Draft is retained, never promoted.
+  General gh credential was used locally, never written to Actions or artifacts.
+- All original services are again stopped; unrelated Docker services untouched.
+  Next: diagnose download timing, retry with a new checkpoint ID, cold restore
+  from GitHub, activate manual initial rebuild, then verify hosted Range traffic.
+- Diagnosed transport owner `release-store.ts`: a valid 9,700,869-byte asset body
+  took 41.1 seconds (42.4 seconds total), exceeding the existing 30-second signal.
+  Fix boundary: separate bounded 10-minute transfer deadlines from 30-second
+  metadata deadlines, preserving explicit old timeout overrides. Share a single
+  download deadline across redirects and body. No new transport/fallback/retry
+  path; drafts remain unchanged. Focused regression verification is required.
+- Transfer fix verified locally: all 83 data tests, workspace build and lint
+  passed. Root reviewed the changed signal ownership and preserved timeout
+  override compatibility. Ready for a fresh bootstrap retry and remote CI.
