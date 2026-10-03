@@ -33,6 +33,11 @@ viewports. Commit/evidence tracked in the migration checkpoint.
 
 - Pin `sql.js-httpvfs@0.8.12`; bundle actual worker JS and WASM with Vite asset URLs.
 - Read only small manifest before opening immutable SQLite over HTTP Range.
+- Hosted Pages verification exposed gzip HEAD responses despite identity Range
+  GETs. Use upstream's known-size single server chunk configuration (logical DB
+  size and server chunk size equal manifest byteSize), mapping chunk 0 to the
+  same database path with `?chunk=0`. Preflight this exact URL. HEAD remains a
+  capability check; its compressed Content-Length is not authoritative.
 - Probe 206/Content-Range/header/page size; verify DB's internal snapshot identity.
 - Same-origin, Pages base path, sticky per-page DB, failure cleanup/retry.
 - No full DB fetch, JSON facts, SQL-in-JS simulation, API or mock fallback.
@@ -78,12 +83,14 @@ Continuation implementation boundaries:
 
 ## S4: Bootstrap, Cutover And Retirement
 
-Status: remote preparation in progress. Private website `cxyfer/RiftVersus` and
-archive `cxyfer/RiftVersus-data` now exist; Pages workflow hosting is enabled and
-initial remote CI is running. Archive-only Actions credential, real bootstrap
-and hosted transport verification remain pending. No existing service retired.
+Status: remote cutover in progress. Private website `cxyfer/RiftVersus` and
+archive `cxyfer/RiftVersus-data` exist; Pages workflow hosting, archive-only
+Actions credential, remote CI and generation-8 archive bootstrap/cold restore
+are verified. First Pages deployment failed hosted browser smoke because gzip
+HEAD cannot supply an identity file length; client repair and hosted verification
+are in progress. No existing service retired.
 
-- Need explicit website/data repository identities; checkout currently has no remote.
+- `origin` targets the private website repository; deployment branch is `main`.
 - Configure private archive token and Pages permissions; do not expose token publicly.
 - Restore from real GitHub archive on a clean runner; test actual Pages Range 206.
 - Verify current and historical sync, smoke, recovery and site rollback.

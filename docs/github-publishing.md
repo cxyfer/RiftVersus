@@ -108,9 +108,9 @@ To redeploy a known good website, choose `rollback` and its explicit site tag.
 ## Verification Status
 
 The migration has local contract/order/failure tests and real static browser
-evidence. Initial remote CI and repository setup are now verified. Archive
-bootstrap, first Pages deployment and current/history source synchronization
-remain in progress; see the remote evidence below.
+evidence. Remote CI, repository setup and private archive bootstrap/cold restore
+are verified. First hosted browser verification and current/history source
+synchronization remain in progress; see the remote evidence below.
 
 ### Remote preparation on 2026-10-03
 
@@ -136,12 +136,31 @@ remain in progress; see the remote evidence below.
   for export and returned to their stopped state; volumes were preserved.
 - Bootstrap draft `checkpoint-1-bootstrap-20261003` uploaded all assets but
   timed out during download verification. It is not a published baseline.
-  Download timing investigation and a fresh immutable retry are in progress.
+  The draft remains unpromoted; a new immutable retry succeeded below.
 - Live diagnosis reproduced a 9,700,869-byte download taking 42.4 seconds while
   passing its SHA-256 check. Asset transfers now have a separate bounded deadline
   from metadata calls: 30-second API requests and 10 minutes for upload/download,
   with one deadline spanning download redirects and body. Data tests (83), full
   build and lint passed after the fix.
+- Fix/setup commit `b289fdd` passed remote CI
+  [37108024213](https://github.com/cxyfer/RiftVersus/actions/runs/37108024213).
+  Initial checkpoint `checkpoint-1-bootstrap-20261003-retry-2` is published and
+  immutable after the actual download/cold-restore gate. The failed first draft
+  remains forensic evidence and is ignored by baseline resolution.
+- Publishing is activated; initial `rebuild` run
+  [37108280050](https://github.com/cxyfer/RiftVersus/actions/runs/37108280050)
+  restored generation 8 on a clean runner, passed local browser smoke, archived
+  `site-37108280050-1` and deployed Pages. Hosted browser smoke failed; its
+  `attempt-37108280050-1` forensic archive is published without changing the
+  data baseline. A second independent GitHub download/cold restore also matched
+  all generation-8 counts and passed current SQLite acceptance.
+- Hosted diagnosis found identity Range GETs returning 206 and the correct
+  6,889,472-byte total, while HEAD returned gzip and a compressed Content-Length.
+  The HTTPVFS client now supplies the validated manifest length through the
+  upstream single-server-chunk configuration. Both preflight and Worker use
+  the same immutable SQLite URL with `?chunk=0`. HEAD still occurs but does not
+  determine the database length; the binary, SQL engine and Range offsets are
+  unchanged. A hosted success claim requires a new deployment and browser smoke.
 
 Official workflow references inspected: GitHub's custom Pages workflow guide,
 Actions concurrency guide and the pinned official Pages action definitions.

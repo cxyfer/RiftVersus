@@ -9,9 +9,12 @@ export type SqliteParameter = string | number | null;
 export type SplitFileConfig = {
   from: "inline";
   config: {
-    serverMode: "full";
+    serverMode: "chunked";
     requestChunkSize: number;
-    url: string;
+    urlPrefix: string;
+    serverChunkSize: number;
+    databaseLengthBytes: number;
+    suffixLength: number;
   };
 };
 
@@ -87,6 +90,13 @@ function resolveDatabaseUrl(manifestUrl: URL, base: URL, manifest: SqliteManifes
     throw invalidManifestError(requestPath(manifestUrl));
   }
   return url;
+}
+
+function singleChunkUrls(databaseUrl: URL): { urlPrefix: string; firstUrl: URL } {
+  const prefixUrl = new URL(databaseUrl);
+  prefixUrl.search = "?chunk=";
+  const urlPrefix = prefixUrl.toString();
+  return { urlPrefix, firstUrl: new URL(`${urlPrefix}0`) };
 }
 
 function parseContentRange(value: string | null, expectedSize: number): void {
@@ -180,10 +190,18 @@ async function loadOpenSnapshot(
   onWorkerStart: () => void,
 ): Promise<OpenSqliteSnapshot> {
   const { manifest, databaseUrl } = await loadManifest(fetcher, base);
-  await preflightDatabase(fetcher, databaseUrl, manifest);
+  const chunkUrls = singleChunkUrls(databaseUrl);
+  await preflightDatabase(fetcher, chunkUrls.firstUrl, manifest);
   const config: SplitFileConfig = {
     from: "inline",
-    config: { serverMode: "full", requestChunkSize: manifest.database.requestChunkSize, url: databaseUrl.toString() },
+    config: {
+      serverMode: "chunked",
+      requestChunkSize: manifest.database.requestChunkSize,
+      urlPrefix: chunkUrls.urlPrefix,
+      serverChunkSize: manifest.database.byteSize,
+      databaseLengthBytes: manifest.database.byteSize,
+      suffixLength: 0,
+    },
   };
   let handle: SqliteWorkerHandle | undefined;
   try {

@@ -5,6 +5,8 @@ import JSZip from "jszip";
 const PNG_HEADER = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 interface DatabaseResponse {
+  url: string;
+  method: string;
   requestedRange: string | undefined;
   status: number;
   contentRange: string | undefined;
@@ -53,6 +55,8 @@ function observeStaticNetwork(page: Page): StaticNetwork {
     if (pathname.endsWith("/database.sqlite")) {
       const contentLength = response.headers()["content-length"];
       network.databaseResponses.push({
+        url: response.url(),
+        method: response.request().method(),
         requestedRange: response.request().headers().range,
         status: response.status(),
         contentRange: response.headers()["content-range"],
@@ -93,7 +97,12 @@ async function assertSqliteTransport(network: StaticNetwork, responseStart = 0):
 
   const rangedResponses = network.databaseResponses.slice(responseStart).filter((response) => response.requestedRange !== undefined);
   expect(rangedResponses.length).toBeGreaterThan(0);
+  const headResponses = network.databaseResponses.filter((response) => response.method === "HEAD");
+  expect(headResponses.length).toBeGreaterThan(0);
+  for (const response of headResponses) expect(new URL(response.url).search).toBe("?chunk=0");
   const ranges = rangedResponses.map((response) => {
+    expect(response.method).toBe("GET");
+    expect(new URL(response.url).search).toBe("?chunk=0");
     expect(response.status).toBe(206);
     expect(response.contentRange).toBeDefined();
     const parsed = contentRangeBytes(response.contentRange!);
@@ -148,7 +157,7 @@ test("renders the default fixture, preserves sharing, and searches player identi
   await page.getByRole("button", { name: "套用篩選" }).click();
   await expect(page).toHaveURL(/leftKind=player/);
   await expect(page.getByText("3 series wins")).toBeVisible();
-  expect(requests.some((pathname) => pathname.startsWith("/api/"))).toBe(false);
+  expect(requests.some((pathname) => pathname.includes("/api/"))).toBe(false);
 });
 
 test("exports the default comparison as a PNG", async ({ page }) => {
@@ -190,10 +199,30 @@ test("exports the broad fixture as a multi-page ZIP", async ({ page }) => {
   }
 });
 
+test("queries through the real Worker when HEAD is gzip but Range GET is identity", async ({ page, context }) => {
+  const network = observeStaticNetwork(page);
+  let compressedHeads = 0;
+  await context.route("**/database.sqlite?chunk=0", async (route) => {
+    if (route.request().method() !== "HEAD") {
+      await route.continue();
+      return;
+    }
+    compressedHeads += 1;
+    await route.fulfill({
+      status: 200,
+      headers: { "content-type": "application/octet-stream", "content-encoding": "gzip", "content-length": "100", "accept-ranges": "bytes" },
+      body: "",
+    });
+  });
+  await openDefaultComparison(page);
+  expect(compressedHeads).toBeGreaterThan(0);
+  await assertSqliteTransport(network);
+});
+
 test("fails on a corrupt SQLite range and succeeds after retry", async ({ page }) => {
   const network = observeStaticNetwork(page);
   const corruptedRanges: string[] = [];
-  await page.route("**/database.sqlite", (route) => {
+  await page.context().route("**/database.sqlite?chunk=0", (route) => {
     const range = route.request().headers().range;
     if (range !== undefined) corruptedRanges.push(range);
     return route.fulfill({
@@ -207,7 +236,7 @@ test("fails on a corrupt SQLite range and succeeds after retry", async ({ page }
   expect(corruptedRanges).toContain("bytes=0-99");
   const responseStart = network.databaseResponses.length;
 
-  await page.unroute("**/database.sqlite");
+  await page.context().unroute("**/database.sqlite?chunk=0");
   await page.reload();
   await openDefaultComparison(page);
   await assertSqliteTransport(network, responseStart);

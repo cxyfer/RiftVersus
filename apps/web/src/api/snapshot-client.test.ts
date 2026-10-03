@@ -56,9 +56,20 @@ describe("SQLite HTTPVFS snapshot client", () => {
     expect(await second).toBe(opened);
     expect(await client.open()).toBe(opened);
     expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(String(fetcher.mock.calls[1]?.[0])).toBe(`http://localhost:3000/RiftVersus/data/${databaseChecksum}/database.sqlite?chunk=0`);
     expect(fetcher.mock.calls[1]?.[1]).toMatchObject({ credentials: "same-origin", headers: { Range: "bytes=0-99", Accept: "application/octet-stream" } });
     expect(worker.factory).toHaveBeenCalledWith([
-      { from: "inline", config: { serverMode: "full", requestChunkSize: 4096, url: `http://localhost:3000/RiftVersus/data/${databaseChecksum}/database.sqlite` } },
+      {
+        from: "inline",
+        config: {
+          serverMode: "chunked",
+          requestChunkSize: 4096,
+          urlPrefix: `http://localhost:3000/RiftVersus/data/${databaseChecksum}/database.sqlite?chunk=`,
+          serverChunkSize: 8192,
+          databaseLengthBytes: 8192,
+          suffixLength: 0,
+        },
+      },
     ], "/assets/sqlite.worker.js", "/assets/sql-wasm.wasm", 128 * 1024 * 1024);
     expect(worker.exec).toHaveBeenCalledWith("SELECT value FROM metadata WHERE key = ?", ["snapshotId"]);
   });

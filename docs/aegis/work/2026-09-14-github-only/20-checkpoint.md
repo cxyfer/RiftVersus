@@ -284,3 +284,36 @@ Commit: `d217293`.
 - Transfer fix verified locally: all 83 data tests, workspace build and lint
   passed. Root reviewed the changed signal ownership and preserved timeout
   override compatibility. Ready for a fresh bootstrap retry and remote CI.
+- Committed transfer fix and remote setup evidence as `b289fdd`, pushed to main.
+  CI run 37108024213 passed. Initial failed draft is retained.
+- New initial checkpoint `checkpoint-1-bootstrap-20261003-retry-2` completed its
+  actual GitHub download/restore publication gate. GitHub reports draft=false,
+  immutable=true, 10 assets. It is the authoritative sequence-1 baseline.
+- `PUBLISH_ENABLED=true`; explicit initial `rebuild` dispatched as run
+  37108280050 against b289fdd. First site/hosted browser checks are in progress.
+  A second independent local archive resolve/cold restore is also running.
+- Independent local remote resolve/cold restore completed: exact generation-8
+  counts and SQLite current acceptance ready. No staging container remains.
+- Initial run 37108280050 prepared/archived/deployed `site-37108280050-1`, but
+  hosted browser smoke failed. Its `attempt-37108280050-1` forensic archive is
+  published; baseline remains sequence 1. No successful site claim yet.
+- Root-cause evidence: Range GET bytes=0-99 is identity 206 with full size
+  6,889,472; HEAD is gzip with Content-Length 1,697,820. Upstream full mode
+  throws because it cannot infer an identity length from that HEAD response.
+- Minimum repair uses upstream's existing known-size single-chunk configuration,
+  with databaseLengthBytes/serverChunkSize equal the validated manifest size.
+  Exact preflight and worker both use the same SQLite path with `?chunk=0`.
+  The DB artifact, schema, query engine and range offset semantics are unchanged.
+  HEAD still occurs; its compressed size no longer controls SQLite file length.
+  Avoid cacheBust; no fork, whole-file GET, extra database files or fallback.
+- Root approved bounded client/unit/E2E edits after read-only upstream mapping
+  review. Regression must include gzip HEAD plus identity ranged GETs, followed
+  by a new real Pages deployment and browser verification before success.
+- Root completed the gzip-HEAD regression using browser-context interception
+  and the actual Worker/WASM. It passes with 536,676 of 1,040,384 fixture bytes
+  read through identity Range GETs. Corrupt-range/retry regression also passes.
+  All 64 web unit tests, web build/typecheck and workspace lint passed.
+- Local screenshot failure is independently reproducible with a blank Chromium
+  page, including outside the filesystem sandbox. No screenshot bypass or CDP
+  workaround is committed. Full CI and real hosted screenshot/transport checks
+  must pass on GitHub runners before the deployment is considered verified.
