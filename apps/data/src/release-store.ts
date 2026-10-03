@@ -11,7 +11,7 @@ export const MAX_UPLOAD_BYTES = (2 * 1024 ** 3) - 1;
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_TRANSFER_TIMEOUT_MS = 10 * 60_000;
 const SHA256 = /^[a-f0-9]{64}$/;
-const RELEASE_TAG_PREFIXES = ["checkpoint-", "attempt-", "site-"] as const;
+const RELEASE_TAG_PREFIXES = ["checkpoint-", "attempt-", "site-", "media-reviewed-"] as const;
 const SAFE_REPOSITORY_SEGMENT = /^(?!\.{1,2}$)[A-Za-z0-9_.-]+$/u;
 const SAFE_ASSET_BASENAME = /^[\x20-\x7e]+$/u;
 const ASSET_REDIRECT_HOSTS = new Set([
@@ -108,7 +108,7 @@ function assertTimeout(value: number, label: string): void {
 function assertReleaseTag(tag: string): void {
   assertNonEmpty(tag, "Release tag");
   if (!RELEASE_TAG_PREFIXES.some((prefix) => tag.startsWith(prefix))) {
-    throw new Error("Release tag must start with checkpoint-, attempt-, or site-.");
+    throw new Error("Release tag must start with checkpoint-, attempt-, site-, or media-reviewed-.");
   }
 }
 

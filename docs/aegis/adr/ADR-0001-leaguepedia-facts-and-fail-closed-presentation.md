@@ -162,3 +162,9 @@ remain readable. No persistent source, media or historical data is deleted.
 This scoped alternative supersedes the licensed-only restriction for reviewed
 Leaguepedia subject images; it does not assert permission from rights holders.
 Evidence: explicit user approval and the 2026-10-04 real-media follow-up plan.
+
+Release transport refinement: reviewed image bytes are pinned in a private
+immutable GitHub media Release, separately from data checkpoints and site
+archives. Publication verifies the archive and each bounded file; Leaguepedia
+file pages/revisions remain attribution and rights sources. Re-fetching mutable
+CDN derivatives cannot replace reviewed bytes or relax the image checksum gate.
