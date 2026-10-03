@@ -44,6 +44,20 @@ function createFetch(overrides: { range?: Response; manifest?: unknown } = {}) {
 }
 
 describe("SQLite HTTPVFS snapshot client", () => {
+  it.each([4096, 16384, 32768, 65536] as const)("forwards the verified request unit %i without changing page or server-file size", async (requestChunkSize) => {
+    const worker = workerFactory();
+    const client = createSnapshotClient({ baseUrl: "/RiftVersus/", fetch: createFetch({ manifest: { ...manifest, database: { ...manifest.database, requestChunkSize } } }), createDbWorker: worker.factory });
+    await client.open();
+    expect(worker.factory).toHaveBeenCalledWith([expect.objectContaining({ config: expect.objectContaining({ requestChunkSize, serverChunkSize: 8192, databaseLengthBytes: 8192 }) })], expect.any(String), expect.any(String), 128 * 1024 * 1024);
+  });
+
+  it.each([0, -4096, 8192, 16385, 131072])("rejects unsupported request units %i before creating a Worker", async (requestChunkSize) => {
+    const worker = workerFactory();
+    const client = createSnapshotClient({ baseUrl: "/RiftVersus/", fetch: createFetch({ manifest: { ...manifest, database: { ...manifest.database, requestChunkSize } } }), createDbWorker: worker.factory });
+    await expect(client.open()).rejects.toThrow("Invalid SQLite snapshot manifest");
+    expect(worker.factory).not.toHaveBeenCalled();
+  });
+
   it("preflights a 100-byte range, opens one pinned worker, and sticks to it", async () => {
     const fetcher = createFetch();
     const worker = workerFactory();

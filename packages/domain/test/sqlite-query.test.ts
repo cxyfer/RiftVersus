@@ -175,6 +175,40 @@ afterEach(() => {
 });
 
 describe("SQLite query layer", () => {
+  it.each([
+    [{ kind: "team", id: ids.t1 }, { kind: "team", id: ids.blg }, 4, 5],
+    [{ kind: "team", id: ids.t1 }, { kind: "region", id: ids.lpl }, 4, 4],
+    [{ kind: "team", id: ids.t1 }, { kind: "player", id: ids.xiaohu }, 3, 4],
+    [{ kind: "player", id: ids.faker }, { kind: "player", id: ids.xiaohu }, 3, 3],
+    [{ kind: "player", id: ids.faker }, { kind: "region", id: ids.lpl }, 3, 3],
+    [{ kind: "region", id: ids.lck }, { kind: "region", id: ids.lpl }, 4, 5],
+  ] as const)("preserves complete pagination and totals for %j versus %j", async (left, right, seriesTotal, gameTotal) => {
+    const { executor } = createFixture();
+    for (const [a, b] of [[left, right], [right, left]]) {
+      const full = await compareSqlite(executor, query(a!, b!), snapshotId);
+      const rows = [];
+      let cursor: string | undefined;
+      do {
+        const page = await compareSqlite(executor, { ...query(a!, b!), limit: 1, ...(cursor ? { cursor } : {}) }, snapshotId);
+        expect(page.seriesSummary).toEqual(full.seriesSummary);
+        expect(page.gameSummary).toEqual(full.gameSummary);
+        rows.push(...page.rows);
+        cursor = page.nextCursor;
+      } while (cursor);
+      expect(rows).toEqual(full.rows);
+      expect(full.seriesSummary.total).toBe(seriesTotal);
+      expect(full.gameSummary.total).toBe(gameTotal);
+    }
+  });
+
+  it("keeps series dates authoritative when a directly matching game has a different date", async () => {
+    const { executor, database } = createFixture();
+    database.prepare("UPDATE game_facts SET played_at = ? WHERE id = ?").run("2025-01-01T00:00:00.000Z", ids.oldGame);
+    const response = await compareSqlite(executor, { ...query({ kind: "player", id: ids.faker }, { kind: "player", id: ids.xiaohu }), from: "2023-11-01", to: "2023-11-01" }, snapshotId);
+    expect(response.rows.map(row => row.id)).toEqual([ids.oldSeries]);
+    expect(response.gameSummary.total).toBe(1);
+  });
+
   it("searches literal terms and returns only team-era variants when eras exist", async () => {
     const { executor } = createFixture();
 

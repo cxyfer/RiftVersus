@@ -92,3 +92,12 @@ The user's unrelated `.gitignore` edit is excluded from migration commits.
   legacy/readable Faker equivalence and rejection of partial/wrong-kind keys.
   Hosted sharing/saving/player/date/PNG/mobile checks passed; cold default reads
   were 913,508 of 7,045,120 bytes. Checkpoint 2 was preserved by this rebuild.
+
+- Final routing/media code f1c0efb passed CI 37136572917 (488 unit, 72
+  integration, six E2E tests) and current Publish 37136621705. Checkpoint 3
+  extends checkpoint 2 and independently cold-restores the unchanged 715 entity
+  and 104 era public-ID owners. PlayerImages is scoped to imported pages; exact
+  era-only logo owners keep historical media independent. Current raw replay
+  found 66 candidate images, all rights-blocked, and no retained media. Real
+  media discovery is implemented; publishing these assets awaits source rights
+  metadata. Hosted selector/summary image consistency, PNG and mobile passed.
