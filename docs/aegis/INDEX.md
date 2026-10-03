@@ -5,6 +5,7 @@ Entries are workspace records, not authoritative runtime decisions.
 
 | Date | Kind | Path | Title |
 | --- | --- | --- | --- |
+| 2026-10-03 | spec | docs/aegis/specs/2026-10-03-public-identity-real-media.md | Proposed public IDs and verified real media |
 | 2026-09-14 | work | docs/aegis/work/2026-09-14-github-only/20-checkpoint.md | GitHub-only execution checkpoint and evidence |
 | 2026-09-14 | plan | docs/aegis/plans/2026-09-14-sqlite-httpvfs-migration.md | Active SQLite / SQL.js-HTTPVFS migration |
 | 2026-09-14 | plan | docs/aegis/plans/2026-09-14-github-only-migration.md | Superseded JSON design; P0-P2 retained |
