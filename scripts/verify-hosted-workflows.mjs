@@ -27,7 +27,7 @@ try {
   const originalSummary = await summary.innerText();
   const sharedUrl = page.url();
   await page.reload();
-  await expect(summary).toHaveText(originalSummary, { timeout: 30_000 });
+  await expect(summary).toHaveText(originalSummary, { useInnerText: true, timeout: 30_000 });
   assert.equal(page.url(), sharedUrl);
   checks.push("default comparison and shared URL survive reload");
 

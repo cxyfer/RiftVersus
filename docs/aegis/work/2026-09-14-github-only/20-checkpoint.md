@@ -419,3 +419,12 @@ Commit: `d217293`.
   environment. Do not weaken production interaction checks with forced clicks.
   Legacy HTTP cleanup passed web 63 tests, workspace build and lint; workflow
   source guards and actionlint passed. Actual hosted workflow run remains required.
+- Hosted workflow commit 99e84e9 passed CI 37115041845 (474 unit after removing
+  the dead HTTP-client test). Publish 37115041856 passed original hosted smoke
+  but failed the new reload assertion: expected innerText included line breaks,
+  while toHaveText defaulted to textContent. Use its supported useInnerText
+  option for consistent full-summary comparison; no product/gate relaxation.
+  Preserve generated public screenshot evidence even when a later check fails.
+- Direct final upstream audit at 2026-10-03T10:03:53Z still returned HTTP 200 / []
+  for OverviewPage=Levi and HTTP 200 / one matching row for Faker. Full fresh
+  history remains a source repair requirement, independent of site deployment.
