@@ -404,3 +404,18 @@ Commit: `d217293`.
   of public screenshots/measurement only, retained 14 days, so direct visual
   review can verify the actual deployed desktop/mobile site. No data or runtime
   owner changes; original hosted screenshot/Range checks remain required.
+- Completion audit confirmed Vite and TypeScript both bind the browser alias
+  exclusively to static-runtime, but four unreferenced legacy HTTP client/runtime
+  files remained (one carrier-specific test included). Delete these dead paths;
+  keep explicit mock fixtures used by UI unit tests. No published bundle/runtime
+  behavior changes. Recheck web tests/build/lint and actual hosted evidence.
+- Artifact retention commit 247b6e2 passed CI 37114564223 and Publish 37114564168.
+  Root downloaded and visually reviewed actual hosted desktop/mobile PNGs under
+  /tmp/riftversus-s4-20261003/screenshots-37114564168: rendered controls, avatars,
+  comparison summary and historical rows fit both viewports without overlap.
+- Add hosted workflow checks for real sharing/saving/player search/date filters/
+  historical team names/PNG export/mobile results. They run on GitHub Chromium
+  because local actionability waits, like screenshots, can time out in this
+  environment. Do not weaken production interaction checks with forced clicks.
+  Legacy HTTP cleanup passed web 63 tests, workspace build and lint; workflow
+  source guards and actionlint passed. Actual hosted workflow run remains required.

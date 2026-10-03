@@ -280,8 +280,11 @@ docker volume inspect riftversus-complete-2013-2026_postgres-data riftversus-com
 
 Observed: both writers `exited`, restart=`no`; both named data volumes exist.
 Successful hosted checks also retain `pages-browser-evidence-<run>-<attempt>`
-as an Actions artifact for 14 days. It contains public desktop/mobile screenshots
-and `measurement.json` only, not checkpoint dumps, raw objects or credentials.
+as an Actions artifact for 14 days. It contains public desktop/mobile screenshots,
+`measurement.json`, `workflows.json` and a historical player PNG export, not
+checkpoint dumps, raw objects or credentials. Hosted workflow verification
+exercises share URL reload, saving, real player ID/name search, the reviewed 2017
+Worlds result and historical team labels, PNG export and the mobile player view.
 Download it for direct visual review:
 
 ```bash

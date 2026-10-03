@@ -168,6 +168,7 @@ jobs:
         run: |
           pnpm data publish verify-deployed
           node scripts/measure-static-sqlite.mjs "$PAGES_BASE_URL" "$RUNNER_TEMP/pages-browser-evidence"
+          node scripts/verify-hosted-workflows.mjs "$PAGES_BASE_URL" "$RUNNER_TEMP/pages-browser-evidence"
       - name: Retain public website verification evidence
         # Official upload-artifact v4; public screenshots and metrics only.
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
