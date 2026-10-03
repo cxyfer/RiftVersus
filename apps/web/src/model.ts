@@ -29,9 +29,9 @@ export const SUBJECT_IDS = {
 
 export const defaultRouteState: ComparisonRouteState = {
   leftKind: "team",
-  leftId: SUBJECT_IDS.t1,
+  leftId: "t1",
   rightKind: "region",
-  rightId: SUBJECT_IDS.lpl,
+  rightId: "lpl",
   from: "2019-01-01",
   to: "2026-12-31",
   events: ["worlds"],

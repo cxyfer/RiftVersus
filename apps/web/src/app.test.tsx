@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { mockApi } from "./api/mock-runtime.js";
 import { App, optionLabel, optionSubtitle } from "./app.js";
-import { defaultRouteState, SUBJECT_IDS, toContractQuery } from "./model.js";
+import { defaultRouteState, SUBJECT_IDS, toContractQuery, toRouteQuery } from "./model.js";
 import { UnknownPublicSubjectError } from "@riftversus/domain";
 
 function renderApp(search = "", api = mockApi, onReload?: () => void) {
@@ -93,6 +93,8 @@ describe("comparison workspace", () => {
 
   it("shows the series-first comparison result", async () => {
     renderApp();
+    expect(new URLSearchParams(window.location.search).get("leftId")).toBe("t1");
+    expect(new URLSearchParams(window.location.search).get("rightId")).toBe("lpl");
     expect((await screen.findAllByText("World Championship")).length).toBeGreaterThan(0);
     expect(screen.getByText(/3 series wins/)).toBeInTheDocument();
     expect(screen.getByText(/Games 9-3/)).toBeInTheDocument();
@@ -233,8 +235,8 @@ describe("comparison workspace", () => {
     await user.click(screen.getByRole("button", { name: "交換比較雙方" }));
     await user.click(screen.getByRole("button", { name: "套用篩選" }));
     await waitFor(() => {
-      expect(window.location.search).toContain(`leftId=${SUBJECT_IDS.lpl}`);
-      expect(window.location.search).toContain(`rightId=${SUBJECT_IDS.t1}`);
+      expect(window.location.search).toContain("leftId=lpl");
+      expect(window.location.search).toContain("rightId=t1");
     });
   });
 
@@ -293,7 +295,8 @@ describe("comparison workspace", () => {
 
   it("paginates the 101-row mock in stable 50/50/1 pages", async () => {
     localStorage.setItem("riftversus.playwright-fixture", "long");
-    const query = toContractQuery(defaultRouteState);
+    const route = toRouteQuery(defaultRouteState);
+    const query = toContractQuery(defaultRouteState, { left: await mockApi.resolveSubject(route.left), right: await mockApi.resolveSubject(route.right) });
     const first = await mockApi.compare(query);
     const second = await mockApi.compare({ ...query, cursor: first.nextCursor });
     const third = await mockApi.compare({ ...query, cursor: second.nextCursor });
@@ -307,7 +310,8 @@ describe("comparison workspace", () => {
   });
 
   it("rejects unknown or mismatched mock subject identities", async () => {
-    const query = toContractQuery(defaultRouteState);
+    const route = toRouteQuery(defaultRouteState);
+    const query = toContractQuery(defaultRouteState, { left: await mockApi.resolveSubject(route.left), right: await mockApi.resolveSubject(route.right) });
     await expect(mockApi.compare({ ...query, left: { kind: "player", id: SUBJECT_IDS.t1 } })).rejects.toThrow(/Unknown player subject/);
     await expect(mockApi.compare({ ...query, right: { kind: "region", id: "99999999-9999-4999-8999-999999999999" } })).rejects.toThrow(/Unknown region subject/);
   });
@@ -315,6 +319,6 @@ describe("comparison workspace", () => {
   it("replaces invalid route state with a canonical usable query", async () => {
     renderApp("?leftKind=team&leftId=invalid&rightKind=team&rightId=invalid");
     await screen.findAllByText("World Championship");
-    expect(window.location.search).toContain(`leftId=${SUBJECT_IDS.t1}`);
+    expect(window.location.search).toContain("leftId=t1");
   });
 });
