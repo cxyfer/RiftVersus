@@ -1,5 +1,5 @@
 export const SQLITE_PAGE_SIZE = 4096;
-export const SQLITE_REQUEST_CHUNK_SIZE = 4096;
+export const SQLITE_REQUEST_CHUNK_SIZE = 16384;
 export const SQLITE_SCHEMA_VERSION = 3;
 
 /** Shared public snapshot schema for both the Node exporter and the browser query layer. */
@@ -35,7 +35,7 @@ CREATE TABLE public_era_ids (
   team_era_id TEXT NOT NULL UNIQUE,
   PRIMARY KEY (entity_id, public_id)
 );
-CREATE INDEX entity_variants_entity_id_idx ON entity_variants (entity_id);
+CREATE INDEX entity_variants_entity_id_idx ON entity_variants (entity_id, kind, team_era_id, variant_id, display_name, real_name, era_label, media_url);
 CREATE INDEX entity_variants_kind_name_idx ON entity_variants (kind, canonical_name, entity_id, team_era_id);
 
 CREATE TABLE entity_aliases (
@@ -79,8 +79,8 @@ CREATE TABLE series_facts (
 );
 CREATE INDEX series_facts_played_at_idx ON series_facts (played_at, id);
 CREATE INDEX series_facts_tournament_idx ON series_facts (tournament_id, played_at, id);
-CREATE INDEX series_facts_team_a_idx ON series_facts (side_a_team_id, date, side_b_region_id, side_b_team_id, side_a_era_id, side_b_era_id, id);
-CREATE INDEX series_facts_team_b_idx ON series_facts (side_b_team_id, date, side_a_region_id, side_a_team_id, side_b_era_id, side_a_era_id, id);
+CREATE INDEX series_facts_team_a_idx ON series_facts (side_a_team_id, date, side_b_region_id, side_b_team_id, side_a_era_id, side_b_era_id, id, played_at, tournament_id, best_of, side_a_region_id, side_a_name, side_b_name, side_a_score, side_b_score, winner_team_id);
+CREATE INDEX series_facts_team_b_idx ON series_facts (side_b_team_id, date, side_a_region_id, side_a_team_id, side_b_era_id, side_a_era_id, id, played_at, tournament_id, best_of, side_b_region_id, side_a_name, side_b_name, side_a_score, side_b_score, winner_team_id);
 CREATE INDEX series_facts_region_a_idx ON series_facts (side_a_region_id, date, side_b_region_id, id);
 CREATE INDEX series_facts_region_b_idx ON series_facts (side_b_region_id, date, side_a_region_id, id);
 
@@ -99,7 +99,7 @@ CREATE TABLE game_facts (
   side_b_name TEXT NOT NULL,
   winner_team_id TEXT
 );
-CREATE INDEX game_facts_series_idx ON game_facts (series_id, played_at, id);
+CREATE INDEX game_facts_series_idx ON game_facts (series_id, played_at, id, winner_team_id, side_a_team_id, side_b_team_id, side_a_era_id, side_b_era_id, side_a_region_id, side_b_region_id);
 
 CREATE TABLE game_players (
   game_id TEXT NOT NULL,
@@ -107,7 +107,6 @@ CREATE TABLE game_players (
   player_entity_id TEXT NOT NULL,
   PRIMARY KEY (game_id, side, player_entity_id)
 );
-CREATE INDEX game_players_game_idx ON game_players (game_id, side, player_entity_id);
 CREATE INDEX game_players_player_idx ON game_players (player_entity_id, game_id, side);
 `;
 

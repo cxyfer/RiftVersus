@@ -36,6 +36,7 @@ describe("public SQLite snapshot", () => {
 
     const manifest = SqliteManifestSchema.parse(JSON.parse(await readFile(join(first, "data", "manifest.json"), "utf8")));
     expect(manifest.schemaVersion).toBe(3);
+    expect(manifest.database.requestChunkSize).toBe(16384);
     expect(manifest.database.file).toMatch(/^[a-f0-9]{64}\/database\.sqlite$/u);
     expect((await readdir(join(first, "data"))).sort()).toEqual(["manifest.json", manifest.database.file.split("/")[0]!].sort());
     const database = new DatabaseSync(join(first, "data", manifest.database.file), { readOnly: true });
