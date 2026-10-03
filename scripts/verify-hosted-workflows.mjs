@@ -35,7 +35,7 @@ try {
   await page.getByRole("button", { name: "查看保存結果" }).click();
   const saved = page.getByRole("complementary", { name: "已保存結果" });
   await expect(saved).toBeVisible();
-  await expect(saved.getByRole("button", { name: /T1.*LPL/u })).toBeVisible();
+  await expect(saved.getByRole("button", { name: /^T1.*LPL/u })).toBeVisible();
   await page.getByRole("button", { name: "關閉保存結果" }).click();
   checks.push("save comparison and open saved results");
 

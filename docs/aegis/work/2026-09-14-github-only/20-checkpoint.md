@@ -428,3 +428,9 @@ Commit: `d217293`.
 - Direct final upstream audit at 2026-10-03T10:03:53Z still returned HTTP 200 / []
   for OverviewPage=Levi and HTTP 200 / one matching row for Faker. Full fresh
   history remains a source repair requirement, independent of site deployment.
+- a8994c8 / CI 37115468022 passed. Publish 37115468074 verified rendered reload
+  and actually saved/opened the comparison, then its broad saved-button regex
+  matched both load and delete buttons. Anchor the load label at T1; preserve
+  strict locator uniqueness. Public screenshot artifact was retained on failure.
+  Independent read-only review of the corrected verifier found no additional
+  evidenced locator, Playwright, historical-row or PNG-header issues.
