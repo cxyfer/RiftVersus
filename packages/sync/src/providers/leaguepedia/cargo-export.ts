@@ -5,6 +5,7 @@ const STRING_FIELDS: Readonly<Record<LeaguepediaCargoTable, readonly string[]>> 
   TeamRedirects: ["_pageName", "AllName"],
   Players: ["OverviewPage", "ID", "Name", "Player", "Team", "Image"],
   PlayerRedirects: ["OverviewPage", "ID", "AllName"],
+  PlayerImages: ["Link", "Team", "Tournament", "FileName", "SortDate", "IsProfileImage"],
   Tournaments: ["OverviewPage", "Name", "Region", "DateStart", "StandardName", "BasePage", "AlternativeNames"],
   MatchSchedule: ["UniqueMatch", "MatchId", "OverviewPage", "DateTimeUTC", "Team1", "Team2"],
   ScoreboardGames: ["GameId", "MatchId", "Tournament", "DateTimeUTC", "Team1", "Team2"],

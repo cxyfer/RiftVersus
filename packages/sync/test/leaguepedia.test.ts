@@ -306,12 +306,13 @@ describe("LeaguepediaClient", () => {
     await client.fetchTeamRedirectsPage({ offset: 0 });
     await client.fetchPlayersPage({ offset: 0 });
     await client.fetchPlayerRedirectsPage({ offset: 0 });
+    await client.fetchPlayerImagesPage({ offset: 0, playerPages: ["Faker (Player)"] });
     await client.fetchTournamentsPage({ offset: 0 });
     await client.fetchMatchSchedulesPage({ offset: 0, matchIds: ["M1"] });
     await client.fetchGamesPage({ offset: 0, from: "2024-01-01", to: "2024-12-31", competitions: ["Worlds"] });
     await client.fetchGamePlayersPage({ offset: 0, gameIds: ["g1"] });
 
-    expect(urls.map((url) => url.searchParams.get("tables"))).toEqual(["Teams", "TeamRedirects", "Players", "PlayerRedirects", "Tournaments", "MatchSchedule", "ScoreboardGames", "ScoreboardPlayers"]);
+    expect(urls.map((url) => url.searchParams.get("tables"))).toEqual(["Teams", "TeamRedirects", "Players", "PlayerRedirects", "PlayerRedirects=PR,PlayerImages=PI,Tournaments=T", "Tournaments", "MatchSchedule", "ScoreboardGames", "ScoreboardPlayers"]);
     for (const url of urls) {
       expect(url.origin + url.pathname).toBe("https://lol.example/wiki/Special:CargoExport");
       expect(url.searchParams.has("action")).toBe(false);
@@ -323,12 +324,17 @@ describe("LeaguepediaClient", () => {
     expect(urls[1]!.searchParams.get("fields")).toBe("_pageName,AllName");
     expect(urls[2]!.searchParams.get("fields")).toBe("OverviewPage,ID,Name,Player,Team,Image");
     expect(urls[3]!.searchParams.get("fields")).toBe("OverviewPage,ID,AllName");
-    expect(urls[4]!.searchParams.get("fields")).toBe("OverviewPage,Name,Region,DateStart,StandardName,BasePage,AlternativeNames");
-    expect(urls[5]!.searchParams.get("fields")).toBe("UniqueMatch,MatchId,OverviewPage,DateTime_UTC=DateTimeUTC,Team1,Team2,Team1Score,Team2Score,Winner,BestOf");
-    expect(urls[6]!.searchParams.get("fields")).not.toMatch(/BestOf|Team1Score|Team2Score/);
-    expect(urls[6]!.searchParams.get("fields")).toMatch(/DateTime_UTC=DateTimeUTC/);
-    expect(urls[7]!.searchParams.get("fields")).toMatch(/Link=PlayerKey/);
-    expect(urls[7]!.searchParams.get("fields")).toMatch(/Name=PlayerDisplayName/);
+    expect(urls[4]!.searchParams.get("join_on")).toBe("PR.AllName=PI.Link,PI.Tournament=T.OverviewPage");
+    expect(urls[4]!.searchParams.get("where")).toBe('PI.IsProfileImage="1" AND PR._pageName IN (\'Faker (Player)\')');
+    expect(urls[4]!.searchParams.get("order_by")).toBe("COALESCE(PI.SortDate,T.DateStartFuzzy,T.Date) DESC,PI.FileName ASC");
+    expect(urls[4]!.searchParams.get("fields")).toContain("PR._pageName=PlayerPage");
+    expect(urls[4]!.searchParams.get("fields")).toContain("PI.FileName");
+    expect(urls[5]!.searchParams.get("fields")).toBe("OverviewPage,Name,Region,DateStart,StandardName,BasePage,AlternativeNames");
+    expect(urls[6]!.searchParams.get("fields")).toBe("UniqueMatch,MatchId,OverviewPage,DateTime_UTC=DateTimeUTC,Team1,Team2,Team1Score,Team2Score,Winner,BestOf");
+    expect(urls[7]!.searchParams.get("fields")).not.toMatch(/BestOf|Team1Score|Team2Score/);
+    expect(urls[7]!.searchParams.get("fields")).toMatch(/DateTime_UTC=DateTimeUTC/);
+    expect(urls[8]!.searchParams.get("fields")).toMatch(/Link=PlayerKey/);
+    expect(urls[8]!.searchParams.get("fields")).toMatch(/Name=PlayerDisplayName/);
   });
 
   it("exposes no generic parameter passthrough and only query/cargoquery requests", async () => {
@@ -1294,6 +1300,7 @@ describe("Leaguepedia fetching", () => {
 
   it("converts typed Cargo pages into explicit series, games, players and media", async () => {
     const requestedImages: string[][] = [];
+    const requestedPlayerPages: string[][] = [];
     const snapshot = await fetchLeaguepediaSnapshot({
       fetchTeamsPage: async ({ offset }) => cargoPage("Teams", offset, [
         { OverviewPage: "T1", Name: "T1", Aliases: "SKT", Region: "Korea", Image: "T1.png", RenamedTo: "Current T1" },
@@ -1309,6 +1316,13 @@ describe("Leaguepedia fetching", () => {
         { OverviewPage: "Malformed Player" },
       ]),
       fetchPlayerRedirectsPage: async ({ offset }) => playerRedirectPage(offset),
+      fetchPlayerImagesPage: async ({ offset, playerPages }) => {
+        requestedPlayerPages.push([...playerPages]);
+        return cargoPage("PlayerImages", offset, [
+          { PlayerPage: "Faker", PlayerRedirect: "Faker", Link: "Faker", Tournament: "2024 Season World Championship", FileName: "Faker.png", SortDate: "2024-11-02", TournamentDateStartFuzzy: "2024-09-25", TournamentDate: "2024-09-25", IsProfileImage: "1" },
+          { PlayerPage: "Unrelated Player", PlayerRedirect: "Faker", Link: "Faker", Tournament: "2024 Season World Championship", FileName: "wrong-player.png", SortDate: "2025-11-02", TournamentDateStartFuzzy: "2024-09-25", TournamentDate: "2024-09-25", IsProfileImage: "1" },
+        ]);
+      },
       fetchTournamentsPage: async ({ offset }) => cargoPage("Tournaments", offset, [
         { OverviewPage: "2024 Season World Championship", Name: "Worlds 2024", DateStart: "2024-09-25", DateEnd: "2024-11-02" },
         { OverviewPage: "Unrelated Tournament", Name: "Unrelated Tournament", DateStart: "2024-01-01" },
@@ -1323,18 +1337,30 @@ describe("Leaguepedia fetching", () => {
       fetchKnownPagesWithEvidence: async (titles: readonly string[]) => knownPagesResult(titles),
       fetchImageInfoWithEvidence: async (titles) => {
         requestedImages.push([...titles]);
-        return { data: { query: { pages: [{ title: "File:T1.png", imageinfo: [{
-          url: "https://media.leaguepedia.example/t1.png", mime: "image/png", extmetadata: { LicenseShortName: { value: "CC BY-SA" }, Artist: { value: "Leaguepedia contributors" } },
-        }] }] } }, rawEvidence: [{ requestId: "query:image:0", action: "query", sourceUrl: "https://lol.example/api.php?action=query&titles=T1.png", response: { query: { pages: [{ title: "File:T1.png", imageinfo: [{ url: "https://media.leaguepedia.example/t1.png", mime: "image/png", extmetadata: { LicenseShortName: { value: "CC BY-SA" }, Artist: { value: "Leaguepedia contributors" } } }] }] } }, revisionIds: [77] }] };
+        const pages = titles.map((title) => ({
+          title: `File:${title}`,
+          imageinfo: [{
+            url: `https://media.leaguepedia.example/${title.toLowerCase()}`,
+            mime: "image/png",
+            extmetadata: { LicenseShortName: { value: "CC BY-SA" }, Artist: { value: "Leaguepedia contributors" } },
+          }],
+        }));
+        const response = { query: { pages } };
+        return { data: response, rawEvidence: [{ requestId: "query:image:0", action: "query", sourceUrl: "https://lol.example/api.php?action=query&titles=media", response, revisionIds: [77] }] };
       },
     }, { slices: [{ competition: "2024 Season World Championship", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" }], sourceUrl: "https://leaguepedia.example/wiki/T1" });
 
     expect(snapshot.series).toEqual([expect.objectContaining({ sourceKey: "M1", bestOf: 1 })]);
     expect(snapshot.games).toEqual([expect.objectContaining({ sourceKey: "G1", seriesKey: "M1", winnerTeam: "T1" })]);
     expect(snapshot.gamePlayers).toEqual([{ gameKey: "G1", playerKey: "Faker", teamKey: "T1", playerWin: true }]);
-    expect(snapshot.media.filter((item) => item.sourceUrl !== null)).toEqual([expect.objectContaining({ entityKey: "T1", attribution: "Leaguepedia contributors" })]);
+    expect(snapshot.media.filter((item) => item.sourceUrl !== null)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ entityKey: "T1", attribution: "Leaguepedia contributors" }),
+      expect.objectContaining({ entityKey: "Faker", sourceKey: "Faker.png", attribution: "Leaguepedia contributors" }),
+    ]));
     expect(snapshot.tournaments).toEqual(expect.arrayContaining([expect.objectContaining({ sourceKey: "2024 Season World Championship" })]));
-    expect(requestedImages).toEqual([["T1.png"]]);
+    expect(requestedPlayerPages).toEqual([["Faker"]]);
+    expect(requestedImages).toEqual([["T1.png", "Faker.png"]]);
+    expect(snapshot.media.some((item) => item.sourceKey === "wrong-player.png")).toBe(false);
     expect(snapshot.slices[0]).toMatchObject({ competition: "2024 Season World Championship", seasonYear: 2024, gameSourceKeys: ["G1"] });
     expect(snapshot.entities.some((entity) => entity.sourceKey === "Current T1")).toBe(false);
     expect(snapshot.entities.find((entity) => entity.sourceKey === "T1")?.lineage).toBeNull();
@@ -1342,12 +1368,45 @@ describe("Leaguepedia fetching", () => {
       outOfScopeForwardRenames: 1,
       outOfScopeForwardRenameSamples: ["T1 -> Current T1"],
     });
-    expect(snapshot.rawEvidence.map((item) => item.table)).toEqual(expect.arrayContaining(["Teams", "Players", "Tournaments", "ScoreboardGames", "ScoreboardPlayers"]));
+    expect(snapshot.rawEvidence.map((item) => item.table)).toEqual(expect.arrayContaining(["Teams", "Players", "PlayerImages", "Tournaments", "ScoreboardGames", "ScoreboardPlayers"]));
     expect(snapshot.rawEvidence.find((item) => item.table === "ScoreboardGames")?.scope).toMatchObject({ competition: "2024 Season World Championship", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01", sliceIds: [expect.any(String)] });
     expect(snapshot.rawEvidence.find((item) => item.table === "ScoreboardPlayers")?.scope).toMatchObject({ gameIds: ["G1"], sliceIds: [expect.any(String)] });
     expect(snapshot.provenance).toEqual({ kind: "live" });
     expect(snapshot.revisionIds).toEqual([77, 78]);
     expect(snapshot.traversal.complete).toBe(true);
+  });
+
+  it("binds PlayerImages through redirects and selects the effective latest profile deterministically", async () => {
+    const input = await rawFixture();
+    const playerImages = rawEvidence("PlayerImages", 0, [
+      { PlayerPage: "Faker (Player)", PlayerRedirect: "Faker", Link: "Faker", Tournament: "Worlds 2024", FileName: "Faker older.png", SortDate: "2024-01-01", TournamentDateStartFuzzy: "2024-09-25", TournamentDate: "2024-09-25", IsProfileImage: "1" },
+      { PlayerPage: "Faker (Player)", PlayerRedirect: "Faker", Link: "Faker", Tournament: "Worlds 2024", FileName: "Faker latest.png", SortDate: "2025-01-01", TournamentDateStartFuzzy: "2024-09-25", TournamentDate: "2024-09-25", IsProfileImage: "1" },
+      { PlayerPage: "Faker (Player)", PlayerRedirect: "Faker", Link: "Faker", Tournament: "Worlds 2024", FileName: "Faker not-profile.png", SortDate: "2026-01-01", TournamentDateStartFuzzy: "2024-09-25", TournamentDate: "2024-09-25", IsProfileImage: "0" },
+    ]);
+    const imageInfo: RawApiEvidence = {
+      requestId: "query:player-image:0",
+      action: "query",
+      sourceUrl: "https://fixture.riftversus.invalid/api.php?action=query&titles=File%3AFaker%20latest.png",
+      response: {
+        query: {
+          pages: [{
+            title: "File:Faker latest.png",
+            imageinfo: [{
+              url: "https://fixture.riftversus.invalid/media/faker-latest.png",
+              mime: "image/png",
+              extmetadata: { LicenseShortName: { value: "CC BY-SA" }, Artist: { value: "Leaguepedia contributors" } },
+            }],
+          }],
+        },
+      },
+      revisionIds: [],
+    };
+    const snapshot = parseLeaguepediaRawInput({ ...input, rawEvidence: [...input.rawEvidence, playerImages, imageInfo] });
+    expect(snapshot.rawEvidence.find((item) => item.table === "PlayerImages")?.response).toEqual(playerImages.response);
+    expect(snapshot.media).toEqual(expect.arrayContaining([
+      expect.objectContaining({ entityKey: "Faker (Player)", sourceKey: "Faker latest.png", sourceUrl: "https://fixture.riftversus.invalid/media/faker-latest.png" }),
+    ]));
+    expect(snapshot.media.some((item) => item.sourceKey === "Faker older.png" || item.sourceKey === "Faker not-profile.png")).toBe(false);
   });
 
   it("fails on a malformed required game row instead of silently completing traversal", async () => {
@@ -1802,7 +1861,7 @@ describe("Leaguepedia coverage and provider", () => {
     expect(raw).not.toHaveProperty("games");
     expect(new TextDecoder().decode(batch.source.bytes)).toContain("Duplicate One");
     expect(batch.source.sourceUrl).toBe("https://fixture.riftversus.invalid/dataset/leaguepedia-small");
-    expect(batch.provenance).toMatchObject({ sourceDigest: expect.stringMatching(/^sha256:[a-f0-9]{64}$/), parserVersion: "leaguepedia-v2" });
+    expect(batch.provenance).toMatchObject({ sourceDigest: expect.stringMatching(/^sha256:[a-f0-9]{64}$/), parserVersion: "leaguepedia-v3" });
     expect(batch.provenance.overrideFiles).toEqual([
       expect.objectContaining({ file: "data/overrides/identities.yaml", checksum: expect.stringMatching(/^sha256:/) }),
       expect.objectContaining({ file: "data/overrides/regions.yaml", checksum: expect.stringMatching(/^sha256:/) }),

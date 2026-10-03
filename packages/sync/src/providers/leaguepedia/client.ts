@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { decodeCargoExportRows } from "./cargo-export.js";
-import type { CargoPage, GamePlayersPageInput, GamesPageInput, LeaguepediaCargoTable, LeaguepediaClientOptions, MatchSchedulesPageInput, OffsetInput, QueryEvidenceResult, RawApiEvidence } from "./types.js";
+import type { CargoPage, GamePlayersPageInput, GamesPageInput, LeaguepediaCargoTable, LeaguepediaClientOptions, MatchSchedulesPageInput, OffsetInput, PlayerImagesPageInput, QueryEvidenceResult, RawApiEvidence } from "./types.js";
 
 const CARGO_LIMIT = 500;
 const MAX_RETRY_AFTER_MS = 30_000;
@@ -76,6 +76,20 @@ export class LeaguepediaClient {
   fetchPlayerRedirectsPage(input: OffsetInput): Promise<CargoPage> {
     return this.#cargo("PlayerRedirects", "OverviewPage,ID,AllName", "OverviewPage ASC,AllName ASC", input.offset);
   }
+  fetchPlayerImagesPage(input: PlayerImagesPageInput): Promise<CargoPage> {
+    if (input.playerPages.length === 0 || input.playerPages.length > 100 || input.playerPages.some((page) => !page.trim())) throw new Error("Leaguepedia player image request requires 1 to 100 player pages.");
+    return this.#cargo(
+      "PlayerImages",
+      "PR._pageName=PlayerPage,PR.ID=PlayerID,PR.AllName=PlayerRedirect,PI.Link,PI.Tournament,PI.FileName,PI.SortDate,PI.IsProfileImage,T.DateStartFuzzy=TournamentDateStartFuzzy,T.Date=TournamentDate",
+      "COALESCE(PI.SortDate,T.DateStartFuzzy,T.Date) DESC,PI.FileName ASC",
+      input.offset,
+      `PI.IsProfileImage="1" AND PR._pageName IN (${input.playerPages.map(cargoLiteral).join(",")})`,
+      {
+        tables: "PlayerRedirects=PR,PlayerImages=PI,Tournaments=T",
+        joinOn: "PR.AllName=PI.Link,PI.Tournament=T.OverviewPage",
+      },
+    );
+  }
   fetchTournamentsPage(input: OffsetInput): Promise<CargoPage> {
     return this.#cargo("Tournaments", "OverviewPage,Name,Region,DateStart,StandardName,BasePage,AlternativeNames", "DateStart ASC,OverviewPage ASC", input.offset);
   }
@@ -94,10 +108,26 @@ export class LeaguepediaClient {
     return this.#cargo("ScoreboardPlayers", "GameId,PlayerWin,Name=PlayerDisplayName,Link=PlayerKey,Team", "GameId ASC,Link ASC", input.offset, `GameId IN (${input.gameIds.map(cargoLiteral).join(",")})`);
   }
 
-  async #cargo(table: LeaguepediaCargoTable, fields: string, orderBy: string, offset: number, where?: string): Promise<CargoPage> {
+  async #cargo(
+    table: LeaguepediaCargoTable,
+    fields: string,
+    orderBy: string,
+    offset: number,
+    where?: string,
+    join?: { tables: string; joinOn: string },
+  ): Promise<CargoPage> {
     nonNegativeInteger(offset, "offset");
     const url = new URL("/wiki/Special:CargoExport", this.#endpoint);
-    url.search = new URLSearchParams({ tables: table, fields, order_by: orderBy, limit: String(CARGO_LIMIT), offset: String(offset), format: "json", ...(where === undefined ? {} : { where }) }).toString();
+    url.search = new URLSearchParams({
+      tables: join?.tables ?? table,
+      fields,
+      order_by: orderBy,
+      limit: String(CARGO_LIMIT),
+      offset: String(offset),
+      format: "json",
+      ...(where === undefined ? {} : { where }),
+      ...(join === undefined ? {} : { join_on: join.joinOn }),
+    }).toString();
     const result = await this.#requestUrl(url, "cargoexport");
     const rawEvidence = toRawEvidence(result, { action: "cargoexport", table, offset });
     try {

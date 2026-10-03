@@ -4,7 +4,7 @@ import type { ReviewedOverrides } from "../../overrides.js";
 import { RetainableStageError, type SyncProvider, type SyncRequest } from "../../types.js";
 import { LeaguepediaApiError, LeaguepediaCargoEnvelopeError } from "./client.js";
 import { LeaguepediaSnapshotError, parseLeaguepediaRawInput } from "./fetch.js";
-import { parseLeaguepediaMedia } from "./media.js";
+import { inspectLeaguepediaMedia } from "./media.js";
 import { deriveLeaguepediaCoverage, normalizeLeaguepediaSnapshot } from "./normalize.js";
 import { canonicalJson, encodeLeaguepediaRawInput } from "./serialization.js";
 import type { LeaguepediaRawInput, LeaguepediaSnapshot } from "./types.js";
@@ -25,7 +25,7 @@ export interface LeaguepediaProviderOptions {
 }
 
 export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): SyncProvider {
-  const parserVersion = options.parserVersion ?? "leaguepedia-v2";
+  const parserVersion = options.parserVersion ?? "leaguepedia-v3";
   return {
     id: "leaguepedia",
     parserVersion,
@@ -57,6 +57,7 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
       const overrideFiles = reviewedOverrideFiles(options.overrides.checksums);
       const overrideDigest = createHash("sha256").update(canonicalJson(overrideFiles)).digest("hex");
       const versionDigest = createHash("sha256").update(canonicalJson({ rawDigest: digest, parserVersion, overrideDigest })).digest("hex");
+      const mediaInspection = inspectLeaguepediaMedia(snapshot.media, normalized.entityIds, normalized.eraIds);
       const requested = uniqueCoverageKeys(request.mode === "backfill"
         ? request.competitions.flatMap((competition) => request.years.map((seasonYear) => ({ competition, seasonYear })))
         : inferredCoverage(snapshot));
@@ -82,6 +83,7 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
         const outOfScopeForwardRenames = Math.max(0, ...slices.map((slice) => slice.outOfScopeForwardRenames));
         const outOfScopeForwardRenameSamples = uniqueStrings(slices.flatMap((slice) => slice.outOfScopeForwardRenameSamples)).slice(0, 10);
         const auditDetails = [
+          `Media inventory (import scope): ${JSON.stringify(mediaInspection.inventory)}; missing or ineligible assets use generated fallback.`,
           malformedOptionalRows === 0 ? "" : `Ignored ${malformedOptionalRows} malformed unreferenced optional dimension rows (samples: ${malformedOptionalRowKeys.join(", ")}); raw evidence retained.`,
           excludedOptionalDimensionRows === 0 ? "" : `Excluded ${excludedOptionalDimensionRows} valid optional dimension rows not referenced by imported facts or rename closure (samples: ${excludedOptionalDimensionRowKeys.join(", ")}); raw evidence retained.`,
           outOfScopeForwardRenames === 0 ? "" : `Audited ${outOfScopeForwardRenames} forward renames outside imported fact identity scope (samples: ${outOfScopeForwardRenameSamples.join(", ")}); raw evidence retained.`,
@@ -105,7 +107,7 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
           bytes,
           contentType: "application/json",
         },
-        media: parseLeaguepediaMedia(snapshot.media, normalized.entityIds),
+        media: mediaInspection.media,
         coverage,
         dimensions: normalized.dimensions,
         facts: normalized.facts,

@@ -39,10 +39,10 @@ function unknownOption(kind: EntityKind, id: string): EntityOption {
   return { kind, id, displayName: id.slice(0, 8), subtitle: kindLabel[kind] };
 }
 
-function Avatar({ src, name, size = "normal" }: { src: string | undefined; name: string; size?: "normal" | "large" }) {
+function Avatar({ src, name, size = "normal", kind = "player" }: { src: string | undefined; name: string; size?: "normal" | "large"; kind?: EntityKind }) {
   const [imageSrc, setImageSrc] = useState(src || placeholderMedia);
   useEffect(() => setImageSrc(src || placeholderMedia), [src]);
-  return <span className={`avatar avatar--${size}`} aria-label={`${name} 頭像`}><img src={imageSrc} alt="" onError={() => { if (imageSrc !== placeholderMedia) setImageSrc(placeholderMedia); }} /></span>;
+  return <span className={`avatar avatar--${size}`} data-kind={kind} aria-label={`${name} ${kind === "player" ? "頭像" : "隊標"}`}><img src={imageSrc} alt="" onError={() => { if (imageSrc !== placeholderMedia) setImageSrc(placeholderMedia); }} /></span>;
 }
 
 function EntityCombobox({ value, onPick, label, api }: { value: EntityOption; onPick: (option: EntityOption) => void; label: string; api: ComparisonApi }) {
@@ -59,7 +59,7 @@ function EntityCombobox({ value, onPick, label, api }: { value: EntityOption; on
   const pick = (option: EntityOption) => { onPick(option); close(); };
   return <div className="entity-combobox">
     <label htmlFor={inputId}>{label}</label>
-    <div className="entity-input"><Avatar src={value.mediaUrl} name={value.displayName} /><input id={inputId} role="combobox" aria-autocomplete="list" aria-expanded={open} aria-controls={`${inputId}-options`} aria-activedescendant={activeOptionId} value={open ? term : optionLabel(value)} onFocus={() => { setOpen(true); setTerm(""); }} onBlur={close} onChange={(event) => { setTerm(event.target.value); setOpen(true); setActive(0); }} onKeyDown={(event) => {
+    <div className="entity-input"><Avatar src={value.mediaUrl} name={value.displayName} kind={value.kind} /><input id={inputId} role="combobox" aria-autocomplete="list" aria-expanded={open} aria-controls={`${inputId}-options`} aria-activedescendant={activeOptionId} value={open ? term : optionLabel(value)} onFocus={() => { setOpen(true); setTerm(""); }} onBlur={close} onChange={(event) => { setTerm(event.target.value); setOpen(true); setActive(0); }} onKeyDown={(event) => {
       if (!open) return;
       if (event.key === "ArrowDown") { event.preventDefault(); setActive((current) => Math.min(current + 1, Math.max(options.length - 1, 0))); }
       if (event.key === "ArrowUp") { event.preventDefault(); setActive((current) => Math.max(current - 1, 0)); }
@@ -68,7 +68,7 @@ function EntityCombobox({ value, onPick, label, api }: { value: EntityOption; on
     }} /><Search aria-hidden="true" size={16} /></div>
     {open && <ul id={`${inputId}-options`} className="entity-options" role="listbox" aria-label={`${label} 搜尋結果`}>
       {search.isLoading && <li className="entity-empty">搜尋中</li>}
-      {!search.isLoading && debouncedTerm && options.map((option, index) => <li id={`${inputId}-option-${index}`} key={option.id} role="option" aria-selected={index === active} className={index === active ? "is-active" : ""} onMouseDown={(event) => event.preventDefault()} onMouseMove={() => setActive(index)} onClick={() => pick(option)}><Avatar src={option.mediaUrl} name={option.displayName} /><span><strong>{optionLabel(option)}</strong><small>{optionSubtitle(option)}</small></span></li>)}
+      {!search.isLoading && debouncedTerm && options.map((option, index) => <li id={`${inputId}-option-${index}`} key={option.id} role="option" aria-selected={index === active} className={index === active ? "is-active" : ""} onMouseDown={(event) => event.preventDefault()} onMouseMove={() => setActive(index)} onClick={() => pick(option)}><Avatar src={option.mediaUrl} name={option.displayName} kind={option.kind} /><span><strong>{optionLabel(option)}</strong><small>{optionSubtitle(option)}</small></span></li>)}
       {!search.isLoading && debouncedTerm && options.length === 0 && <li className="entity-empty">沒有符合的對象</li>}
     </ul>}
   </div>;
@@ -81,7 +81,7 @@ function ToggleGroup<T extends string | number>({ label, values, selected, onCha
 
 function Summary({ result }: { result: ComparisonResponse }) {
   const series = result.seriesSummary; const games = result.gameSummary;
-  return <section className="result-summary" aria-label="比較摘要"><div className="subject subject--left"><Avatar src={result.mediaUrls.left} name={result.subjects.left.displayName} size="large" /><div><strong>{result.subjects.left.displayName}</strong><span>{series.wins} series wins · {(series.winRate * 100).toFixed(0)}%</span></div></div><div className="scoreboard"><span>Series</span><strong>{series.wins}<i>-</i>{series.losses}</strong><small>Games {games.wins}-{games.losses} · {(games.winRate * 100).toFixed(0)}%</small></div><div className="subject subject--right"><Avatar src={result.mediaUrls.right} name={result.subjects.right.displayName} size="large" /><div><strong>{result.subjects.right.displayName}</strong><span>{series.losses} series wins</span></div></div></section>;
+  return <section className="result-summary" aria-label="比較摘要"><div className="subject subject--left"><Avatar src={result.mediaUrls.left} name={result.subjects.left.displayName} kind={result.subjects.left.kind} size="large" /><div><strong>{result.subjects.left.displayName}</strong><span>{series.wins} series wins · {(series.winRate * 100).toFixed(0)}%</span></div></div><div className="scoreboard"><span>Series</span><strong>{series.wins}<i>-</i>{series.losses}</strong><small>Games {games.wins}-{games.losses} · {(games.winRate * 100).toFixed(0)}%</small></div><div className="subject subject--right"><Avatar src={result.mediaUrls.right} name={result.subjects.right.displayName} kind={result.subjects.right.kind} size="large" /><div><strong>{result.subjects.right.displayName}</strong><span>{series.losses} series wins</span></div></div></section>;
 }
 
 function Results({ result, onMore, loadingMore }: { result: ComparisonResponse; onMore: () => void; loadingMore: boolean }) {

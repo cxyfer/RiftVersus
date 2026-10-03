@@ -2,7 +2,7 @@ import type { CanonicalFacts, CoverageInput } from "@riftversus/database";
 
 import type { StagedDimensions } from "../../types.js";
 
-export const LEAGUEPEDIA_CARGO_TABLES = ["Teams", "TeamRedirects", "Players", "PlayerRedirects", "Tournaments", "MatchSchedule", "ScoreboardGames", "ScoreboardPlayers"] as const;
+export const LEAGUEPEDIA_CARGO_TABLES = ["Teams", "TeamRedirects", "Players", "PlayerRedirects", "PlayerImages", "Tournaments", "MatchSchedule", "ScoreboardGames", "ScoreboardPlayers"] as const;
 export type LeaguepediaCargoTable = (typeof LEAGUEPEDIA_CARGO_TABLES)[number];
 
 export interface LeaguepediaClientOptions {
@@ -40,6 +40,7 @@ export interface RawApiEvidence {
 export interface CargoPage { rows: readonly Record<string, unknown>[]; offset: number; rawEvidence: RawApiEvidence }
 export interface QueryEvidenceResult { data: Record<string, unknown>; rawEvidence: readonly RawApiEvidence[] }
 export interface OffsetInput { offset: number }
+export interface PlayerImagesPageInput extends OffsetInput { playerPages: readonly string[] }
 export interface GamesPageInput extends OffsetInput { from: string; to: string; competitions: readonly string[] }
 export interface GamePlayersPageInput extends OffsetInput { gameIds: readonly string[] }
 export interface MatchSchedulesPageInput extends OffsetInput { matchIds: readonly string[] }

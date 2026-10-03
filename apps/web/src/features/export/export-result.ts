@@ -174,6 +174,7 @@ function renderExportPage(document: Document, initial: ComparisonResponse, rows:
   subjects.className = "export-sheet__subjects";
   const left = document.createElement("div");
   left.className = "export-sheet__subject";
+  left.dataset.kind = initial.subjects.left.kind;
   left.append(createMedia(document, trustedMediaUrl(initial.mediaUrls.left, document), ""));
   appendText(left, "strong", initial.subjects.left.displayName);
   const score = document.createElement("div");
@@ -183,6 +184,7 @@ function renderExportPage(document: Document, initial: ComparisonResponse, rows:
   appendText(score, "small", `GAMES ${initial.gameSummary.wins} - ${initial.gameSummary.losses}`);
   const right = document.createElement("div");
   right.className = "export-sheet__subject export-sheet__subject--right";
+  right.dataset.kind = initial.subjects.right.kind;
   right.append(createMedia(document, trustedMediaUrl(initial.mediaUrls.right, document), ""));
   appendText(right, "strong", initial.subjects.right.displayName);
   subjects.append(left, score, right);

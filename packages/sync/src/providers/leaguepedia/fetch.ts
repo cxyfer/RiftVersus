@@ -38,6 +38,7 @@ export interface LeaguepediaReadClient {
   fetchTeamRedirectsPage(input: OffsetInput): Promise<CargoPage>;
   fetchPlayersPage(input: OffsetInput): Promise<CargoPage>;
   fetchPlayerRedirectsPage(input: OffsetInput): Promise<CargoPage>;
+  fetchPlayerImagesPage?(input: OffsetInput & { playerPages: readonly string[] }): Promise<CargoPage>;
   fetchTournamentsPage(input: OffsetInput): Promise<CargoPage>;
   fetchMatchSchedulesPage(input: MatchSchedulesPageInput): Promise<CargoPage>;
   fetchGamesPage(input: GamesPageInput): Promise<CargoPage>;
@@ -114,11 +115,16 @@ export async function fetchLeaguepediaRawInput(client: LeaguepediaReadClient, re
     const sourceKey = stringValue(row.OverviewPage) ?? stringValue(row.ID);
     return sourceKey !== null && referencedPlayerKeys.has(sourceKey);
   });
-  const imageRequests = [...directTeams, ...referencedPlayers].flatMap((row) => {
-    const sourceKey = stringValue(row.OverviewPage) ?? stringValue(row.ID) ?? stringValue(row.Name);
-    const title = stringValue(row.Image);
-    return sourceKey === null || title === null ? [] : [{ sourceKey, title }];
-  });
+  const playerImagePages = client.fetchPlayerImagesPage === undefined
+    ? { rows: [], rawEvidence: [] }
+    : (await mapLimit(chunks(uniqueStrings(referencedPlayers.map((row) => stringValue(row.OverviewPage) ?? stringValue(row.ID) ?? "")), 50), 4, async (playerPages) => fetchAllCargoPages(
+      (offset) => client.fetchPlayerImagesPage!({ offset, playerPages }),
+      200,
+      100_000,
+      (page) => budget.consume(page.rawEvidence, page.rows.length),
+    ))).reduce((combined, page) => ({ rows: [...combined.rows, ...page.rows], rawEvidence: [...combined.rawEvidence, ...page.rawEvidence] }), { rows: [] as Record<string, unknown>[], rawEvidence: [] as RawApiEvidence[] });
+  rawEvidence.push(...playerImagePages.rawEvidence);
+  const imageRequests = mediaImageRequests(directTeams, referencedPlayers, playerRedirectPages.rows, playerImagePages.rows);
   const mediaResult = await fetchMedia(client, imageRequests, (item) => budget.consume(item, 0));
   rawEvidence.push(...mediaResult.rawEvidence);
   return {
@@ -187,7 +193,7 @@ export function parseLeaguepediaRawInput(input: LeaguepediaRawInput): Leaguepedi
   validateSeriesGames(series, games);
   const seriesByKey = new Map(series.map((item) => [item.sourceKey, item]));
   for (const game of games) if (!seriesByKey.has(game.seriesKey)) throw new LeaguepediaSnapshotError(`Game ${game.sourceKey} references unknown series ${game.seriesKey}.`, input.rawEvidence, input.sourceUrl);
-  const media = parseMediaEvidence(input.rawEvidence, [...directlySelectedTeams.rows, ...selectedPlayers.rows]);
+  const media = parseMediaEvidence(input.rawEvidence, directlySelectedTeams.rows, selectedPlayers.rows, playerRedirectRows);
   const malformedOptionalRowKeys = [...parsedTeams.malformedRowKeys, ...parsedPlayers.malformedRowKeys, ...parsedTournaments.malformedRowKeys];
   const excludedOptionalDimensionRowKeys = [
     ...excludedDimensionKeys("Teams", parsedTeams.rows, selectedTeams.rows),
@@ -279,8 +285,14 @@ function traversalFor(evidence: readonly RawApiEvidence[]): TraversalEvidence {
   return { requestedPages: evidence.length + (lastRows === LEAGUEPEDIA_CARGO_LIMIT ? 1 : 0), visitedPages: evidence.length, complete: lastRows < LEAGUEPEDIA_CARGO_LIMIT };
 }
 
-function parseMediaEvidence(evidence: readonly RawApiEvidence[], entityRows: readonly Record<string, unknown>[]): LeaguepediaMedia[] {
-  const requests = entityRows.flatMap((row) => { const sourceKey = stringValue(row.OverviewPage) ?? stringValue(row.ID); const title = stringValue(row.Image); return sourceKey && title ? [{ sourceKey, title }] : []; });
+function parseMediaEvidence(
+  evidence: readonly RawApiEvidence[],
+  teamRows: readonly Record<string, unknown>[],
+  playerRows: readonly Record<string, unknown>[],
+  playerRedirectRows: readonly Record<string, unknown>[],
+): LeaguepediaMedia[] {
+  const playerImageRows = evidence.filter((item) => item.table === "PlayerImages").flatMap(strictEvidenceRows);
+  const requests = mediaImageRequests(teamRows, playerRows, playerRedirectRows, playerImageRows);
   const pages = evidence.filter((item) => item.action === "query").flatMap((item) => isRecord(item.response) && isRecord(item.response.query) && Array.isArray(item.response.query.pages)
     ? item.response.query.pages.filter((page): page is Record<string, unknown> => isRecord(page) && Array.isArray(page.imageinfo)) : []);
   return requests.map((request) => {
@@ -289,6 +301,85 @@ function parseMediaEvidence(evidence: readonly RawApiEvidence[], entityRows: rea
     const metadata = info && isRecord(info.extmetadata) ? info.extmetadata : {};
     return { sourceKey: request.title, entityKey: request.sourceKey, sourceUrl: info ? stringValue(info.url) : null, contentType: info ? stringValue(info.mime) : null, license: metadataValue(metadata.LicenseShortName) ?? metadataValue(metadata.UsageTerms), attribution: metadataValue(metadata.Artist) ?? metadataValue(metadata.Credit) };
   });
+}
+
+function mediaImageRequests(
+  teamRows: readonly Record<string, unknown>[],
+  playerRows: readonly Record<string, unknown>[],
+  playerRedirectRows: readonly Record<string, unknown>[],
+  playerImageRows: readonly Record<string, unknown>[],
+): { sourceKey: string; title: string }[] {
+  const teamRequests = teamRows.flatMap((row) => {
+    const sourceKey = stringValue(row.OverviewPage) ?? stringValue(row.ID) ?? stringValue(row.Name);
+    const title = stringValue(row.Image);
+    return sourceKey === null || title === null ? [] : [{ sourceKey, title }];
+  });
+  const profilesByPlayer = selectPlayerProfiles(playerImageRows, playerRedirectRows);
+  const playerRequests = playerRows.flatMap((row) => {
+    const sourceKey = stringValue(row.OverviewPage) ?? stringValue(row.ID);
+    if (sourceKey === null) return [];
+    const profileTitle = profilesByPlayer.get(sourceKey);
+    const title = profileTitle ?? stringValue(row.Image);
+    return title === null ? [] : [{ sourceKey, title }];
+  });
+  return [...teamRequests, ...playerRequests];
+}
+
+function selectPlayerProfiles(
+  rows: readonly Record<string, unknown>[],
+  redirectRows: readonly Record<string, unknown>[],
+): ReadonlyMap<string, string> {
+  const candidates = new Map<string, Record<string, unknown>[]>();
+  for (const row of rows) {
+    if (!isProfileImage(row)) continue;
+    const sourceKey = playerImageSourceKey(row, redirectRows);
+    const title = stringValue(row.FileName);
+    if (sourceKey === null || title === null) continue;
+    candidates.set(sourceKey, [...(candidates.get(sourceKey) ?? []), row]);
+  }
+  return new Map([...candidates.entries()].flatMap(([sourceKey, items]) => {
+    const selected = [...items].sort(comparePlayerImages)[0];
+    const title = selected === undefined ? null : stringValue(selected.FileName);
+    return title === null ? [] : [[sourceKey, title] as const];
+  }));
+}
+
+function playerImageSourceKey(row: Record<string, unknown>, redirectRows: readonly Record<string, unknown>[]): string | null {
+  const target = stringValue(row.PlayerPage);
+  const link = stringValue(row.PlayerRedirect) ?? stringValue(row.PlayerLink) ?? stringValue(row.Link);
+  if (target !== null && link !== null) {
+    const matches = redirectRows.filter((redirect) => stringValue(redirect.OverviewPage) === target && stringValue(redirect.AllName) !== null && redirectLookupKey(stringValue(redirect.AllName)!) === redirectLookupKey(link));
+    return matches.length === 1 ? target : null;
+  }
+  if (link === null) return null;
+  const targets = uniqueStrings(redirectRows.filter((redirect) => {
+    const allName = stringValue(redirect.AllName);
+    return allName !== null && redirectLookupKey(allName) === redirectLookupKey(link);
+  }).flatMap((redirect) => stringValue(redirect.OverviewPage) ?? []));
+  return targets.length === 1 ? targets[0]! : null;
+}
+
+function isProfileImage(row: Record<string, unknown>): boolean {
+  const value = row.IsProfileImage;
+  return value === 1 || value === "1";
+}
+
+function comparePlayerImages(left: Record<string, unknown>, right: Record<string, unknown>): number {
+  const leftDate = playerImageDate(left);
+  const rightDate = playerImageDate(right);
+  if (leftDate !== rightDate) return rightDate - leftDate;
+  const leftTitle = stringValue(left.FileName) ?? "";
+  const rightTitle = stringValue(right.FileName) ?? "";
+  return leftTitle < rightTitle ? -1 : leftTitle > rightTitle ? 1 : 0;
+}
+
+function playerImageDate(row: Record<string, unknown>): number {
+  const value = [row.SortDate, row.TournamentDateStartFuzzy, row.TournamentDate, row.DateStartFuzzy, row.Date]
+    .map(stringValue)
+    .find((item): item is string => item !== null);
+  if (value === undefined) return Number.NEGATIVE_INFINITY;
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? Number.NEGATIVE_INFINITY : timestamp;
 }
 
 function reviewedPagesForTeams(teamRows: readonly Record<string, unknown>[], maximum: number): string[] {

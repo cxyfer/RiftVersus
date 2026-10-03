@@ -86,3 +86,28 @@ download actions timed out in this environment, so complete browser/export
 verification remains assigned to GitHub CI and hosted publication smoke tests.
 Migration 009 downgrade tests now explicitly target version 009 rather than
 assuming it is the latest migration. No safety assertion was relaxed.
+
+Stage 1 commit: `7060422`. Remote verification: CI `37134704204` and
+Publish `37134704354` (results recorded after completion).
+
+Stage 2 implementation: bounded PlayerImages queries through PlayerRedirects
+and Tournaments, deterministic latest-profile selection and retained raw replay;
+parser version `leaguepedia-v3`; exact team-era logo ownership; deduplicated
+eligible media and fail-closed conflicts; import-scope media inventory in
+coverage details. Missing includes referenced source entities without image
+candidates. Rights-blocked counts are candidate rows, not all historical entities.
+Same-origin retained media and bounded download owners remain unchanged. Team
+and region logos use contain sizing on screen and in export; portraits use cover.
+
+Root review: production queries run only after referenced player pages are
+resolved, 50 pages per request, with existing request/row/byte limits. Optional
+client support retains old raw/test-client replay only; production implements
+the new method. Source binding never merges Benny or Doran identities. T1 logo
+and Faker 2026 LCK Cup portrait imageinfo currently lacks license/attribution;
+those assets remain blocked, not fabricated as licensed. No rights override or
+third-party hotlink was introduced.
+
+Stage 2 local verification: all workspace tests passed (487 tests), then the
+changed parser/ownership and UI/export suites were rerun (169 sync + 67 web
+tests passed), build and lint passed. Actual current-import inventory and hosted
+browser results remain pending remote verification.
