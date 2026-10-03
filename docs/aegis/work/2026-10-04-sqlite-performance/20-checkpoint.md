@@ -12,8 +12,8 @@ existing measurement/publication owners only. No runtime fallback or new service
 ## Tasks
 
 1. Measurement/profile/baseline: committed 22aaa0f.
-2. Selective SQL/indexes/parity: verified; ready to commit.
-3. Compatible reader / Release A: active.
+2. Selective SQL/indexes/parity: committed baa5782.
+3. Compatible reader / Release A: reader verified; CI/deployment active.
 4. Canonical comparison reuse: pending.
 5. Unit selection / predeploy gate / Release B: pending.
 6. Final evidence/runbook: pending.

@@ -1,7 +1,7 @@
 # SQLite Performance Implementation And Deployment Plan
 
 Date: 2026-10-04
-Status: researched execution proposal; runtime changes and deployment are pending.
+Status: implementation authorized on 2026-10-04; execution is in progress.
 
 Goal: implement the selective-query, bounded-request and comparison-reuse design
 in [the performance spec](../specs/2026-10-04-sqlite-query-performance.md).

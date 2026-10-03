@@ -83,7 +83,7 @@ const SqliteFileSchema = z.object({
   checksum: z.string().regex(/^[a-f0-9]{64}$/u),
   byteSize: z.number().int().positive().max(256 * 1024 * 1024),
   pageSize: z.literal(4096),
-  requestChunkSize: z.literal(4096),
+  requestChunkSize: z.union([z.literal(4096), z.literal(16384), z.literal(32768), z.literal(65536)]),
 }).strict();
 
 export const SqliteManifestSchema = z.object({
