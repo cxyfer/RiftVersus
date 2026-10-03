@@ -6,13 +6,13 @@ import type { ComparisonApi, EntityOption } from "./types.js";
 const image = (label: string, background: string) => `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" fill="${background}"/><path d="M14 72 48 13l34 59H14Z" fill="none" stroke="#e6efe9" stroke-width="6"/><text x="48" y="83" fill="#e6efe9" font-family="sans-serif" font-size="14" font-weight="700" text-anchor="middle">${label}</text></svg>`)}`;
 
 export const mockEntities: EntityOption[] = [
-  { kind: "team", id: SUBJECT_IDS.t1, displayName: "T1", eraLabel: "2019 - 2026", subtitle: "Korea · Team", mediaUrl: image("T1", "#a72532") },
+  { kind: "team", id: SUBJECT_IDS.t1, publicId: "t1", displayName: "T1", eraLabel: "2019 - 2026", subtitle: "Korea · Team", mediaUrl: image("T1", "#a72532") },
   { kind: "team", id: SUBJECT_IDS.geng, displayName: "Gen.G", eraLabel: "2022 - 2026", subtitle: "Korea · Team", mediaUrl: image("GEN", "#d4b354") },
   { kind: "team", id: SUBJECT_IDS.blg, displayName: "Bilibili Gaming", eraLabel: "2023 - 2026", subtitle: "China · Team", mediaUrl: image("BLG", "#2558a5") },
   { kind: "player", id: SUBJECT_IDS.faker, displayName: "Faker", realName: "Lee Sang-hyeok", subtitle: "T1 · Mid", mediaUrl: image("FKR", "#70323d") },
   { kind: "player", id: SUBJECT_IDS.knight, displayName: "knight", subtitle: "Bilibili Gaming · Mid", mediaUrl: image("KNT", "#1f4f91") },
   { kind: "region", id: SUBJECT_IDS.lck, displayName: "LCK", subtitle: "Korea · Region", mediaUrl: image("LCK", "#324f61") },
-  { kind: "region", id: SUBJECT_IDS.lpl, displayName: "LPL", subtitle: "China · Region", mediaUrl: image("LPL", "#b74142") },
+  { kind: "region", id: SUBJECT_IDS.lpl, publicId: "lpl", displayName: "LPL", subtitle: "China · Region", mediaUrl: image("LPL", "#b74142") },
 ];
 
 const byId = new Map(mockEntities.map((entity) => [entity.id, entity]));
@@ -20,7 +20,7 @@ const resolved = (subject: SubjectRef): ResolvedSubject => {
   const entity = byId.get(subject.id);
   if (entity === undefined || entity.kind !== subject.kind) throw new Error(`Unknown ${subject.kind} subject: ${subject.id}`);
   if (subject.teamEraId !== undefined) throw new Error(`Unknown team era subject: ${subject.teamEraId}`);
-  return { kind: entity.kind, id: entity.id, displayName: entity.displayName, ...(entity.realName ? { realName: entity.realName } : {}), ...(entity.eraLabel ? { eraLabel: entity.eraLabel } : {}), ...(entity.mediaUrl ? { mediaUrl: entity.mediaUrl } : {}) };
+  return { kind: entity.kind, id: entity.id, displayName: entity.displayName, ...(entity.publicId ? { publicId: entity.publicId } : {}), ...(entity.realName ? { realName: entity.realName } : {}), ...(entity.eraLabel ? { eraLabel: entity.eraLabel } : {}), ...(entity.mediaUrl ? { mediaUrl: entity.mediaUrl } : {}) };
 };
 
 const rowCursor = (row: { date: string; id: string }) => `${row.date}|${row.id}`;

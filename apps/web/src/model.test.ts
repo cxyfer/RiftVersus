@@ -1,14 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { canonicalRouteState, SUBJECT_IDS, defaultRouteState, parseRouteState, serializeRouteState, swapRouteState, toContractQuery } from "./model.js";
+import { canonicalRouteState, SUBJECT_IDS, defaultRouteState, parseRouteState, serializeRouteState, swapRouteState, toContractQuery, toRouteQuery } from "./model.js";
 
 describe("comparison route state", () => {
   it("preserves readable IDs and canonicalizes old IDs without losing filters", () => {
     const subjects = { left: { kind: "team" as const, id: SUBJECT_IDS.t1, publicId: "t1", displayName: "T1" }, right: { kind: "region" as const, id: SUBJECT_IDS.lpl, publicId: "lpl", displayName: "LPL" } };
-    const state = canonicalRouteState(defaultRouteState, subjects);
+    const legacy = { ...defaultRouteState, leftId: SUBJECT_IDS.t1, rightId: SUBJECT_IDS.lpl };
+    const state = canonicalRouteState(legacy, subjects);
     expect(state).toEqual({ ...defaultRouteState, leftId: "t1", rightId: "lpl" });
     expect(parseRouteState(serializeRouteState(state))).toEqual({ state, recovered: false });
-    expect(toContractQuery(state, subjects)).toEqual(toContractQuery(defaultRouteState));
+    expect(toContractQuery(state, subjects)).toEqual(toContractQuery(legacy));
   });
   it("serializes filters in a canonical order", () => {
     const output = serializeRouteState({ ...defaultRouteState, events: ["worlds", "league"], leagues: ["lpl", "lck"], bestOf: [5, 1, 3] });
@@ -25,9 +26,9 @@ describe("comparison route state", () => {
 
   it("swaps both subjects and validates the result against the API contract", () => {
     const swapped = swapRouteState(defaultRouteState);
-    expect(swapped.leftId).toBe(SUBJECT_IDS.lpl);
-    expect(swapped.rightId).toBe(SUBJECT_IDS.t1);
-    expect(toContractQuery(swapped).left.id).toBe(SUBJECT_IDS.lpl);
+    expect(swapped.leftId).toBe("lpl");
+    expect(swapped.rightId).toBe("t1");
+    expect(toRouteQuery(swapped).left.id).toBe("lpl");
   });
 
   it("round-trips team era and date scope through canonical URL state", () => {
