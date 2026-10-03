@@ -441,3 +441,10 @@ Commit: `d217293`.
   pixel-content checks to hosted export and every PNG/ZIP E2E page. The new
   check rejects the original blank artifact; web 63 tests, build and lint pass.
   Deployment and direct review of the repaired export remain required.
+- Export repair 4b5e5f9 passed CI 37116693345 and Publish 37116693339.
+  Actual decoded single PNG and all three ZIP pages passed CI. Root downloaded
+  the actual hosted 2400 x 1436 PNG and directly confirmed Faker/LPL, 1-0 series,
+  3-2 games and the historical 2017 team row. Hosted detail ratio 0.0283687,
+  all six functional checks passed; archive/public identity independently confirms
+  unchanged checkpoint 2 and bootstrap parent. No further implementation blocker
+  remains; full fresh history still needs the documented upstream Levi repair.

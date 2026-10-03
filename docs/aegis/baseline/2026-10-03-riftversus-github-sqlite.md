@@ -73,3 +73,9 @@ The user's unrelated `.gitignore` edit is excluded from migration commits.
   public identity confirmed sequence 2 and its unchanged parent; local desktop/
   mobile DOM/identity-206/gzip-HEAD verification also passed. Old carriers cannot
   auto-restart, and named volume inspection confirms both retained data volumes.
+- Final export fix 4b5e5f9 passed CI 37116693345 (474 unit, 70 integration,
+  six production SQLite E2E tests) and Publish 37116693339. Actual PNG and
+  every ZIP page must contain decoded visible pixels. Root directly reviewed
+  the repaired historical PNG; all hosted sharing/saving/player/date/mobile
+  workflows passed. Independent archive/public identity still resolves sequence 2
+  with its unchanged parent; no source gates or history failures were bypassed.

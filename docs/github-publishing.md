@@ -296,5 +296,26 @@ rollback flow for website recovery; investigate source failures in immutable
 attempt archives before retrying history. Historical Compose/image commands in
 the older runbooks are retained records, not an alternate production schedule.
 
+Final user-workflow verification exposed a real blank PNG export even though its
+signature and dimensions were valid. `html-to-image` cloned the offscreen source
+position; commit `4b5e5f9` resets only the cloned root's position. The shared
+`scripts/assert-export-image.mjs` decodes actual PNG pixels and rejects background
+only output. CI checks both the single PNG and every page of the three-page ZIP;
+the hosted verifier checks the real historical PNG and retains `export-image.json`.
+Its conservative threshold is tied to the current export background/style and
+must be revalidated when that style changes; reported color count is capped at 64.
+
+[CI 37116693345](https://github.com/cxyfer/RiftVersus/actions/runs/37116693345)
+and [Publish 37116693339](https://github.com/cxyfer/RiftVersus/actions/runs/37116693339)
+passed. Root downloaded and directly reviewed the repaired 2400 x 1436 image:
+Faker versus LPL, series 1-0, games 3-2, and the 2017 SK Telecom T1 versus Royal
+Never Give Up row are visible. Non-background detail ratio was 2.8369%, above
+the 0.5% gate; the original blank export fails the same check. Hosted sharing,
+saving, player search, date filtering and mobile results all passed. Independent
+private archive resolution and public identity confirmed site-37116693339-1,
+unchanged authoritative checkpoint-2-37110413823-1 and its bootstrap parent.
+Full fresh history remains blocked by the independently verified missing Levi
+source identity; existing public history and current sync remain available.
+
 Official workflow references inspected: GitHub's custom Pages workflow guide,
 Actions concurrency guide and the pinned official Pages action definitions.
