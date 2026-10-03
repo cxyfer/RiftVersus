@@ -235,3 +235,21 @@ will restore checkpoint 4 again before site publication and Pages verification.
 One delayed scheduled history run, 37161410474, was cancelled while still at
 pre-archive code verification to avoid a second writer during recovery. Future
 schedule definitions and historical data remain unchanged.
+
+Rebuild 37161733749 successfully restored the published checkpoint 4 and passed
+export/acceptance, but stopped at the controlled browser performance gate. With
+the retained-media snapshot's physical page layout, the 16 KiB HTTPVFS request
+unit read 1,474,660 bytes in 29 Range GETs, exceeding the unchanged 1 MiB budget.
+Pictures remain separate static presentation files; they are not SQLite blobs.
+
+Decision: change the canonical SQLITE_REQUEST_CHUNK_SIZE export default to
+32 KiB, already supported by the manifest contract and browser compatibility
+tests. Keep the SQLite schema, physical database bytes, queries and logical
+snapshot unchanged. Ten controlled cold runs against the recovered production
+database each read 983,140 bytes in 21 Range GETs; median ready time was
+7,894.018145 ms under 150 ms latency and 1,250,000 bytes/s. All three existing
+gates passed and T1/LPL results remained correct. Evidence:
+/tmp/riftversus-media-layout/original-32-controlled/measurement.json.
+The alternative attribution-tail layout experiment is not part of this change.
+Fresh CI and a normal rebuild must independently verify the new export default
+before the retained images are considered deployed.
