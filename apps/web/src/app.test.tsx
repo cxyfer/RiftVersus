@@ -153,6 +153,7 @@ describe("comparison workspace", () => {
   it("restores the selected subject when free text loses focus", async () => {
     const user = userEvent.setup();
     renderApp();
+    await screen.findAllByText("World Championship");
     const input = screen.getByRole("combobox", { name: "比較對象" });
     await user.click(input);
     await user.type(input, "unselected text");

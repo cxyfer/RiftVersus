@@ -158,6 +158,9 @@ test("renders the default fixture, preserves sharing, and searches player identi
   await expect(page).toHaveURL(/leftKind=player/);
   await expect(page).toHaveURL(/leftId=faker/u);
   await expect(page.getByText("3 series wins")).toBeVisible();
+  await leftSubject.focus();
+  await leftSubject.blur();
+  await expect(leftSubject).toHaveValue("Faker (Lee Sang-hyeok)");
   expect(requests.some((pathname) => pathname.includes("/api/"))).toBe(false);
 });
 

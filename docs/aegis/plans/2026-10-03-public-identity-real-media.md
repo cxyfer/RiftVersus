@@ -137,3 +137,11 @@ registering both UUID and kind/public-key owners. Hosted verification now checks
 Faker's full selector label and that its image matches the comparison image.
 The current-import run was cancelled before checkpoint promotion for this repair;
 stale-code attempt `37135609939` failed at the initial guard before restoring data.
+
+QueryClient ownership is now per mounted App, preserving cache within the page
+without sharing data across unrelated API instances/remounts. The new regression
+uses a distinct filter scope, and the existing blur test now explicitly waits for
+initial data rather than depending on a previous test's warm global cache. All
+68 web tests, build and lint passed; E2E adds public-route player focus/blur label
+validation. Selector-cache repair commit `dd89e30` is followed by this cache-scope
+verification repair before either is published.

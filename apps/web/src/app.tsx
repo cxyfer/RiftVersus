@@ -11,7 +11,6 @@ import { canonicalRouteState, parseRouteState, serializeRouteState, swapRouteSta
 import { loadSavedComparisons, removeSavedComparison, saveComparison, type SavedComparison } from "./storage.js";
 import type { ComparisonApi, EntityOption } from "./api/types.js";
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 5_000 } } });
 const placeholderMedia = `${import.meta.env.BASE_URL}media-placeholder.svg`;
 const kindLabel: Record<EntityKind, string> = { player: "選手", team: "戰隊", region: "賽區" };
 const eventOptions: Array<[EventCategory, string]> = [["league", "聯賽"], ["fst", "FST"], ["msi", "MSI"], ["worlds", "Worlds"]];
@@ -142,4 +141,7 @@ function ComparisonWorkspace({ api, onReload }: { api: ComparisonApi; onReload: 
   </main>;
 }
 
-export function App({ api = runtimeApi, onReload = reloadPage }: { api?: ComparisonApi; onReload?: () => void }) { return <QueryClientProvider client={queryClient}><BrowserRouter basename={import.meta.env.BASE_URL}><ComparisonWorkspace api={api} onReload={onReload} /></BrowserRouter></QueryClientProvider>; }
+export function App({ api = runtimeApi, onReload = reloadPage }: { api?: ComparisonApi; onReload?: () => void }) {
+  const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 5_000 } } }));
+  return <QueryClientProvider client={queryClient}><BrowserRouter basename={import.meta.env.BASE_URL}><ComparisonWorkspace api={api} onReload={onReload} /></BrowserRouter></QueryClientProvider>;
+}
