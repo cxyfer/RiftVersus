@@ -36,7 +36,8 @@ describe("optionSubtitle", () => {
 
 describe("comparison workspace", () => {
   it("loads readable links, canonicalizes legacy links and preserves scope", async () => {
-    const api = { ...mockApi, async resolveSubject(subject: Parameters<typeof mockApi.resolveSubject>[0]) {
+    const compare = vi.fn(mockApi.compare);
+    const api = { ...mockApi, compare, async resolveSubject(subject: Parameters<typeof mockApi.resolveSubject>[0]) {
       const id = subject.kind === "team" ? SUBJECT_IDS.t1 : SUBJECT_IDS.lpl;
       return { ...await mockApi.resolveSubject({ ...subject, id }), publicId: subject.kind === "team" ? "t1" : "lpl" };
     } };
@@ -46,6 +47,21 @@ describe("comparison workspace", () => {
     expect(window.location.search).toContain("from=2020-01-01");
     expect(window.location.search).toContain("to=2020-12-31");
     await waitFor(() => expect(screen.getByRole("combobox", { name: "比較對象" })).toHaveValue("T1"));
+    await userEvent.setup().click(screen.getByRole("button", { name: "套用篩選" }));
+    fireEvent.focus(window);
+    fireEvent(window, new Event("online"));
+    await waitFor(() => expect(screen.getByRole("region", { name: "比較摘要" })).toBeInTheDocument());
+    expect(compare).toHaveBeenCalledTimes(1);
+  });
+
+  it("replaces the query cache when the mounted API session changes", async () => {
+    const first = { ...mockApi, compare: vi.fn(mockApi.compare) };
+    const second = { ...mockApi, compare: vi.fn(mockApi.compare) };
+    const view = renderApp("", first);
+    await screen.findByRole("region", { name: "比較摘要" });
+    view.rerender(<App api={second} />);
+    await waitFor(() => expect(second.compare).toHaveBeenCalledTimes(1));
+    expect(first.compare).toHaveBeenCalledTimes(1);
   });
   it("keeps unknown readable IDs in the URL and presents recovery instead of unrelated results", async () => {
     renderApp("?leftKind=player&leftId=missing-player&rightKind=region&rightId=lpl", {

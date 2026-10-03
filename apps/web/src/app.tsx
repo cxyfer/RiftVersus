@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useState } from "react";
-import { QueryClient, QueryClientProvider, useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BrowserRouter, useSearchParams } from "react-router-dom";
 import { ArrowLeftRight, Bookmark, CalendarDays, Check, ChevronDown, Database, RefreshCw, Search, Trophy, Trash2, X } from "lucide-react";
 import type { BestOf, ComparisonResponse, EntityKind, EventCategory, ResolvedSubject } from "@riftversus/contracts";
@@ -105,17 +105,24 @@ function ComparisonWorkspace({ api, onReload }: { api: ComparisonApi; onReload: 
   const paramsKey = params.toString();
   const parsed = useMemo(() => parseRouteState(new URLSearchParams(paramsKey)), [paramsKey]);
   const submitted = parsed.state;
+  const queryClient = useQueryClient();
   const [draft, setDraft] = useState(submitted);
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const [savedOpen, setSavedOpen] = useState(false);
   const [saved, setSaved] = useState(() => loadSavedComparisons());
   const [known, setKnown] = useState<Map<string, EntityOption>>(() => new Map());
-  const comparison = useInfiniteQuery({ queryKey: ["comparison", serializeRouteState(submitted).toString()], initialPageParam: undefined as string | undefined, queryFn: async ({ pageParam }) => {
-    const route = toRouteQuery(submitted);
+  const route = toRouteQuery(submitted);
+  const resolved = useQuery({ queryKey: ["comparison-subjects", route.left, route.right], staleTime: Infinity, refetchOnWindowFocus: false, refetchOnReconnect: false, queryFn: async () => {
     const [left, right] = await Promise.all([api.resolveSubject(route.left), api.resolveSubject(route.right)]);
-    const query = toContractQuery(submitted, { left, right });
+    return { left, right };
+  } });
+  const query = resolved.data ? toContractQuery(submitted, resolved.data) : undefined;
+  const comparison = useInfiniteQuery({ queryKey: ["comparison", query], enabled: query !== undefined,
+    staleTime: Infinity, refetchOnWindowFocus: false, refetchOnReconnect: false,
+    initialPageParam: undefined as string | undefined, queryFn: async ({ pageParam }) => {
+    if (query === undefined || resolved.data === undefined) throw new Error("Comparison subjects are not resolved.");
     const page = await api.compare({ ...query, ...(pageParam ? { cursor: pageParam } : {}) });
-    return { ...page, subjects: { left, right } };
+    return { ...page, subjects: resolved.data };
   }, getNextPageParam: (page) => page.nextCursor });
   const pages = comparison.data?.pages ?? [];
   const firstPage = pages[0];
@@ -123,11 +130,15 @@ function ComparisonWorkspace({ api, onReload }: { api: ComparisonApi; onReload: 
   useEffect(() => { setDraft(submitted); if (parsed.recovered || paramsKey !== serializeRouteState(submitted).toString()) setParams(serializeRouteState(submitted), { replace: true }); }, [paramsKey, parsed.recovered, setParams, submitted]);
   useEffect(() => { if (!firstPage) return;
     const canonical = canonicalRouteState(submitted, firstPage.subjects);
-    if (serializeRouteState(canonical).toString() !== paramsKey) setParams(serializeRouteState(canonical), { replace: true });
+    if (serializeRouteState(canonical).toString() !== paramsKey) {
+      const canonicalQuery = toRouteQuery(canonical);
+      queryClient.setQueryData(["comparison-subjects", canonicalQuery.left, canonicalQuery.right], firstPage.subjects);
+      setParams(serializeRouteState(canonical), { replace: true });
+    }
     setKnown((current) => {
     const left = subjectOption(firstPage.subjects.left); const right = subjectOption(firstPage.subjects.right);
     return new Map(current).set(left.id, left).set(right.id, right).set(`${left.kind}:${left.publicId ?? left.id}`, left).set(`${right.kind}:${right.publicId ?? right.id}`, right);
-  }); }, [firstPage, submitted, paramsKey, setParams]);
+  }); }, [firstPage, submitted, paramsKey, setParams, queryClient]);
   const entity = (kind: EntityKind, id: string) => known.get(`${kind}:${id}`) ?? known.get(id) ?? unknownOption(kind, id);
   const updateDraft = (update: Partial<ComparisonRouteState>) => setDraft((current) => ({ ...current, ...update }));
   const pick = (side: "left" | "right", option: EntityOption) => { setKnown((current) => new Map(current).set(option.id, option)); setDraft((current) => { const next = { ...current }; if (side === "left") { next.leftKind = option.kind; next.leftId = option.id; delete next.leftEraId; } else { next.rightKind = option.kind; next.rightId = option.id; delete next.rightEraId; } return next; }); };
@@ -137,11 +148,13 @@ function ComparisonWorkspace({ api, onReload }: { api: ComparisonApi; onReload: 
   const load = (state: ComparisonRouteState) => { setDraft(state); setParams(serializeRouteState(state)); setSavedOpen(false); };
   return <main className="terminal-shell"><header className="topbar"><a className="wordmark" href={import.meta.env.BASE_URL} aria-label="RiftVersus 首頁"><span>RIFT</span><b>VERSUS</b></a><div className="topbar-actions"><span className="dataset-status"><i />資料已發布</span><button type="button" className="icon-button" onClick={save} aria-label="保存目前比較" title="保存目前比較"><Bookmark size={18} /></button><button type="button" className="icon-button" onClick={() => setSavedOpen(true)} aria-label="查看保存結果" title="保存結果"><Trophy size={18} /></button></div></header>
     <form className="compare-panel" aria-label="比較條件" onSubmit={submit}><div className="panel-heading"><p>HEAD-TO-HEAD ARCHIVE</p><h1>賽事對戰紀錄</h1></div><div className="subject-grid"><EntityCombobox label="比較對象" value={entity(draft.leftKind, draft.leftId)} onPick={(option) => pick("left", option)} api={api} /><button className="swap-button" type="button" onClick={() => setDraft(swapRouteState(draft))} aria-label="交換比較雙方" title="交換比較雙方"><ArrowLeftRight size={19} /></button><EntityCombobox label="對戰對象" value={entity(draft.rightKind, draft.rightId)} onPick={(option) => pick("right", option)} api={api} /></div><div className="filters"><label className="date-field"><span>起始日期</span><input type="date" value={draft.from ?? ""} onChange={(event) => setDraft((current) => event.target.value ? { ...current, from: event.target.value } : (() => { const next = { ...current }; delete next.from; return next; })())} /></label><label className="date-field"><span>結束日期</span><input type="date" value={draft.to ?? ""} onChange={(event) => setDraft((current) => event.target.value ? { ...current, to: event.target.value } : (() => { const next = { ...current }; delete next.to; return next; })())} /></label><ToggleGroup label="賽事類型" values={eventOptions.map(([value]) => value)} selected={draft.events} onChange={(values) => updateDraft({ events: values })} format={(value) => eventOptions.find(([item]) => item === value)?.[1] ?? value} /><ToggleGroup label="聯賽" values={leagueOptions} selected={draft.leagues} onChange={(values) => updateDraft({ leagues: values })} format={(value) => value.toUpperCase()} /><ToggleGroup label="賽制" values={bestOfOptions} selected={draft.bestOf} onChange={(values) => updateDraft({ bestOf: values })} format={(value) => `BO${value}`} /></div><div className="form-actions"><button className="apply-button" type="submit">套用篩選</button>{validationMessage && <><p className="validation-error" role="alert">{validationMessage}</p><button type="button" className="reset-button" onClick={resetDraft}>重設</button></>}</div></form>
-    {comparison.isLoading && <section className="loading">正在彙整對戰紀錄</section>}{comparison.isError && <DataLoadError onReload={onReload} unknownSubject={comparison.error instanceof UnknownPublicSubjectError} />}{result && firstPage && <><Summary result={result} /><ExportButton api={api} query={firstPage.query} initial={firstPage} /><Results result={result} onMore={() => void comparison.fetchNextPage()} loadingMore={comparison.isFetchingNextPage} /></>}{savedOpen && <SavedDrawer items={saved} names={known} onLoad={load} onRemove={(id) => setSaved(removeSavedComparison(id))} onClose={() => setSavedOpen(false)} />}
+    {(resolved.isLoading || comparison.isLoading) && <section className="loading">正在彙整對戰紀錄</section>}{(resolved.isError || comparison.isError) && <DataLoadError onReload={onReload} unknownSubject={(resolved.error ?? comparison.error) instanceof UnknownPublicSubjectError} />}{result && firstPage && <><Summary result={result} /><ExportButton api={api} query={firstPage.query} initial={firstPage} /><Results result={result} onMore={() => void comparison.fetchNextPage()} loadingMore={comparison.isFetchingNextPage} /></>}{savedOpen && <SavedDrawer items={saved} names={known} onLoad={load} onRemove={(id) => setSaved(removeSavedComparison(id))} onClose={() => setSavedOpen(false)} />}
   </main>;
 }
 
 export function App({ api = runtimeApi, onReload = reloadPage }: { api?: ComparisonApi; onReload?: () => void }) {
-  const [queryClient] = useState(() => new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 5_000 } } }));
-  return <QueryClientProvider client={queryClient}><BrowserRouter basename={import.meta.env.BASE_URL}><ComparisonWorkspace api={api} onReload={onReload} /></BrowserRouter></QueryClientProvider>;
+  const [session, setSession] = useState({ api, generation: 0 });
+  if (session.api !== api) setSession({ api, generation: session.generation + 1 });
+  const queryClient = useMemo(() => new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 5_000 } } }), [api]);
+  return <QueryClientProvider client={queryClient}><BrowserRouter basename={import.meta.env.BASE_URL}><ComparisonWorkspace key={session.generation} api={api} onReload={onReload} /></BrowserRouter></QueryClientProvider>;
 }
