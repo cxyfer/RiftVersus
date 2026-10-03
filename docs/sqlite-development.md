@@ -64,6 +64,8 @@ identity, request size and each ready time are saved in measurement.json.
 Performance enforcement additionally requires --enforce-performance and at least
 ten controlled repetitions; it checks 30 Range GETs, 1 MiB reads and a ten-second
 median for the default comparison.
+For diagnostic broad queries, --summary-timeout-ms=300000 permits a longer
+observation (maximum five minutes); it does not change the performance budgets.
 
 New exports use 16 KiB requests with unchanged 4 KiB SQLite pages. The reader
 accepts only 4/16/32/64 KiB request units, preserving archived 4 KiB manifests.
