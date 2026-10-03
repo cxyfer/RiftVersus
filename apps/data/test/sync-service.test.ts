@@ -4,14 +4,13 @@ import { readFile } from "node:fs/promises";
 
 import { describe, expect, it, vi } from "vitest";
 
-import type { ObjectStore, SyncPublicationInput, SyncRepository } from "@riftversus/sync";
-import { loadConfig } from "../src/config.js";
-import { buildLeaguepediaSlices, executeLeaguepediaSync } from "../../data/src/sync-service.js";
+import { loadSyncConfig, type ObjectStore, type SyncPublicationInput, type SyncRepository } from "@riftversus/sync";
+import { buildLeaguepediaSlices, executeLeaguepediaSync } from "../src/sync-service.js";
 
 const rootDir = fileURLToPath(new URL("../../..", import.meta.url));
 
 function config() {
-  return loadConfig({
+  return loadSyncConfig({
     DATABASE_URL: "postgresql://fixture.invalid/riftversus",
     LEAGUEPEDIA_ENDPOINT: "https://leaguepedia.acme.org/api.php",
     LEAGUEPEDIA_USER_AGENT: "RiftVersus/0.1 (+https://riftversus.acme.org; ops@acme.org)",
@@ -46,7 +45,7 @@ describe("Leaguepedia sync composition", () => {
     };
     const objects: Array<{ key: string; contentType: string; bytes: Uint8Array }> = [];
     const objectStore: ObjectStore = {
-      get: async () => Readable.from([]), signedGetUrl: async () => "https://fixture.invalid/object", head: async () => null,
+      get: async () => Readable.from([]), head: async () => null,
       putImmutable: async (object) => { objects.push({ key: object.key, contentType: object.contentType, bytes: object.bytes }); return "inserted"; },
     };
     const loadLive = vi.fn(async () => { throw new Error("live loader must not run for leaguepedia-small"); });

@@ -6,8 +6,8 @@ import type { ComparisonQuery, ComparisonResponse } from "@riftversus/contracts"
 import { encodeLeaguepediaRawInput, type LeaguepediaRawInput } from "@riftversus/sync";
 import { describe, expect, it, type Mocked, vi } from "vitest";
 
-import type { AcceptanceVerificationDependencies } from "../../data/src/acceptance.js";
-import { generateCanonicalAvatar } from "../../data/src/avatar.js";
+import type { AcceptanceVerificationDependencies } from "../src/acceptance.js";
+import { generateCanonicalAvatar } from "../src/avatar.js";
 
 const endpoint = "https://leaguepedia.acme.org/api.php";
 const leftId = "11111111-1111-4111-8111-111111111111";
@@ -214,7 +214,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("rejects the retired version 1 acceptance schema instead of adapting it", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const legacy = { ...reviewedSnapshot(), schemaVersion: 1 };
     await expect(module.verifyAcceptanceSnapshot(legacy, dependencies())).resolves.toMatchObject({
       status: "blocked", blockers: expect.arrayContaining([expect.stringMatching(/schemaVersion/i)]),
@@ -222,7 +222,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("becomes ready only after canonical comparison and immutable raw verification", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const deps = dependencies();
     await expect(module.verifyAcceptanceSnapshot(reviewedSnapshot(), deps)).resolves.toMatchObject({ status: "ready", blockers: [] });
     expect(deps.compare).toHaveBeenCalledWith(expect.objectContaining({ eventCategories: ["worlds"], bestOf: [5], limit: 100 }));
@@ -230,7 +230,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("blocks a reviewed row when either historical team name differs from PostgreSQL", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const base = reviewedSnapshot();
     for (const row of [
       { ...base.expected.rows[0]!, leftName: "SK Telecom T1" },
@@ -245,7 +245,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("rejects duplicate reviewed series and game IDs before invoking runtime dependencies", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const base = reviewedSnapshot();
     const row = base.expected.rows[0]!;
     const cases = [
@@ -281,7 +281,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("requires the reviewed snapshot to declare exactly complete Leaguepedia Worlds coverage for 2013 through 2025", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const base = reviewedSnapshot();
     const rows = base.coverage.rows;
     const invalidRows = [
@@ -301,7 +301,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("blocks PostgreSQL coverage with missing, extra, partial, or date-drifted reviewed rows", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const variants = [
       reviewedCoverageRows.filter((row) => row.seasonYear !== 2019),
       [...reviewedCoverageRows, { ...reviewedCoverageRows[0]!, seasonYear: 2026, earliestDate: "2026-10-01", latestDate: "2026-11-01" }],
@@ -326,7 +326,7 @@ describe("historical acceptance evidence gate", () => {
     "https://leaguepedia.acme.org/wiki/Leaguepedia%3ACopyrights",
     "https://leaguepedia.acme.org/wiki/Leaguepedia%3aCopyrights",
   ])("accepts the exact Leaguepedia legal page spelling %s", async (url) => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     await expect(module.verifyAcceptanceSnapshot(
       reviewedSnapshot({ attribution: { provider: "Leaguepedia", url } }),
       dependencies(),
@@ -347,7 +347,7 @@ describe("historical acceptance evidence gate", () => {
     "http://leaguepedia.acme.org/wiki/Leaguepedia:Copyrights",
     "https://leaguepedia.acme.org/wiki/Leaguepedia%ZZCopyrights",
   ])("rejects non-canonical Leaguepedia legal-page URL %s", async (url) => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     await expect(module.verifyAcceptanceSnapshot(
       reviewedSnapshot({ attribution: { provider: "Leaguepedia", url } }),
       dependencies(),
@@ -358,7 +358,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("accepts generated avatars for both canonical subjects without querying retained media", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const deps = dependencies(generatedResponse());
     const snapshot = reviewedSnapshot({
       expected: { ...reviewedSnapshot().expected, media: { left: generatedLeft, right: generatedRight } },
@@ -374,7 +374,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("accepts mixed retained and generated presentation evidence", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const response = generatedResponse();
     response.subjects.left.mediaUrl = "/media/media/t1.png";
     response.mediaUrls.left = response.subjects.left.mediaUrl;
@@ -392,7 +392,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("rejects generated evidence with missing/wrong identity fields, v1 algorithm, checksum, or content type", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const wrongId = "99999999-9999-4999-8999-999999999999";
     const missingLabel = {
       kind: generatedLeft.kind, entityKind: generatedLeft.entityKind, entityId: generatedLeft.entityId,
@@ -420,7 +420,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("rejects generated evidence swapped between the left and right subjects", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const snapshot = reviewedSnapshot({
       expected: { ...reviewedSnapshot().expected, media: { left: generatedRight, right: generatedLeft } },
     });
@@ -430,7 +430,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("rejects a generated avatar URL that is non-canonical or the generic placeholder", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const snapshot = reviewedSnapshot({
       expected: { ...reviewedSnapshot().expected, media: { left: generatedLeft, right: generatedRight } },
     });
@@ -451,7 +451,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("rejects generated bytes or metadata that do not match the reviewed evidence", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const snapshot = reviewedSnapshot({
       expected: { ...reviewedSnapshot().expected, media: { left: generatedLeft, right: generatedRight } },
     });
@@ -472,7 +472,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("blocks a page and revision pair assembled across separate response pages", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const crossPageBytes = Buffer.from(encodeLeaguepediaRawInput({
       ...rawInput,
       rawEvidence: [{
@@ -505,7 +505,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("rejects a legacy root rawEvidence wrapper even when its evidence is otherwise valid", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const legacyBytes = Buffer.from(JSON.stringify({ sourceUrl: endpoint, rawEvidence: rawInput.rawEvidence }));
     const legacyChecksum = createHash("sha256").update(legacyBytes).digest("hex");
     const deps = dependencies();
@@ -523,7 +523,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("rejects attacker provenance and self-declared 999 totals", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const malicious = reviewedSnapshot({
       sources: [{ pageId: 1, revisionId: 2, title: "T1", retrievedAt: "2026-07-13T00:00:00.000Z", objectKey: "sources/leaguepedia/raw.json", rawObjectChecksum: checksum, requestId, requestUrl: "https://attacker.invalid/api.php?action=query&prop=info%7Crevisions&titles=T1" }],
       expected: { ...reviewedSnapshot().expected, seriesWins: 999, gameWins: 999 },
@@ -533,7 +533,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("requires reviewed titles and both info and revisions in the exact request URL", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     for (const invalidRequestUrl of [
       `${endpoint}?action=query&prop=info&rvprop=ids%7Ctimestamp&titles=T1`,
       `${endpoint}?action=query&prop=info%7Crevisions&rvprop=ids%7Ctimestamp&titles=Not-T1`,
@@ -549,7 +549,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("blocks database failures, placeholder media, coverage warnings, and row drift", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const failed = dependencies(); failed.compare.mockRejectedValueOnce(new Error("database unavailable"));
     await expect(module.verifyAcceptanceSnapshot(reviewedSnapshot(), failed)).resolves.toMatchObject({
       status: "blocked",
@@ -565,7 +565,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("reports the failing acceptance dependency stage without mislabeling it as comparison", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
 
     const dataset = dependencies();
     dataset.getDatasetEvidence.mockRejectedValueOnce(new Error("dataset audit unavailable"));
@@ -593,7 +593,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("blocks missing or checksum-mismatched immutable source objects", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const missing = dependencies(); missing.getRawObject.mockResolvedValueOnce(null);
     await expect(module.verifyAcceptanceSnapshot(reviewedSnapshot(), missing)).resolves.toMatchObject({ status: "blocked", blockers: expect.arrayContaining([expect.stringMatching(/immutable raw object.*missing/i)]) });
     const mismatch = dependencies(); mismatch.getRawObject.mockResolvedValueOnce(Readable.from([Buffer.from("tampered")]));
@@ -601,13 +601,13 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("blocks raw objects that are not registered as PostgreSQL source provenance", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const deps = dependencies(); deps.getSourceMetadata.mockResolvedValueOnce([]);
     await expect(module.verifyAcceptanceSnapshot(reviewedSnapshot(), deps)).resolves.toMatchObject({ status: "blocked", blockers: expect.arrayContaining([expect.stringMatching(/registered PostgreSQL source provenance/i)]) });
   });
 
   it("blocks dataset/source provenance splicing, stale generations, missing audits, and game-set drift", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const cases = [
       [{ kind: "series" as const, id: seriesId, provider: "leaguepedia", publicationGeneration: "8", retiredGeneration: null, sourceObjectId }, { kind: "game" as const, id: gameId, seriesId, provider: "leaguepedia", publicationGeneration: "9", retiredGeneration: null, sourceObjectId }],
       [{ kind: "series" as const, id: seriesId, provider: "leaguepedia", publicationGeneration: "9", retiredGeneration: null, sourceObjectId: "77777777-7777-4777-8777-777777777777" }, { kind: "game" as const, id: gameId, seriesId, provider: "leaguepedia", publicationGeneration: "9", retiredGeneration: null, sourceObjectId: null }],
@@ -622,7 +622,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("verifies source retrieval timestamps and same-page titles", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const stale = dependencies();
     stale.getSourceMetadata.mockResolvedValueOnce([{ ...(await dependencies().getSourceMetadata("x"))[0]!, retrievedAt: "2026-07-13T00:00:00.001Z" }]);
     await expect(module.verifyAcceptanceSnapshot(reviewedSnapshot(), stale)).resolves.toMatchObject({ status: "blocked", blockers: expect.arrayContaining([expect.stringMatching(/retrieval timestamp/i)]) });
@@ -638,14 +638,14 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("rejects the removed self-declared top-level retrieval timestamp", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     await expect(module.verifyAcceptanceSnapshot(reviewedSnapshot({ retrievedAt: "2026-07-13T00:00:00.000Z" }), dependencies())).resolves.toMatchObject({
       status: "blocked", blockers: expect.arrayContaining([expect.stringMatching(/unrecognized.*retrievedAt/i)]),
     });
   });
 
   it("rejects unknown fields in nested reviewed snapshot structures", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const base = reviewedSnapshot();
     const snapshots = [
       reviewedSnapshot({ sources: [{ ...base.sources[0], ignored: true }] }),
@@ -661,7 +661,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("verifies both media objects against URL, database metadata, object bytes, and reviewed expectations", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const missing = dependencies(); missing.getMediaMetadata.mockResolvedValueOnce(null);
     await expect(module.verifyAcceptanceSnapshot(reviewedSnapshot(), missing)).resolves.toMatchObject({ status: "blocked", blockers: expect.arrayContaining([expect.stringMatching(/media metadata.*missing/i)]) });
 
@@ -681,7 +681,7 @@ describe("historical acceptance evidence gate", () => {
   });
 
   it("fails closed when retained media exceeds the acceptance byte ceiling", async () => {
-    const module = await import("../../data/src/acceptance.js");
+const module = await import("../src/acceptance.js");
     const oversizedMedia = Buffer.alloc(10_000_001, 1);
     const oversizedChecksum = createHash("sha256").update(oversizedMedia).digest("hex");
     const deps = dependencies();
@@ -706,6 +706,6 @@ describe("historical acceptance evidence gate", () => {
 
   it("production composition reports missing runtime configuration as blocked", async () => {
     const module = await import("../src/acceptance-cli.js");
-    await expect(module.runProductionAcceptanceCheck(undefined, {})).resolves.toMatchObject({ status: "blocked", blockers: expect.arrayContaining([expect.stringMatching(/runtime configuration/i)]) });
+    await expect(module.runDataAcceptanceCheck(undefined, {})).resolves.toMatchObject({ status: "blocked", blockers: expect.arrayContaining([expect.stringMatching(/runtime configuration/i)]) });
   });
 });

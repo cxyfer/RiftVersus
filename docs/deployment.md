@@ -1,5 +1,27 @@
 # Deployment
 
+## GitHub Pages And Actions
+
+The deployed website is [RiftVersus](https://cxyfer.github.io/RiftVersus/).
+Its public query path uses SQLite and SQL.js-HTTPVFS on GitHub Pages. GitHub
+Actions restores private checkpoint Releases into disposable PostgreSQL,
+exports SQLite, validates and archives the site, then deploys Pages.
+
+Use [GitHub publishing operations](github-publishing.md) for current production
+configuration, scheduling, manual commands, recovery and verification evidence.
+Source/database archives are in private `cxyfer/RiftVersus-data`; they are not
+included in the public Pages artifact. Current sync, cold restore, hosted smoke
+and rollback passed; a full history attempt failed closed due missing upstream
+Levi player data and preserved the valid baseline. See the runbook for that
+explicit refresh limitation and legacy retirement verification. Existing named
+volumes and independent backups remain retained.
+
+## Retained Legacy Stack
+
+The following instructions describe the previous runtime and retained local
+recovery environment. They are not the Pages deployment procedure. The original
+app/sync/PostgreSQL/MinIO containers were stopped after the generation-8 export.
+
 ## One image, separate commands
 
 Build the immutable image once:

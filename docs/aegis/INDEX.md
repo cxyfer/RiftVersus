@@ -70,3 +70,4 @@ Entries are workspace records, not authoritative runtime decisions.
 | 2026-07-18 | work | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/proof-bundle.md | 2026-07-18-comparison-identity-avatar-v2 proof bundle |
 | 2026-07-18 | artifact | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/resume-state-hint.json | 2026-07-18-comparison-identity-avatar-v2 resume state hint |
 | 2026-07-18 | artifact | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/evidence-bundle-draft-task7-runtime-gen4-release.json | 2026-07-18-comparison-identity-avatar-v2 evidence task7-runtime-gen4-release |
+| 2026-10-03 | baseline | docs/aegis/baseline/2026-10-03-riftversus-github-sqlite.md | RiftVersus GitHub and SQLite deployed architecture |

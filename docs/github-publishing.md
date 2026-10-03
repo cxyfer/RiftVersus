@@ -46,6 +46,36 @@ The UTC schedules correspond to 03:17 daily and 04:47 Sunday in Asia/Taipei.
 `initial_site=true` only permits a missing deployed `site-manifest.json`; it does
 not permit a missing checkpoint or auto-enable Pages.
 
+### Manual Operations
+
+Run from an authenticated GitHub CLI session with access to the private website
+repository. The workflow uses the stored archive-scoped secret; these commands
+do not require exporting or printing its token locally.
+
+```sh
+gh run list --repo cxyfer/RiftVersus --workflow publish.yml
+gh workflow run publish.yml --repo cxyfer/RiftVersus --ref main -f mode=rebuild
+gh workflow run publish.yml --repo cxyfer/RiftVersus --ref main -f mode=current
+gh workflow run publish.yml --repo cxyfer/RiftVersus --ref main -f mode=history
+```
+
+Dispatch one operation at a time and wait for its complete result, including
+the deploy job, before choosing the next. Inspect a specific run with
+`gh run view RUN_ID --repo cxyfer/RiftVersus` or wait using
+`gh run watch RUN_ID --repo cxyfer/RiftVersus --exit-status`.
+
+An explicit known-good website recovery uses its immutable site archive:
+
+```sh
+gh workflow run publish.yml --repo cxyfer/RiftVersus --ref main \
+  -f mode=rollback -f site_id=site-37110172714-1
+```
+
+That archive passed hosted desktop/mobile smoke on 2026-10-03. Recovery restores
+that website, without modifying the authoritative data checkpoint. Do not use
+the first `site-37108280050-1`, whose hosted client failed. After recovery, run
+`rebuild` to return the site to the latest verified checkpoint when appropriate.
+
 All modes share a workflow-level concurrency group with running-run cancellation
 disabled. GitHub's default single pending slot can replace an older pending run;
 this is not a durable FIFO job queue. Check cancelled runs and manually rerun a
@@ -108,9 +138,12 @@ To redeploy a known good website, choose `rollback` and its explicit site tag.
 ## Verification Status
 
 The migration has local contract/order/failure tests and real static browser
-evidence. Remote CI, repository setup and private archive bootstrap/cold restore
-are verified. First hosted browser verification and current/history source
-synchronization remain in progress; see the remote evidence below.
+evidence. Remote CI, repository setup, private archive bootstrap/cold restore
+and hosted desktop/mobile browser verification are verified. Current source
+synchronization and explicit site rollback also passed. Full reviewed historical
+source synchronization is blocked by a missing upstream player dimension.
+Its failure archive and baseline isolation are verified. See the remote
+evidence below; local legacy retirement regressions are recorded separately.
 
 ### Remote preparation on 2026-10-03
 
@@ -161,6 +194,61 @@ synchronization remain in progress; see the remote evidence below.
   the same immutable SQLite URL with `?chunk=0`. HEAD still occurs but does not
   determine the database length; the binary, SQL engine and Range offsets are
   unchanged. A hosted success claim requires a new deployment and browser smoke.
+- Client fix `917acf9` passed full remote CI
+  [37110172738](https://github.com/cxyfer/RiftVersus/actions/runs/37110172738),
+  including the real gzip-HEAD Worker regression and PostgreSQL integration.
+  Publish [37110172714](https://github.com/cxyfer/RiftVersus/actions/runs/37110172714)
+  passed preparation, Pages deployment, deployed identity and hosted browser
+  smoke. Its immutable archive is `site-37110172714-1`.
+  Both desktop and mobile read 876,644 / 6,889,472 bytes (12.72%) through
+  166 identity Range GETs and one HEAD. Real Worker/WASM, no API calls, no page
+  errors, viewport bounds and screenshot capture passed on GitHub runners.
+  Hosted comparison readiness was 2.76 seconds desktop / 2.11 seconds mobile.
+  Rebuild preserved the sequence-1 data baseline and generation 8.
+- Local Chromium screenshot capture also times out on a blank page, independent
+  of this project. No screenshot workaround or skipped remote check was added;
+  the successful hosted smoke above includes the original screenshot step.
+- Real `current` run
+  [37110413823](https://github.com/cxyfer/RiftVersus/actions/runs/37110413823)
+  synchronized reviewed 2026/MSI, passed current acceptance with no blockers,
+  published immutable `checkpoint-2-37110413823-1` and `site-37110413823-1`, and
+  passed hosted desktop/mobile smoke. Snapshot ID:
+  `sha256:42139d40b506d4486a82a43aca08fefaf7950cfa5ed8938454bee5fc76b12401`.
+  The export retained 1,066 series; wider unmapped leagues were not imported.
+- Explicit rollback run
+  [37110806436](https://github.com/cxyfer/RiftVersus/actions/runs/37110806436)
+  passed private site download, local smoke, Pages deployment and hosted smoke.
+  Independent checks confirmed `site-37110172714-1` was served while
+  `checkpoint-2-37110413823-1` remained the latest sequence-2 baseline.
+  Full reviewed historical sync
+  [37111081562](https://github.com/cxyfer/RiftVersus/actions/runs/37111081562)
+  failed at the provider identity gate in both Worlds and MSI batches. Its
+  immutable `attempt-37111081562-1` archive was downloaded and cold-restored
+  locally for diagnosis: PlayerRedirects targets `Levi`, but Players contains
+  no corresponding OverviewPage. A direct no-cache lookup returned `[]`; the
+  same query for Faker returned its expected row. No missing identity was
+  inferred from current team, similarly named players or retained old facts.
+  The failed candidate never became checkpoint 3; sequence 2 stayed latest.
+  Resolve the upstream record and rerun `history` before claiming fresh full
+  historical synchronization. Legacy carriers use the same provider and do
+  not address this data issue.
+
+### Legacy retirement verification
+
+The retirement slice deletes the Fastify server workspace, application Docker
+carrier, S3/AWS transport and resident Croner scheduler. Data-owned acceptance,
+mapping, sync-health and sync-service tests move to `apps/data`. PostgreSQL
+remains build/restore tooling and an archival acceptance/parity oracle, not an
+online query server. Explicit local Compose profiles preserve named volumes;
+production publication remains exclusively in GitHub Actions.
+
+Final local gates passed: 475 unit tests, public-entry consumer checks,
+workspace build/typecheck and lint; 70 fresh PostgreSQL 17 integration tests
+passed after test relocation. Negative active-source/dependency checks confirm
+the retired owners are absent. Independent read-only review found no new
+evidenced blockers. The ADR amendment and new architecture baseline record
+the root cutover decision and outstanding upstream history limitation.
+Post-retirement remote CI and actual hosted verification remain the final gate.
 
 Official workflow references inspected: GitHub's custom Pages workflow guide,
 Actions concurrency guide and the pinned official Pages action definitions.

@@ -1,5 +1,37 @@
 # Operations
 
+## Current Production
+
+Production uses [GitHub Pages/Actions publishing](github-publishing.md), private
+checkpoint Releases and SQLite/SQL.js-HTTPVFS. The daily and weekly schedules
+are owned only by `publish.yml`. Use its manual modes for sync, rebuild and
+website rollback. Checkpoint restore instructions are in [checkpoints](checkpoints.md).
+
+For local data tools, configure `.env` for a filesystem ObjectStore and a
+disposable PostgreSQL database. The `tools` profile starts only PostgreSQL:
+
+```sh
+docker compose --profile tools up -d postgres
+pnpm install --frozen-lockfile
+pnpm build
+pnpm data --help
+```
+
+The `legacy-recovery` profile additionally exposes the retained MinIO service
+inside the Compose network, with existing named-volume definitions. Select the
+original Compose project name explicitly when accessing retained volumes.
+Neither profile starts an application or scheduled writer. No volume cleanup
+is part of migration or recovery. Restore checkpoints into a fresh empty
+database and filesystem directory, never over the retained original state.
+
+## Historical Runtime Records
+
+The remaining sections record previous stack operations and source mapping
+evidence. Application images/commands below belong to their recorded Git
+revision; they are not executable production entrypoints in the migrated
+checkout. Existing containers, PostgreSQL/MinIO volumes and independent backups
+remain retained. Current operators should use the GitHub runbook above.
+
 ## Local Compose quick start
 
 Copy `.env.example` to `.env`, replace every `change-me` value, and insert the

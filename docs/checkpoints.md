@@ -80,7 +80,11 @@ check is not a cross-runner lock.
 
 ## Verification Boundary
 
-Local checkpoint tests, mocked Release protocol tests, and PostgreSQL 17 cold
-restore tests are available. Actual cross-repository permissions, Release
-storage, and clean-runner restore still require the P6 bootstrap deployment.
-This checkout has no configured Git remote; no remote archive has been created.
+Local checkpoint tests, mocked Release protocol tests and PostgreSQL 17 cold
+restore tests are available. On 2026-10-03, private `cxyfer/RiftVersus-data`
+published immutable `checkpoint-1-bootstrap-20261003-retry-2` after the actual
+GitHub download/empty-database restore gate. A separate local GitHub cold restore
+and a clean Actions runner restored generation 8 successfully. The earlier
+`checkpoint-1-bootstrap-20261003` draft failed transfer verification and is not
+a baseline. See [publishing evidence](github-publishing.md#verification-status)
+for configuration, counts and the separate Pages verification boundary.

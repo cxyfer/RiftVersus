@@ -8,7 +8,7 @@ describe("root verification scripts", () => {
     expect(manifest.scripts.test).toBe("pnpm test:consumer && pnpm test:unit && pnpm test:workspace");
     expect(manifest.scripts["test:workspace"]).toContain("@riftversus/contracts");
     expect(manifest.scripts["test:workspace"]).toContain("@riftversus/domain");
-    expect(manifest.scripts["test:workspace"]).toContain("@riftversus/server");
+    expect(manifest.scripts["test:workspace"]).toContain("@riftversus/data");
     expect(manifest.scripts["test:workspace"]).toContain("@riftversus/sync");
     expect(manifest.scripts["test:workspace"]).toContain("@riftversus/web");
     expect(manifest.scripts["test:workspace"]).not.toMatch(/(?:^|&&\s*)pnpm test(?:\s|$)/u);

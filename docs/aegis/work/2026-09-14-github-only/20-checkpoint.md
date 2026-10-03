@@ -1,5 +1,16 @@
 # GitHub-only execution checkpoint
 
+## Current Resume Point - 2026-10-03
+
+SQLite / real HTTPVFS, GitHub bootstrap/cold restore, hosted desktop/mobile,
+current sync and independent site rollback are verified. Sequence-2 checkpoint
+is authoritative. Full history refresh failed closed on missing upstream Levi
+dimension; failed attempt is archived without promotion. Retirement is locally
+verified (475 unit, 70 integration, consumer/build/lint and independent review),
+awaiting commit and final remote CI/hosted checks. Persistent volumes, retained
+containers and the user's `.gitignore` change are preserved. Earlier status
+sections below are chronological evidence, not current completion claims.
+
 ## Active User Correction
 
 User explicitly requires SQLite / SQL.js-HTTPVFS. The JSON shard/browser-array
@@ -317,3 +328,53 @@ Commit: `d217293`.
   page, including outside the filesystem sandbox. No screenshot bypass or CDP
   workaround is committed. Full CI and real hosted screenshot/transport checks
   must pass on GitHub runners before the deployment is considered verified.
+- Client fix committed/pushed as 917acf9. CI 37110172738 and Publish 37110172714
+  succeeded. Hosted desktop/mobile smoke captured screenshots, loaded real
+  Worker/WASM and read 876,644 / 6,889,472 bytes using 166 Range GETs plus one
+  HEAD, with no API calls/page errors/viewport overflow. Site archive
+  site-37110172714-1 is published and immutable. Data baseline unchanged.
+- Dispatched real current synchronization as run 37110413823, reviewed scope
+  2026/MSI. Rollback and reviewed historical sync still need actual evidence;
+  no old code/runtime retirement claim yet.
+- Independent local hosted DOM/transport validation passed desktop/mobile;
+  evidence /tmp/riftversus-s4-20261003/hosted-dom-transport.json. Same site ID,
+  code SHA and baseline were confirmed, with actual gzip HEAD and identity
+  Range GETs. Default comparison is T1 versus LPL, 9-0 series / 27-6 games.
+  This local check deliberately does not claim screenshot capture.
+- Current run 37110413823 succeeded end to end: live reviewed 2026/MSI sync,
+  current acceptance ready/no blockers, checkpoint-2-37110413823-1, immutable
+  site-37110413823-1 and hosted desktop/mobile smoke. New snapshot is
+  sha256:42139d40b506d4486a82a43aca08fefaf7950cfa5ed8938454bee5fc76b12401.
+- Explicit rollback to the first verified fixed site (site-37110172714-1)
+  dispatched as 37110806436. It must preserve sequence-2 checkpoint lineage.
+- Rollback 37110806436 passed archive/local smoke, Pages deployment and hosted
+  desktop/mobile smoke. Independent resolver and public identity checks confirm
+  site-37110172714-1 is served while checkpoint-2-37110413823-1 remains the
+  sequence-2 authoritative data baseline. Website recovery does not rewind data.
+- Full reviewed historical mode dispatched as 37111081562. Preparing retention
+  of data-owner tests before server retirement; only test relocation is currently
+  delegated. Runtime deletion still requires this final live-sync evidence.
+- Historical run 37111081562 failed in both reviewed batches; immutable
+  attempt-37111081562-1 was downloaded and its dump cold-restored into a fresh
+  forensic PG17 database. Both sync_runs errors identify missing Levi identity:
+  PlayerRedirects has OverviewPage=Levi, but complete Players evidence lacks it.
+  Independent direct no-cache Players lookup returns [], with Faker as positive
+  control. This is upstream dimension absence, not a transport/hosting failure.
+- Root cutover decision: retirement can use successful hosted/current/restore/
+  rollback evidence plus verified historical failure isolation. The retired
+  carriers use this exact provider and offer no repair for missing source data.
+  Historical refresh remains blocked; no gate, identity or coverage is weakened.
+- Reversible draft removes old server/Docker/cron/S3 carriers; all five data
+  acceptance/service/mapping/health suites move to apps/data. Added pg dev
+  dependencies for the moved integration test. Full consumer/unit suites (473),
+  build/typecheck, lint and fresh PG17 integration (70) passed. Named volumes
+  and original containers remain untouched; test PG uses only tmpfs/task temp.
+- Follow-up inspection confirmed the database migration wrapper already throws
+  Kysely errors. No extra CLI guard is needed. CLI regressions verify migration
+  failures propagate and the database connection is destroyed, plus bounded
+  history batches continue collecting errors before rejecting publication.
+- Independent read-only retirement review found no new evidenced blockers.
+  Final local gates passed: 475 unit tests, consumer checks, build/typecheck and
+  lint. ADR amendment and indexed 2026-10-03 baseline record new canonical
+  owners and the historical provider blocker. Post-retirement remote CI/hosted
+  verification follows the stage commit.

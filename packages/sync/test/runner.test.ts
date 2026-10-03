@@ -4,7 +4,6 @@ import {
   mediaObjectKey,
   RetainableStageError,
   runSync,
-  scheduleSync,
   sourceObjectKey,
   validateSyncRequest,
   type ObjectStore,
@@ -19,7 +18,6 @@ function createHarness(overrides: Partial<SyncDependencies> = {}) {
   const events: string[] = [];
   const store: ObjectStore = {
     get: vi.fn(async () => null),
-    signedGetUrl: vi.fn(async () => "https://storage.test/signed"),
     head: vi.fn(async () => null),
     putImmutable: vi.fn(async (object) => { events.push(`store:${object.key}`); return "inserted"; }),
   };
@@ -219,89 +217,5 @@ describe("sync request validation", () => {
     expect(() => validateSyncRequest({ mode: "backfill", years: Array.from({ length: 21 }, (_, index) => 2000 + index), competitions: ["Worlds"] })).toThrow();
     expect(() => validateSyncRequest({ mode: "backfill", years: [2024, 2024], competitions: ["Worlds"] })).toThrow();
     expect(() => validateSyncRequest({ mode: "backfill", years: [2024], competitions: [] })).toThrow();
-  });
-});
-
-describe("scheduleSync", () => {
-  it("runs immediately when enabled and prevents a tick from overlapping startup", async () => {
-    let callback!: () => void;
-    let finish!: () => void;
-    const run = vi.fn(() => new Promise<void>((resolve) => { finish = resolve; }));
-    const handle = scheduleSync({ cron: "0 3 * * *", timezone: "UTC", runOnStart: true, run, onError: vi.fn(), createSchedule: (_cron, _timezone, tick) => { callback = tick; return { stop() {} }; } });
-    expect(handle.running).toBe(true);
-    callback();
-    expect(run).toHaveBeenCalledOnce();
-    handle.stop();
-    finish();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(handle.running).toBe(false);
-  });
-  it("does not overlap ticks and observes rejected runs", async () => {
-    let tick: (() => void) | undefined;
-    let resolveRun: (() => void) | undefined;
-    const run = vi.fn(() => new Promise<void>((resolve) => { resolveRun = resolve; }));
-    const onError = vi.fn();
-    const stop = vi.fn();
-    const handle = scheduleSync({
-      cron: "0 3 * * *",
-      timezone: "UTC",
-      run,
-      onError,
-      createSchedule: (_cron, _timezone, callback) => { tick = callback; return { stop }; },
-    });
-
-    tick!();
-    tick!();
-    expect(run).toHaveBeenCalledOnce();
-    resolveRun!();
-    await vi.waitFor(() => expect(handle.running).toBe(false));
-    run.mockRejectedValueOnce(new Error("sync rejected"));
-    tick!();
-    await vi.waitFor(() => expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "sync rejected" })));
-    expect(onError).toHaveBeenCalledOnce();
-    await vi.waitFor(() => expect(handle.running).toBe(false));
-    run.mockResolvedValueOnce(undefined);
-    tick!();
-    expect(run).toHaveBeenCalledTimes(3);
-    await vi.waitFor(() => expect(handle.running).toBe(false));
-    expect(onError).toHaveBeenCalledOnce();
-    handle.stop();
-    expect(stop).toHaveBeenCalledOnce();
-  });
-
-  it("observes synchronous throws exactly once and permits the next tick", async () => {
-    let tick: (() => void) | undefined;
-    const run = vi.fn<() => Promise<void>>()
-      .mockImplementationOnce(() => { throw new Error("sync throw"); })
-      .mockResolvedValueOnce(undefined);
-    const onError = vi.fn();
-    const handle = scheduleSync({
-      cron: "0 3 * * *",
-      timezone: "UTC",
-      run,
-      onError,
-      createSchedule: (_cron, _timezone, callback) => { tick = callback; return { stop: vi.fn() }; },
-    });
-
-    tick!();
-    expect(onError).toHaveBeenCalledOnce();
-    expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "sync throw" }));
-    expect(handle.running).toBe(false);
-    tick!();
-    expect(run).toHaveBeenCalledTimes(2);
-    await vi.waitFor(() => expect(handle.running).toBe(false));
-  });
-
-  it("requires an error observer at construction", () => {
-    expect(() => scheduleSync({
-      cron: "0 3 * * *",
-      timezone: "UTC",
-      run: async () => undefined,
-    } as Parameters<typeof scheduleSync>[0])).toThrow("onError");
-  });
-
-  it("validates cron and timezone before creating a schedule", () => {
-    expect(() => scheduleSync({ cron: "not cron", timezone: "UTC", run: async () => undefined, onError: vi.fn() })).toThrow();
-    expect(() => scheduleSync({ cron: "0 3 * * *", timezone: "Not/A_Zone", run: async () => undefined, onError: vi.fn() })).toThrow();
   });
 });

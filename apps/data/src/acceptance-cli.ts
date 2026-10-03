@@ -9,25 +9,29 @@ import { generateCanonicalAvatar } from "./avatar.js";
 const defaultSnapshot = fileURLToPath(new URL("../../../data/acceptance/leaguepedia-t1-lpl-worlds-bo5.json", import.meta.url));
 
 export async function runDataAcceptanceCheck(path = defaultSnapshot, environment: Record<string, string | undefined> = process.env): Promise<AcceptanceEvaluation> {
-  const config = loadSyncConfig(environment);
-  if (!environment.OBJECT_STORE_DIR?.trim()) throw new Error("OBJECT_STORE_DIR is required for acceptance.");
-  const store = createFilesystemObjectStore(resolve(environment.OBJECT_STORE_DIR));
-  const snapshot: unknown = JSON.parse(await readFile(path, "utf8"));
-  const db = createDb({ databaseUrl: config.databaseUrl });
   try {
-    return await verifyAcceptanceSnapshot(snapshot, {
-      approvedLeaguepediaEndpoint: config.leaguepedia.endpoint,
-      maxRawObjectBytes: config.leaguepedia.resourceLimits.maxBytes,
-      maxMediaObjectBytes: 10_000_000,
-      compare: query => compareHeadToHead(query, db),
-      getRawObject: key => store.get(key),
-      getSourceMetadata: key => findSourceObjectMetadataByKey(key, db),
-      getDatasetEvidence: (version, ids) => findAcceptanceDatasetEvidence(version, ids, db),
-      getMediaMetadata: key => findMediaObjectMetadataByKey(key, db),
-      getAvatarIdentity: (kind, id) => getAvatarIdentity(kind, id, db),
-      generateAvatar: generateCanonicalAvatar,
-    });
-  } finally { await db.destroy(); }
+    const config = loadSyncConfig(environment);
+    if (!environment.OBJECT_STORE_DIR?.trim()) throw new Error("OBJECT_STORE_DIR is required for acceptance.");
+    const store = createFilesystemObjectStore(resolve(environment.OBJECT_STORE_DIR));
+    const snapshot: unknown = JSON.parse(await readFile(path, "utf8"));
+    const db = createDb({ databaseUrl: config.databaseUrl });
+    try {
+      return await verifyAcceptanceSnapshot(snapshot, {
+        approvedLeaguepediaEndpoint: config.leaguepedia.endpoint,
+        maxRawObjectBytes: config.leaguepedia.resourceLimits.maxBytes,
+        maxMediaObjectBytes: 10_000_000,
+        compare: query => compareHeadToHead(query, db),
+        getRawObject: key => store.get(key),
+        getSourceMetadata: key => findSourceObjectMetadataByKey(key, db),
+        getDatasetEvidence: (version, ids) => findAcceptanceDatasetEvidence(version, ids, db),
+        getMediaMetadata: key => findMediaObjectMetadataByKey(key, db),
+        getAvatarIdentity: (kind, id) => getAvatarIdentity(kind, id, db),
+        generateAvatar: generateCanonicalAvatar,
+      });
+    } finally { await db.destroy(); }
+  } catch (error) {
+    return { status: "blocked", blockers: [`Acceptance runtime configuration or dependency failed: ${error instanceof Error ? error.message : String(error)}`] };
+  }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

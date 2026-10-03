@@ -8,7 +8,7 @@ Root owns architecture and commits; gpt-5.6-luna implementers own bounded files.
 
 P0 `42199d4`, P1 `93a443b`, P2 `44535e8` remain valid: preserved source baseline,
 one-shot data CLI/filesystem storage, verified private Release checkpoint transport.
-No production service, persistent DB, object, or volume has been removed.
+Persistent DBs, objects, named volumes and retained containers are preserved.
 User's unrelated `.gitignore` change remains untouched.
 
 ## S1: SQLite Data And Queries
@@ -83,19 +83,59 @@ Continuation implementation boundaries:
 
 ## S4: Bootstrap, Cutover And Retirement
 
-Status: remote cutover in progress. Private website `cxyfer/RiftVersus` and
+Status: remote cutover verified; legacy code retirement awaiting final deployment.
+Private website `cxyfer/RiftVersus` and
 archive `cxyfer/RiftVersus-data` exist; Pages workflow hosting, archive-only
 Actions credential, remote CI and generation-8 archive bootstrap/cold restore
-are verified. First Pages deployment failed hosted browser smoke because gzip
-HEAD cannot supply an identity file length; client repair and hosted verification
-are in progress. No existing service retired.
+are verified. After repairing gzip HEAD length inference, commit `917acf9`
+passed full remote CI and Publish run 37110172714 passed hosted desktop/mobile
+Worker/WASM/Range smoke. Current source synchronization 37110413823 and explicit
+site rollback 37110806436 passed. Historical source synchronization 37111081562
+failed closed because the upstream Players dimension lacks Levi; its failure
+archive and baseline isolation were independently verified. See the amended
+retirement evidence boundary below. Old application/sync containers stay stopped.
 
 - `origin` targets the private website repository; deployment branch is `main`.
 - Configure private archive token and Pages permissions; do not expose token publicly.
 - Restore from real GitHub archive on a clean runner; test actual Pages Range 206.
-- Verify current and historical sync, smoke, recovery and site rollback.
-- Only then stop old scheduler/services and retire obsolete API/S3/cron/Docker code.
+- Verify current sync, hosted smoke, recovery and site rollback; exercise history
+  and independently diagnose any provider blocker without weakening its gates.
+- Retire obsolete API/S3/cron/Docker code using the recorded cutover decision.
 - Preserve independent backups and all named volumes; physical deletion is out of scope.
+
+### Retirement Slice
+
+Historical run 37111081562 exercised both reviewed batches and failed closed
+at the shared provider gate: PlayerRedirects points to Levi but Players has no
+matching OverviewPage. Independent direct Players lookup returned empty, while
+the identical Faker control returned its row. Failure was archived and sequence
+2 remained authoritative. Root decision: retire the old carriers after full
+regressions using verified current sync, GitHub cold restore, hosted smoke,
+rollback and historical failure isolation as cutover evidence. The old carriers
+use this same provider and do not repair the missing upstream fact. Successful
+full historical refresh remains explicitly blocked, not waived or synthesized.
+No publication validation is weakened to complete retirement.
+Deletion class: internal code retirement. Path: delete-first. New owners are
+Pages/SQLite HTTPVFS for browser queries, apps/data plus filesystem staging for
+imports, private checkpoint Releases for durable state, and publish.yml for
+the single scheduled writer. Persistent-state risk: none; no rows, volumes,
+source objects, Releases or retained containers are deleted.
+
+- Move data-owned acceptance, mapping, sync-health and sync-service tests out of
+  apps/server first, preserving historical/provenance/media and PG coverage.
+- Delete the Fastify server workspace and server-only tests, scheduler/cron and
+  S3 transports/dependencies; keep Leaguepedia provider, one-shot runner,
+  filesystem ObjectStore, migrations and PostgreSQL build/restore tooling.
+- Remove old Docker application/migrate/sync carriers and image-artifact checks.
+  Retain explicitly selected local PostgreSQL tooling and legacy MinIO recovery
+  services with named volumes; neither is a production writer.
+- Update sample settings, scripts, lockfile, current operator entrypoints and
+  architecture records. Historical runbooks remain labelled historical records.
+- Existing PostgreSQL comparison helpers remain the pinned archival acceptance
+  implementation and differential test oracle for snapshot/SQLite parity; they
+  have no HTTP serving carrier.
+- Verify full unit/consumer/build/lint, fresh PostgreSQL integration, negative
+  active-source/dependency references and production static/hosted HTTPVFS CI.
 
 ## Verification Boundaries
 

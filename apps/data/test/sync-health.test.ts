@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { loadConfig } from "../src/config.js";
-import { evaluateSyncHealth } from "../../data/src/sync-health.js";
-import { historyRequests } from "../../data/src/sync-plan.js";
+import { loadSyncConfig } from "@riftversus/sync";
+import { evaluateSyncHealth } from "../src/sync-health.js";
+import { historyRequests } from "../src/sync-plan.js";
 
-const config = loadConfig({
+const config = loadSyncConfig({
   DATABASE_URL: "postgresql://example.test/db", LEAGUEPEDIA_ENDPOINT: "https://leaguepedia.acme.org/api.php",
   LEAGUEPEDIA_USER_AGENT: "RiftVersus/0.1 ops@acme.org", LEAGUEPEDIA_MEDIA_HOSTS: "static.acme.org",
+  SYNC_HISTORY_ENABLED: "false",
   LEAGUEPEDIA_SYNC_YEARS: "2026", LEAGUEPEDIA_SYNC_COMPETITIONS: "MSI",
   LEAGUEPEDIA_COMPETITION_MAP: '{"Worlds":{"2025":"Worlds 2025"},"MSI":{"2019":"MSI 2019","2021":"MSI 2021","2026":"MSI 2026","2027":"MSI 2027"}}',
 });

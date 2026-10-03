@@ -81,3 +81,37 @@ Retire canonical-avatar-v1 and unversioned avatar routes from the active main pa
 ### Boundary
 
 This amendment is an advisory Aegis Method Pack record. It does not grant completion authority or replace project-authoritative architecture sources.
+
+## Amendment - 2026-10-03 - Move publication and browser ownership to GitHub Actions, private immutable Releases and Pages SQLite HTTPVFS; retire legacy runtime carriers.
+
+- Status: amended
+
+### Source Evidence
+
+- Remote current synchronization 37110413823, clean GitHub checkpoint restore, hosted Worker/WASM/Range validation and explicit site rollback 37110806436 passed. Historical run 37111081562 failed closed on missing upstream Levi dimension; its immutable forensic archive and unchanged sequence-2 baseline were independently verified.
+### Change Summary
+
+Move publication and browser ownership to GitHub Actions, private immutable Releases and Pages SQLite HTTPVFS; retire legacy runtime carriers.
+
+### Compatibility Boundary
+
+Leaguepedia remains the only facts provider. PostgreSQL is ephemeral ingestion and restore tooling; private immutable checkpoints own durable data. Browser queries execute normalized SQLite using real sql.js-httpvfs workers on Pages. Typed player identity, historical team-era rows, licensed-media precedence and generated v2 presentation remain enforced. No HTTP API or alternate browser engine survives.
+
+### Retirement Impact
+
+Delete Fastify/server workspace, application Docker carriers, resident cron scheduler and S3 transport/dependencies. Retain filesystem staging, one-shot data CLI, PostgreSQL migrations, archival acceptance and differential test oracle. Preserve named volumes, retained containers, images, source evidence and all Releases; no physical data deletion. Historical refresh remains blocked without weakening provider or publication gates.
+
+### Baseline Sync
+
+- Needed: needed
+- Target: docs/aegis/baseline/2026-10-03-riftversus-github-sqlite.md
+- Action: create snapshot
+- Reason: The migration changes persistence, query, deployment and scheduled-writer ownership and needs a verified current baseline distinct from old runtime records.
+
+### Evidence References
+
+- docs/github-publishing.md
+- docs/aegis/work/2026-09-14-github-only/20-checkpoint.md
+### Boundary
+
+This amendment is an advisory Aegis Method Pack record. It does not grant completion authority or replace project-authoritative architecture sources.

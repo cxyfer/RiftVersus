@@ -8,9 +8,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { createDb, destroyDb, migrateToLatest, type Database } from "@riftversus/database";
 import type { Kysely } from "kysely";
-import type { ObjectStore, StagedSyncBatch, StoredObjectMetadata } from "@riftversus/sync";
-import { loadConfig } from "../src/config.js";
-import { createDatabaseSyncRepository, executeLeaguepediaSync } from "../../data/src/sync-service.js";
+import { loadSyncConfig, type ObjectStore, type StagedSyncBatch, type StoredObjectMetadata } from "@riftversus/sync";
+import { createDatabaseSyncRepository, executeLeaguepediaSync } from "../src/sync-service.js";
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
 const describeWithDatabase = databaseUrl ? describe : describe.skip;
@@ -27,10 +26,10 @@ describeWithDatabase("Leaguepedia PostgreSQL fixture composition", () => {
     const objects = new Map<string, StoredObjectMetadata>();
     const retainedBytes = new Map<string, Uint8Array>();
     const objectStore: ObjectStore = {
-      get: async () => Readable.from([]), signedGetUrl: async () => "https://fixture.invalid/object", head: async (key) => objects.get(key) ?? null,
+      get: async () => Readable.from([]), head: async (key) => objects.get(key) ?? null,
       putImmutable: async (object) => { const existing = objects.get(object.key); if (existing) return "existing"; objects.set(object.key, { checksum: object.checksum, contentType: object.contentType, byteSize: object.bytes.byteLength }); retainedBytes.set(object.key, object.bytes); return "inserted"; },
     };
-    const config = loadConfig({
+    const config = loadSyncConfig({
       DATABASE_URL: databaseUrl!,
       LEAGUEPEDIA_ENDPOINT: "https://leaguepedia.acme.org/api.php",
       LEAGUEPEDIA_USER_AGENT: "RiftVersus/0.1 (+https://riftversus.acme.org; ops@acme.org)",
