@@ -249,6 +249,7 @@ export async function exportComparison(input: ExportInput): Promise<ExportArtifa
         pixelRatio: EXPORT_PIXEL_RATIO,
         width: EXPORT_WIDTH,
         height: root.scrollHeight,
+        style: { position: "static", left: "0", top: "0" },
         cacheBust: false,
         skipAutoScale: true,
       });

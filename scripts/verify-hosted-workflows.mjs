@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { URL } from "node:url";
 import process from "node:process";
 import console from "node:console";
+import { assertExportImage } from "./assert-export-image.mjs";
 
 const require = createRequire(new URL("../apps/web/package.json", import.meta.url));
 const { chromium, expect } = require("@playwright/test");
@@ -62,12 +63,10 @@ try {
   const download = await downloaded;
   assert.match(download.suggestedFilename(), /\.png$/u);
   const bytes = await readFile(await download.path());
-  assert.equal(bytes.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
-  const imageWidth = bytes.readUInt32BE(16);
-  const imageHeight = bytes.readUInt32BE(20);
-  assert.ok(imageWidth > 0 && imageHeight > 0);
+  const imageEvidence = assertExportImage(bytes);
+  await writeFile(resolve(output, "export-image.json"), `${JSON.stringify(imageEvidence, null, 2)}\n`);
   await download.saveAs(resolve(output, "historical-player-export.png"));
-  checks.push("real historical PNG export has valid image dimensions");
+  checks.push("real historical PNG export contains visible result content");
 
   await page.setViewportSize({ width: 390, height: 844 });
   assert.ok(await page.evaluate(() => globalThis.document.documentElement.scrollWidth <= globalThis.innerWidth));

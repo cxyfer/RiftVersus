@@ -434,3 +434,10 @@ Commit: `d217293`.
   strict locator uniqueness. Public screenshot artifact was retained on failure.
   Independent read-only review of the corrected verifier found no additional
   evidenced locator, Playwright, historical-row or PNG-header issues.
+- 5476373 / CI 37115881965 / Publish 37115881894 passed all hosted workflows.
+  Direct image review nevertheless found a blank historical PNG: html-to-image
+  cloned the live export source's offscreen fixed positioning. Reset positioning
+  only on the export clone; keep the live source offscreen. Add decoded PNG
+  pixel-content checks to hosted export and every PNG/ZIP E2E page. The new
+  check rejects the original blank artifact; web 63 tests, build and lint pass.
+  Deployment and direct review of the repaired export remain required.

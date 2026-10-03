@@ -1,8 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import JSZip from "jszip";
-
-const PNG_HEADER = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+import { assertExportImage } from "../../../scripts/assert-export-image.mjs";
 
 interface DatabaseResponse {
   url: string;
@@ -168,7 +167,7 @@ test("exports the default comparison as a PNG", async ({ page }) => {
   const path = await download.path();
 
   expect(download.suggestedFilename()).toMatch(/\.png$/u);
-  expect((await readFile(path!)).subarray(0, PNG_HEADER.length)).toEqual(PNG_HEADER);
+  assertExportImage(await readFile(path!));
 });
 
 test("exports the broad fixture as a multi-page ZIP", async ({ page }) => {
@@ -195,7 +194,7 @@ test("exports the broad fixture as a multi-page ZIP", async ({ page }) => {
   ]);
   for (const entry of files) {
     const png = await entry.async("uint8array");
-    expect(Buffer.from(png).subarray(0, PNG_HEADER.length)).toEqual(PNG_HEADER);
+    assertExportImage(Buffer.from(png));
   }
 });
 
