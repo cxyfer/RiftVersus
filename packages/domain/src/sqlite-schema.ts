@@ -1,5 +1,5 @@
 export const SQLITE_PAGE_SIZE = 4096;
-export const SQLITE_REQUEST_CHUNK_SIZE = 16384;
+export const SQLITE_REQUEST_CHUNK_SIZE = 32768;
 export const SQLITE_SCHEMA_VERSION = 3;
 
 /** Shared public snapshot schema for both the Node exporter and the browser query layer. */

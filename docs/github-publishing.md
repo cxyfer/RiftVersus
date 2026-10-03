@@ -415,5 +415,30 @@ failed closed on a retained-image checksum; `attempt-37157431438-1` preserves
 private diagnostics, while checkpoint 3 and the website remained unchanged.
 The verified media input archive is
 `media-reviewed-1b9a558de546b58a9448bc9ddca3162cbf13fe43eae185a6ba8a065724795407`:
-683 image files, 112,268,780 image bytes, and 112,413,604 ZIP bytes. Hosted release
-verification is pending the retry after the immutable-input transport fix.
+683 image files, 112,268,780 image bytes, and 112,413,604 ZIP bytes.
+
+The subsequent media run [37159698015](https://github.com/cxyfer/RiftVersus/actions/runs/37159698015)
+passed image retention, SQLite export and acceptance, but failed during
+checkpoint-publish after uploading the chunks and index. Its outer error did
+not preserve the original exception; do not infer a rate-limit or data failure.
+The immutable attempt archive is `attempt-37159698015-1`.
+
+Recovery downloaded and verified the draft index and all 695 mapped files with
+`ReleaseStore`/`downloadCheckpoint`, cold-restored into empty PostgreSQL 17 and
+a new filesystem object store, and reran export/acceptance. Snapshot, all
+match/roster/identity/coverage hashes and fact health matched the verified media
+candidate. With no active publication writer, unchanged main code, and sequence
+4 pointing exactly to checkpoint 3, `ReleaseStore.publishDraft` published
+`checkpoint-4-37159698015-1` and confirmed `immutable: true`. The draft must never
+be published solely because its assets exist: complete file verification,
+empty-database restore, acceptance and lineage checks precede promotion.
+Recovery evidence is `/tmp/riftversus-media-attempt-37159698015/recovery-verification.json`.
+
+The website continues through the normal deployment path:
+
+```bash
+gh workflow run publish.yml --repo cxyfer/RiftVersus --ref main -f mode=rebuild
+```
+
+This independently restores the published checkpoint and passes site/browser
+checks before Pages deployment. Hosted verification is still in progress.

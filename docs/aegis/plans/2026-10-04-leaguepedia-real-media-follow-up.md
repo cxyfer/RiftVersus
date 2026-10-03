@@ -1,7 +1,7 @@
 # Leaguepedia Real Media Follow-Up
 
 Date: 2026-10-04
-Status: editorial-use policy explicitly approved by the user; implementing.
+Status: reviewed media checkpoint cold-restored and published; Pages verification in progress.
 Branch: fix/leaguepedia-real-media
 
 ## Actual Failure
@@ -210,3 +210,46 @@ table hashes and fact health again matched checkpoint 3. Evidence:
 `/tmp/riftversus-media-local/archive-verification.json`. Build/lint and all 158
 data tests passed before the immutable-transport commit; remote CI and hosted
 release gates remain required.
+
+PR 5 merged the immutable-input transport after CI 37159360018 passed 537
+unit/workspace tests, 73 PostgreSQL integration tests and six production static
+SQLite E2E tests. Media run 37159698015 verified all 683 images, bound all 782
+owners and passed acceptance. It packed 694 retained objects, uploaded the
+checkpoint chunks and index, then failed at checkpoint-publish. The original
+exception was not preserved by the outer publication error; the available logs
+do not establish a rate-limit, checksum or PostgreSQL failure. The private
+attempt-37159698015-1 archive remains immutable evidence.
+
+Recovery independently downloaded the draft index and all 695 mapped files
+through the existing ReleaseStore/downloadCheckpoint verification, then used
+runCheckpointCommand to cold-restore into an empty PostgreSQL 17 database and
+new object directory. Export/acceptance passed, reproducing the original remote
+snapshot sha256:310f313e52edab759e32b209d0febf8fb672fe325619fd1fdb74efcf128a4290.
+All match/roster/identity/coverage hashes and fact freshness matched checkpoint 3.
+Evidence: /tmp/riftversus-media-attempt-37159698015/recovery-verification.json.
+After checking the unchanged main SHA, absence of an active publication writer
+and exact sequence/parent, ReleaseStore.publishDraft published the already
+verified checkpoint-4-37159698015-1; GitHub confirmed immutable: true.
+No archive checksum, restore or acceptance gate was waived. A normal rebuild
+will restore checkpoint 4 again before site publication and Pages verification.
+One delayed scheduled history run, 37161410474, was cancelled while still at
+pre-archive code verification to avoid a second writer during recovery. Future
+schedule definitions and historical data remain unchanged.
+
+Rebuild 37161733749 successfully restored the published checkpoint 4 and passed
+export/acceptance, but stopped at the controlled browser performance gate. With
+the retained-media snapshot's physical page layout, the 16 KiB HTTPVFS request
+unit read 1,474,660 bytes in 29 Range GETs, exceeding the unchanged 1 MiB budget.
+Pictures remain separate static presentation files; they are not SQLite blobs.
+
+Decision: change the canonical SQLITE_REQUEST_CHUNK_SIZE export default to
+32 KiB, already supported by the manifest contract and browser compatibility
+tests. Keep the SQLite schema, physical database bytes, queries and logical
+snapshot unchanged. Ten controlled cold runs against the recovered production
+database each read 983,140 bytes in 21 Range GETs; median ready time was
+7,894.018145 ms under 150 ms latency and 1,250,000 bytes/s. All three existing
+gates passed and T1/LPL results remained correct. Evidence:
+/tmp/riftversus-media-layout/original-32-controlled/measurement.json.
+The alternative attribution-tail layout experiment is not part of this change.
+Fresh CI and a normal rebuild must independently verify the new export default
+before the retained images are considered deployed.
