@@ -126,3 +126,14 @@ with no entity-wide owner. The focused integration, 169 sync tests, build and
 lint passed. Queued current import `37135017721` was cancelled for this repair.
 Current import must archive the registry in the next durable checkpoint;
 rebuild alone deliberately does not promote a new data checkpoint.
+
+Follow-up era-owner repair commit `fc11112` passed CI `37135730505` and Publish
+`37135730541`. Root visual review of the hosted mobile screenshot found a
+public-key cache regression after selecting a player: a matching UUID entry
+caused an early return before its readable alias was inserted, so the selector
+lost the name/media while the comparison remained correct. The regression was
+reproduced with an actual select/apply/focus/blur sequence and repaired by always
+registering both UUID and kind/public-key owners. Hosted verification now checks
+Faker's full selector label and that its image matches the comparison image.
+The current-import run was cancelled before checkpoint promotion for this repair;
+stale-code attempt `37135609939` failed at the initial guard before restoring data.

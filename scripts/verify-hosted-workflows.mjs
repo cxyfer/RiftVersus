@@ -57,6 +57,9 @@ try {
   await page.getByLabel("結束日期").fill("2017-12-31");
   await page.getByRole("button", { name: "套用篩選" }).click();
   await expect(summary).toContainText("1-0", { timeout: 30_000 });
+  await expect(subject).toHaveValue("Faker (Lee Sang-hyeok)");
+  const selectedImage = subject.locator("..").locator("img");
+  assert.equal(await selectedImage.getAttribute("src"), await summary.getByLabel("Faker 頭像").locator("img").getAttribute("src"));
   await expect(page.getByText("SK Telecom T1 3:2 Royal Never Give Up")).toBeVisible();
   checks.push("2017 filter preserves participating historical team names");
 

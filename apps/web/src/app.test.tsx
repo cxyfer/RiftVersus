@@ -55,6 +55,23 @@ describe("comparison workspace", () => {
     expect(window.location.search).toContain("leftId=missing-player");
     expect(screen.queryByRole("region", { name: "比較摘要" })).not.toBeInTheDocument();
   });
+  it("retains selected player presentation after converting its picked UUID to a public ID", async () => {
+    const api = { ...mockApi, async resolveSubject(subject: Parameters<typeof mockApi.resolveSubject>[0]) {
+      const id = subject.kind === "player" ? SUBJECT_IDS.faker : subject.kind === "team" ? SUBJECT_IDS.t1 : SUBJECT_IDS.lpl;
+      return { ...await mockApi.resolveSubject({ ...subject, id }), publicId: subject.kind === "player" ? "faker" : subject.kind === "team" ? "t1" : "lpl" };
+    } };
+    const user = userEvent.setup();
+    renderApp("?from=2015-01-01&to=2026-12-30", api);
+    await screen.findAllByText("World Championship");
+    const input = screen.getByRole("combobox", { name: "比較對象" });
+    await user.click(input); await user.type(input, "Faker");
+    await user.click(await screen.findByRole("option", { name: /Faker \(Lee Sang-hyeok\)/ }));
+    await user.click(screen.getByRole("button", { name: "套用篩選" }));
+    await waitFor(() => expect(window.location.search).toContain("leftId=faker"));
+    await user.click(input); await user.tab();
+    expect(input).toHaveValue("Faker (Lee Sang-hyeok)");
+    expect(input.closest(".entity-input")?.querySelector("img")).toHaveAttribute("src", (await mockApi.resolveSubject({ kind: "player", id: SUBJECT_IDS.faker })).mediaUrl);
+  });
   beforeEach(() => localStorage.clear());
   afterEach(cleanup);
 

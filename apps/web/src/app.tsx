@@ -127,8 +127,6 @@ function ComparisonWorkspace({ api, onReload }: { api: ComparisonApi; onReload: 
     if (serializeRouteState(canonical).toString() !== paramsKey) setParams(serializeRouteState(canonical), { replace: true });
     setKnown((current) => {
     const left = subjectOption(firstPage.subjects.left); const right = subjectOption(firstPage.subjects.right);
-    if (current.get(left.id)?.displayName === left.displayName && current.get(left.id)?.realName === left.realName
-      && current.get(right.id)?.displayName === right.displayName && current.get(right.id)?.realName === right.realName) return current;
     return new Map(current).set(left.id, left).set(right.id, right).set(`${left.kind}:${left.publicId ?? left.id}`, left).set(`${right.kind}:${right.publicId ?? right.id}`, right);
   }); }, [firstPage, submitted, paramsKey, setParams]);
   const entity = (kind: EntityKind, id: string) => known.get(`${kind}:${id}`) ?? known.get(id) ?? unknownOption(kind, id);
