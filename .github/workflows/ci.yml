@@ -103,6 +103,9 @@ jobs:
       - name: Run full unit and workspace suites
         run: pnpm test
 
+      - name: Verify controlled network profile
+        run: node --test scripts/static-network-profile.test.mjs
+
       - name: Create disposable checkpoint databases
         env:
           PGPASSWORD: postgres

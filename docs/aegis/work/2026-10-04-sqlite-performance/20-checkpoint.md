@@ -1,0 +1,29 @@
+# SQLite Performance Execution Checkpoint
+
+User approved implementation and deployment on 2026-10-04.
+Parent: ../../plans/2026-10-04-sqlite-query-performance.md.
+Branch: design/github-pages-actions. Preserve unrelated .gitignore edits.
+
+Intent / baseline / impact: follow the parent execution readiness view; preserve
+GitHub-only SQLite, exact fact/identity semantics, schema 2/3, legacy links and
+checkpoint lineage. Change SQL, indexes, manifest validation, session cache and
+existing measurement/publication owners only. No runtime fallback or new service.
+
+## Tasks
+
+1. Measurement/profile/baseline: verified; ready to commit.
+2. Selective SQL/indexes/parity: active.
+3. Compatible reader / Release A: pending.
+4. Canonical comparison reuse: pending.
+5. Unit selection / predeploy gate / Release B: pending.
+6. Final evidence/runbook: pending.
+
+Evidence: prior diagnosis and proposal commits 7a1b05b / af917cf.
+Blockers: none currently. Local screenshots previously time out; remote runner
+screenshots remain mandatory. Local diagnostic contexts may use explicit DOM
+measurements without claiming screenshot verification.
+Next: verify covering candidate reads, commit selective SQL and compatible reader,
+then CI and Release A. Baseline: 10 runs, median 31,972.8 ms, 173 GETs and
+913,508 bytes each. Profile tests (2), lint, build and typecheck passed. Candidate
+SQL passed 13 tests and 48 complete production-data paginated comparisons.
+Drift check: continue; no source/fact/checkpoint authority changes proposed.

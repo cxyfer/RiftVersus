@@ -49,6 +49,22 @@ The script counts every ranged response (including repeated ranges), separately
 counts bodyless HEAD requests, and fails on full database GETs or page errors.
 It records a single-run startup observation, not a performance percentile.
 
+For repeatable latency measurements, use a loopback preview with the controlled
+profile (150 ms per response and a shared 10 Mbit/s body limit for all assets,
+including Worker XHR). Each repetition creates a cold browser context:
+
+```sh
+node scripts/measure-static-sqlite.mjs http://127.0.0.1:4188/RiftVersus/ /tmp/riftversus-perf --profile=controlled --runs=10
+node --test scripts/static-network-profile.test.mjs
+```
+
+Controlled timing runs omit screenshots. The existing ordinary measurement
+still captures desktop/mobile screenshots. Raw Range headers, bytes, snapshot
+identity, request size and each ready time are saved in measurement.json.
+Performance enforcement additionally requires --enforce-performance and at least
+ten controlled repetitions; it checks 30 Range GETs, 1 MiB reads and a ten-second
+median for the default comparison.
+
 ## Failure And Version Boundaries
 
 - The first database request probes `bytes=0-99`. A full HTTP 200 response,

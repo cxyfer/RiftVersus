@@ -6,32 +6,46 @@ import { URL } from "node:url";
 import process from "node:process";
 import console from "node:console";
 import { performance } from "node:perf_hooks";
+import { createControlledPreview } from "./static-network-profile.mjs";
 
 const require = createRequire(new URL("../apps/web/package.json", import.meta.url));
 const { chromium } = require("@playwright/test");
 const url = process.argv[2];
 if (!url || !/^https?:\/\//u.test(url)) throw new Error("Provide an HTTP(S) static site URL.");
 const output = resolve(process.argv[3] ?? "/tmp/riftversus-sqlite-measurement");
+const options = process.argv.slice(4);
+assert.ok(options.every(value => value === "--profile=controlled" || value === "--enforce-performance" || /^--runs=\d+$/u.test(value)), "Unknown measurement option.");
+const controlled = options.includes("--profile=controlled");
+const runs = Number(options.find(value => value.startsWith("--runs="))?.slice(7) ?? "1");
+assert.ok(Number.isSafeInteger(runs) && runs > 0 && runs <= 20, "Runs must be between 1 and 20.");
+const enforce = options.includes("--enforce-performance");
+assert.ok(!enforce || (controlled && runs >= 10), "Performance enforcement requires at least ten controlled runs.");
 await mkdir(output, { recursive: true });
-const browser = await chromium.launch({ headless: true });
+const profile = controlled ? await createControlledPreview(url) : undefined;
+let browser;
 const measurements = [];
 try {
-  for (const [name, width, height] of [["desktop", 1440, 1000], ["mobile", 390, 844]]) {
+  browser = await chromium.launch({ headless: true });
+  const viewports = controlled ? Array.from({ length: runs }, (_, index) => [`cold-${index + 1}`, 1440, 1000]) : [["desktop", 1440, 1000], ["mobile", 390, 844]];
+  for (const [name, width, height] of viewports) {
     const context = await browser.newContext({ viewport: { width, height } });
     const page = await context.newPage();
     const requests = [];
     const databaseResponses = [];
     const pageErrors = [];
-    page.on("request", request => requests.push(request.url()));
+    let firstDatabaseAt;
+    let lastDatabaseAt;
+    page.on("request", request => { requests.push(request.url()); if (request.url().includes("/database.sqlite")) firstDatabaseAt ??= performance.now(); });
     page.on("pageerror", error => pageErrors.push(error.message));
     page.on("response", response => {
       if (!new URL(response.url()).pathname.endsWith("/database.sqlite")) return;
+      lastDatabaseAt = performance.now();
       databaseResponses.push({ status: response.status(), method: response.request().method(), range: response.request().headers().range,
         contentRange: response.headers()["content-range"] });
     });
     const started = performance.now();
-    await page.goto(url);
-    await page.getByRole("region", { name: "比較摘要" }).waitFor({ timeout: 30_000 });
+    await page.goto(profile?.url ?? url, { timeout: 60_000, waitUntil: "domcontentloaded" });
+    await page.getByRole("region", { name: "比較摘要" }).waitFor({ timeout: 90_000 });
     const readyMs = performance.now() - started;
     await page.waitForLoadState("networkidle");
     let databaseBytes;
@@ -59,15 +73,30 @@ try {
     assert.deepEqual(pageErrors, []);
     assert.ok(await page.evaluate(() => globalThis.document.documentElement.scrollWidth <= globalThis.innerWidth));
     const summary = await page.getByRole("region", { name: "比較摘要" }).innerText();
-    await page.screenshot({ path: resolve(output, `${name}.png`), fullPage: true });
+    const manifest = await page.evaluate(async () => (await globalThis.fetch(new URL("data/manifest.json", globalThis.location.href))).json());
+    const rangeCounts = new Map();
+    for (const response of databaseResponses.filter(value => value.method !== "HEAD")) rangeCounts.set(response.range, (rangeCounts.get(response.range) ?? 0) + 1);
+    if (!controlled) await page.screenshot({ path: resolve(output, `${name}.png`), fullPage: true, timeout: 30_000 });
     measurements.push({ name, databaseBytes, responseBytes,
       rangeRequests: databaseResponses.filter(response => response.method !== "HEAD").length,
       headRequests: databaseResponses.filter(response => response.method === "HEAD").length,
-      fraction: responseBytes / databaseBytes, readyMs, summary });
+      fraction: responseBytes / databaseBytes, readyMs, summary,
+      databasePhaseMs: lastDatabaseAt - firstDatabaseAt,
+      snapshotId: manifest.snapshotId, checksum: manifest.database.checksum, requestChunkSize: manifest.database.requestChunkSize,
+      profile: profile?.profile ?? "hosted", duplicateRanges: [...rangeCounts].filter(([, count]) => count > 1), databaseResponses });
+    await writeFile(resolve(output, "measurement.json"), `${JSON.stringify(measurements, null, 2)}\n`);
     await context.close();
   }
 } finally {
-  await browser.close();
+  await browser?.close();
+  await profile?.close();
 }
 await writeFile(resolve(output, "measurement.json"), `${JSON.stringify(measurements, null, 2)}\n`);
-console.log(JSON.stringify(measurements, null, 2));
+const times = measurements.map(value => value.readyMs).sort((left, right) => left - right);
+const medianReadyMs = (times[Math.floor((times.length - 1) / 2)] + times[Math.ceil((times.length - 1) / 2)]) / 2;
+console.log(JSON.stringify({ medianReadyMs, measurements: measurements.map(({ databaseResponses, ...value }) => { void databaseResponses; return value; }) }, null, 2));
+if (enforce) {
+  assert.ok(measurements.every(value => value.rangeRequests <= 30), "Default comparison exceeds 30 Range GETs.");
+  assert.ok(measurements.every(value => value.responseBytes <= 1024 * 1024), "Default comparison exceeds 1 MiB of database reads.");
+  assert.ok(medianReadyMs <= 10_000, "Controlled median exceeds ten seconds.");
+}
