@@ -181,3 +181,32 @@ scaled API URL as `thumbnail`; classify matching source SHA-1 bytes as `original
 otherwise explicitly use `cdn-render`. All variants retain the exact reviewed
 delivered SHA-256 and separate upstream original SHA-1. This does not weaken the
 publication pin or invent an original-file verification claim.
+
+Remote publication 37157431438 failed closed at media retention: the third
+reviewed image (100 Thieves logo) did not pass its checksum. Checkpoint 3 and
+the deployed site remained unchanged. The private attempt archive was downloaded
+and its ZIP checksum verified; a separate restored failure database recorded
+`Reviewed media rights or image checksum is invalid.` Only the first two image
+objects had been retained. No checksum expectation was relaxed.
+
+The release input is now the exact already-reviewed bytes in an immutable private
+GitHub `media-reviewed-<bundle-sha256>` Release. The existing authenticated
+ReleaseStore verifies the bounded archive, and media-archive.ts verifies exact
+file inventory, individual size/SHA-256 and capacity. media-service.ts requires
+this archive; its CDN deployment downloader is removed. The audit downloader
+still discovers/obtains upstream assets for review. Source URLs, revisions and
+rights evidence remain Leaguepedia provenance. scripts/pack-reviewed-media.mjs
+mechanically packs existing reviewed cache bytes and emits the pinned manifest.
+Add altered-file, mutable/draft-release, unexpected-entry and size/capacity tests,
+then pass full CI before a new normal media publication and hosted verification.
+
+The 112,413,604-byte media ZIP was uploaded as a draft, downloaded back and
+verified against SHA-256
+`1b9a558de546b58a9448bc9ddca3162cbf13fe43eae185a6ba8a065724795407`, then published;
+GitHub API confirmed `draft: false, immutable: true`. The archive-based local
+composition independently verified all 683 files from those downloaded bytes,
+published 782 owners and exported SQLite, with zero CDN fetches. All preserved
+table hashes and fact health again matched checkpoint 3. Evidence:
+`/tmp/riftversus-media-local/archive-verification.json`. Build/lint and all 158
+data tests passed before the immutable-transport commit; remote CI and hosted
+release gates remain required.

@@ -15,7 +15,9 @@ fair-use 聲明或沒有逐檔授權的圖片均不得標示為 CC 授權。
 不宣稱取得上游原檔位元組。
 
 `pnpm data media` 只發布已審閱的圖片，不更新比賽、名單或覆蓋範圍。
-圖片經限量下載並校驗後保存在既有 object store；GitHub Actions `media` 模式
+審閱後的位元組需先封存為私有 GitHub immutable Release，整包與逐檔的
+SHA-256、大小、格式皆固定於清單。部署不重新取得可變的 CDN 縮圖，亦不因
+來源校驗失敗而自動接受其他圖片。封存經限量下載並校驗後保存在既有 object store；GitHub Actions `media` 模式
 透過驗收、新的私有 checkpoint 及同源 Pages 檔案部署。圖片內容變更後需要
 重新審閱校驗碼；未審閱、缺失、歧義或校驗失敗的圖片不會取得發布資格。
 

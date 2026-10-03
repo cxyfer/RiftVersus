@@ -4,15 +4,20 @@ import { resolve } from "node:path";
 import { z } from "zod";
 import { MediaRightsBasisSchema, UuidSchema } from "@riftversus/contracts";
 import { createDb, exportSnapshotFacts } from "@riftversus/database";
-import { downloadBounded, runSync, type ObjectStore, type SyncConfig, type SyncProvider, type RetainedMediaInput } from "@riftversus/sync";
+import { runSync, type DownloadResult, type ObjectStore, type SyncConfig, type SyncProvider, type RetainedMediaInput } from "@riftversus/sync";
 import { createDatabaseSyncRepository } from "./sync-service.js";
+import { downloadReviewedMedia, ReviewedMediaArchiveSchema, ReviewedImageTypeSchema } from "./media-archive.js";
+import type { ReleaseStore } from "./release-store.js";
 
 export const ReviewedMediaManifestSchema = z.object({
   version: z.literal(1),
   status: z.literal("reviewed"),
+  archive: ReviewedMediaArchiveSchema,
   assets: z.array(z.object({
     sourceUrl: z.url().refine(value => new URL(value).origin === "https://static.wikia.nocookie.net", "Expected Leaguepedia CDN media."),
     attribution: z.string().trim().min(1),
+    byteSize: z.number().int().positive().max(10_000_000),
+    contentType: ReviewedImageTypeSchema,
     rightsBasis: MediaRightsBasisSchema,
     owners: z.array(z.object({ id: UuidSchema, kind: z.enum(["player", "team", "team-era"]), sourceKey: z.string().trim().min(1), sourcePage: z.string().trim().min(1).optional() }).strict()).min(1),
   }).strict()).min(1).max(1000),
@@ -48,7 +53,7 @@ export function bindReviewedMedia(manifest: ReviewedMediaManifest, inventory: Me
   return output;
 }
 
-export async function executeReviewedMediaSync(config: SyncConfig, objectStore: ObjectStore): Promise<unknown> {
+export async function executeReviewedMediaSync(config: SyncConfig, objectStore: ObjectStore, releaseStore: ReleaseStore): Promise<unknown> {
   const db = createDb({ databaseUrl: config.databaseUrl });
   try {
     const path = resolve(config.leaguepedia.overridesDir, "media.json");
@@ -63,25 +68,22 @@ export async function executeReviewedMediaSync(config: SyncConfig, objectStore: 
       aliases: aliases.map(item => ({ entityId: item.entity_id, sourceKey: item.source_key })),
       eras: eras.map(item => ({ id: item.id, teamEntityId: item.team_entity_id, displayName: item.display_name })),
     });
+    let downloads: Map<string, DownloadResult> | undefined;
     const provider: SyncProvider = {
       id: "leaguepedia", parserVersion: "leaguepedia-reviewed-media-v1",
       async stage() {
+        downloads = await downloadReviewedMedia(manifest.archive, manifest.assets, releaseStore);
         return { version: `leaguepedia-media-${digest}`, provenance: { parserVersion: this.parserVersion, sourceDigest: `sha256:${digest}`, overrideFiles: [{ file: "data/overrides/media.json", checksum: `sha256:${digest}` }] },
           source: { sourceKey: `reviewed-media:sha256:${digest}`, sourceUrl: config.leaguepedia.endpoint, bytes, contentType: "application/json" }, media,
           coverage: [], dimensions: { entities: [], teamEras: [], regions: [], tournaments: [] }, facts: { series: [], games: [], gamePlayers: [] }, rosterGameIds: [], publicationScopes: [] };
       },
     };
-    const downloads = new Map<string, ReturnType<typeof downloadBounded>>();
     const result = await runSync(provider, { mode: "media" }, {
       objectStore, repository: createDatabaseSyncRepository(db), validate: () => undefined,
       downloadMedia(sourceUrl) {
-        let download = downloads.get(sourceUrl);
-        if (download === undefined) {
-          download = downloadBounded({ url: sourceUrl, allowedHosts: config.leaguepedia.mediaHosts,
-            allowedContentTypes: ["image/png", "image/jpeg", "image/webp", "image/gif"], maxBytes: 10_000_000, timeoutMs: 20_000 });
-          downloads.set(sourceUrl, download);
-        }
-        return download;
+        const download = downloads?.get(sourceUrl);
+        if (download === undefined) throw new Error("Reviewed image is missing from the immutable archive.");
+        return Promise.resolve(download);
       },
     });
     if (result.status === "locked") throw new Error("Media publication could not acquire the publication lock.");

@@ -16,6 +16,7 @@ import { runPublication, recordDeploymentFailure } from "./publish-run.js";
 import { guardPublication, readDeployedSite } from "./publish-github.js";
 import { requiredPublishValue } from "./publish-plan.js";
 import { runAttemptCommand } from "./attempt-commands.js";
+import { createReleaseStore } from "./release-store.js";
 
 export type DataCommand =
   | { kind: "publish"; mode: "prepare" | "guard" | "verify-deployed" | "record-deploy-failure" }
@@ -148,7 +149,10 @@ export async function runDataCli(argv: readonly string[], environment: Record<st
   }
   if (!environment.OBJECT_STORE_DIR?.trim()) throw new Error("OBJECT_STORE_DIR is required for data synchronization.");
   const objectStore = createFilesystemObjectStore(resolve(environment.OBJECT_STORE_DIR));
-  if (command.kind === "media") { console.log(JSON.stringify(await executeReviewedMediaSync(config, objectStore))); return; }
+  if (command.kind === "media") {
+    const archive = createReleaseStore({ repository: requiredPublishValue(environment, "DATA_REPOSITORY"), token: requiredPublishValue(environment, "RIFTVERSUS_DATA_TOKEN") });
+    console.log(JSON.stringify(await executeReviewedMediaSync(config, objectStore, archive))); return;
+  }
   const requests = command.kind === "history" ? historyRequests(config) : command.kind === "sync" ? [command.request] : [];
   if (requests.length === 0) throw new Error("No reviewed historical scopes are configured.");
   const errors: unknown[] = [];

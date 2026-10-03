@@ -387,3 +387,33 @@ This is current-import scope; historical media completeness is not inferred.
 The selector now retains resolved names/images after UUID canonicalization and
 App query caches have instance ownership. Hosted verification checks that the
 selected Faker image equals the comparison image after applying date filters.
+
+### Reviewed Image Inputs
+
+The user-approved [editorial image policy](media-policy.md) replaces the earlier
+licensed-only limitation for explicitly reviewed Leaguepedia subject images.
+Publication requires the exact reviewed bytes in a private immutable media
+Release, with archive and per-file checksums/sizes in `data/overrides/media.json`.
+The Leaguepedia file page/revision remains the rights/attribution source; the CDN
+is used during source audit, not to replace an already-reviewed deployment input.
+
+After auditing sources and reviewing the exact owner/era assignments and bytes,
+pack the reviewed cache with:
+
+```bash
+node scripts/pack-reviewed-media.mjs /tmp/media-audit /tmp/reviewed-media data/overrides/media.json
+```
+
+Upload the emitted ZIP as a draft `media-reviewed-<sha256>` Release in
+`cxyfer/RiftVersus-data`. Download it and verify its SHA-256 before publishing the
+draft; GitHub must report `immutable: true`. Commit the generated manifest through
+normal PR/CI, then dispatch `mode=media`. The input ZIP must contain only the
+reviewed image files. No token belongs in a manifest, source file, or command log.
+
+First media publication [37157431438](https://github.com/cxyfer/RiftVersus/actions/runs/37157431438)
+failed closed on a retained-image checksum; `attempt-37157431438-1` preserves
+private diagnostics, while checkpoint 3 and the website remained unchanged.
+The verified media input archive is
+`media-reviewed-1b9a558de546b58a9448bc9ddca3162cbf13fe43eae185a6ba8a065724795407`:
+683 image files, 112,268,780 image bytes, and 112,413,604 ZIP bytes. Hosted release
+verification is pending the retry after the immutable-input transport fix.

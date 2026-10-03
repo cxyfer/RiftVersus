@@ -141,7 +141,7 @@ describe("GitHub release store", () => {
 
     await expect(store.createDraft({ tag: "checkpoint-9", targetCommitish: "archive-code-sha", body: "checkpoint" })).resolves.toMatchObject({ draft: true });
     await expect(store.publishDraft(9)).resolves.toMatchObject({ draft: false });
-    await expect(store.createDraft({ tag: "release-9", targetCommitish: "archive-code-sha", body: "checkpoint" })).rejects.toThrow("checkpoint-, attempt-, or site-");
+    await expect(store.createDraft({ tag: "release-9", targetCommitish: "archive-code-sha", body: "checkpoint" })).rejects.toThrow(/Release tag must start/);
     expect(JSON.parse(String(calls[0]?.init.body))).toEqual({
       tag_name: "checkpoint-9",
       target_commitish: "archive-code-sha",
