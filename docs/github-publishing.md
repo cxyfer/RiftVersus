@@ -35,7 +35,7 @@ existing source documentation for endpoint/contact/mapping restrictions.
 
 | Trigger/mode | Behavior |
 | --- | --- |
-| Default-branch push / `rebuild` | Restore latest verified checkpoint, export/verify SQLite and rebuild the site; no migration or data checkpoint update |
+| Default-branch push / `rebuild` | Restore latest verified checkpoint, migrate disposable staging, export/verify SQLite and rebuild the site; no source sync or data checkpoint update |
 | Daily `17 19 * * *` UTC / `current` | Migrate staging, synchronize explicitly configured current UTC year, validate and archive a new checkpoint |
 | Weekly `47 20 * * 6` UTC / `history` | Migrate staging and run reviewed historical scopes, then archive a new checkpoint |
 | `backfill` | One explicit year and competition; no arbitrary command arguments |
