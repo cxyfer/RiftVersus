@@ -356,3 +356,16 @@ Independent live SQLite checksum verification found 715 entity route owners and
 104 era route owners, including distinct Benny/Doran keys. Hosted sharing,
 saving, player/date filtering, decoded PNG and mobile checks passed. Cold
 desktop/mobile reads were 913,508 of 7,045,120 SQLite bytes.
+
+Final app code `f1c0efb` passed
+[CI 37136572917](https://github.com/cxyfer/RiftVersus/actions/runs/37136572917)
+(488 unit, 72 integration, six production E2E tests) and
+[current Publish 37136621705](https://github.com/cxyfer/RiftVersus/actions/runs/37136621705).
+Checkpoint `checkpoint-3-37136621705-1` extends checkpoint 2. Independent dump
+checksum verification and PostgreSQL 17 cold restore confirmed all 715 entity
+and 104 era route owners match the initial public registry. Current raw replay
+found 66 image candidates, all rights-blocked, with zero retained media owners.
+This is current-import scope; historical media completeness is not inferred.
+The selector now retains resolved names/images after UUID canonicalization and
+App query caches have instance ownership. Hosted verification checks that the
+selected Faker image equals the comparison image after applying date filters.

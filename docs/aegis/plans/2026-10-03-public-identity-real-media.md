@@ -145,3 +145,37 @@ initial data rather than depending on a previous test's warm global cache. All
 68 web tests, build and lint passed; E2E adds public-route player focus/blur label
 validation. Selector-cache repair commit `dd89e30` is followed by this cache-scope
 verification repair before either is published.
+
+## Verified Closeout - 2026-10-04
+
+App code `f1c0efb` passed CI `37136572917`: 488 unit/workspace tests, 72
+PostgreSQL integration tests, six production SQLite E2E tests, build/typecheck/
+lint. Publish `37136572901` passed the strengthened hosted selector/image checks;
+root directly reviewed the repaired mobile screenshot. Actual current import
+and Publish `37136621705` also passed all candidate/restore/hosted gates.
+
+Durable checkpoint `checkpoint-3-37136621705-1` has sequence 3, parent
+`checkpoint-2-37110413823-1`, and code SHA f1c0efb765c06934e87346b64324d8a5290e4f9e.
+Root independently verified the index, current raw-object and database dump
+checksums, cold-restored the dump into isolated PostgreSQL 17, and compared all
+715 entity mappings and 104 era mappings against the first published registry:
+every owner is unchanged. The temporary test/audit container is stopped;
+original recovery resources and the user's .gitignore remain preserved.
+
+Current raw replay contains 66 referenced entities and three bounded PlayerImages
+pages. Inventory: candidates 66, eligible 0, missing 0, rights-blocked 66, invalid
+0, unbound 0, ambiguous 0. Cold-restored media_assets count is zero. Software
+discovery, era isolation and verified-media precedence are implemented; actual
+replacement of this batch remains blocked by per-file rights/attribution evidence.
+This is a scoped current-import count, not a global historical-media completeness
+claim. Generated fallback remains the approved behavior for these blocked assets.
+
+Live current site `site-37136621705-1` uses SQLite schema 3 and snapshot
+`sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c`;
+database checksum `72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44`.
+Independent live download verified this checksum and all public entity/era mapping
+rows against the first published registry; retained media count remains zero.
+It preserves 1,066 series. Hosted sharing/saving/player/date/decoded PNG/mobile
+checks passed. Confidence A for routing/persistence, B for real-media availability
+because source rights metadata is unresolved. Final evidence documentation is
+committed on the implementation branch after the verified main deployment.

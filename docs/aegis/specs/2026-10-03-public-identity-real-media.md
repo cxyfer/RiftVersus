@@ -1,7 +1,7 @@
 # Public Identity And Real Media
 
 Date: 2026-10-03
-Status: approved by the user on 2026-10-03; implementation in progress.
+Status: implemented and deployed; real asset availability remains rights-blocked.
 
 ## Intent And Boundaries
 

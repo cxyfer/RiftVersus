@@ -82,31 +82,6 @@ Retire canonical-avatar-v1 and unversioned avatar routes from the active main pa
 
 This amendment is an advisory Aegis Method Pack record. It does not grant completion authority or replace project-authoritative architecture sources.
 
-## Amendment - 2026-10-04 - Persistent readable routes and source-reviewed real media
-
-Status: amended after user approval and public-ID hosted verification.
-
-Public route keys have immutable entity-kind and team-era scopes; UUIDs remain
-canonical fact owners. Browser SQLite resolves exact public/legacy keys before
-comparison and canonicalizes successful URLs without losing filters. Same-name
-source identities remain separate. Later arrivals cannot steal published IDs.
-Migration 010 backfills existing owners before new imports; successful current
-sync archives the registry in the private checkpoint. Schema 2 site archives
-remain valid rollback artifacts; new SQLite exports use schema 3.
-
-PlayerImages/PlayerRedirects/Tournaments discovery is bounded to imported pages,
-with deterministic profile selection and raw replay. Source team logos are owned
-only by their exact era, so unrelated era media cannot be invalidated. Existing
-rights eligibility, bounded downloads and same-origin retained precedence remain
-authoritative. Missing, conflicting or unknown-rights images retain generated
-presentation; no fake license, hotlink or media override was introduced.
-
-Evidence: approved public-identity-real-media spec/plan, commits 7060422/e248c48,
-CI 37134704204 and Publish 37134704354, live schema/checksum and exact ID audit,
-plus provider-to-database two-era media regression. Baseline and operator runbook
-record verified runs and the remaining per-file rights limitation. Retired only
-UUID-only URL syntax; UUID facts, saved links and generated fallback remain.
-
 ## Amendment - 2026-10-03 - Move publication and browser ownership to GitHub Actions, private immutable Releases and Pages SQLite HTTPVFS; retire legacy runtime carriers.
 
 - Status: amended
@@ -140,3 +115,27 @@ Delete Fastify/server workspace, application Docker carriers, resident cron sche
 ### Boundary
 
 This amendment is an advisory Aegis Method Pack record. It does not grant completion authority or replace project-authoritative architecture sources.
+
+## Amendment - 2026-10-04 - Persistent readable routes and source-reviewed real media
+
+Status: amended after user approval, hosted verification and checkpoint cold restore.
+
+Public route keys have immutable entity-kind and team-era scopes; UUIDs remain
+canonical fact owners. SQLite resolves exact public/legacy keys before comparison
+and canonicalizes URLs with filters intact. Same-name identities remain separate,
+and later arrivals cannot steal published IDs. Migration 010 backfills existing
+owners before new imports; current sync archives the registry in checkpoint 3.
+Schema 2 sites remain valid rollback artifacts; new exports use schema 3.
+
+PlayerImages/PlayerRedirects/Tournaments discovery is bounded to imported pages,
+with deterministic selection and raw replay. Source team logos have only exact
+era owners, keeping unrelated eras independent. Existing rights eligibility,
+bounded downloads and same-origin retained precedence remain authoritative.
+Missing, conflicting or unknown-rights assets retain generated presentation.
+
+Evidence: approved spec/plan, final app f1c0efb, CI 37136572917, current Publish
+37136621705, and independent checkpoint-3 cold restore with all 715 entity and
+104 era owners unchanged. Current replay found 66 candidates, all rights-blocked;
+no permission was inferred. Hosted selector/summary image consistency and export
+checks passed. Retired only UUID-only URL syntax; UUID facts, saved links and
+generated fallback remain. Baseline/runbook record these evidence and limits.
