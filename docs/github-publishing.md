@@ -279,6 +279,15 @@ docker volume inspect riftversus-complete-2013-2026_postgres-data riftversus-com
 ```
 
 Observed: both writers `exited`, restart=`no`; both named data volumes exist.
+Successful hosted checks also retain `pages-browser-evidence-<run>-<attempt>`
+as an Actions artifact for 14 days. It contains public desktop/mobile screenshots
+and `measurement.json` only, not checkpoint dumps, raw objects or credentials.
+Download it for direct visual review:
+
+```bash
+gh run download RUN_ID --repo cxyfer/RiftVersus --name pages-browser-evidence-RUN_ID-ATTEMPT --dir /tmp/riftversus-pages-evidence
+```
+
 Do not start an old writer alongside Actions. Use the explicit archived-site
 rollback flow for website recovery; investigate source failures in immutable
 attempt archives before retrying history. Historical Compose/image commands in

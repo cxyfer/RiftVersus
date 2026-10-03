@@ -399,3 +399,8 @@ Commit: `d217293`.
 - After hosted success, docker update --restart=no applied only to retained
   original app/sync. Inspection confirms both exited/restart=no and both named
   PostgreSQL/MinIO data volumes exist. No container, image or volume was removed.
+- Final completion audit found successful hosted screenshots were generated but
+  not downloadable after runner disposal. Add a pinned official artifact upload
+  of public screenshots/measurement only, retained 14 days, so direct visual
+  review can verify the actual deployed desktop/mobile site. No data or runtime
+  owner changes; original hosted screenshot/Range checks remain required.

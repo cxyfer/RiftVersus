@@ -168,6 +168,14 @@ jobs:
         run: |
           pnpm data publish verify-deployed
           node scripts/measure-static-sqlite.mjs "$PAGES_BASE_URL" "$RUNNER_TEMP/pages-browser-evidence"
+      - name: Retain public website verification evidence
+        # Official upload-artifact v4; public screenshots and metrics only.
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pages-browser-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/pages-browser-evidence
+          if-no-files-found: error
+          retention-days: 14
       - name: Archive Pages deployment or smoke failure
         if: failure()
         env:
