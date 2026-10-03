@@ -68,10 +68,10 @@ An explicit known-good website recovery uses its immutable site archive:
 
 ```sh
 gh workflow run publish.yml --repo cxyfer/RiftVersus --ref main \
-  -f mode=rollback -f site_id=site-37110172714-1
+  -f mode=rollback -f site_id=site-37144301983-1
 ```
 
-That archive passed hosted desktop/mobile smoke on 2026-10-03. Recovery restores
+That Release A archive passed hosted desktop/mobile smoke on 2026-10-04. Recovery restores
 that website, without modifying the authoritative data checkpoint. Do not use
 the first `site-37108280050-1`, whose hosted client failed. After recovery, run
 `rebuild` to return the site to the latest verified checkpoint when appropriate.
@@ -385,3 +385,21 @@ This is current-import scope; historical media completeness is not inferred.
 The selector now retains resolved names/images after UUID canonicalization and
 App query caches have instance ownership. Hosted verification checks that the
 selected Faker image equals the comparison image after applying date filters.
+
+## SQLite Performance Rollout (2026-10-04)
+
+Reader-first Release A [37144301983](https://github.com/cxyfer/RiftVersus/actions/runs/37144301983)
+and bounded-request Release B [37146401357](https://github.com/cxyfer/RiftVersus/actions/runs/37146401357)
+both passed the normal protected-branch flow, archive restore, Pages deployment
+and hosted desktop/mobile user workflows. Release B code b6827a0 uses 16 KiB
+HTTPVFS requests with unchanged 4 KiB SQLite pages. Its pre-publication ten-run
+controlled gate measured 26 GETs / 884,836 bytes each, median 7.68 seconds.
+Hosted desktop/mobile measured 2.20 / 1.52 seconds; these are observations, not
+real-user percentiles. The authoritative checkpoint remains
+checkpoint-3-37136621705-1 and the logical public snapshot remains unchanged.
+
+Private immutable site-37144301983-1 is the verified rollback candidate above.
+It bypasses the new candidate performance budget while retaining ordinary
+identity/transport/screenshot checks. Full individual measurements, physical
+checksums, broad-query trade-offs, parity checks and code/CI references are in
+[the rollout evidence](aegis/work/2026-10-04-sqlite-performance/90-evidence.md).

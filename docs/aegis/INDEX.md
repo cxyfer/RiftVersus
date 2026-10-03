@@ -7,8 +7,10 @@ Entries are workspace records, not authoritative runtime decisions.
 | --- | --- | --- | --- |
 | 2026-10-04 | work | docs/aegis/work/2026-10-04-sqlite-performance/20-checkpoint.md | SQLite performance execution checkpoint |
 | 2026-10-04 | work | docs/aegis/work/2026-10-04-sqlite-performance/90-evidence.md | SQLite performance execution evidence |
-| 2026-10-04 | plan | docs/aegis/plans/2026-10-04-sqlite-query-performance.md | Proposed SQLite performance implementation and two-stage deployment |
-| 2026-10-04 | spec | docs/aegis/specs/2026-10-04-sqlite-query-performance.md | Proposed selective SQLite queries and HTTPVFS performance |
+| 2026-10-04 | artifact | docs/aegis/work/2026-10-04-sqlite-performance/performance-results.json | Individual controlled, broad and deployed SQLite measurements |
+| 2026-10-04 | artifact | docs/aegis/work/2026-10-04-sqlite-performance/wasm-query-plans.json | Actual Worker default and player query plans |
+| 2026-10-04 | plan | docs/aegis/plans/2026-10-04-sqlite-query-performance.md | Completed SQLite performance implementation and two-stage deployment |
+| 2026-10-04 | spec | docs/aegis/specs/2026-10-04-sqlite-query-performance.md | Implemented selective SQLite queries and HTTPVFS performance |
 | 2026-10-03 | plan | docs/aegis/plans/2026-10-03-public-identity-real-media.md | Approved public ID and real media execution |
 | 2026-10-03 | spec | docs/aegis/specs/2026-10-03-public-identity-real-media.md | Proposed public IDs and verified real media |
 | 2026-09-14 | work | docs/aegis/work/2026-09-14-github-only/20-checkpoint.md | GitHub-only execution checkpoint and evidence |

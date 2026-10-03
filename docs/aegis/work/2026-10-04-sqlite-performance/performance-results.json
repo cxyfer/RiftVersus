@@ -1,0 +1,2191 @@
+{
+  "profile": {
+    "latencyMs": 150,
+    "bytesPerSecond": 1250000
+  },
+  "broadSummaryTimeoutMs": 300000,
+  "baseline": [
+    {
+      "name": "cold-1",
+      "databaseBytes": 7045120,
+      "responseBytes": 913508,
+      "rangeRequests": 173,
+      "headRequests": 1,
+      "fraction": 0.1296653570130814,
+      "readyMs": 31470.574536,
+      "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+      "databasePhaseMs": 30409.278791999997,
+      "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+      "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+      "requestChunkSize": 4096,
+      "profile": {
+        "latencyMs": 150,
+        "bytesPerSecond": 1250000
+      },
+      "duplicateRanges": [],
+      "statusCounts": {
+        "200": 1,
+        "206": 173
+      }
+    },
+    {
+      "name": "cold-2",
+      "databaseBytes": 7045120,
+      "responseBytes": 913508,
+      "rangeRequests": 173,
+      "headRequests": 1,
+      "fraction": 0.1296653570130814,
+      "readyMs": 31784.701767,
+      "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+      "databasePhaseMs": 30926.585992,
+      "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+      "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+      "requestChunkSize": 4096,
+      "profile": {
+        "latencyMs": 150,
+        "bytesPerSecond": 1250000
+      },
+      "duplicateRanges": [],
+      "statusCounts": {
+        "200": 1,
+        "206": 173
+      }
+    },
+    {
+      "name": "cold-3",
+      "databaseBytes": 7045120,
+      "responseBytes": 913508,
+      "rangeRequests": 173,
+      "headRequests": 1,
+      "fraction": 0.1296653570130814,
+      "readyMs": 32900.566991,
+      "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+      "databasePhaseMs": 31305.0613,
+      "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+      "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+      "requestChunkSize": 4096,
+      "profile": {
+        "latencyMs": 150,
+        "bytesPerSecond": 1250000
+      },
+      "duplicateRanges": [],
+      "statusCounts": {
+        "200": 1,
+        "206": 173
+      }
+    },
+    {
+      "name": "cold-4",
+      "databaseBytes": 7045120,
+      "responseBytes": 913508,
+      "rangeRequests": 173,
+      "headRequests": 1,
+      "fraction": 0.1296653570130814,
+      "readyMs": 32297.76109699998,
+      "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+      "databasePhaseMs": 30547.083284000008,
+      "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+      "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+      "requestChunkSize": 4096,
+      "profile": {
+        "latencyMs": 150,
+        "bytesPerSecond": 1250000
+      },
+      "duplicateRanges": [],
+      "statusCounts": {
+        "200": 1,
+        "206": 173
+      }
+    },
+    {
+      "name": "cold-5",
+      "databaseBytes": 7045120,
+      "responseBytes": 913508,
+      "rangeRequests": 173,
+      "headRequests": 1,
+      "fraction": 0.1296653570130814,
+      "readyMs": 31587.219805,
+      "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+      "databasePhaseMs": 30325.675155000004,
+      "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+      "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+      "requestChunkSize": 4096,
+      "profile": {
+        "latencyMs": 150,
+        "bytesPerSecond": 1250000
+      },
+      "duplicateRanges": [],
+      "statusCounts": {
+        "200": 1,
+        "206": 173
+      }
+    },
+    {
+      "name": "cold-6",
+      "databaseBytes": 7045120,
+      "responseBytes": 913508,
+      "rangeRequests": 173,
+      "headRequests": 1,
+      "fraction": 0.1296653570130814,
+      "readyMs": 31656.016058999987,
+      "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+      "databasePhaseMs": 30150.852436000016,
+      "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+      "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+      "requestChunkSize": 4096,
+      "profile": {
+        "latencyMs": 150,
+        "bytesPerSecond": 1250000
+      },
+      "duplicateRanges": [],
+      "statusCounts": {
+        "200": 1,
+        "206": 173
+      }
+    },
+    {
+      "name": "cold-7",
+      "databaseBytes": 7045120,
+      "responseBytes": 913508,
+      "rangeRequests": 173,
+      "headRequests": 1,
+      "fraction": 0.1296653570130814,
+      "readyMs": 32160.914764999994,
+      "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+      "databasePhaseMs": 30560.191062999977,
+      "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+      "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+      "requestChunkSize": 4096,
+      "profile": {
+        "latencyMs": 150,
+        "bytesPerSecond": 1250000
+      },
+      "duplicateRanges": [],
+      "statusCounts": {
+        "200": 1,
+        "206": 173
+      }
+    },
+    {
+      "name": "cold-8",
+      "databaseBytes": 7045120,
+      "responseBytes": 913508,
+      "rangeRequests": 173,
+      "headRequests": 1,
+      "fraction": 0.1296653570130814,
+      "readyMs": 32265.25498800003,
+      "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+      "databasePhaseMs": 30627.28418300001,
+      "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+      "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+      "requestChunkSize": 4096,
+      "profile": {
+        "latencyMs": 150,
+        "bytesPerSecond": 1250000
+      },
+      "duplicateRanges": [],
+      "statusCounts": {
+        "200": 1,
+        "206": 173
+      }
+    },
+    {
+      "name": "cold-9",
+      "databaseBytes": 7045120,
+      "responseBytes": 913508,
+      "rangeRequests": 173,
+      "headRequests": 1,
+      "fraction": 0.1296653570130814,
+      "readyMs": 32169.262820000004,
+      "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+      "databasePhaseMs": 30744.454741000023,
+      "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+      "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+      "requestChunkSize": 4096,
+      "profile": {
+        "latencyMs": 150,
+        "bytesPerSecond": 1250000
+      },
+      "duplicateRanges": [],
+      "statusCounts": {
+        "200": 1,
+        "206": 173
+      }
+    },
+    {
+      "name": "cold-10",
+      "databaseBytes": 7045120,
+      "responseBytes": 913508,
+      "rangeRequests": 173,
+      "headRequests": 1,
+      "fraction": 0.1296653570130814,
+      "readyMs": 31499.661479000002,
+      "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+      "databasePhaseMs": 29912.19952199998,
+      "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+      "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+      "requestChunkSize": 4096,
+      "profile": {
+        "latencyMs": 150,
+        "bytesPerSecond": 1250000
+      },
+      "duplicateRanges": [],
+      "statusCounts": {
+        "200": 1,
+        "206": 173
+      }
+    }
+  ],
+  "units": {
+    "4096": [
+      {
+        "name": "cold-1",
+        "databaseBytes": 8830976,
+        "responseBytes": 401508,
+        "rangeRequests": 44,
+        "headRequests": 1,
+        "fraction": 0.04546586923121521,
+        "readyMs": 11028.077768000001,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 9556.273464000002,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 4096,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 44
+        }
+      },
+      {
+        "name": "cold-2",
+        "databaseBytes": 8830976,
+        "responseBytes": 401508,
+        "rangeRequests": 44,
+        "headRequests": 1,
+        "fraction": 0.04546586923121521,
+        "readyMs": 11073.224885000001,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 9346.017694,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 4096,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 44
+        }
+      },
+      {
+        "name": "cold-3",
+        "databaseBytes": 8830976,
+        "responseBytes": 401508,
+        "rangeRequests": 44,
+        "headRequests": 1,
+        "fraction": 0.04546586923121521,
+        "readyMs": 11012.345894999999,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 9495.648231,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 4096,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 44
+        }
+      },
+      {
+        "name": "cold-4",
+        "databaseBytes": 8830976,
+        "responseBytes": 401508,
+        "rangeRequests": 44,
+        "headRequests": 1,
+        "fraction": 0.04546586923121521,
+        "readyMs": 11103.912893,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 9804.594111999999,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 4096,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 44
+        }
+      },
+      {
+        "name": "cold-5",
+        "databaseBytes": 8830976,
+        "responseBytes": 401508,
+        "rangeRequests": 44,
+        "headRequests": 1,
+        "fraction": 0.04546586923121521,
+        "readyMs": 11051.685135,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 9445.487009000004,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 4096,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 44
+        }
+      },
+      {
+        "name": "cold-6",
+        "databaseBytes": 8830976,
+        "responseBytes": 401508,
+        "rangeRequests": 44,
+        "headRequests": 1,
+        "fraction": 0.04546586923121521,
+        "readyMs": 10830.030608000001,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 9285.121465999997,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 4096,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 44
+        }
+      },
+      {
+        "name": "cold-7",
+        "databaseBytes": 8830976,
+        "responseBytes": 401508,
+        "rangeRequests": 44,
+        "headRequests": 1,
+        "fraction": 0.04546586923121521,
+        "readyMs": 10844.853147999995,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 9366.898056999999,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 4096,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 44
+        }
+      },
+      {
+        "name": "cold-8",
+        "databaseBytes": 8830976,
+        "responseBytes": 401508,
+        "rangeRequests": 44,
+        "headRequests": 1,
+        "fraction": 0.04546586923121521,
+        "readyMs": 10866.160835000002,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 9284.149454000013,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 4096,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 44
+        }
+      },
+      {
+        "name": "cold-9",
+        "databaseBytes": 8830976,
+        "responseBytes": 401508,
+        "rangeRequests": 44,
+        "headRequests": 1,
+        "fraction": 0.04546586923121521,
+        "readyMs": 10844.854900999999,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 9333.719572999995,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 4096,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 44
+        }
+      },
+      {
+        "name": "cold-10",
+        "databaseBytes": 8830976,
+        "responseBytes": 401508,
+        "rangeRequests": 44,
+        "headRequests": 1,
+        "fraction": 0.04546586923121521,
+        "readyMs": 10860.633061,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 9325.688762999998,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 4096,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 44
+        }
+      }
+    ],
+    "16384": [
+      {
+        "name": "cold-1",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 8895.844086,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 7251.417034,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-2",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 8834.397063,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 7218.557822000001,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-3",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 8361.055849999997,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 7210.834406000002,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-4",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 8345.393339999999,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 7178.270748000003,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-5",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 8330.788677999997,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 7141.583593000003,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-6",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 8350.324440999997,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 7172.541881999998,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-7",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 8363.601403,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 7166.690877000008,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-8",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 8326.082559000002,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 7160.296061999994,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-9",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 9044.032551000011,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 7363.046982,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-10",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 8943.966100999998,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 7357.797080999997,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      }
+    ],
+    "32768": [
+      {
+        "name": "cold-1",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 20,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 6904.504110000001,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5606.162457,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 32768,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 20
+        }
+      },
+      {
+        "name": "cold-2",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 20,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 6833.754403999999,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5561.865396000001,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 32768,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 20
+        }
+      },
+      {
+        "name": "cold-3",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 20,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 6817.90222,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5546.5792,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 32768,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 20
+        }
+      },
+      {
+        "name": "cold-4",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 20,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 6804.292178,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5530.250854999998,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 32768,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 20
+        }
+      },
+      {
+        "name": "cold-5",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 20,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 7384.005958999998,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5704.474349999997,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 32768,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 20
+        }
+      },
+      {
+        "name": "cold-6",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 20,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 6872.412510000002,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5678.542804999997,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 32768,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 20
+        }
+      },
+      {
+        "name": "cold-7",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 20,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 6923.266069999998,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5656.911865999995,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 32768,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 20
+        }
+      },
+      {
+        "name": "cold-8",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 20,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 6859.904103000001,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5530.037243999999,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 32768,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 20
+        }
+      },
+      {
+        "name": "cold-9",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 20,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 6839.886749999998,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5554.652237999995,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 32768,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 20
+        }
+      },
+      {
+        "name": "cold-10",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 20,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 6915.4644670000125,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5566.447698000004,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 32768,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 20
+        }
+      }
+    ],
+    "65536": [
+      {
+        "name": "cold-1",
+        "databaseBytes": 8830976,
+        "responseBytes": 1114212,
+        "rangeRequests": 15,
+        "headRequests": 1,
+        "fraction": 0.12617087850765307,
+        "readyMs": 6883.327229,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5195.262277,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 65536,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 15
+        }
+      },
+      {
+        "name": "cold-2",
+        "databaseBytes": 8830976,
+        "responseBytes": 1114212,
+        "rangeRequests": 15,
+        "headRequests": 1,
+        "fraction": 0.12617087850765307,
+        "readyMs": 6338.287734,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5144.047221000001,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 65536,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 15
+        }
+      },
+      {
+        "name": "cold-3",
+        "databaseBytes": 8830976,
+        "responseBytes": 1114212,
+        "rangeRequests": 15,
+        "headRequests": 1,
+        "fraction": 0.12617087850765307,
+        "readyMs": 6369.844062,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5182.6496240000015,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 65536,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 15
+        }
+      },
+      {
+        "name": "cold-4",
+        "databaseBytes": 8830976,
+        "responseBytes": 1114212,
+        "rangeRequests": 15,
+        "headRequests": 1,
+        "fraction": 0.12617087850765307,
+        "readyMs": 6998.354373000002,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5312.598824999997,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 65536,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 15
+        }
+      },
+      {
+        "name": "cold-5",
+        "databaseBytes": 8830976,
+        "responseBytes": 1114212,
+        "rangeRequests": 15,
+        "headRequests": 1,
+        "fraction": 0.12617087850765307,
+        "readyMs": 6419.239568000001,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5166.226933000002,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 65536,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 15
+        }
+      },
+      {
+        "name": "cold-6",
+        "databaseBytes": 8830976,
+        "responseBytes": 1114212,
+        "rangeRequests": 15,
+        "headRequests": 1,
+        "fraction": 0.12617087850765307,
+        "readyMs": 6276.316229999997,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5141.8155199999965,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 65536,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 15
+        }
+      },
+      {
+        "name": "cold-7",
+        "databaseBytes": 8830976,
+        "responseBytes": 1114212,
+        "rangeRequests": 15,
+        "headRequests": 1,
+        "fraction": 0.12617087850765307,
+        "readyMs": 6301.147707999997,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5125.096001000005,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 65536,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 15
+        }
+      },
+      {
+        "name": "cold-8",
+        "databaseBytes": 8830976,
+        "responseBytes": 1114212,
+        "rangeRequests": 15,
+        "headRequests": 1,
+        "fraction": 0.12617087850765307,
+        "readyMs": 6380.001085999997,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5133.779247999999,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 65536,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 15
+        }
+      },
+      {
+        "name": "cold-9",
+        "databaseBytes": 8830976,
+        "responseBytes": 1114212,
+        "rangeRequests": 15,
+        "headRequests": 1,
+        "fraction": 0.12617087850765307,
+        "readyMs": 6306.546927999996,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5163.683987000004,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 65536,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 15
+        }
+      },
+      {
+        "name": "cold-10",
+        "databaseBytes": 8830976,
+        "responseBytes": 1114212,
+        "rangeRequests": 15,
+        "headRequests": 1,
+        "fraction": 0.12617087850765307,
+        "readyMs": 6315.3390770000115,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 5124.919850999999,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+        "requestChunkSize": 65536,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 15
+        }
+      }
+    ]
+  },
+  "broad": {
+    "team-team": {
+      "baseline": [
+        {
+          "name": "cold-1",
+          "databaseBytes": 7045120,
+          "responseBytes": 974948,
+          "rangeRequests": 165,
+          "headRequests": 1,
+          "fraction": 0.13838628724563953,
+          "readyMs": 30655.642325,
+          "summary": "T1\n4 series wins · 50%\nSeries\n4-4\nGames 15-14 · 52%\nBilibili Gaming\n4 series wins",
+          "databasePhaseMs": 29245.522501,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 165
+          }
+        },
+        {
+          "name": "cold-2",
+          "databaseBytes": 7045120,
+          "responseBytes": 974948,
+          "rangeRequests": 165,
+          "headRequests": 1,
+          "fraction": 0.13838628724563953,
+          "readyMs": 30560.779335,
+          "summary": "T1\n4 series wins · 50%\nSeries\n4-4\nGames 15-14 · 52%\nBilibili Gaming\n4 series wins",
+          "databasePhaseMs": 29208.102117999995,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 165
+          }
+        },
+        {
+          "name": "cold-3",
+          "databaseBytes": 7045120,
+          "responseBytes": 974948,
+          "rangeRequests": 165,
+          "headRequests": 1,
+          "fraction": 0.13838628724563953,
+          "readyMs": 30509.105735000005,
+          "summary": "T1\n4 series wins · 50%\nSeries\n4-4\nGames 15-14 · 52%\nBilibili Gaming\n4 series wins",
+          "databasePhaseMs": 29096.598067000006,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 165
+          }
+        }
+      ],
+      "candidate": [
+        {
+          "name": "cold-1",
+          "databaseBytes": 8830976,
+          "responseBytes": 1146980,
+          "rangeRequests": 22,
+          "headRequests": 1,
+          "fraction": 0.12988145364679962,
+          "readyMs": 7900.237287000001,
+          "summary": "T1\n4 series wins · 50%\nSeries\n4-4\nGames 15-14 · 52%\nBilibili Gaming\n4 series wins",
+          "databasePhaseMs": 6457.674443,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 22
+          }
+        },
+        {
+          "name": "cold-2",
+          "databaseBytes": 8830976,
+          "responseBytes": 1146980,
+          "rangeRequests": 22,
+          "headRequests": 1,
+          "fraction": 0.12988145364679962,
+          "readyMs": 7793.897479999998,
+          "summary": "T1\n4 series wins · 50%\nSeries\n4-4\nGames 15-14 · 52%\nBilibili Gaming\n4 series wins",
+          "databasePhaseMs": 6430.370862,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 22
+          }
+        },
+        {
+          "name": "cold-3",
+          "databaseBytes": 8830976,
+          "responseBytes": 1146980,
+          "rangeRequests": 22,
+          "headRequests": 1,
+          "fraction": 0.12988145364679962,
+          "readyMs": 7798.440792000001,
+          "summary": "T1\n4 series wins · 50%\nSeries\n4-4\nGames 15-14 · 52%\nBilibili Gaming\n4 series wins",
+          "databasePhaseMs": 6395.955100000003,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 22
+          }
+        }
+      ]
+    },
+    "team-player": {
+      "baseline": [
+        {
+          "name": "cold-1",
+          "databaseBytes": 7045120,
+          "responseBytes": 4423780,
+          "rangeRequests": 550,
+          "headRequests": 1,
+          "fraction": 0.6279211709665697,
+          "readyMs": 94335.416312,
+          "summary": "T1\n9 series wins · 75%\nSeries\n9-3\nGames 21-9 · 70%\nXiaohu\n3 series wins",
+          "databasePhaseMs": 92931.89825,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 550
+          }
+        },
+        {
+          "name": "cold-2",
+          "databaseBytes": 7045120,
+          "responseBytes": 4423780,
+          "rangeRequests": 550,
+          "headRequests": 1,
+          "fraction": 0.6279211709665697,
+          "readyMs": 94082.62191999999,
+          "summary": "T1\n9 series wins · 75%\nSeries\n9-3\nGames 21-9 · 70%\nXiaohu\n3 series wins",
+          "databasePhaseMs": 92688.130816,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 550
+          }
+        },
+        {
+          "name": "cold-3",
+          "databaseBytes": 7045120,
+          "responseBytes": 4423780,
+          "rangeRequests": 550,
+          "headRequests": 1,
+          "fraction": 0.6279211709665697,
+          "readyMs": 94695.67829199997,
+          "summary": "T1\n9 series wins · 75%\nSeries\n9-3\nGames 21-9 · 70%\nXiaohu\n3 series wins",
+          "databasePhaseMs": 93230.45186399997,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 550
+          }
+        }
+      ],
+      "candidate": [
+        {
+          "name": "cold-1",
+          "databaseBytes": 8830976,
+          "responseBytes": 3063908,
+          "rangeRequests": 98,
+          "headRequests": 1,
+          "fraction": 0.3469500992868738,
+          "readyMs": 22796.696045999997,
+          "summary": "T1\n9 series wins · 75%\nSeries\n9-3\nGames 21-9 · 70%\nXiaohu\n3 series wins",
+          "databasePhaseMs": 20959.546832,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 98
+          }
+        },
+        {
+          "name": "cold-2",
+          "databaseBytes": 8830976,
+          "responseBytes": 3063908,
+          "rangeRequests": 98,
+          "headRequests": 1,
+          "fraction": 0.3469500992868738,
+          "readyMs": 22218.847204000005,
+          "summary": "T1\n9 series wins · 75%\nSeries\n9-3\nGames 21-9 · 70%\nXiaohu\n3 series wins",
+          "databasePhaseMs": 20626.457575999997,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 98
+          }
+        },
+        {
+          "name": "cold-3",
+          "databaseBytes": 8830976,
+          "responseBytes": 3063908,
+          "rangeRequests": 98,
+          "headRequests": 1,
+          "fraction": 0.3469500992868738,
+          "readyMs": 22834.394889000003,
+          "summary": "T1\n9 series wins · 75%\nSeries\n9-3\nGames 21-9 · 70%\nXiaohu\n3 series wins",
+          "databasePhaseMs": 21374.429099,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 98
+          }
+        }
+      ]
+    },
+    "player-player": {
+      "baseline": [
+        {
+          "name": "cold-1",
+          "databaseBytes": 7045120,
+          "responseBytes": 4997220,
+          "rangeRequests": 134,
+          "headRequests": 1,
+          "fraction": 0.7093165198037791,
+          "readyMs": 40618.382608,
+          "summary": "Faker\n9 series wins · 75%\nSeries\n9-3\nGames 21-9 · 70%\nXiaohu\n3 series wins",
+          "databasePhaseMs": 37783.627071,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 134
+          }
+        },
+        {
+          "name": "cold-2",
+          "databaseBytes": 7045120,
+          "responseBytes": 4997220,
+          "rangeRequests": 134,
+          "headRequests": 1,
+          "fraction": 0.7093165198037791,
+          "readyMs": 31918.393379,
+          "summary": "Faker\n9 series wins · 75%\nSeries\n9-3\nGames 21-9 · 70%\nXiaohu\n3 series wins",
+          "databasePhaseMs": 29912.448484,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 134
+          }
+        },
+        {
+          "name": "cold-3",
+          "databaseBytes": 7045120,
+          "responseBytes": 4997220,
+          "rangeRequests": 134,
+          "headRequests": 1,
+          "fraction": 0.7093165198037791,
+          "readyMs": 30518.33443799999,
+          "summary": "Faker\n9 series wins · 75%\nSeries\n9-3\nGames 21-9 · 70%\nXiaohu\n3 series wins",
+          "databasePhaseMs": 29014.109463,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 134
+          }
+        }
+      ],
+      "candidate": [
+        {
+          "name": "cold-1",
+          "databaseBytes": 8830976,
+          "responseBytes": 2850916,
+          "rangeRequests": 77,
+          "headRequests": 1,
+          "fraction": 0.32283136088242115,
+          "readyMs": 18753.646154,
+          "summary": "Faker\n9 series wins · 75%\nSeries\n9-3\nGames 21-9 · 70%\nXiaohu\n3 series wins",
+          "databasePhaseMs": 17320.175785,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 77
+          }
+        },
+        {
+          "name": "cold-2",
+          "databaseBytes": 8830976,
+          "responseBytes": 2850916,
+          "rangeRequests": 77,
+          "headRequests": 1,
+          "fraction": 0.32283136088242115,
+          "readyMs": 19341.168542000003,
+          "summary": "Faker\n9 series wins · 75%\nSeries\n9-3\nGames 21-9 · 70%\nXiaohu\n3 series wins",
+          "databasePhaseMs": 17676.338877000002,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 77
+          }
+        },
+        {
+          "name": "cold-3",
+          "databaseBytes": 8830976,
+          "responseBytes": 2850916,
+          "rangeRequests": 77,
+          "headRequests": 1,
+          "fraction": 0.32283136088242115,
+          "readyMs": 19282.001065999997,
+          "summary": "Faker\n9 series wins · 75%\nSeries\n9-3\nGames 21-9 · 70%\nXiaohu\n3 series wins",
+          "databasePhaseMs": 17604.223785999995,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 77
+          }
+        }
+      ]
+    },
+    "player-region": {
+      "baseline": [
+        {
+          "name": "cold-1",
+          "databaseBytes": 7045120,
+          "responseBytes": 4780132,
+          "rangeRequests": 611,
+          "headRequests": 1,
+          "fraction": 0.678502566315407,
+          "readyMs": 110101.449346,
+          "summary": "Faker\n33 series wins · 70%\nSeries\n33-14\nGames 75-38 · 66%\nLPL\n14 series wins",
+          "databasePhaseMs": 107390.59208,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 611
+          }
+        },
+        {
+          "name": "cold-2",
+          "databaseBytes": 7045120,
+          "responseBytes": 4780132,
+          "rangeRequests": 611,
+          "headRequests": 1,
+          "fraction": 0.678502566315407,
+          "readyMs": 107792.75235400001,
+          "summary": "Faker\n33 series wins · 70%\nSeries\n33-14\nGames 75-38 · 66%\nLPL\n14 series wins",
+          "databasePhaseMs": 106223.46014600001,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 611
+          }
+        },
+        {
+          "name": "cold-3",
+          "databaseBytes": 7045120,
+          "responseBytes": 4780132,
+          "rangeRequests": 611,
+          "headRequests": 1,
+          "fraction": 0.678502566315407,
+          "readyMs": 106006.74762500002,
+          "summary": "Faker\n33 series wins · 70%\nSeries\n33-14\nGames 75-38 · 66%\nLPL\n14 series wins",
+          "databasePhaseMs": 104391.07812500003,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 611
+          }
+        }
+      ],
+      "candidate": [
+        {
+          "name": "cold-1",
+          "databaseBytes": 8830976,
+          "responseBytes": 3915876,
+          "rangeRequests": 124,
+          "headRequests": 1,
+          "fraction": 0.4434250529046846,
+          "readyMs": 27303.209826,
+          "summary": "Faker\n33 series wins · 70%\nSeries\n33-14\nGames 75-38 · 66%\nLPL\n14 series wins",
+          "databasePhaseMs": 25630.509857,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 124
+          }
+        },
+        {
+          "name": "cold-2",
+          "databaseBytes": 8830976,
+          "responseBytes": 3915876,
+          "rangeRequests": 124,
+          "headRequests": 1,
+          "fraction": 0.4434250529046846,
+          "readyMs": 26563.279521999997,
+          "summary": "Faker\n33 series wins · 70%\nSeries\n33-14\nGames 75-38 · 66%\nLPL\n14 series wins",
+          "databasePhaseMs": 25269.963805,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 124
+          }
+        },
+        {
+          "name": "cold-3",
+          "databaseBytes": 8830976,
+          "responseBytes": 3915876,
+          "rangeRequests": 124,
+          "headRequests": 1,
+          "fraction": 0.4434250529046846,
+          "readyMs": 27192.195,
+          "summary": "Faker\n33 series wins · 70%\nSeries\n33-14\nGames 75-38 · 66%\nLPL\n14 series wins",
+          "databasePhaseMs": 25484.035825999992,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 124
+          }
+        }
+      ]
+    },
+    "region-region": {
+      "baseline": [
+        {
+          "name": "cold-1",
+          "databaseBytes": 7045120,
+          "responseBytes": 1400932,
+          "rangeRequests": 306,
+          "headRequests": 1,
+          "fraction": 0.1988514035247093,
+          "readyMs": 53989.842122999995,
+          "summary": "LCK\n72 series wins · 59%\nSeries\n72-51\nGames 154-119 · 56%\nLPL\n51 series wins",
+          "databasePhaseMs": 52660.374048,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 306
+          }
+        },
+        {
+          "name": "cold-2",
+          "databaseBytes": 7045120,
+          "responseBytes": 1400932,
+          "rangeRequests": 306,
+          "headRequests": 1,
+          "fraction": 0.1988514035247093,
+          "readyMs": 53364.844499000006,
+          "summary": "LCK\n72 series wins · 59%\nSeries\n72-51\nGames 154-119 · 56%\nLPL\n51 series wins",
+          "databasePhaseMs": 51740.953749,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 306
+          }
+        },
+        {
+          "name": "cold-3",
+          "databaseBytes": 7045120,
+          "responseBytes": 1400932,
+          "rangeRequests": 306,
+          "headRequests": 1,
+          "fraction": 0.1988514035247093,
+          "readyMs": 53297.03870599999,
+          "summary": "LCK\n72 series wins · 59%\nSeries\n72-51\nGames 154-119 · 56%\nLPL\n51 series wins",
+          "databasePhaseMs": 51790.46847199999,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "72ec05b414f33a14fddb26c71f5cd639b0eb8a81398ef268e49a4af9f660ea44",
+          "requestChunkSize": 4096,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 306
+          }
+        }
+      ],
+      "candidate": [
+        {
+          "name": "cold-1",
+          "databaseBytes": 8830976,
+          "responseBytes": 1867876,
+          "rangeRequests": 53,
+          "headRequests": 1,
+          "fraction": 0.21151410670802412,
+          "readyMs": 13515.44877,
+          "summary": "LCK\n72 series wins · 59%\nSeries\n72-51\nGames 154-119 · 56%\nLPL\n51 series wins",
+          "databasePhaseMs": 11990.384505,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 53
+          }
+        },
+        {
+          "name": "cold-2",
+          "databaseBytes": 8830976,
+          "responseBytes": 1867876,
+          "rangeRequests": 53,
+          "headRequests": 1,
+          "fraction": 0.21151410670802412,
+          "readyMs": 13428.094239,
+          "summary": "LCK\n72 series wins · 59%\nSeries\n72-51\nGames 154-119 · 56%\nLPL\n51 series wins",
+          "databasePhaseMs": 11944.00128,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 53
+          }
+        },
+        {
+          "name": "cold-3",
+          "databaseBytes": 8830976,
+          "responseBytes": 1867876,
+          "rangeRequests": 53,
+          "headRequests": 1,
+          "fraction": 0.21151410670802412,
+          "readyMs": 13537.935234,
+          "summary": "LCK\n72 series wins · 59%\nSeries\n72-51\nGames 154-119 · 56%\nLPL\n51 series wins",
+          "databasePhaseMs": 11955.083523999998,
+          "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+          "checksum": "b6adfc58aadaf2dc71ebfd386f67d374dc9a87ceff48c701bb65041b5ae5063a",
+          "requestChunkSize": 16384,
+          "profile": {
+            "latencyMs": 150,
+            "bytesPerSecond": 1250000
+          },
+          "duplicateRanges": [],
+          "statusCounts": {
+            "200": 1,
+            "206": 53
+          }
+        }
+      ]
+    }
+  },
+  "cache": {
+    "before": {
+      "ranges": 26,
+      "sql": 2
+    },
+    "after": {
+      "ranges": 26,
+      "sql": 2,
+      "url": "http://127.0.0.1:4200/RiftVersus/?leftKind=team&leftId=t1&rightKind=region&rightId=lpl&from=2019-01-01&to=2026-12-31&events=worlds&bestOf=5"
+    }
+  },
+  "releaseB": {
+    "site": {
+      "siteId": "site-37146401357-1",
+      "codeSha": "b6827a08f8a5e11676110e38416c10aa639dca31",
+      "checkpointId": "checkpoint-3-37136621705-1",
+      "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c"
+    },
+    "database": {
+      "file": "b3a1233c7f5468c597281f2d491f1aa860904d262df74b51ac7c79dd1ef13e23/database.sqlite",
+      "checksum": "b3a1233c7f5468c597281f2d491f1aa860904d262df74b51ac7c79dd1ef13e23",
+      "byteSize": 8830976,
+      "pageSize": 4096,
+      "requestChunkSize": 16384
+    },
+    "controlled": [
+      {
+        "name": "cold-1",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 7718.272582,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 6395.215784,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b3a1233c7f5468c597281f2d491f1aa860904d262df74b51ac7c79dd1ef13e23",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-2",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 7636.7231520000005,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 6371.165338000001,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b3a1233c7f5468c597281f2d491f1aa860904d262df74b51ac7c79dd1ef13e23",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-3",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 7628.753875000002,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 6387.510413,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b3a1233c7f5468c597281f2d491f1aa860904d262df74b51ac7c79dd1ef13e23",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-4",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 7639.108149,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 6354.119311000002,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b3a1233c7f5468c597281f2d491f1aa860904d262df74b51ac7c79dd1ef13e23",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-5",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 7637.001526,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 6363.844544,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b3a1233c7f5468c597281f2d491f1aa860904d262df74b51ac7c79dd1ef13e23",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-6",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 7637.085629000001,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 6359.059709000001,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b3a1233c7f5468c597281f2d491f1aa860904d262df74b51ac7c79dd1ef13e23",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-7",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 8130.655922999998,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 6706.204555999997,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b3a1233c7f5468c597281f2d491f1aa860904d262df74b51ac7c79dd1ef13e23",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-8",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 8129.000485000004,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 7006.156523999998,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b3a1233c7f5468c597281f2d491f1aa860904d262df74b51ac7c79dd1ef13e23",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-9",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 8159.996006000001,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 6999.378261999998,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b3a1233c7f5468c597281f2d491f1aa860904d262df74b51ac7c79dd1ef13e23",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "cold-10",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 8125.870975000013,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 6990.289518000005,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b3a1233c7f5468c597281f2d491f1aa860904d262df74b51ac7c79dd1ef13e23",
+        "requestChunkSize": 16384,
+        "profile": {
+          "latencyMs": 150,
+          "bytesPerSecond": 1250000
+        },
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      }
+    ],
+    "hosted": [
+      {
+        "name": "desktop",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 2204.2748819999997,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 1520.6200760000002,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b3a1233c7f5468c597281f2d491f1aa860904d262df74b51ac7c79dd1ef13e23",
+        "requestChunkSize": 16384,
+        "profile": "hosted",
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      },
+      {
+        "name": "mobile",
+        "databaseBytes": 8830976,
+        "responseBytes": 884836,
+        "rangeRequests": 26,
+        "headRequests": 1,
+        "fraction": 0.10019685253362709,
+        "readyMs": 1524.3476749999995,
+        "summary": "T1\n9 series wins · 100%\nSeries\n9-0\nGames 27-6 · 82%\nLPL\n0 series wins",
+        "databasePhaseMs": 1198.0739330000001,
+        "snapshotId": "sha256:10a925e2f30a3d79a5026d481f5239db4e3e26b57a941372a014aa45b66e1d6c",
+        "checksum": "b3a1233c7f5468c597281f2d491f1aa860904d262df74b51ac7c79dd1ef13e23",
+        "requestChunkSize": 16384,
+        "profile": "hosted",
+        "duplicateRanges": [],
+        "statusCounts": {
+          "200": 1,
+          "206": 26
+        }
+      }
+    ]
+  }
+}

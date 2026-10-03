@@ -1,7 +1,7 @@
 # SQLite Query Performance Proposal
 
 Date: 2026-10-04
-Status: proposed; production implementation has not started.
+Status: implemented, verified and deployed in Releases A/B on 2026-10-04.
 
 ## Intent And Boundaries
 
@@ -26,9 +26,10 @@ ImpactStatementDraft: packages/domain SQL/indexes, packages/contracts manifest
 validation, apps/data export, apps/web query/cache integration and existing
 browser measurement/E2E tools. Reuse these owners; add no parallel cache owner.
 
-Requirement Ready Check: the user requested a solution proposal after diagnosis.
-The candidate scope and performance targets below are proposed, not approved
-requirements or achieved results. Implementation follows design approval.
+Requirement Ready Check: the user approved the implementation plan on 2026-10-04.
+The targets below are release gates. Actual results and limits are recorded in
+../work/2026-10-04-sqlite-performance/90-evidence.md; the research measurements
+below remain historical observations.
 
 ## Evidence And Limits
 
