@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mockApi } from "./api/mock-runtime.js";
 import { App, optionLabel, optionSubtitle } from "./app.js";
 import { defaultRouteState, SUBJECT_IDS, toContractQuery } from "./model.js";
+import { UnknownPublicSubjectError } from "@riftversus/domain";
 
 function renderApp(search = "", api = mockApi, onReload?: () => void) {
   window.history.replaceState({}, "", `/${search}`);
@@ -34,6 +35,26 @@ describe("optionSubtitle", () => {
 });
 
 describe("comparison workspace", () => {
+  it("loads readable links, canonicalizes legacy links and preserves scope", async () => {
+    const api = { ...mockApi, async resolveSubject(subject: Parameters<typeof mockApi.resolveSubject>[0]) {
+      const id = subject.kind === "team" ? SUBJECT_IDS.t1 : SUBJECT_IDS.lpl;
+      return { ...await mockApi.resolveSubject({ ...subject, id }), publicId: subject.kind === "team" ? "t1" : "lpl" };
+    } };
+    renderApp(`?leftKind=team&leftId=${SUBJECT_IDS.t1}&rightKind=region&rightId=${SUBJECT_IDS.lpl}&from=2020-01-01&to=2020-12-31`, api);
+    await waitFor(() => expect(window.location.search).toContain("leftId=t1"));
+    expect(window.location.search).toContain("rightId=lpl");
+    expect(window.location.search).toContain("from=2020-01-01");
+    expect(window.location.search).toContain("to=2020-12-31");
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "比較對象" })).toHaveValue("T1"));
+  });
+  it("keeps unknown readable IDs in the URL and presents recovery instead of unrelated results", async () => {
+    renderApp("?leftKind=player&leftId=missing-player&rightKind=region&rightId=lpl", {
+      ...mockApi, resolveSubject: async () => { throw new UnknownPublicSubjectError(); },
+    });
+    expect(await screen.findByRole("alert")).toHaveTextContent("找不到指定的比較對象");
+    expect(window.location.search).toContain("leftId=missing-player");
+    expect(screen.queryByRole("region", { name: "比較摘要" })).not.toBeInTheDocument();
+  });
   beforeEach(() => localStorage.clear());
   afterEach(cleanup);
 

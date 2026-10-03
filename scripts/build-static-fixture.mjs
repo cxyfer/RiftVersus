@@ -48,6 +48,8 @@ function entity({ kind, id, displayName, realName, eraLabel, teamEraId, canonica
   return {
     id,
     kind,
+    publicId: canonicalName.normalize("NFKC").toLowerCase().replace(/\s+/gu, "-"),
+    ...(teamEraId === undefined ? {} : { publicEraId: `${displayName.normalize("NFKC").toLowerCase().replace(/\s+/gu, "-")}--${teamEraId.slice(0, 8)}` }),
     displayName,
     ...(realName === undefined ? {} : { realName }),
     ...(eraLabel === undefined ? {} : { eraLabel }),
@@ -283,13 +285,13 @@ await writePresentationAssets(projection.entities);
 const snapshot = await writeSnapshotData(outputDirectory, projection);
 const manifest = JSON.parse(await readFile(join(outputDirectory, "data", "manifest.json"), "utf8"));
 if (
-  manifest.schemaVersion !== 2
+  manifest.schemaVersion !== 3
   || typeof manifest.database?.file !== "string"
   || !/^[a-f0-9]{64}\/database\.sqlite$/u.test(manifest.database.file)
   || manifest.database.pageSize !== 4096
   || manifest.database.requestChunkSize !== 4096
 ) {
-  throw new Error("Static fixture writer must produce a schema v2 SQLite manifest.");
+  throw new Error("Static fixture writer must produce a schema v3 SQLite manifest.");
 }
 
 process.stdout.write(`Built static fixture ${snapshot.snapshotId} with ${snapshot.series.length} series at ${outputDirectory}\n`);

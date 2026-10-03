@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { DatasetSchema } from "./dataset.js";
-import { PresentationImageUrlSchema, ResolvedSubjectSchema, SubjectRefSchema, UuidSchema } from "./entities.js";
+import { PresentationImageUrlSchema, ResolvedSubjectSchema, RouteSubjectRefSchema, SubjectRefSchema, UuidSchema } from "./entities.js";
 import { DateSchema } from "./primitives.js";
 
 export { DateSchema } from "./primitives.js";
@@ -30,7 +30,7 @@ export const ComparisonQuerySchema = z
     limit: z.coerce.number().int().min(1).max(100).default(50),
   })
   .superRefine((query, context) => {
-    if (query.left.id === query.right.id) {
+    if (query.left.id === query.right.id && (query.left.kind === query.right.kind || UuidSchema.safeParse(query.left.id).success)) {
       context.addIssue({
         code: "custom",
         message: "Comparison subjects must have distinct canonical IDs.",
@@ -46,6 +46,8 @@ export const ComparisonQuerySchema = z
       });
     }
   });
+
+export const ComparisonRouteQuerySchema = ComparisonQuerySchema.safeExtend({ left: RouteSubjectRefSchema, right: RouteSubjectRefSchema });
 
 export const RecordSummarySchema = z.object({
   wins: z.number().int().min(0),

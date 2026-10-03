@@ -1,4 +1,4 @@
-import { compareSqlite, searchSqlite } from "@riftversus/domain";
+import { compareSqlite, searchSqlite, resolvePublicSubject } from "@riftversus/domain";
 import type { ComparisonQuery, EntityKind } from "@riftversus/contracts";
 
 import { createSnapshotClient, type SqliteSnapshotClient } from "./snapshot-client.js";
@@ -8,6 +8,10 @@ const kindSubtitle = { player: "選手", team: "戰隊", region: "賽區" } as c
 
 export function createStaticApi(snapshotClient: SqliteSnapshotClient = createSnapshotClient()): ComparisonApi {
   return {
+    async resolveSubject(subject) {
+      const { executor } = await snapshotClient.open();
+      return resolvePublicSubject(executor, subject);
+    },
     async searchEntities(query: string, kinds: EntityKind[]): Promise<EntityOption[]> {
       const { executor } = await snapshotClient.open();
       return (await searchSqlite(executor, query, kinds)).map((entity) => ({ ...entity, subtitle: kindSubtitle[entity.kind] }));

@@ -1,6 +1,6 @@
 export const SQLITE_PAGE_SIZE = 4096;
 export const SQLITE_REQUEST_CHUNK_SIZE = 4096;
-export const SQLITE_SCHEMA_VERSION = 2;
+export const SQLITE_SCHEMA_VERSION = 3;
 
 /** Shared public snapshot schema for both the Node exporter and the browser query layer. */
 export const SQLITE_SCHEMA_SQL = `
@@ -22,6 +22,18 @@ CREATE TABLE entity_variants (
   avatar_label TEXT NOT NULL,
   retained_object_key TEXT,
   media_url TEXT NOT NULL
+);
+CREATE TABLE public_ids (
+  kind TEXT NOT NULL,
+  public_id TEXT NOT NULL,
+  entity_id TEXT NOT NULL UNIQUE,
+  PRIMARY KEY (kind, public_id)
+);
+CREATE TABLE public_era_ids (
+  entity_id TEXT NOT NULL,
+  public_id TEXT NOT NULL,
+  team_era_id TEXT NOT NULL UNIQUE,
+  PRIMARY KEY (entity_id, public_id)
 );
 CREATE INDEX entity_variants_entity_id_idx ON entity_variants (entity_id);
 CREATE INDEX entity_variants_kind_name_idx ON entity_variants (kind, canonical_name, entity_id, team_era_id);

@@ -202,6 +202,8 @@ export interface FactMutationAuditsTable {
 }
 
 export interface Database {
+  entity_public_ids: { entity_id: string; kind: EntityKind; public_id: string };
+  team_era_public_ids: { team_era_id: string; entity_id: string; public_id: string };
   entities: EntitiesTable;
   entity_aliases: EntityAliasesTable;
   team_eras: TeamErasTable;

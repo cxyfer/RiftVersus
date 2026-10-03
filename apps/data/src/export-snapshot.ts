@@ -100,7 +100,15 @@ function createDatabase(path: string, snapshot: PublicSnapshot): void {
       for (const entity of snapshot.entities) if (!aliasesByEntity.has(entity.id)) aliasesByEntity.set(entity.id, entity.aliases);
       const insertedAliases = new Set<string>();
       const insertedTerms = new Set<string>();
+      const insertPublicId = database.prepare("INSERT INTO public_ids (kind, public_id, entity_id) VALUES (?, ?, ?)");
+      const insertPublicEra = database.prepare("INSERT INTO public_era_ids (entity_id, public_id, team_era_id) VALUES (?, ?, ?)");
+      const publicOwners = new Set<string>();
       for (const entity of snapshot.entities) {
+        if (entity.publicId !== undefined && !publicOwners.has(entity.id)) {
+          insertPublicId.run(entity.kind, entity.publicId, entity.id);
+          publicOwners.add(entity.id);
+        }
+        if (entity.publicEraId !== undefined && entity.teamEraId !== undefined) insertPublicEra.run(entity.id, entity.publicEraId, entity.teamEraId);
         insertEntity.run(variantId(entity), entity.id, entity.kind, entity.teamEraId ?? null, entity.displayName, entity.realName ?? null, entity.eraLabel ?? null, entity.canonicalName, entity.slug, entity.avatarLabel, entity.retainedObjectKey, entity.mediaUrl);
         const aliases = aliasesByEntity.get(entity.id) ?? [];
         if (entity.teamEraId === undefined) for (const alias of aliases) {
@@ -204,6 +212,8 @@ async function readSqliteSnapshot(directory: string, manifest: SqliteManifest): 
   try {
     const pageSize = Number((database.prepare("PRAGMA page_size").get() as SqliteRow | undefined)?.page_size);
     if (pageSize !== manifest.database.pageSize) throw new Error("SQLite database page size mismatch.");
+    const userVersion = Number((database.prepare("PRAGMA user_version").get() as SqliteRow)?.user_version);
+    if (userVersion !== manifest.schemaVersion) throw new Error("SQLite database schema version mismatch.");
     const integrity = String((database.prepare("PRAGMA integrity_check").get() as SqliteRow | undefined)?.integrity_check ?? "");
     if (integrity !== "ok") throw new Error(`SQLite integrity check failed: ${integrity}`);
     const metadata = new Map((database.prepare("SELECT key, value FROM metadata ORDER BY key").all() as SqliteRow[]).map((row) => [stringValue(row, "key"), row]));
@@ -224,10 +234,16 @@ async function readSqliteSnapshot(directory: string, manifest: SqliteManifest): 
       const entityId = stringValue(row, "entity_id"); aliases.set(entityId, [...(aliases.get(entityId) ?? []), stringValue(row, "alias")]);
     }
     const entities: SnapshotEntity[] = [];
+    const hasPublicIds = userVersion >= 3;
+    const publicIds = hasPublicIds ? database.prepare("SELECT entity_id, public_id FROM public_ids").all() as SqliteRow[] : [];
+    const publicEras = hasPublicIds ? database.prepare("SELECT team_era_id, public_id FROM public_era_ids").all() as SqliteRow[] : [];
     for (const row of database.prepare("SELECT entity_id, kind, team_era_id, display_name, real_name, era_label, canonical_name, slug, avatar_label, retained_object_key, media_url FROM entity_variants ORDER BY entity_id, team_era_id IS NOT NULL, team_era_id").all() as SqliteRow[]) {
       const realName = nullableStringValue(row, "real_name"); const eraLabel = nullableStringValue(row, "era_label"); const teamEraId = nullableStringValue(row, "team_era_id");
       const entityId = stringValue(row, "entity_id");
-      entities.push({ id: entityId, kind: stringValue(row, "kind") as SnapshotEntity["kind"], displayName: stringValue(row, "display_name"), ...(realName === null ? {} : { realName }), ...(eraLabel === null ? {} : { eraLabel }), ...(teamEraId === null ? {} : { teamEraId }), canonicalName: stringValue(row, "canonical_name"), slug: stringValue(row, "slug"), aliases: [...(aliases.get(entityId) ?? [])], avatarLabel: stringValue(row, "avatar_label"), retainedObjectKey: nullableStringValue(row, "retained_object_key"), mediaUrl: stringValue(row, "media_url") });
+      const publicId = publicIds.find(item => item.entity_id === entityId)?.public_id;
+      const publicEraId = publicEras.find(item => item.team_era_id === teamEraId)?.public_id;
+      const routeIds = { ...(typeof publicId === "string" ? { publicId } : {}), ...(typeof publicEraId === "string" ? { publicEraId } : {}) };
+      entities.push({ id: entityId, kind: stringValue(row, "kind") as SnapshotEntity["kind"], ...routeIds, displayName: stringValue(row, "display_name"), ...(realName === null ? {} : { realName }), ...(eraLabel === null ? {} : { eraLabel }), ...(teamEraId === null ? {} : { teamEraId }), canonicalName: stringValue(row, "canonical_name"), slug: stringValue(row, "slug"), aliases: [...(aliases.get(entityId) ?? [])], avatarLabel: stringValue(row, "avatar_label"), retainedObjectKey: nullableStringValue(row, "retained_object_key"), mediaUrl: stringValue(row, "media_url") });
     }
 
     const playersByGame = new Map<string, { a: string[]; b: string[] }>();

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { CoverageWarningSchema } from "./comparison.js";
 import { DatasetSchema } from "./dataset.js";
-import { EntityKindSchema, PresentationImageUrlSchema, UuidSchema } from "./entities.js";
+import { EntityKindSchema, PresentationImageUrlSchema, PublicIdSchema, UuidSchema } from "./entities.js";
 import { BestOfSchema, EventCategorySchema, LeagueSlugSchema } from "./comparison.js";
 import { DateSchema } from "./primitives.js";
 
@@ -12,6 +12,8 @@ export const SnapshotEntitySchema = z
   .object({
     id: UuidSchema,
     kind: EntityKindSchema,
+    publicId: PublicIdSchema.optional(),
+    publicEraId: PublicIdSchema.optional(),
     displayName: z.string().min(1),
     realName: z.string().min(1).optional(),
     eraLabel: z.string().min(1).optional(),
@@ -85,7 +87,7 @@ const SqliteFileSchema = z.object({
 }).strict();
 
 export const SqliteManifestSchema = z.object({
-  schemaVersion: z.literal(2),
+  schemaVersion: z.union([z.literal(2), z.literal(3)]),
   snapshotId: SnapshotIdSchema,
   dataset: DatasetSchema,
   coverageWarnings: z.array(CoverageWarningSchema),

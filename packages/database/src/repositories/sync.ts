@@ -4,6 +4,7 @@ import { sql } from "kysely";
 import type { Kysely } from "kysely";
 
 import type { Database } from "../types.js";
+import { ensurePublicIds } from "./public-ids.js";
 import type {
   AcceptanceDatasetEvidence, AcceptanceMediaObjectMetadata, AcceptanceSourceObjectMetadata, BeginSyncRunInput, CanonicalFacts,
   CompleteUnchangedSyncRunInput, DatasetVersion, FailSyncRunInput, GameFactInput, PublishDatasetInput,
@@ -320,6 +321,7 @@ async function publishDimensions(input: PublishDatasetInput, trx: Kysely<Databas
       await trx.insertInto("team_region_history").values({ team_entity_id: era.teamEntityId, region_entity_id: regionId, valid_from: validFrom, valid_to: validTo, provider: era.provider, source_key: era.sourceKey }).onConflict((conflict) => conflict.columns(["provider", "source_key"]).doNothing()).execute();
     }
   }
+  await ensurePublicIds(trx);
   for (const tournament of dimensions.tournaments) {
     const existing = await trx.selectFrom("tournaments").select(["id", "provider", "source_key", "name", "category", "start_date", "end_date"]).where((eb) => eb.or([eb("id", "=", tournament.id), eb.and([eb("provider", "=", tournament.provider), eb("source_key", "=", tournament.sourceKey)])])).executeTakeFirst();
     if (existing !== undefined && (existing.id !== tournament.id || existing.provider !== tournament.provider || existing.source_key !== tournament.sourceKey || existing.name !== tournament.name || existing.category !== tournament.category || existing.start_date !== (tournament.validFrom ?? null) || existing.end_date !== (tournament.validTo ?? null))) throw new Error(`Immutable tournament identity ${tournament.provider}:${tournament.sourceKey} conflicts with staged data.`);

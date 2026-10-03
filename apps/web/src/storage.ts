@@ -1,4 +1,4 @@
-import { toContractQuery, type ComparisonRouteState } from "./model.js";
+import { toRouteQuery, type ComparisonRouteState } from "./model.js";
 
 const key = "riftversus.saved-comparisons";
 const version = 2;
@@ -15,7 +15,7 @@ function isRouteState(value: unknown): value is ComparisonRouteState {
   if (typeof state.leftKind !== "string" || typeof state.leftId !== "string" || typeof state.rightKind !== "string" || typeof state.rightId !== "string") return false;
   if (![state.events, state.leagues, state.bestOf].every(Array.isArray)) return false;
   if ([state.leftEraId, state.rightEraId, state.from, state.to].some((item) => item !== undefined && typeof item !== "string")) return false;
-  try { toContractQuery(state as unknown as ComparisonRouteState); return true; } catch { return false; }
+  try { toRouteQuery(state as unknown as ComparisonRouteState); return true; } catch { return false; }
 }
 
 function isSavedComparison(value: unknown): value is SavedComparison {

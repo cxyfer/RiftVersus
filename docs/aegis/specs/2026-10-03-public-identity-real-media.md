@@ -1,7 +1,7 @@
 # Public Identity And Real Media
 
 Date: 2026-10-03
-Status: proposed design; awaiting review before implementation.
+Status: approved by the user on 2026-10-03; implementation in progress.
 
 ## Intent And Boundaries
 

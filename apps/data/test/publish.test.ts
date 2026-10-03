@@ -129,10 +129,11 @@ describe("publication stage ordering", () => {
     await expect(runPublication(h.env, runner, h.operations)).rejects.toThrow("attempt evidence unavailable");
   });
 
-  it("rebuilds without changing checkpoint lineage or implicitly migrating", async () => {
+  it("migrates restored tooling before rebuilding without changing checkpoint lineage", async () => {
     const h = await harness(undefined, "rebuild");
     await runPublication(h.env, h.run, h.operations);
-    expect(h.events).not.toContain("migrate"); expect(h.events).not.toContain("archive publish");
+    expect(h.events.indexOf("migrate")).toBeLessThan(h.events.indexOf("snapshot export"));
+    expect(h.events).not.toContain("archive publish");
     expect(h.calls.find(call => call.args[0] === "site" && call.args[1] === "publish")?.env.CHECKPOINT_ID).toBe("checkpoint-7");
   });
 

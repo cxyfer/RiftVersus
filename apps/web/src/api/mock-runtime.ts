@@ -26,6 +26,11 @@ const resolved = (subject: SubjectRef): ResolvedSubject => {
 const rowCursor = (row: { date: string; id: string }) => `${row.date}|${row.id}`;
 
 export const mockApi: ComparisonApi = {
+  async resolveSubject(subject) {
+    const entity = mockEntities.find(item => item.kind === subject.kind && (item.id === subject.id || item.publicId === subject.id));
+    if (!entity) throw new Error("Unknown comparison subject.");
+    return resolved({ ...subject, id: entity.id });
+  },
   async searchEntities(query: string, kinds: EntityKind[]) {
     await new Promise((resolve) => setTimeout(resolve, 220));
     const needle = query.toLowerCase();

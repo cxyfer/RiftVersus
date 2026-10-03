@@ -120,10 +120,8 @@ export async function runPublication(env: PublishEnvironment, run: DataRunner, o
         await run(["site", "download", previous], { ...local, SITE_ID: deployed.siteId });
         local.PREVIOUS_SITE_DIR = previous;
       }
-      if (plan.updatesCheckpoint) {
-        stage = "migrate";
-        await run(["migrate"], local);
-      }
+      stage = "migrate";
+      await run(["migrate"], local);
       if (plan.syncArgs !== null) {
         stage = "mapping";
         await run(["sync-map-check"], local);

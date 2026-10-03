@@ -4,6 +4,14 @@ import { defaultRouteState } from "./model.js";
 import { loadSavedComparisons, removeSavedComparison, saveComparison } from "./storage.js";
 
 describe("saved comparisons", () => {
+  it("retains readable IDs alongside legacy UUID saved comparisons", () => {
+    const state = { ...defaultRouteState, leftId: "t1", rightId: "lpl" };
+    const storage = { getItem: () => JSON.stringify({ version: 2, items: [
+      { id: "old", createdAt: "2026-01-01", state: defaultRouteState },
+      { id: "new", createdAt: "2026-01-02", state },
+    ] }) } as unknown as Storage;
+    expect(loadSavedComparisons(storage).map(item => item.state)).toEqual([defaultRouteState, state]);
+  });
   it("saves, reloads, and removes versioned local results", () => {
     const storage = new Map<string, string>();
     const fakeStorage: Storage = {
@@ -26,7 +34,7 @@ describe("saved comparisons", () => {
 
   it("drops JSON-valid records whose route query cannot pass the shared contract", () => {
     const storage = new Map<string, string>();
-    storage.set("riftversus.saved-comparisons", JSON.stringify({ version: 2, items: [{ id: "bad", createdAt: "2026-01-01T00:00:00.000Z", state: { ...defaultRouteState, leftId: "not-a-uuid" } }] }));
+    storage.set("riftversus.saved-comparisons", JSON.stringify({ version: 2, items: [{ id: "bad", createdAt: "2026-01-01T00:00:00.000Z", state: { ...defaultRouteState, leftId: "" } }] }));
     const fakeStorage = { getItem: (key: string) => storage.get(key) ?? null } as unknown as Storage;
     expect(loadSavedComparisons(fakeStorage)).toEqual([]);
   });

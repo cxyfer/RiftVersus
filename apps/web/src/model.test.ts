@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { SUBJECT_IDS, defaultRouteState, parseRouteState, serializeRouteState, swapRouteState, toContractQuery } from "./model.js";
+import { canonicalRouteState, SUBJECT_IDS, defaultRouteState, parseRouteState, serializeRouteState, swapRouteState, toContractQuery } from "./model.js";
 
 describe("comparison route state", () => {
+  it("preserves readable IDs and canonicalizes old IDs without losing filters", () => {
+    const subjects = { left: { kind: "team" as const, id: SUBJECT_IDS.t1, publicId: "t1", displayName: "T1" }, right: { kind: "region" as const, id: SUBJECT_IDS.lpl, publicId: "lpl", displayName: "LPL" } };
+    const state = canonicalRouteState(defaultRouteState, subjects);
+    expect(state).toEqual({ ...defaultRouteState, leftId: "t1", rightId: "lpl" });
+    expect(parseRouteState(serializeRouteState(state))).toEqual({ state, recovered: false });
+    expect(toContractQuery(state, subjects)).toEqual(toContractQuery(defaultRouteState));
+  });
   it("serializes filters in a canonical order", () => {
     const output = serializeRouteState({ ...defaultRouteState, events: ["worlds", "league"], leagues: ["lpl", "lck"], bestOf: [5, 1, 3] });
     expect(output.toString()).toContain("events=league%2Cworlds");

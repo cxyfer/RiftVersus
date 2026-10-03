@@ -5,11 +5,17 @@ import { getDatasetStatus } from "./dataset.js";
 import { getSyncStatus } from "./sync-status.js";
 import { latestPublicationGeneration, publishedEntityVisibility } from "./publication.js";
 import { entityPresentation, presentationImageUrl } from "./presentation.js";
+import { ensurePublicIds } from "./public-ids.js";
 
 export type SnapshotProjection = Omit<PublicSnapshot, "snapshotId">;
 
 export async function exportSnapshotFacts(database: Kysely<Database>): Promise<SnapshotProjection> {
   return database.transaction().setIsolationLevel("repeatable read").execute(async db => {
+    await ensurePublicIds(db);
+    const publicIds = await db.selectFrom("entity_public_ids").selectAll().execute();
+    const publicEras = await db.selectFrom("team_era_public_ids").selectAll().execute();
+    const publicByEntity = new Map(publicIds.map(item => [item.entity_id, item.public_id]));
+    const publicByEra = new Map(publicEras.map(item => [item.team_era_id, item.public_id]));
     const dataset = await getDatasetStatus(db);
     if (dataset === null) throw new Error("Cannot export an unpublished dataset.");
     const entities = await db.selectFrom("entities as e").selectAll("e").where(publishedEntityVisibility(sql.ref("e.id"))).orderBy("e.id").execute();
@@ -43,6 +49,8 @@ export async function exportSnapshotFacts(database: Kysely<Database>): Promise<S
         if (retained && (!retained.license || !retained.attribution)) throw new Error(`Retained media lacks rights evidence: ${retained.object_key}`);
         rows.push({
           id: entity.id, kind: entity.kind, ...presentation,
+          publicId: publicByEntity.get(entity.id)!,
+          ...(era === null ? {} : { publicEraId: publicByEra.get(era.id)! }),
           ...(era === null ? {} : { teamEraId: era.id, eraLabel: era.display_name, displayName: era.display_name }),
           canonicalName: entity.canonical_name, slug: entity.slug,
           aliases: aliases.filter(alias => alias.entity_id === entity.id).map(alias => alias.display_name),

@@ -133,6 +133,7 @@ test("renders the default fixture, preserves sharing, and searches player identi
   page.on("request", (request) => requests.push(new URL(request.url()).pathname));
 
   await openDefaultComparison(page);
+  await expect(page).toHaveURL(/leftId=t1&rightKind=region&rightId=lpl/u);
   await expect(page.getByRole("combobox", { name: "比較對象" })).toHaveValue("T1");
   await expect(page.getByRole("combobox", { name: "對戰對象" })).toHaveValue("LPL");
   await expect(page.getByRole("button", { name: "Worlds" })).toHaveAttribute("aria-pressed", "true");
@@ -155,6 +156,7 @@ test("renders the default fixture, preserves sharing, and searches player identi
   await page.getByRole("option", { name: /Faker \(Lee Sang-hyeok\)/ }).click();
   await page.getByRole("button", { name: "套用篩選" }).click();
   await expect(page).toHaveURL(/leftKind=player/);
+  await expect(page).toHaveURL(/leftId=faker/u);
   await expect(page.getByText("3 series wins")).toBeVisible();
   expect(requests.some((pathname) => pathname.includes("/api/"))).toBe(false);
 });

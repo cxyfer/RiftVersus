@@ -591,7 +591,8 @@ describeWithDatabase("player public ID migration downgrade", () => {
     const schema = createTestSchemaName();
     await adminPool.query(`create schema ${schema}`);
     const db = createDb({ databaseUrl: databaseUrl!, schema });
-    await migrateToLatest(db, { schema });
+    const migration = await createMigrator(db, { schema }).migrateTo("009_player_public_id");
+    if (migration.error) throw migration.error;
     return { schema, db };
   }
 
@@ -690,7 +691,7 @@ describeWithDatabase("player public ID migration downgrade", () => {
         migration_exists: false,
       });
 
-      const upgrade = await migrateToLatest(context.db, { schema: context.schema });
+      const upgrade = await createMigrator(context.db, { schema: context.schema }).migrateTo("009_player_public_id");
       expect(upgrade.results).toEqual([
         expect.objectContaining({ migrationName: "009_player_public_id", direction: "Up", status: "Success" }),
       ]);

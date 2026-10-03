@@ -25,6 +25,7 @@ try {
   await page.goto(url);
   const summary = page.getByRole("region", { name: "比較摘要" });
   await expect(summary).toBeVisible({ timeout: 30_000 });
+  await expect(page).toHaveURL(/leftId=t1&rightKind=region&rightId=lpl/u);
   const originalSummary = await summary.innerText();
   const sharedUrl = page.url();
   await page.reload();
@@ -48,6 +49,7 @@ try {
   await faker.click();
   await page.getByRole("button", { name: "套用篩選" }).click();
   await expect(page).toHaveURL(/leftKind=player/u);
+  await expect(page).toHaveURL(/leftId=faker/u);
   await expect(summary).toContainText("Faker", { timeout: 30_000 });
   checks.push("search real player ID/name and apply player comparison");
 

@@ -1,4 +1,4 @@
-import { ComparisonQuerySchema, type BestOf, type ComparisonQuery, type EntityKind, type EventCategory, type LeagueSlug } from "@riftversus/contracts";
+import { ComparisonQuerySchema, ComparisonRouteQuerySchema, type ResolvedSubject, type BestOf, type ComparisonQuery, type EntityKind, type EventCategory, type LeagueSlug } from "@riftversus/contracts";
 import { DEFAULT_COMPARISON_SUBJECTS } from "@riftversus/domain";
 
 export type LeagueCode = LeagueSlug;
@@ -52,8 +52,8 @@ function sorted<T extends string | number>(values: T[]): T[] {
   return [...new Set(values)].sort((left, right) => typeof left === "number" && typeof right === "number" ? left - right : String(left).localeCompare(String(right))) as T[];
 }
 
-export function toContractQuery(state: ComparisonRouteState): ComparisonQuery {
-  return ComparisonQuerySchema.parse({
+export function toRouteQuery(state: ComparisonRouteState) {
+  return ComparisonRouteQuerySchema.parse({
     left: {
       kind: state.leftKind,
       id: state.leftId,
@@ -71,6 +71,23 @@ export function toContractQuery(state: ComparisonRouteState): ComparisonQuery {
     bestOf: sorted(state.bestOf),
     tournamentIds: [],
   });
+}
+
+export function toContractQuery(state: ComparisonRouteState, subjects?: { left: ResolvedSubject; right: ResolvedSubject }): ComparisonQuery {
+  const route = toRouteQuery(state);
+  return ComparisonQuerySchema.parse({ ...route, ...(subjects === undefined ? {} : {
+    left: { kind: subjects.left.kind, id: subjects.left.id, ...(subjects.left.teamEraId ? { teamEraId: subjects.left.teamEraId } : {}) },
+    right: { kind: subjects.right.kind, id: subjects.right.id, ...(subjects.right.teamEraId ? { teamEraId: subjects.right.teamEraId } : {}) },
+  }) });
+}
+
+export function canonicalRouteState(state: ComparisonRouteState, subjects: { left: ResolvedSubject; right: ResolvedSubject }): ComparisonRouteState {
+  const { leftEraId, rightEraId, ...base } = state;
+  void leftEraId; void rightEraId;
+  return { ...base, leftId: subjects.left.publicId ?? subjects.left.id, rightId: subjects.right.publicId ?? subjects.right.id,
+    ...(subjects.left.teamEraId ? { leftEraId: subjects.left.publicEraId ?? subjects.left.teamEraId } : {}),
+    ...(subjects.right.teamEraId ? { rightEraId: subjects.right.publicEraId ?? subjects.right.teamEraId } : {}),
+  };
 }
 
 export function parseRouteState(input: URLSearchParams): { state: ComparisonRouteState; recovered: boolean } {
@@ -92,7 +109,7 @@ export function parseRouteState(input: URLSearchParams): { state: ComparisonRout
   const invalidEra = (proposed.leftKind !== "team" && proposed.leftEraId) || (proposed.rightKind !== "team" && proposed.rightEraId);
   try {
     if (invalidKind || invalidEra) throw new Error("invalid route subject");
-    toContractQuery(proposed);
+    toRouteQuery(proposed);
     return { state: { ...proposed, events: sorted(proposed.events), leagues: sorted(proposed.leagues), bestOf: sorted(proposed.bestOf) }, recovered: false };
   } catch {
     return { state: defaultRouteState, recovered: true };
