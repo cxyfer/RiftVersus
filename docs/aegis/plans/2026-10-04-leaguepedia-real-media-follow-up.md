@@ -174,3 +174,10 @@ unit/workspace suite passed, including 183 sync tests. The PostgreSQL integratio
 suite passed 72 tests with one checkpoint test skipped because its dedicated
 database environment variables were absent locally. The final PR CI enables
 those databases and must pass before merge. Final hosted release remains pending.
+
+Final provenance refinement: small image thumbnail URLs can equal the original
+URL, and the CDN can re-encode images even with `format=original`. Classify a
+scaled API URL as `thumbnail`; classify matching source SHA-1 bytes as `original`;
+otherwise explicitly use `cdn-render`. All variants retain the exact reviewed
+delivered SHA-256 and separate upstream original SHA-1. This does not weaken the
+publication pin or invent an original-file verification claim.

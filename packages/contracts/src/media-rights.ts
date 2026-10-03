@@ -12,7 +12,7 @@ export const MediaRightsBasisSchema = z.object({
   statement: z.string().trim().min(1),
   reviewedNote: z.string().trim().min(1),
   sourceFileSha1: z.string().regex(/^[a-f0-9]{40}$/u).optional(),
-  variant: z.enum(["original", "thumbnail"]).optional(),
+  variant: z.enum(["original", "thumbnail", "cdn-render"]).optional(),
 }).strict();
 
 export type MediaRightsBasis = z.infer<typeof MediaRightsBasisSchema>;

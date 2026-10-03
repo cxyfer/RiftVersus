@@ -37,6 +37,7 @@ existing source documentation for endpoint/contact/mapping restrictions.
 | --- | --- |
 | Default-branch push / `rebuild` | Restore latest verified checkpoint, migrate disposable staging, export/verify SQLite and rebuild the site; no source sync or data checkpoint update |
 | Daily `17 19 * * *` UTC / `current` | Migrate staging, synchronize explicitly configured current UTC year, validate and archive a new checkpoint |
+| Manual `media` | Restore the verified checkpoint, migrate staging and publish `data/overrides/media.json`; preserve match/roster/public-ID/coverage records, validate a new checkpoint and deploy same-origin images with credits |
 | Weekly `47 20 * * 6` UTC / `history` | Migrate staging and run reviewed historical scopes, then archive a new checkpoint |
 | `backfill` | One explicit year and competition; no arbitrary command arguments |
 | `reexport` | Migrate staging and re-export/validate without fetching source data |
@@ -56,6 +57,7 @@ do not require exporting or printing its token locally.
 gh run list --repo cxyfer/RiftVersus --workflow publish.yml
 gh workflow run publish.yml --repo cxyfer/RiftVersus --ref main -f mode=rebuild
 gh workflow run publish.yml --repo cxyfer/RiftVersus --ref main -f mode=current
+gh workflow run publish.yml --repo cxyfer/RiftVersus --ref main -f mode=media
 gh workflow run publish.yml --repo cxyfer/RiftVersus --ref main -f mode=history
 ```
 

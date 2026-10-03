@@ -88,7 +88,7 @@ try {
     if (!info || !revision?.revid || !["image/png", "image/jpeg", "image/webp", "image/gif"].includes(info.mime) || new URL(info.url).origin !== "https://static.wikia.nocookie.net") {
       issues.push(...owners.map(owner => ({ ...owner, reason: "file evidence unavailable" }))); return;
     }
-    const variant = info.thumburl ? "thumbnail" : "original";
+    const requestedVariant = info.thumburl && info.thumburl !== info.url ? "thumbnail" : "original";
     const original = new URL(info.thumburl ?? info.url);
     if (original.origin !== "https://static.wikia.nocookie.net") throw new Error("Unexpected thumbnail origin.");
     original.searchParams.set("format", "original");
@@ -102,7 +102,8 @@ try {
         if (result.stdout.trim().split(";")[0] !== info.mime) throw new Error("Downloaded image MIME does not match source evidence.", { cause: error });
         bytes = await readFile(path);
       }
-      if (!bytes.length || bytes.length > 10_000_000 || (variant === "original" && sha(bytes, "sha1") !== info.sha1)) throw new Error("Downloaded original does not match the source SHA-1 or byte bounds.");
+      if (!bytes.length || bytes.length > 10_000_000) throw new Error("Downloaded image exceeds byte bounds.");
+      const variant = requestedVariant === "original" && sha(bytes, "sha1") !== info.sha1 ? "cdn-render" : requestedVariant;
       const content = revision.slots?.main?.content ?? "";
       const terms = info.extmetadata?.LicenseShortName?.value ?? info.extmetadata?.UsageTerms?.value;
       const statement = terms ? `Upstream file terms: ${terms}. Editorial-use review does not assert a separate redistribution license.` : content.includes("{{Copyright game}}") ? "The file page carries the Copyright game fair-use statement; no redistribution license is asserted." : "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.";

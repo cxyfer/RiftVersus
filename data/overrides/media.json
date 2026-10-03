@@ -303,7 +303,7 @@
         "revisionId": 1998621,
         "fileChecksum": "f688b7bfe1fdba789957e3a73f95e2458f421a89e1be34cdec64d6095b0d499a",
         "sourceFileSha1": "dca6ab9b2746f6aac8f9ae46f5197b22a2ea4096",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -325,7 +325,7 @@
         "revisionId": 3395219,
         "fileChecksum": "44323eaf5a7615086d9c102ba9f1656695b0755022d7eeaef684a50dfb1a4713",
         "sourceFileSha1": "0f37882e5734a05d6f21fa7d1ebb3eefc2900b2a",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -376,7 +376,7 @@
         "revisionId": 4158137,
         "fileChecksum": "652c6a73115244746d4359b235f420cad2200b2805bcfcfebf8177b4613ded85",
         "sourceFileSha1": "b455041747ad68f5e4c2f00097e99d4a0c9d0dd3",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -398,7 +398,7 @@
         "revisionId": 4158131,
         "fileChecksum": "ada2b9e5379840965232bb88ac0fedfc6868baf3b98c8cc8de197bcd18cc76d5",
         "sourceFileSha1": "6146abd2ead9594882717c016178f8e7e2a7b92b",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -442,7 +442,7 @@
         "revisionId": 3996044,
         "fileChecksum": "305aa00c4fdca114b10038633e6fa029d81d984ffab0dc4446d54449453f48be",
         "sourceFileSha1": "232210f70b9685bc5cd323816c440f2628827ae2",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -464,7 +464,7 @@
         "revisionId": 3996045,
         "fileChecksum": "b6bd8bee70566c61e13288d7222d5c39fcbc35e2004dd1752a3d880fdaa783e3",
         "sourceFileSha1": "2f0ead41d5c9dd56ee22ada627d1314cb1d3929b",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -486,7 +486,7 @@
         "revisionId": 3996043,
         "fileChecksum": "55b3782db086b2786c6394dff4aef40628c8a210d8d4ab2075cb35ec3660b41d",
         "sourceFileSha1": "b866b74ceaea8346a23f9ee469ededa721ab9e9f",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -530,7 +530,7 @@
         "revisionId": 3054925,
         "fileChecksum": "081a6950b553f081985ca671794b4dd631ab54b1607e9836372311de4a64653d",
         "sourceFileSha1": "4e618e8b40c032741cf6e945f88f067ebac53f9d",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -552,7 +552,7 @@
         "revisionId": 4492217,
         "fileChecksum": "8335d5c5a05b24039c9ff26a4f573d7768479fae27bf0b7e59c39a89cea5e805",
         "sourceFileSha1": "762216ea80bd1037821683bd4c746206fedf03f9",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -684,7 +684,7 @@
         "revisionId": 3798927,
         "fileChecksum": "2e2656cd7596acd3d781a0017becc234b867442a5fb60e68018aef458b1d88ec",
         "sourceFileSha1": "18d5e727b7abd4f8ed6b6b2ca5547f438b61affd",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -728,7 +728,7 @@
         "revisionId": 4015978,
         "fileChecksum": "d7431dbba1fdc3d564f9bedda41188b4c1378ff9cfedf968acec64a0256b5f45",
         "sourceFileSha1": "f8d3a2e95504095ee66557c32cc8b5a39268369b",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -777,7 +777,7 @@
         "revisionId": 2556501,
         "fileChecksum": "c707df42eee9786d7fdd02a70d47fa7b5b6d9f73b7dee1c0793175bd926c24fa",
         "sourceFileSha1": "e66603482278043312214b5bb07476dd45da1e88",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -853,7 +853,7 @@
         "revisionId": 4505026,
         "fileChecksum": "8ba962514d56b536eb90044412ae7b9579351fbfdd2704d4ed6dff14eabdc7ca",
         "sourceFileSha1": "a976991343abe1fb5f2201e82729cce8405d97f1",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -897,7 +897,7 @@
         "revisionId": 3054940,
         "fileChecksum": "47a6e30eaaa4145fc57d3e813c1a96f505438b22f4d2ef5de832820e14df22d0",
         "sourceFileSha1": "f7e2fef5a74dd74329277d37643e0145ea8a9057",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -968,7 +968,7 @@
         "revisionId": 4148589,
         "fileChecksum": "affa00ab506cc6d7665ab8750e9e0a1d7429ff05a020682b00bf4590e80e648f",
         "sourceFileSha1": "fa6e040668263bf58ff1090c5649c28044f945b1",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1039,7 +1039,7 @@
         "revisionId": 3996038,
         "fileChecksum": "213d20dad93cd80061f606b757816e89fbe055b8ccb4d2754c500694fe5e0e27",
         "sourceFileSha1": "d5b18a626d2e33b74662ba7bd4b34621837692b4",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1061,7 +1061,7 @@
         "revisionId": 3996039,
         "fileChecksum": "5ac1842b488719148929e1f1496a85887122b4fd12ca4676c393858d23d4ec52",
         "sourceFileSha1": "4ded2cfe99d6e38357b5fb6633dba58613f7e871",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1083,7 +1083,7 @@
         "revisionId": 3996036,
         "fileChecksum": "c4871b2489d9c8db2889ed4e8bcc23941f73237b737dc8d324d0c1451a35bed8",
         "sourceFileSha1": "ac16d0889afaba29bdcdeccb7fe8b6114998f189",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1105,7 +1105,7 @@
         "revisionId": 4068229,
         "fileChecksum": "1b8e24bb967732120f2d6873b022c15451ebdfd1d706337fadf625168c79fc2f",
         "sourceFileSha1": "98478bc50ea12e180767f6a6a5a0e5aece07f92b",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1198,7 +1198,7 @@
         "revisionId": 4260837,
         "fileChecksum": "85c4b7c27476600eb8ce3d4afe49409dddffa4a23ab0c9fb48b8cbc2160a1c5d",
         "sourceFileSha1": "0c96fde0bf3cac5f4c5a6ee91a28ee58713128e3",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1220,7 +1220,7 @@
         "revisionId": 4260845,
         "fileChecksum": "348b05d0b0366f68fef89047fc16b94f7598545641a93cbc49add302bf2f6a23",
         "sourceFileSha1": "a42f94a60c5ba0e9a95fd7dc4740e9da8d66223d",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1242,7 +1242,7 @@
         "revisionId": 4173263,
         "fileChecksum": "bb521c183c6df88620c7a449eb0ed649861af0227b75765c7057ad3e3fbef10b",
         "sourceFileSha1": "aafe4f36f6ff2d244738ce52ff8bd38a35920ce3",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1264,7 +1264,7 @@
         "revisionId": 4173264,
         "fileChecksum": "1f9f6b0a3cb2fde5b1c1b0d26caf89aeeb5d9c543d0868cef7ac1e1f7dee042c",
         "sourceFileSha1": "7731bf63398764cdeea7380f6c0e98d3aaa66e22",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1308,7 +1308,7 @@
         "revisionId": 4226907,
         "fileChecksum": "7f8f8e4a08ec83a7fd690f68c157977b7a35ebe5ff24eb1042adbbbc13cab1e9",
         "sourceFileSha1": "4476ad6ef2f56a2fee92306a2eac97dce259e1f6",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1352,7 +1352,7 @@
         "revisionId": 3907278,
         "fileChecksum": "4e3f9dede33c820767d8b1e9102e749c0489c0f7863438ae441c680aeafc0646",
         "sourceFileSha1": "e5950c139592217ca69692025e332afc2eff348d",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1506,7 +1506,7 @@
         "revisionId": 4067553,
         "fileChecksum": "9a6131d25065239f04983cdec765c03b2be64005bdd82b25eeef96276dedea8d",
         "sourceFileSha1": "0c07b682b77c3e0450d5d3334281ac4ba9f5dfda",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1528,7 +1528,7 @@
         "revisionId": 3395135,
         "fileChecksum": "7ec92d47e6f99381760d8cecb01beef590d4d33e05417930238872fa40b1ff3a",
         "sourceFileSha1": "0c476d51125440335bef2a370d1b6cede194bc5c",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1572,7 +1572,7 @@
         "revisionId": 3258472,
         "fileChecksum": "2ee876e53e0edbc36512518eb865f8aa77f955c79cbe85421a0eec39747da98a",
         "sourceFileSha1": "6fecc0d3d658b1e15e1700c1de2616cd355a3c56",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1682,7 +1682,7 @@
         "revisionId": 3996034,
         "fileChecksum": "bdba4bbf87085265933cee5d38d3e884f24cda00de8defda6fdbe34f20a5e960",
         "sourceFileSha1": "a049008cd84449d8a5c505978f7a140374a7a03d",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1704,7 +1704,7 @@
         "revisionId": 3996033,
         "fileChecksum": "1e05d9112c26b327c15a918546320e17dee27f900106a42f4157caefddd75830",
         "sourceFileSha1": "3d3270a65968386499e42ebc3beeed149034dfdc",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1726,7 +1726,7 @@
         "revisionId": 2561156,
         "fileChecksum": "406d6907de2839e409f8806403288992581bf42913262149e182ea61449dd83e",
         "sourceFileSha1": "45c38424c4c21ea1bb91e2b5590044217db50cde",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1792,7 +1792,7 @@
         "revisionId": 3751139,
         "fileChecksum": "13a7c195503f23cd71ac4483dd60ca7f26d02b5002397d91b685fd32c75a9228",
         "sourceFileSha1": "e641b8e4c3d74e9efb83a19f52a38778665d4c1c",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1814,7 +1814,7 @@
         "revisionId": 3751141,
         "fileChecksum": "2a2c0b21126af7b9c2e01a7be345df5ea63763ebb807c4121b96129b1db1e34e",
         "sourceFileSha1": "52d602954d5e3be6dafa2e945708b086cab19e1f",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1836,7 +1836,7 @@
         "revisionId": 3688192,
         "fileChecksum": "d4b31c2b24cdfe0637fef2f32adefc501b785236c1b78fa44feea9fdf1c22257",
         "sourceFileSha1": "5a56b67cb7979829463dfd92ddad5ccd76c21833",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1858,7 +1858,7 @@
         "revisionId": 2444973,
         "fileChecksum": "a246595b460186594977199d0f89246b938a74d5129df905533599510c2e566a",
         "sourceFileSha1": "c4ed68b9df05c3b2301887f5fa564f3adfc7c776",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1924,7 +1924,7 @@
         "revisionId": 3258362,
         "fileChecksum": "78179c60b1b71006c9b755aedf778d6e6d9d0306cc84da607ab91c4078898a67",
         "sourceFileSha1": "62e42575de049636827224fcecd436834790abf7",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1968,7 +1968,7 @@
         "revisionId": 3465304,
         "fileChecksum": "867e8b29ab1d0857a8d080c89341368a815821e98b19455669da02abc41b15a8",
         "sourceFileSha1": "e4b22e28a68dd5532bb169c1972d86ed4bfea16f",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -1990,7 +1990,7 @@
         "revisionId": 3050428,
         "fileChecksum": "888f3fa92c6bc6752d29332b49b6bdf66cbcfb40488fa23826568c0d36257856",
         "sourceFileSha1": "d07edb3728f286de44b3da80260590a72f2b93da",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -2012,7 +2012,7 @@
         "revisionId": 4013153,
         "fileChecksum": "d4c0c5a30218aef848172b84df6e4c820c432a9d9e409caa83f25b7651fcd591",
         "sourceFileSha1": "eb13d50975e6edc448ff45d0b62316bb7904c234",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -2078,7 +2078,7 @@
         "revisionId": 4133316,
         "fileChecksum": "9950a2fd763ed1f545aa713d7d08282391764af1c87aa759c80eaf0c7b95f386",
         "sourceFileSha1": "8ab615eee3a77832ff8bf640e8903a1745d63b2f",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -2379,7 +2379,7 @@
         "revisionId": 4173296,
         "fileChecksum": "e8edae63be6a2b2513199046899a3402c8324ac8755b7d28bd36669e3dfe4e39",
         "sourceFileSha1": "7657d63d5b1a9217e3c94f15fb1ea976ad164d01",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -2401,7 +2401,7 @@
         "revisionId": 4173292,
         "fileChecksum": "1ff57e20ff6185a67c8bd7385fe52621fc3df6c2d2f19bea0ac3da5110edb419",
         "sourceFileSha1": "601ce2b5678fc04749801b5c4a389ad3f5c262ee",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -2423,7 +2423,7 @@
         "revisionId": 4173293,
         "fileChecksum": "5c7e9bcbd942aeda084e40975985a8b520ac79db89d56d7656cca935b17679e6",
         "sourceFileSha1": "40e927f0df39e88fded6a46a5fb97cc4988b1b31",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -2445,7 +2445,7 @@
         "revisionId": 4173294,
         "fileChecksum": "19cc4346404ace32d888edac05d9edb6f1bfada2d0c89b29050e482095c2a601",
         "sourceFileSha1": "b2a432883affadf12b6d41c5d30485a3f9641360",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -2494,7 +2494,7 @@
         "revisionId": 4173297,
         "fileChecksum": "b00c9ae56188fd7de5d99327e89a42120d02eb9f04e4f33290a099445ff465dd",
         "sourceFileSha1": "a9a9419ea7aeebdee5b624a098214af863fd9335",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -2883,7 +2883,7 @@
         "revisionId": 3274571,
         "fileChecksum": "a69b2424e873833c0bbeb31f07ec57f5fc694f2f03099c5d6300fbd07c5a902f",
         "sourceFileSha1": "461365c072ad8c94238f2a3d2622a828161d8fd9",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -3037,7 +3037,7 @@
         "revisionId": 3829214,
         "fileChecksum": "27477a184dfee3587588f2600374749511aabd057eacbd6b803239b2c49f2b56",
         "sourceFileSha1": "c07a1d62912d58c41aa4adfeed726864742d6869",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -3191,7 +3191,7 @@
         "revisionId": 3258484,
         "fileChecksum": "3bd11a6b2411e17596bbf51883678ead29e77ae85d1bc67c9b4a215db9ca46bc",
         "sourceFileSha1": "d6389c7c366d0aa467ae011a04cd978c22bbb3ae",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -3487,7 +3487,7 @@
         "revisionId": 4040708,
         "fileChecksum": "2c4b7f23922b6fbdbe58f2856e8e11497939ce5a8730569d769dc13714d6cf87",
         "sourceFileSha1": "0198f4459f6bcca87d70ec0211112195c2616b99",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -3575,7 +3575,7 @@
         "revisionId": 3315582,
         "fileChecksum": "0fff469e9fd5443ad8045bea2eccd68d2bb0608ee47ea17cec3a175376867e0d",
         "sourceFileSha1": "c4e37d68b78d88093c8b84e1da96e62a14f6ebbb",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -3597,7 +3597,7 @@
         "revisionId": 2301219,
         "fileChecksum": "dac2a406d1484d77974aa13ecb030ce83cd147aa4f42eb58e2d20a415a3d6f3e",
         "sourceFileSha1": "ad7dbd0da46186ad158c35c0a2c5f113c3accf2d",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -3707,7 +3707,7 @@
         "revisionId": 3861872,
         "fileChecksum": "9c8b1b6c9a9986271c4290e28c8f82f20cf5922fec36e04e0104544605ddab10",
         "sourceFileSha1": "774de23752ad919afd85d3f7ea27fbadf9ceeb16",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -3729,7 +3729,7 @@
         "revisionId": 4508028,
         "fileChecksum": "34bc9657fc6b999162890fb1bab1162bc7e0bb847126b92b1f24a97153adb803",
         "sourceFileSha1": "69d1c9110a2221201fbccc60bf25015c82399bec",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -3751,7 +3751,7 @@
         "revisionId": 4168992,
         "fileChecksum": "555b8aa257ac0382f1034524243c880098957b22952b66c6f6f86d1cc6ded3d9",
         "sourceFileSha1": "4f9893b37be6a9d44f09e64c481cd4fd0720cd76",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -3822,7 +3822,7 @@
         "revisionId": 3258383,
         "fileChecksum": "15352c99783df90b73e224f81933ae672128adf7bed2a805c19d75022ae449e8",
         "sourceFileSha1": "e000c13a9568b7df7b426f5b0ab666a7596de300",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -3844,7 +3844,7 @@
         "revisionId": 2446042,
         "fileChecksum": "2d82b684d4a5fdb2685f04f370b27e32836c33c47a0cb4ff8b383fcf72da6fbf",
         "sourceFileSha1": "37720583a59a58d0ab67c41e2fb0e98186588f35",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -3866,7 +3866,7 @@
         "revisionId": 4068289,
         "fileChecksum": "761d20e01c6f5cf3901086fb281299d49fe668ba7aa4177cba1e1a244326d3a2",
         "sourceFileSha1": "d08b6732368aa99ef026cacc9cad834ae7fe9bba",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -4020,7 +4020,7 @@
         "revisionId": 3394856,
         "fileChecksum": "0ae8b9980a5bc48ea75cdfd5b467f1ac3cf0ba213a67b5d2a22cb1732d2ba10a",
         "sourceFileSha1": "d10927de37e13743d8a80cd0217e5360ca9e531e",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -4399,7 +4399,7 @@
         "revisionId": 3258393,
         "fileChecksum": "8b43e40a6822e96ec3728ee73fcacd51dc81374b3d63d732c8aa104545a54881",
         "sourceFileSha1": "9e1cc1fb4aebaac3bbbc0935d67d5e5094cf3ff1",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -4651,7 +4651,7 @@
         "revisionId": 4149079,
         "fileChecksum": "35d8648db81ebacf6aaebc6c6b480584f7ec755955d1a2c9122356efe62a986d",
         "sourceFileSha1": "9e1bea727945feb645f47b3d165de43328b2ae9a",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -4695,7 +4695,7 @@
         "revisionId": 3709223,
         "fileChecksum": "f87d4e01347bab441aa8cb04d90c720a9cd3b827df9b5850b547f7eb0009debe",
         "sourceFileSha1": "4b4a612aa845578b761f1ed09a388720957ccc16",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -4717,7 +4717,7 @@
         "revisionId": 3394761,
         "fileChecksum": "a6319bf2c0343b21b6c26ff860d8ee6b07711acc736f989a3974262ea143a325",
         "sourceFileSha1": "32d6bb349c9b0cf38742b1b70828e3aba9d9681e",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -4876,7 +4876,7 @@
         "revisionId": 4494127,
         "fileChecksum": "ead415dc2ed215aef76239513c931589ef5e3243b014f4a982eac4a464da38a8",
         "sourceFileSha1": "dad74c22c2715258b5849e50f632f89474ad3fd6",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -4947,7 +4947,7 @@
         "revisionId": 2277762,
         "fileChecksum": "eb25c5bd405a86b8eedaa5c13fc9bdbedc707af33c8dabdb8117d56e81770c68",
         "sourceFileSha1": "0363108ac57baa3bff837ef002f6b714f90fb7aa",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -4969,7 +4969,7 @@
         "revisionId": 2273750,
         "fileChecksum": "dc134d8d971a29dba67a6cc19a0cfffdbc30a60f0f9c11757a9f30c3058e5fed",
         "sourceFileSha1": "958ebb1631ff724e6ebb6535542ec02f81394dc2",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -4991,7 +4991,7 @@
         "revisionId": 4497350,
         "fileChecksum": "f6c478a2ae41635ab79a7211e05837d7ae48a46dffb73506198e494c73fb3732",
         "sourceFileSha1": "a314607e39d31b2ef194afa6ade218da4c348c6d",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -5013,7 +5013,7 @@
         "revisionId": 4497346,
         "fileChecksum": "3d2c055c10d7c2f99adf20c0790135e8c018ec3e7d15840bd1848ff89488f33f",
         "sourceFileSha1": "89e67b062d05c23c02e1b07eac373c8cda3b0d10",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -5380,7 +5380,7 @@
         "revisionId": 91235,
         "fileChecksum": "d4d19b06e6abfa468490473fd2335bd7e6453e084961014d2a3eaa7754e5c9fb",
         "sourceFileSha1": "4e29a294f10bc750569c9f76e6394bdf329fd0d0",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -5434,7 +5434,7 @@
         "revisionId": 297383,
         "fileChecksum": "687e6ddbadd7031a07494e858ec326ed9f3526509b781ff9d340bd9c869083f4",
         "sourceFileSha1": "1f112d6eda019cca5198fc705ff6a2e2c8ef412d",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -5463,7 +5463,7 @@
         "revisionId": 3622231,
         "fileChecksum": "2bc36a1e4088384d8a7e4fe66ab568cb23015e2e2677dd917aba17c26c9dbd54",
         "sourceFileSha1": "6fc4980e60c1db8e78a211fc2dc6ba55acbaa06f",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -5529,7 +5529,7 @@
         "revisionId": 3622236,
         "fileChecksum": "ee9723c55516dec34456c81d7531cf9c9f3a0f5900059ab686889e75d2ae93c1",
         "sourceFileSha1": "0ae236cfc0216e03ead7ea6cded8e771bb5d0ed0",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -5639,7 +5639,7 @@
         "revisionId": 3394313,
         "fileChecksum": "3d00d006e25c8462bdd407782fdca7d4fb12a7d28b2ce5758a35349a51cc6be9",
         "sourceFileSha1": "d82521988b29f2d84108d5b275f19992d29775e7",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -5710,7 +5710,7 @@
         "revisionId": 3290753,
         "fileChecksum": "3b15b3e71731ded37af5af8977108b5ca6681c7ed50fedd4034ff4649cc8721c",
         "sourceFileSha1": "e3b1efe2dd907014a340f08c35683a5a79ada7e7",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -5732,7 +5732,7 @@
         "revisionId": 3995884,
         "fileChecksum": "19f3e6dde9036dacecaf062fb8851955fd6ff2ce763829fb6330aecbb744707b",
         "sourceFileSha1": "3e009bcf44892ba74f6c3bf50342278bf3134c00",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -5754,7 +5754,7 @@
         "revisionId": 3083196,
         "fileChecksum": "55e2927f58f3de16374e12561f87e20f78cc2dffa0bede21774d9777ee92b534",
         "sourceFileSha1": "e9e38dd75f44fad71b739729e7b5656d1cfbc7d7",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -5820,7 +5820,7 @@
         "revisionId": 3233152,
         "fileChecksum": "8a2dfda1e14e488a57789c6b3d576c8d99436c3ea23e2a413277fa4adab29e9a",
         "sourceFileSha1": "af87dcd7b632520101ece12eaf1e5ccaafd8ce86",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -5842,7 +5842,7 @@
         "revisionId": 3445268,
         "fileChecksum": "a4dbd430c3c15efdb87fd50dfed4454302e3c55674e1c827bb055cf6e0db6cca",
         "sourceFileSha1": "ce189897242e0123f86f7f65f4673a14ee7ff28c",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -5886,7 +5886,7 @@
         "revisionId": 3995986,
         "fileChecksum": "eebf445b658a1b5a8c7876cb7858b0f3351884fd4c6ec6ece20a643648870691",
         "sourceFileSha1": "f9254d1d9a24314fafa2c8b87ef7b7b27071ab67",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -5908,7 +5908,7 @@
         "revisionId": 3995988,
         "fileChecksum": "3c35a58474447a400693f912b07c7a6f02a499a5423e68bcfe33114397e85c2e",
         "sourceFileSha1": "bd6c79294e452c12625d30ae3250d9840f5ec915",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -5986,7 +5986,7 @@
         "revisionId": 2277581,
         "fileChecksum": "fac25693123c2ddf287299862d632353cf5c78195894279f5f12b2c190e5365d",
         "sourceFileSha1": "7be2710c22ec7ae5375a07625da25389dcba76fe",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6008,7 +6008,7 @@
         "revisionId": 2275844,
         "fileChecksum": "88988b8170f28753078fe3a4e7ec3506ef6f6c1baf6a3dbeb7ee9a90feba1c90",
         "sourceFileSha1": "3163884a86efc70031d15b1e83337ad261e10520",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6140,7 +6140,7 @@
         "revisionId": 3721860,
         "fileChecksum": "7f05e1ddf6d41dcac1c79401e795fddaae402e181a462c6bbf64243aa1bf3a82",
         "sourceFileSha1": "0feb2bf2a6416d8708ce4f1337c412345cdf46bf",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6250,7 +6250,7 @@
         "revisionId": 4476523,
         "fileChecksum": "2759421fb92a4fe182eadc543f0a0f3c2a01e69312fd5ae56c3d2c5fc1ea095e",
         "sourceFileSha1": "a9fedee2d72add9fb9f8b58d1038d56188b4ad56",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6272,7 +6272,7 @@
         "revisionId": 4040634,
         "fileChecksum": "786abfcb09eca444c26cf67a26b74d21e3dcb4682a056a855a87ffecb7451b34",
         "sourceFileSha1": "7f0a328baceed7db2cee4f3e8a01d64f70c32d3c",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6431,7 +6431,7 @@
         "revisionId": 2538930,
         "fileChecksum": "237bbdf83cea4c60badb6e330bc23ffbf90ac8f4ec0f49b6c0d8821408df649e",
         "sourceFileSha1": "a0a5431077655ae5e4145edb27425959dae33123",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6480,7 +6480,7 @@
         "revisionId": 4173303,
         "fileChecksum": "a240930d006da3fb40169929a3117e6ab9017e74ce6ba830c6231c498a5b84ff",
         "sourceFileSha1": "9d86d4b172054500ecd4535feb1d726f93679ad5",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6502,7 +6502,7 @@
         "revisionId": 4173304,
         "fileChecksum": "eb01427d7764bdab1f8d1e224776eaf137067416317e63a9b10525e79215cfa7",
         "sourceFileSha1": "c622c51ba4d766afe8bb5048d7ecbd6ac20a24d8",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6524,7 +6524,7 @@
         "revisionId": 2569368,
         "fileChecksum": "835a75bb8df848859bdb30d5dc6e8e7665db89123e60cb28fc44599ad0015b2a",
         "sourceFileSha1": "4edb56a2a7f81d5f9c52f1467230ebab46b3abdf",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6568,7 +6568,7 @@
         "revisionId": 4040770,
         "fileChecksum": "9ee9174499e3dca9ff0adf5121defeb4fbf4896c059b002ac38af53a1773405b",
         "sourceFileSha1": "0770d47783170949ac78c96cb8dae0ca65fd45c2",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6656,7 +6656,7 @@
         "revisionId": 4040767,
         "fileChecksum": "2994ea7c205f8cddd8f03b4633876bc07d5c728930bdf74f3733225bbeb6d048",
         "sourceFileSha1": "2c5cf87c60a5223e29b4053f5b3727627b1d4414",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6700,7 +6700,7 @@
         "revisionId": 4129026,
         "fileChecksum": "f402b61b62c5616d4572981a7a5bcca8df554554cf5508fb3113fcc88c11a99f",
         "sourceFileSha1": "625895bfbb0252a650041f6f2729e7f60a87aa7f",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6766,7 +6766,7 @@
         "revisionId": 3419684,
         "fileChecksum": "e3194378bcceb0c41e35187fc6369e401ba63b23a8a8e9ea39dfc0a729a6e994",
         "sourceFileSha1": "1efa75473589526f5890882d2a32b917be40374c",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6815,7 +6815,7 @@
         "revisionId": 4040638,
         "fileChecksum": "0b13eeb3cd64914809ffbb4ed7a851e5e85f2c6ca6999a9aca891a14ac24afc6",
         "sourceFileSha1": "eb3602d28c18d8a868b0733d08a8dbf9c8328ac2",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6837,7 +6837,7 @@
         "revisionId": 786085,
         "fileChecksum": "61725b39e3a0871f5e62fca6a4122ed62a206ebe79c093bd5c17b6db522839e7",
         "sourceFileSha1": "a1eebdb2d7bd3f57d1be2874d357c5594ca41fa4",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6864,7 +6864,7 @@
         "revisionId": 4200084,
         "fileChecksum": "52479d9535f608cab0820f483439a686b7090f8a385adfebd769789d12ca2a10",
         "sourceFileSha1": "fd9fafc13d3181fb3e01d9c236ffbfc68f9db32d",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6886,7 +6886,7 @@
         "revisionId": 4291575,
         "fileChecksum": "5618fdbe3aacc132b92c29b8513b7aacb4ca17607540947da8a2edb268cf6aff",
         "sourceFileSha1": "727097d3259c9334e213d630ca78e8b2376de498",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -6952,7 +6952,7 @@
         "revisionId": 1905012,
         "fileChecksum": "0a26295c0b8c82eefdbbfd489cd0671d4b8cb6c8b082ac4579a57f25c4be1300",
         "sourceFileSha1": "8f10d4a0d225bbf8b8e90721197347596ee24df9",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -7018,7 +7018,7 @@
         "revisionId": 4175181,
         "fileChecksum": "997e6f02bf724dd3a4826d6fc500e7465f7f979eeeae8d0d9f14ba349b3fd95d",
         "sourceFileSha1": "485eb44656e029df7435439259723533ade10075",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -7040,7 +7040,7 @@
         "revisionId": 4312263,
         "fileChecksum": "6225bd0ead8c71a7742d6edf314697be0f4c12eaff3bd06aa927aab36664a8c4",
         "sourceFileSha1": "ceb5b162e15378e923b77605439ce58e24dfb017",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -7441,7 +7441,7 @@
         "revisionId": 3275956,
         "fileChecksum": "12ae71c3ebfa35580b1aa70a9032adbcc37de462a652f0698a3c6a08a4aae12e",
         "sourceFileSha1": "41699a6728af24a371a674c92bdf6f36bb4e5109",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -7561,7 +7561,7 @@
         "revisionId": 4030483,
         "fileChecksum": "eb108ab84bc82a8252035ac4bfef65df03902be5aff43ab6d74e39e54df987a6",
         "sourceFileSha1": "2c57a26cb0c41bddf6397d74a3528657c419b20c",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -7693,7 +7693,7 @@
         "revisionId": 3733290,
         "fileChecksum": "33975086cbdcec8bf1a88af717608c785563e455e2cb86077deff1b4ad0dd0ed",
         "sourceFileSha1": "64d8b136df2fcc6362ff59de122009c3c5b9ad8a",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -7737,7 +7737,7 @@
         "revisionId": 1905094,
         "fileChecksum": "e2d8e287762ff74fcc4d1ff581d28d74148f29013b2a391e0e6d92150c35b463",
         "sourceFileSha1": "afd8e526f0f298e576fecbc58b47ec46a9a750cc",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -7869,7 +7869,7 @@
         "revisionId": 3391930,
         "fileChecksum": "abbc5f709e37334a521092a025c63ef77e78062d55ea752b38e6b9f784626c60",
         "sourceFileSha1": "4d0a96e111886c0a6c54e669be95457b8bd1c956",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -7945,7 +7945,7 @@
         "revisionId": 3996049,
         "fileChecksum": "70f1347c29c43939829bc8fb5668d71a536cc32e751f60cbe4ef7a49caba2477",
         "sourceFileSha1": "b232997a04e26c11248b25a984932ae617da5346",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -7967,7 +7967,7 @@
         "revisionId": 3996048,
         "fileChecksum": "219e75cfb3936a17eaaa92969cbba47cb85d711499f6a4bee235eed15bca677a",
         "sourceFileSha1": "0ed04d48c98ae06cfd09dac46795bcd1d3c093e9",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -8187,7 +8187,7 @@
         "revisionId": 3315587,
         "fileChecksum": "de73a7e2b2d6c9bfb2aa4f5f97890261e9452626593b26f82e698171ff38c705",
         "sourceFileSha1": "b3b59c17548f24e5cd9ee0ae337b955cd9e67541",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -8209,7 +8209,7 @@
         "revisionId": 4505014,
         "fileChecksum": "fa16b50fbff8b0f89556fea859970bfbc6e658d8b5a444168dcfb72f9b42dd11",
         "sourceFileSha1": "8edc9e75533e84b2e77bd4db3fa78963d4670af0",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -8231,7 +8231,7 @@
         "revisionId": 3545291,
         "fileChecksum": "e4953812ef3d78022e314d9215263a8d05067b95d44c34d2ad8f3eb48e2b399e",
         "sourceFileSha1": "a8295c2229b8adb5b30daaa45566eb87fb45f454",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -8532,7 +8532,7 @@
         "revisionId": 3995901,
         "fileChecksum": "e73fb0dac404931c42b57e89b68369bcc2f715fecdb72b58eb337fdf3c4ee4d0",
         "sourceFileSha1": "d26c21abfa0a8891e3e6aa54e004506ba1f77f26",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -8554,7 +8554,7 @@
         "revisionId": 3863015,
         "fileChecksum": "0f208fde2497ae3ec762f50459828bfd35a57aa405201769ce762c28b95a32eb",
         "sourceFileSha1": "b538fa8cf87db6349bdb82a806cffe946553cd0f",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -8576,7 +8576,7 @@
         "revisionId": 3937579,
         "fileChecksum": "ee47d9d70e30b7bdedfb06cdeb3330132253f4b821fe11418a005764f73d6c62",
         "sourceFileSha1": "a7e019da94170d18ee0246796b53b35b0b95818a",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -8647,7 +8647,7 @@
         "revisionId": 4410180,
         "fileChecksum": "a4ee94e4649e03c23b23ddce35d074546e71221e4dbc1174ec4101eaed6bd17e",
         "sourceFileSha1": "60b0654f3823cf4f472f7414b567f6aac5665dfe",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -8713,7 +8713,7 @@
         "revisionId": 4492214,
         "fileChecksum": "77bc067aab81285a7fc3e93373564191464c61d73f2ea80d6840595a6be84cae",
         "sourceFileSha1": "f1fb9e756bd83693b74d17fae67853bb567fa205",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -8762,7 +8762,7 @@
         "revisionId": 3733298,
         "fileChecksum": "5683a9d85c1e6f28005222521f4c433a65e50f4d67017c18b7d6c4429383c609",
         "sourceFileSha1": "47a38c00c2d26e6ad0ea5d1d4e8a57344907ea6c",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -8784,7 +8784,7 @@
         "revisionId": 3598014,
         "fileChecksum": "04c8686fbc75257d427fe11209e36306b003858c6e52a5e27703adceafa74d6f",
         "sourceFileSha1": "e91882ef2a8284bae102dde65c2ae3932a5a4557",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -8904,7 +8904,7 @@
         "revisionId": 3709232,
         "fileChecksum": "114c6c883689dfec0a37f954bfe02ff1d48626221e9d3094f01c972873413caa",
         "sourceFileSha1": "3d4cfbb06e46cb7303df30cc6aabc0155dcd6048",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -8926,7 +8926,7 @@
         "revisionId": 4516549,
         "fileChecksum": "fd9c90ce62c5fed93c14a1a763336e18002c75df728c313e56a3a20251d573e5",
         "sourceFileSha1": "7f15c5a582b647713ce482e3f0a6f1fa6f5d7191",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -8975,7 +8975,7 @@
         "revisionId": 4497292,
         "fileChecksum": "362b703da5b7b4a4a3edaebfcbf788bf161721c6244ce768db1f7223a3e2b5fc",
         "sourceFileSha1": "c58815a22e7b0686dbe88739d4715230871376da",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -9041,7 +9041,7 @@
         "revisionId": 4410173,
         "fileChecksum": "5bcfc4ac0dacaa06a626da87682aea5f1350ec5edb37889c8870e274d1d34e7e",
         "sourceFileSha1": "ae8db7afeeb398886c625976963d911f8e455abe",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -9063,7 +9063,7 @@
         "revisionId": 4248377,
         "fileChecksum": "ea574ac9f32b4ead2fdf0e714a66c793fe65ecfc15ea64dc9b86b37cf5014a09",
         "sourceFileSha1": "7b443c6b732ae4424b9794ff3ea82253ae928897",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -9200,7 +9200,7 @@
         "revisionId": 3393796,
         "fileChecksum": "ac9fd29f58fb7479e3bdd655f309c844c4b6373e4a5b495556c7eadfdca91451",
         "sourceFileSha1": "573a8a4dd2f60c20d85fca913a05a303fdc88691",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -9427,7 +9427,7 @@
         "revisionId": 3996010,
         "fileChecksum": "95393890284f8d8973c6be78ac41dd3bda920979942ffb406f28d5514f882b9b",
         "sourceFileSha1": "ac04dceba6c8e578b5623e4fe55a68115014f141",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -9449,7 +9449,7 @@
         "revisionId": 3996011,
         "fileChecksum": "6cb2866aa471bfac45d0780d34e15a5b956e0c9c32ff1f9aa9d09d3c75502976",
         "sourceFileSha1": "172c42b9a0ee69a3a3fc69f7623853d0940d443d",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -9569,7 +9569,7 @@
         "revisionId": 3784807,
         "fileChecksum": "a82311abe80f5b118c2b9a4473fcc98648a2ecb2893f712f1c333a18fc7cd3a3",
         "sourceFileSha1": "fe88d5d27d3ec8501428bc7507f0381eb01e9ea4",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -9635,7 +9635,7 @@
         "revisionId": 3395210,
         "fileChecksum": "4cce3eac3f5d0db7b7cb0f342bacf1aaab2f57e551620eacf7edcb338311ab87",
         "sourceFileSha1": "7c3b2cf425a9fbde8d6e071b744576c5b6507a84",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -9657,7 +9657,7 @@
         "revisionId": 3274546,
         "fileChecksum": "0075b8d7a9e5d7693648e61f3fe2065d65ebaf7e448e341fb7584617eb83a07c",
         "sourceFileSha1": "e131508731a57781df5a15390f14736e692c9c5a",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -9799,7 +9799,7 @@
         "revisionId": 4476505,
         "fileChecksum": "4ffff96eb2f33ccef60d6d5a1d054f67be808d95681c942f4082d0b0090a0575",
         "sourceFileSha1": "dd26b9bcf03acf5e934d06d4e767f097b0faf576",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10002,7 +10002,7 @@
         "revisionId": 4169958,
         "fileChecksum": "ae146f735331ae4a8d18f17e3ce6799ca102c23bfa5f0dff3b66cddaafa67bd2",
         "sourceFileSha1": "ff2ccc698f414117cdba284f8178aefca5286885",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10024,7 +10024,7 @@
         "revisionId": 4169953,
         "fileChecksum": "190448a73325035f704cc3eec1a22f08600095fa18bb9034726d2cd41a3b350a",
         "sourceFileSha1": "60673c5a509524db1a14c0301c65e22146417247",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10046,7 +10046,7 @@
         "revisionId": 4169962,
         "fileChecksum": "283bd0216ab309ea5fd44e45e5d9c718d4a6c77aaa07abdaceaf830163446b15",
         "sourceFileSha1": "c928b5a2d6f6e12a9ed2da99c6b801bc5aa53db0",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10200,7 +10200,7 @@
         "revisionId": 1092040,
         "fileChecksum": "2022885437d0f0e2eae3f556f3af61de844d04e8fa3b8a111bbfbaf767753ed1",
         "sourceFileSha1": "8d99c54100878194a07dbf1ae48d657a908130cb",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10227,7 +10227,7 @@
         "revisionId": 1092043,
         "fileChecksum": "b7485a8be3618e324357018faa5cea4ca211ca5972a37e1d7b5276d10cdb43ac",
         "sourceFileSha1": "6f0f96e8e3ae5477347a9029830d224de1535531",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10408,7 +10408,7 @@
         "revisionId": 3422299,
         "fileChecksum": "06d45c7c57cd5d381cafe037ba2824b0413dfe41a35701fb5e88aaa4b7b67e5f",
         "sourceFileSha1": "80e057627f3720f6f2d60e13b3fed14d3d6ea509",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10452,7 +10452,7 @@
         "revisionId": 4030460,
         "fileChecksum": "5460832a55006071ba9a34877ccc1d07df33f628f04f95424d9f52d6ddad0586",
         "sourceFileSha1": "3e35fa2bd9ca2a6a8c36c14d38ecdbab0f20a4aa",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10474,7 +10474,7 @@
         "revisionId": 4490982,
         "fileChecksum": "7b05e4137eb0989b2da6e120795a6866ac5132f7fed35f03ed276907092b938a",
         "sourceFileSha1": "380686e6342c206db8efbe3a856a1ab2c435a5b7",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10496,7 +10496,7 @@
         "revisionId": 3733362,
         "fileChecksum": "adfb2602766477325155b9a4b4547c9609103d3d16c1ce1dbd73c99415348e86",
         "sourceFileSha1": "7f0677e407fdc4a69e3fedf54e81c48768be4fbd",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10518,7 +10518,7 @@
         "revisionId": 3978187,
         "fileChecksum": "1d5d35adc3278ad87684a58687f7a19c9fdf5977ccfb00f11a7987f03c0a24f2",
         "sourceFileSha1": "b355a6c53ec3825148b4a9a28e1fb7e0b669db57",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10770,7 +10770,7 @@
         "revisionId": 4169941,
         "fileChecksum": "cfcb18eb67061a426de5c25387cfec36dab52ef9241270404b2b69389a2945fc",
         "sourceFileSha1": "1d68dd9df05a973a463d47d6fef452f0cf09a08b",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10814,7 +10814,7 @@
         "revisionId": 4169921,
         "fileChecksum": "bc1e94f50c92a1cacf05c62bb6c45b1ea0850bc0416277d770553da38a8da4ba",
         "sourceFileSha1": "07ea0136ad5dd27ec70b0fda87685c2621687fee",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10836,7 +10836,7 @@
         "revisionId": 3558875,
         "fileChecksum": "6d67116a29cfd83ce7e665967c10a87f21750bec39f3be2d27d6900e8efc914c",
         "sourceFileSha1": "705403d4fe77002307acf68615bf38ce07152cc7",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10858,7 +10858,7 @@
         "revisionId": 4173287,
         "fileChecksum": "9a2db8cd2281e4bbe176034b5b8e61301b351002dcde90a1f73d763f75a6784f",
         "sourceFileSha1": "33e9f79628d5a5298cec3ed507fd4e8228ee7ed2",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10880,7 +10880,7 @@
         "revisionId": 4173285,
         "fileChecksum": "b05cdf7ca080d65937a70f1481b43a29d66b7c61c8e18b9dd943a30a67861706",
         "sourceFileSha1": "fa985a8002f90f32f34820dfba5f437dbe333923",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10902,7 +10902,7 @@
         "revisionId": 4173284,
         "fileChecksum": "aedf8b036b110eeac86ab74889e5b393535543f01f45815c954d20c7d746536d",
         "sourceFileSha1": "14c9eed3a279b8c0a320d4418b9064d4d1ec8ab5",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -10946,7 +10946,7 @@
         "revisionId": 4282714,
         "fileChecksum": "f600d6f8a2b3b87ddf0663533528ac73f0c563aa1ac92e604160295b64f5d55c",
         "sourceFileSha1": "0c87ad188a764ce0bd2d93bfd72f259f34b0d2db",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -11044,7 +11044,7 @@
         "revisionId": 4497410,
         "fileChecksum": "3399a7638f9cadd41e58abbb7d125e2342fe9d1e6e32dfff126dd4f67cc456e6",
         "sourceFileSha1": "3316855f8008291f9a4696f0d1fba8d5cd59022f",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -11066,7 +11066,7 @@
         "revisionId": 4497402,
         "fileChecksum": "63d5e5c740fa8ee018db8a3621575431242c721c121779be605d7c7dfabadc7f",
         "sourceFileSha1": "174d8dd5563158fcc92d1d1885601c7985cd1e3a",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -11088,7 +11088,7 @@
         "revisionId": 4497400,
         "fileChecksum": "c9629647bfa0273a9af73f47fbc75a06010cdf30ed9c421a96622c2b4d8a7344",
         "sourceFileSha1": "53bc8ec7077c70a591ec25920a1c460fb0431548",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -11276,7 +11276,7 @@
         "revisionId": 2591319,
         "fileChecksum": "9de9551ea75b8c0bcd7bbb58dfba4158f29914a10ff78e9a1d4cbd67643d44a6",
         "sourceFileSha1": "f964335e0768057e9a8f30af5da21ae1442c5307",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -11303,7 +11303,7 @@
         "revisionId": 3938243,
         "fileChecksum": "6c2b21caacd70460c08f2036c20e6cbc28e19ab6543cc39ba7d6bc55d2ca116a",
         "sourceFileSha1": "7f948a2dc8af2298290246c83962bf916531e1d2",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -11325,7 +11325,7 @@
         "revisionId": 1906478,
         "fileChecksum": "61e6fb29096c4bf87f71a4f5f7d70dffd17bce1e9edb9ab9bce5439d9f0314c2",
         "sourceFileSha1": "6621f32cebad8ae129257645ac122e6f2b4f0743",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -11572,7 +11572,7 @@
         "revisionId": 3748797,
         "fileChecksum": "0562c7e55785b5712bb32812fa4d0a2d8064a6b81ae5c4b7f7fea1f2f532a377",
         "sourceFileSha1": "ac66872d6f55d1df114354e746429c97a4d0b142",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -11594,7 +11594,7 @@
         "revisionId": 3483493,
         "fileChecksum": "44dc28fab5f2f185915b9483feb76e80d18f16627806cbcb84c0790aa3b16d16",
         "sourceFileSha1": "76f5ff2334724e942a20ca9e2c3aed0e8ec1215d",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -11643,7 +11643,7 @@
         "revisionId": 4497145,
         "fileChecksum": "87aa2c6c7944db8ba88e5e03462eae798622ff2bbbfc3dbd03b99376166d2e2b",
         "sourceFileSha1": "795881df261bf38ec0c229aa23d56f7d5e5e60d3",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -11687,7 +11687,7 @@
         "revisionId": 4031531,
         "fileChecksum": "aecdda1b30c938f695cad082745fd6e01e38eedbe74f56b9ab70fd56c13695b0",
         "sourceFileSha1": "88bae6e7726824ee3e24964d8d8da69838d239fd",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -11709,7 +11709,7 @@
         "revisionId": 3903782,
         "fileChecksum": "db90fdd0923a40280be0b5b6b98e7bdfcbe84b0463a5f05452736409f4ee0c6b",
         "sourceFileSha1": "8c4f1d8171036288f4b7abfe5b6683e6a6de2c66",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -11814,7 +11814,7 @@
         "revisionId": 4374537,
         "fileChecksum": "5ae42dc734bc49047e7f3a046f3e0a0f49058adfbb67351196623c22af92966d",
         "sourceFileSha1": "a03b1dc8aae9fee53fe6191fb2a082102dde6909",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -11863,7 +11863,7 @@
         "revisionId": 3784789,
         "fileChecksum": "80e06245b6f40629f8826ad73bc036988bf73033bb3aecfa3bfd0607f30caf8f",
         "sourceFileSha1": "91d4764d3b2e13619f7a87a81cbea99dc9f942cf",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -11973,7 +11973,7 @@
         "revisionId": 4169869,
         "fileChecksum": "c3431cc0f6d9389d478d3526a4f3adb8ea0e4b44086e349a2a9dbd09ab52fc1b",
         "sourceFileSha1": "17340f7cf5021e5404f08d6ec1abfb170fe38445",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -12044,7 +12044,7 @@
         "revisionId": 2790505,
         "fileChecksum": "ebbd4351094c405ac7f40a83ec984d4e161c417e000917e88d5ec8d0fce79a47",
         "sourceFileSha1": "479aa0d75fbf23288a3ae6a748bc0c41e5fe6166",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -12071,7 +12071,7 @@
         "revisionId": 2790486,
         "fileChecksum": "622aac9e6c23d80eb4cd26d9cb294cc16da17d3d681c2a2623c8c0cec9dd5d84",
         "sourceFileSha1": "0da4d2c72b6bcac466d3518c82245c4aa3337933",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -12098,7 +12098,7 @@
         "revisionId": 2790510,
         "fileChecksum": "e6901aca87dae1273fcbd8a185b7dde0c538a898520c131ae7d62e3991e7329d",
         "sourceFileSha1": "6ad7f724be494948c9815770a4ec0216db16f37d",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -12279,7 +12279,7 @@
         "revisionId": 3995997,
         "fileChecksum": "8ff7ee45f75a9a80c8d4e4235d08c337ce5267903737c5837dce745c4dc308f7",
         "sourceFileSha1": "a7e94d3e21984609bfff468982aa6ddfda4cf2e4",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -12323,7 +12323,7 @@
         "revisionId": 3888647,
         "fileChecksum": "74c19efdcb43c22ad74ecc1b4437932a547226062ae29bf8455d5d21c83852c1",
         "sourceFileSha1": "0c2686f34a192f62855519902ab23f8cca047f5f",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -12345,7 +12345,7 @@
         "revisionId": 3888644,
         "fileChecksum": "447e27182cbc1ff5eb2fdfbf88bdf9e3fe52b1f2e539a759b38a1efc3b6fb73a",
         "sourceFileSha1": "18be7003d9c6596aa2aa23fe8529128f6c0bf3b2",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -12614,7 +12614,7 @@
         "revisionId": 3254426,
         "fileChecksum": "788cfcd31e423a5ea79a710a58ba0fb14604c39397448868fd44388599baa61d",
         "sourceFileSha1": "3b7a205f51ae31ab1b30bc361060f4858527e8b2",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -13015,7 +13015,7 @@
         "revisionId": 4292302,
         "fileChecksum": "e1a3fc0bb40ece82ecaf6bd52c210527cd23d364581f58ffb2c8b2ca64176142",
         "sourceFileSha1": "a81bf5bb589d80118ee64326c72444055a541e2c",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -13081,7 +13081,7 @@
         "revisionId": 4039208,
         "fileChecksum": "8f15317b13373aa5271a5ca85f8413b24e244c80337bbaded672104fc3827481",
         "sourceFileSha1": "ff8d710bf9408de8ada4fca14abef62c55b1c72f",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -13147,7 +13147,7 @@
         "revisionId": 3436066,
         "fileChecksum": "81a7326ea9f265403ab94174c6851d6c7c75305f3ab9fc7b6b7e07bd8dbc10fc",
         "sourceFileSha1": "72849cf1c0806fb5b70b0bc4ce69c45e30353346",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -13169,7 +13169,7 @@
         "revisionId": 3465076,
         "fileChecksum": "d3fc9e565061af8a1696009c1fa058179ae255d7b405fce3295dcc5120c8cd1d",
         "sourceFileSha1": "dffbd03b0e469f86058d200c91e7e2d265e9f070",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -13213,7 +13213,7 @@
         "revisionId": 4128376,
         "fileChecksum": "28b26d84b44bf83961765c10ed10676fea1919c1b746b324d953c53bfe49ab03",
         "sourceFileSha1": "9a6afc3a1ec64114e2c9287e7f3be217c681a9a8",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -13333,7 +13333,7 @@
         "revisionId": 4505030,
         "fileChecksum": "2f6b0648381c481b02175256c43dc022173c9fcedb81ac826ba7a2a0eb95172c",
         "sourceFileSha1": "3ca25ca6d343c54a57adbc87a846f5a4503c1cf3",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -13610,7 +13610,7 @@
         "revisionId": 4030520,
         "fileChecksum": "29d24a850055b84d80f7d8dac375437fa55982483416809bd1da04aa2190e28f",
         "sourceFileSha1": "b10681b9ca0e8506bfba62934a48f59920681f04",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -13654,7 +13654,7 @@
         "revisionId": 4312260,
         "fileChecksum": "bc8e3b6dd2ad1f24721fd14cc0581e0ef921572ffbfc77a7e4527a0f69980916",
         "sourceFileSha1": "d481ab108d1ae495f0878c177fec314ceb9a732d",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -13764,7 +13764,7 @@
         "revisionId": 3721911,
         "fileChecksum": "f8a6cacd6345f261fb281bbad0af78885d0170477d9441a75670e20337b3eadc",
         "sourceFileSha1": "5955b1c1b3d63ef1dfab976300feb4907fea2115",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -13830,7 +13830,7 @@
         "revisionId": 3230647,
         "fileChecksum": "9394306b79bb2d0064c7f2a97ff120149bce33c67c8648045db07767af341108",
         "sourceFileSha1": "053eb2a3c101e7b109c2e93a8495c217e31b430a",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -13918,7 +13918,7 @@
         "revisionId": 2883689,
         "fileChecksum": "71b8dd370b3d68e37be7da7ce6728138ace3794d0db92eb1cc326fa3883db382",
         "sourceFileSha1": "6832a76b89655fc49816b03ad59be005b89b9c7e",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -14006,7 +14006,7 @@
         "revisionId": 4309274,
         "fileChecksum": "3cb4359e767be2b6f8ab2b3e7fc7e9f422511c80f1f9bc4445939416f7344d4b",
         "sourceFileSha1": "0548acf66f29dc075ebf2ca3f8a8e5810e868d19",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -14050,7 +14050,7 @@
         "revisionId": 4262906,
         "fileChecksum": "cda7ab364e404df687ef9245ee5143f6cdcbb4b7c12e92cd26d3266bf6303521",
         "sourceFileSha1": "359bed4acad956fe48ce6a4f452a224e511f1235",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -14209,7 +14209,7 @@
         "revisionId": 4050508,
         "fileChecksum": "5494b6735c880ea7d913e42c8802cb43937834988e14c5a1b07db3ed4888a737",
         "sourceFileSha1": "c264fb0a5aba1b8eb1855ff14031a21e5bf64427",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -14231,7 +14231,7 @@
         "revisionId": 4067551,
         "fileChecksum": "8a8c84574b978641fccabb3f389d8b160cbb57529f74a7b3a3585a011f3f47cd",
         "sourceFileSha1": "4193f489408e73df2293620b8f5c5d4f55ec845e",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -14297,7 +14297,7 @@
         "revisionId": 3258440,
         "fileChecksum": "f68e62139cef91c08e60aada3fe2793d9320451b3ccce8a346bda5d8a89c3ce5",
         "sourceFileSha1": "ee5b942248f1155584999d90cc72a05227eae08b",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -14610,7 +14610,7 @@
         "revisionId": 3784701,
         "fileChecksum": "3bb4290a32af49645a7460fafbace0ed38041e2608b63fb6a59f02b97be02ca2",
         "sourceFileSha1": "d60025f551d1b58765dc19d110e4b13d1d7db26f",
-        "variant": "thumbnail",
+        "variant": "cdn-render",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -14632,7 +14632,7 @@
         "revisionId": 3896301,
         "fileChecksum": "c1a026972ac8b9ddb0a6104caab40a471e9c748829664e0e32917bc4228bedcd",
         "sourceFileSha1": "3a67a3b8d45d85c45837de1e47a490fb38efa6a0",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -14791,7 +14791,7 @@
         "revisionId": 4030524,
         "fileChecksum": "376a77facbcfcd1bd115fe0b582645fd99983b0059aaac79b94a1339c233ae6d",
         "sourceFileSha1": "0c1dd5c67e5f901e1dd5923d8d1749d6287f27b7",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -14813,7 +14813,7 @@
         "revisionId": 4030428,
         "fileChecksum": "33973e8c3db6cdc0698562312ae541fe0929b7b8c1a7c8ea986fa0fe4a867ee5",
         "sourceFileSha1": "0c5d8851c492acf5130585a51721a37a91a121c6",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -14835,7 +14835,7 @@
         "revisionId": 4421742,
         "fileChecksum": "861c15b01b882e2588e48306e86fa7eca57f63fec8c155f4b55548982f09b0ed",
         "sourceFileSha1": "1738cfefe90fc1c79717643b1913d865b7012481",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -14857,7 +14857,7 @@
         "revisionId": 4067547,
         "fileChecksum": "bf66130d513f4b17a1c1844be6b820e93535b28346f885ba8dde8a8ca7e52066",
         "sourceFileSha1": "dcfb0cb42d23081f645931689ad84d2521495dfb",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -14901,7 +14901,7 @@
         "revisionId": 3254432,
         "fileChecksum": "a380fecb4f14bfe194eba2f703e1fe4b213fdea1472b14af2a4588f421d58bb4",
         "sourceFileSha1": "589a2579bfaa1c40d095bcc4fa555e0fa6fd6922",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -15082,7 +15082,7 @@
         "revisionId": 4410190,
         "fileChecksum": "09dce697db8d25f3fb1a805b7ac817e61ac77098197ad172b6cb7653870d2428",
         "sourceFileSha1": "c2c58bd68b3fbb51b34cd46f8c45013083c890f6",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -15148,7 +15148,7 @@
         "revisionId": 4410186,
         "fileChecksum": "440c2f5e4ae41b210f38a705125b7acfab2165d56dd6e05154c10d47864fb1f4",
         "sourceFileSha1": "8f8fc84bac19da1c23ef468cc4933a7431c26c28",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -15236,7 +15236,7 @@
         "revisionId": 4030422,
         "fileChecksum": "1a0186a10811ba063ed92fc2dd2fbea4d07b963aec2b7125781af9ab2c368901",
         "sourceFileSha1": "6dde7c763de3b79e17ac953145aef0741f98a602",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -15258,7 +15258,7 @@
         "revisionId": 4500110,
         "fileChecksum": "c0fc717ab9eb6884e431be03f89b6005154cf5073d9a92832dcd31aff1c97eb1",
         "sourceFileSha1": "1d9b853e08642012f204da19182b561bc3e6f884",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -15324,7 +15324,7 @@
         "revisionId": 3861826,
         "fileChecksum": "cf1f3bdefb088dc72ebd82ede2e3631fc9425998f87d44a2ff5bfbeec7170e10",
         "sourceFileSha1": "be9f5241be22496f1726bb744db9382ccec94984",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -15395,7 +15395,7 @@
         "revisionId": 3469033,
         "fileChecksum": "af842b7b8071c2d05b19b741ec30d68d7ecb892fb62fcf930fc39fcc8acf6ce3",
         "sourceFileSha1": "5c79f16c59646e1dd50c868beb1a245f12198850",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -15483,7 +15483,7 @@
         "revisionId": 3254441,
         "fileChecksum": "68c205adaeaed9e6dd0f5fabaae54473af32ea62dd23a2fdba3839314e13c825",
         "sourceFileSha1": "701be5e88c579afe9d5a30da40201efbb587a34e",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The file page carries the Copyright game fair-use statement; no redistribution license is asserted.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
@@ -15505,7 +15505,7 @@
         "revisionId": 3996024,
         "fileChecksum": "5074de4307f8d480c2c2db35735467cf2d8821f01295dd7e932583c2b8ff67bb",
         "sourceFileSha1": "96e787a6a1ab99dd2e3ad0745d1499fe1b2996f1",
-        "variant": "thumbnail",
+        "variant": "original",
         "statement": "The source file page supplies no explicit per-file redistribution license. Copyright and trademarks remain with their respective holders.",
         "reviewedNote": "Exact published subject/era binding and upstream profile/logo discovery reviewed under the user-approved noncommercial esports identification policy; source revision and image bytes are pinned."
       },
