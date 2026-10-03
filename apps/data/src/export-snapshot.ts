@@ -8,6 +8,7 @@ import { createSqliteSchema, SQLITE_PAGE_SIZE, SQLITE_REQUEST_CHUNK_SIZE, SQLITE
 import { createDb, exportSnapshotFacts, findMediaObjectMetadataByKey } from "@riftversus/database";
 import type { ObjectStore } from "@riftversus/sync";
 import { generateCanonicalAvatar } from "./avatar.js";
+import { renderMediaCredits } from "./media-credits.js";
 
 const EMPTY_SNAPSHOT_ID = `sha256:${"0".repeat(64)}`;
 const SAFE_FILE = /^(?:[A-Za-z0-9][A-Za-z0-9._-]*\/)*[A-Za-z0-9][A-Za-z0-9._-]*$/u;
@@ -308,6 +309,7 @@ export async function exportPublicSnapshot(input: { databaseUrl: string; directo
       } else { bytes = generateCanonicalAvatar({ kind: entity.kind, id: entity.id, label: entity.avatarLabel }).body; extension = "svg"; }
       const filename = `${sha256(bytes)}.${extension}`; await writeFile(join(input.directory, "presentation", filename), bytes); entity.mediaUrl = `${basePath}presentation/${filename}`;
     }
+    await writeFile(join(input.directory, "presentation", "image-credits.html"), renderMediaCredits(projection, basePath));
     return writeSnapshotData(input.directory, projection);
   } finally { await db.destroy(); }
 }

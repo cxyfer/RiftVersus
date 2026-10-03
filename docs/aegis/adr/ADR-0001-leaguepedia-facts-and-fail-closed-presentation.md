@@ -139,3 +139,26 @@ Evidence: approved spec/plan, final app f1c0efb, CI 37136572917, current Publish
 no permission was inferred. Hosted selector/summary image consistency and export
 checks passed. Retired only UUID-only URL syntax; UUID facts, saved links and
 generated fallback remain. Baseline/runbook record these evidence and limits.
+
+## Amendment - 2026-10-04 - Approved reviewed Leaguepedia editorial images
+
+Status: user-approved design; release verification pending.
+
+The user explicitly approved the reviewed noncommercial esports identification
+policy in docs/media-policy.md. For these reviewed assets only, a structured
+editorial rights basis is an alternative to licensed media. It is stored
+separately from license, which remains null when no license is established.
+File page/revision, reviewed checksum, available rights statement, attribution
+and exact canonical player/team-era binding are required. A changed image does
+not inherit the previous review. Regions remain generated; arbitrary upstream
+media still fails closed. The site provides visible source/rights credits.
+
+Media-only publication reuses the sync runner, retained object store, dataset
+transaction, private checkpoint and Pages assets, with no fact/roster/coverage
+replacement. A distinct media run mode preserves current/history freshness
+and failure semantics. Existing licensed records and immutable archived sites
+remain readable. No persistent source, media or historical data is deleted.
+
+This scoped alternative supersedes the licensed-only restriction for reviewed
+Leaguepedia subject images; it does not assert permission from rights holders.
+Evidence: explicit user approval and the 2026-10-04 real-media follow-up plan.

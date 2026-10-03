@@ -93,6 +93,18 @@ describe("publication stage ordering", () => {
     expect(h.calls.at(-1)?.env).toMatchObject({ FAILED_STAGE: "pages-smoke", ATTEMPT_BASELINE_ID: "checkpoint-7" });
   });
 
+  it("publishes reviewed media through checkpoint and acceptance gates without a fact sync", async () => {
+    const h = await harness(undefined, "media");
+    expect(parsePublishPlan(h.env)).toMatchObject({ syncArgs: ["media"], updatesCheckpoint: true });
+    const result = await runPublication(h.env, h.run, h.operations);
+    expect(result.checkpointPublished).toBe(true);
+    expect(h.events).toContain("media");
+    expect(h.events).not.toContain("sync-map-check");
+    expect(h.calls.some(call => call.args[0] === "sync" || call.args[0] === "backfill")).toBe(false);
+    expect(h.events.indexOf("acceptance")).toBeLessThan(h.events.indexOf("archive publish"));
+    expect(h.events.indexOf("archive publish")).toBeLessThan(h.events.indexOf("site publish"));
+  });
+
   it("reports persisted data failures while leaving a successful retry available", async () => {
     const h = await harness();
     h.operations.failures = vi.fn(async () => 3);

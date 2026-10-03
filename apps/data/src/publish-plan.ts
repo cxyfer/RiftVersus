@@ -1,6 +1,6 @@
 import { isAbsolute, resolve } from "node:path";
 
-export type PublishMode = "current" | "history" | "backfill" | "reexport" | "rebuild" | "rollback";
+export type PublishMode = "current" | "history" | "backfill" | "media" | "reexport" | "rebuild" | "rollback";
 export type PublishEnvironment = Record<string, string | undefined>;
 export function requiredPublishValue(env: PublishEnvironment, name: string): string {
   const value = env[name];
@@ -10,7 +10,7 @@ export function requiredPublishValue(env: PublishEnvironment, name: string): str
 
 export function parsePublishPlan(env: PublishEnvironment) {
   const mode = requiredPublishValue(env, "PUBLISH_MODE") as PublishMode;
-  if (!["current", "history", "backfill", "reexport", "rebuild", "rollback"].includes(mode)) throw new Error("Unsupported publication mode.");
+  if (!["current", "history", "backfill", "media", "reexport", "rebuild", "rollback"].includes(mode)) throw new Error("Unsupported publication mode.");
   const runId = requiredPublishValue(env, "GITHUB_RUN_ID");
   const runAttempt = requiredPublishValue(env, "GITHUB_RUN_ATTEMPT");
   if (!/^\d+$/u.test(runId) || !/^[1-9]\d*$/u.test(runAttempt)) throw new Error("Publication requires numeric GitHub run identity.");
@@ -30,6 +30,7 @@ export function parsePublishPlan(env: PublishEnvironment) {
     syncArgs = ["sync", "--once"];
   }
   if (mode === "history") syncArgs = ["sync", "--history-once"];
+  if (mode === "media") syncArgs = ["media"];
   if (mode === "backfill") {
     const year = requiredPublishValue(env, "BACKFILL_YEAR");
     const competition = requiredPublishValue(env, "BACKFILL_COMPETITION");

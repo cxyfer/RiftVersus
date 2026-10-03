@@ -36,3 +36,6 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--acid); outl
 @media (max-width: 500px) { .subject-grid { grid-template-columns: 1fr 36px 1fr; gap: 6px; }.swap-button { width: 36px; }.entity-input { padding: 0 6px; }.entity-input svg { display: none; }.filters { grid-template-columns: 1fr 1fr; }.topbar { margin: 0 -2px; }.wordmark { font-size: 24px; }.subject strong { font-size: 23px; }.scoreboard strong { font-size: 50px; } }
 .avatar[data-kind="team"] img, .avatar[data-kind="region"] img,
 .export-sheet__subject[data-kind="team"] img, .export-sheet__subject[data-kind="region"] img { object-fit: contain; }
+.image-credits { padding: 24px 0; font-size: 12px; }
+.image-credits a { color: var(--muted); }
+.image-credits a:hover { color: var(--text); }

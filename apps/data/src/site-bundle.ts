@@ -132,7 +132,7 @@ function assertAllowedPath(file: string, generatedManifest = true): void {
     if (!generatedManifest) throw new Error("Source site-manifest.json is reserved for generated metadata.");
     return;
   }
-  if (file === "index.html" || file === "404.html" || file === "media-placeholder.svg" || file === "data/manifest.json") return;
+  if (file === "index.html" || file === "404.html" || file === "media-placeholder.svg" || file === "data/manifest.json" || file === "presentation/image-credits.html") return;
   if (ASSET_FILE.test(file) || DATA_FILE.test(file) || PRESENTATION_FILE.test(file)) return;
   throw new Error(`Site bundle contains an unexpected file: ${file}`);
 }

@@ -5,6 +5,7 @@ import { DatasetSchema } from "./dataset.js";
 import { EntityKindSchema, PresentationImageUrlSchema, PublicIdSchema, UuidSchema } from "./entities.js";
 import { BestOfSchema, EventCategorySchema, LeagueSlugSchema } from "./comparison.js";
 import { DateSchema } from "./primitives.js";
+import { MediaRightsBasisSchema, validMediaRights } from "./media-rights.js";
 
 export const SnapshotIdSchema = z.string().regex(/^sha256:[a-f0-9]{64}$/u, "Expected a sha256 snapshot ID.");
 
@@ -75,7 +76,7 @@ export const PublicSnapshotSchema = z.object({
   entities: z.array(SnapshotEntitySchema),
   series: z.array(SnapshotSeriesSchema),
   freshness: z.array(z.object({ competition: z.string(), seasonYear: z.number().int(), status: z.string(), checkedAt: z.iso.datetime().nullable() })).optional(),
-  attribution: z.array(z.object({ objectKey: z.string(), sourceUrl: z.url(), license: z.string().min(1), attribution: z.string().min(1) })).optional(),
+  attribution: z.array(z.object({ objectKey: z.string(), sourceUrl: z.url(), license: z.string().min(1).nullable(), attribution: z.string().min(1), rightsBasis: MediaRightsBasisSchema.optional(), entityId: UuidSchema.optional(), teamEraId: UuidSchema.optional() }).refine(validMediaRights, "Media requires a license or reviewed editorial evidence and attribution.")).optional(),
 });
 
 const SqliteFileSchema = z.object({

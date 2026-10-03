@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { MediaRightsBasisSchema, validMediaRights } from "@riftversus/contracts";
 
 import { sql } from "kysely";
 import type { Kysely } from "kysely";
@@ -342,18 +343,21 @@ async function publishOverrideApplications(input: PublishDatasetInput, trx: Kyse
 async function publishMedia(input: PublishDatasetInput, trx: Kysely<Database>): Promise<void> {
   for (const item of input.media ?? []) {
     if (!item.entityId && !item.teamEraId) throw new Error("Published media requires a canonical entity or team era owner.");
+    if (item.rightsBasis !== undefined && (!validMediaRights(item) || Boolean(item.entityId) === Boolean(item.teamEraId))) throw new Error("Editorial media requires verified rights and exactly one owner.");
     const entity = item.entityId ? await trx.selectFrom("entities").select("kind").where("id", "=", item.entityId).executeTakeFirstOrThrow() : null;
     const kind = item.teamEraId || entity?.kind === "team" || entity?.kind === "region" ? "logo" : "portrait";
     const object = await trx.selectFrom("media_objects").select(["checksum", "content_type", "byte_size"]).where("object_key", "=", item.objectKey).executeTakeFirst();
     if (object !== undefined && (object.checksum !== item.checksum || object.content_type !== item.contentType || object.byte_size !== item.byteSize)) throw new Error(`Immutable media object ${item.objectKey} conflicts with staged metadata.`);
     if (object === undefined) await trx.insertInto("media_objects").values({ object_key: item.objectKey, checksum: item.checksum, content_type: item.contentType, byte_size: item.byteSize }).execute();
-    const existing = await trx.selectFrom("media_assets").select(["id", "provider", "source_url", "attribution", "license"]).where("object_key", "=", item.objectKey)
+    if (item.rightsBasis !== undefined && entity?.kind === "region") throw new Error("Editorial media is limited to players and teams.");
+    const existing = await trx.selectFrom("media_assets").select(["id", "provider", "source_url", "attribution", "license", "rights_basis"]).where("object_key", "=", item.objectKey)
       .where(item.entityId ? "entity_id" : "team_era_id", "=", item.entityId ?? item.teamEraId!).executeTakeFirst();
     if (existing !== undefined && (existing.provider !== item.provider || existing.source_url !== item.sourceUrl || existing.attribution !== item.attribution || existing.license !== (item.license ?? null))) throw new Error(`Immutable media owner metadata conflicts for ${item.objectKey}.`);
+    if (existing !== undefined && JSON.stringify(existing.rights_basis === null ? null : MediaRightsBasisSchema.parse(existing.rights_basis)) !== JSON.stringify(item.rightsBasis ?? null)) throw new Error(`Immutable media rights basis conflicts for ${item.objectKey}.`);
     if (item.entityId) await trx.updateTable("media_assets").set({ is_current: false }).where("entity_id", "=", item.entityId).where("kind", "=", kind).execute();
     else await trx.updateTable("media_assets").set({ is_current: false }).where("team_era_id", "=", item.teamEraId!).where("kind", "=", kind).execute();
     if (existing === undefined) {
-      await trx.insertInto("media_assets").values({ id: randomUUID(), entity_id: item.entityId ?? null, team_era_id: item.teamEraId ?? null, kind, provider: item.provider, source_url: item.sourceUrl, object_key: item.objectKey, attribution: item.attribution, license: item.license ?? null, is_current: true }).execute();
+      await trx.insertInto("media_assets").values({ id: randomUUID(), entity_id: item.entityId ?? null, team_era_id: item.teamEraId ?? null, kind, provider: item.provider, source_url: item.sourceUrl, object_key: item.objectKey, attribution: item.attribution, license: item.license ?? null, rights_basis: item.rightsBasis ?? null, is_current: true }).execute();
     } else await trx.updateTable("media_assets").set({ is_current: true }).where("id", "=", existing.id).execute();
   }
 }

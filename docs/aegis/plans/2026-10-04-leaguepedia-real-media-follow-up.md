@@ -1,7 +1,7 @@
 # Leaguepedia Real Media Follow-Up
 
 Date: 2026-10-04
-Status: source audit complete; publication policy decision pending.
+Status: editorial-use policy explicitly approved by the user; implementing.
 Branch: fix/leaguepedia-real-media
 
 ## Actual Failure
@@ -86,3 +86,66 @@ underscore/space mismatch before the fix (three failures). Both paths now use
 the same file-title normalization. Case differences remain unmatched; missing
 rights remain blocked. All 173 sync tests and the workspace TypeScript build
 passed. This is a source-matching repair, not a claim of real-media deployment.
+
+## Approved Execution - 2026-10-04
+
+The user selected choice 2 (reviewed Leaguepedia editorial identification use).
+No further policy confirmation is required. This supersedes the licensed-only
+boundary for explicitly reviewed, checksum-pinned Leaguepedia portraits/logos.
+Missing evidence still does not become a license. Existing licensed records and
+archived sites remain readable; no persistent data is deleted.
+
+Code is necessary: the current schema and acceptance gate require license text
+and cannot represent approved editorial use honestly. Reuse the existing media
+object, sync runner, dataset publication, SQLite exporter and checkpoint writer.
+The minimum new state is a nullable structured rights-basis field, separately
+from license; the minimum new operational path is a media-only publication of
+reviewed assets, with no match/roster or coverage mutation.
+
+1. contracts/media-rights.ts: strict editorial evidence (policy, source file
+   page/revision, SHA-256, rights statement, review note). Migration 011 adds
+   rights_basis without relabeling existing licenses. Thread evidence through
+   sync retention, PostgreSQL publication, snapshot attribution and acceptance.
+   Check checksum before storage; reject owner/metadata conflicts. Tests cover
+   license-free editorial records and incomplete/tampered evidence.
+2. data/overrides/media.json: reviewed exact canonical entity/era assignments and
+   file evidence. apps/data/src/media-service.ts loads the reviewed file and
+   uses runSync with empty facts/dimensions/publication scopes. Validate owners
+   against published identities before any download. Add media-only CLI and
+   Publish mode; reuse the same serialized writer and cold-restore gates.
+   Existing normal sync cannot invent editorial metadata for unknown files.
+3. Export a same-origin credits page under presentation/ and link it from the
+   app. Show source file, rights basis and owner attribution; include removal
+   contact through the maintainer's GitHub profile. Credits participate in the
+   immutable site bundle. Add HTML escaping and actual media/export checks.
+4. Audit current/historical source identity pages and preferred profile files;
+   pin actual image bytes and source revisions in the reviewed manifest. Keep
+   absent/ambiguous images as fallback with an explicit inventory. Update the
+   reviewed T1 acceptance image only after verifying its exact bytes. Retain
+   historical SKT's own logo. Commit verified code and reviewed asset stages.
+5. Run focused tests, build/lint, database integration and GitHub CI. Merge the
+   reviewed change through the protected PR path, dispatch media publication,
+   verify checkpoint lineage, same-origin decoded pictures, mobile/desktop
+   framing and PNG/ZIP content. Record actual coverage and release evidence.
+
+Scope/retirement: UUID facts, public IDs, scoring and coverage remain unchanged;
+replace only the exclusive licensed-only gate with a typed reviewed alternative.
+Generated images remain for absent/unreviewed files; old checkpoints and Docker
+recovery volumes remain intact. Reject arbitrary hotlinks, invented license or
+artist values, automatic acceptance of changed file bytes, and modern-logo
+  assignment to an unrelated historical era.
+
+Stage 1 verification: build and lint passed; 182 sync tests, 29 focused media/
+credits/publication tests and three PostgreSQL media/composition integration
+tests passed. The 72-test integration run passed before the separate media-mode
+addition. Later broad local reruns hit filesystem/query-plan timeouts under
+parallel audit work; these are not recorded as a full pass. GitHub CI must run
+the complete suite before merge. Migrations 011/012 preserve rights evidence and
+media-run history by refusing lossy downgrades. Media mode does not check facts
+mapping or mark current/history coverage as freshly observed.
+
+Audit transport refinement: prefer the MediaWiki-provided 512px thumbnail URL,
+fixed to original file format. Store the upstream original SHA-1 separately
+from the delivered image SHA-256 and explicitly label the thumbnail variant.
+Do not compare a derivative's bytes to the original checksum or claim they are
+the same file. This keeps published pictures bounded without losing provenance.

@@ -126,8 +126,10 @@ export async function runPublication(env: PublishEnvironment, run: DataRunner, o
       stage = "migrate";
       await run(["migrate"], local);
       if (plan.syncArgs !== null) {
-        stage = "mapping";
-        await run(["sync-map-check"], local);
+        if (plan.mode !== "media") {
+          stage = "mapping";
+          await run(["sync-map-check"], local);
+        }
         stage = "sync";
         await run(plan.syncArgs, local);
       }

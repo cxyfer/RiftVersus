@@ -1,4 +1,5 @@
 import type { ColumnType, Generated } from "kysely";
+import type { MediaRightsBasis } from "@riftversus/contracts";
 
 export type DefaultTimestamp = ColumnType<Date, Date | string | undefined, Date | string | undefined>;
 export type RequiredTimestamp = ColumnType<Date, Date | string, Date | string>;
@@ -50,6 +51,7 @@ export interface MediaAssetsTable {
   object_key: string;
   attribution: string | null;
   license: string | null;
+  rights_basis: ColumnType<MediaRightsBasis | null, MediaRightsBasis | null | undefined, MediaRightsBasis | null>;
   is_current: Generated<boolean>;
 }
 

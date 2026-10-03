@@ -329,7 +329,7 @@ function mediaImageRequests(
   return [...teamRequests, ...playerRequests];
 }
 
-function selectPlayerProfiles(
+export function selectPlayerProfiles(
   rows: readonly Record<string, unknown>[],
   redirectRows: readonly Record<string, unknown>[],
 ): ReadonlyMap<string, string> {

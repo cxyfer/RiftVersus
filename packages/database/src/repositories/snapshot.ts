@@ -1,4 +1,5 @@
 import { sql, type Kysely } from "kysely";
+import { MediaRightsBasisSchema, validMediaRights } from "@riftversus/contracts";
 import type { PublicSnapshot, SnapshotEntity, SnapshotGame, SnapshotSeries, SnapshotSide } from "@riftversus/contracts";
 import type { Database } from "../types.js";
 import { getDatasetStatus } from "./dataset.js";
@@ -46,7 +47,7 @@ export async function exportSnapshotFacts(database: Kysely<Database>): Promise<S
       const entityEras = entity.kind === "team" ? eras.filter(era => era.team_entity_id === entity.id) : [];
       for (const era of [null, ...entityEras]) {
         const retained = media.find(item => era === null ? item.entity_id === entity.id && item.team_era_id === null : item.team_era_id === era.id);
-        if (retained && (!retained.license || !retained.attribution)) throw new Error(`Retained media lacks rights evidence: ${retained.object_key}`);
+        if (retained && !validMediaRights({ license: retained.license, attribution: retained.attribution, rightsBasis: retained.rights_basis })) throw new Error(`Retained media lacks rights evidence: ${retained.object_key}`);
         rows.push({
           id: entity.id, kind: entity.kind, ...presentation,
           publicId: publicByEntity.get(entity.id)!,
@@ -89,6 +90,8 @@ export async function exportSnapshotFacts(database: Kysely<Database>): Promise<S
       lastSuccessfulSyncAt: dataset.lastSuccessfulSyncAt },
       coverageWarnings: dataset.coverageStatus.filter(scope => scope.status !== "complete").map(scope => ({ code: "PARTIAL_EVENT_COVERAGE", message: `${scope.provider} ${scope.competition} ${scope.seasonYear} coverage is ${scope.status}.` })),
       entities: rows, series: publicSeries, freshness: health.scopes,
-      attribution: media.filter(item => rows.some(row => row.retainedObjectKey === item.object_key)).map(item => ({ objectKey: item.object_key, sourceUrl: item.source_url, license: item.license!, attribution: item.attribution! })) };
+      attribution: media.filter(item => rows.some(row => row.retainedObjectKey === item.object_key &&
+        (item.team_era_id === null ? row.id === item.entity_id && row.teamEraId === undefined : row.teamEraId === item.team_era_id)))
+        .map(item => ({ objectKey: item.object_key, sourceUrl: item.source_url, license: item.license, attribution: item.attribution!, ...(item.rights_basis === null ? {} : { rightsBasis: MediaRightsBasisSchema.parse(item.rights_basis), ...(item.entity_id === null ? {} : { entityId: item.entity_id }), ...(item.team_era_id === null ? {} : { teamEraId: item.team_era_id }) }) })) };
   });
 }

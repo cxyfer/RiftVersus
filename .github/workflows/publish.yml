@@ -9,7 +9,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [current, history, backfill, reexport, rebuild, rollback]
+        options: [current, history, backfill, media, reexport, rebuild, rollback]
         default: rebuild
       year:
         type: string

@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { createDb, migrateToLatest } from "@riftversus/database";
 import { createFilesystemObjectStore, loadSyncConfig, validateSyncRequest, type SyncRequest } from "@riftversus/sync";
 import { executeLeaguepediaSync } from "./sync-service.js";
+import { executeReviewedMediaSync } from "./media-service.js";
 import { checkLeaguepediaMappings } from "./mapping-check.js";
 import { historyRequests } from "./sync-plan.js";
 import { readSyncHealth } from "./sync-health.js";
@@ -23,7 +24,7 @@ export type DataCommand =
   | { kind: "snapshot"; mode: "export" | "verify"; directory: string }
   | { kind: "archive"; mode: "resolve" | "publish"; directory: string }
   | { kind: "checkpoint"; mode: "pack" | "verify" | "restore"; directory: string }
-  | { kind: "migrate" | "sync-map-check" | "freshness" | "history" | "acceptance" }
+  | { kind: "migrate" | "sync-map-check" | "freshness" | "history" | "acceptance" | "media" }
   | { kind: "sync"; request: SyncRequest; fixture: "leaguepedia-small" | null };
 
 export const dataUsage = `Usage:
@@ -32,6 +33,7 @@ export const dataUsage = `Usage:
   riftversus-data sync --history-once
   riftversus-data backfill --year YYYY --competition NAME [--fixture leaguepedia-small]
   riftversus-data sync-map-check
+  riftversus-data media
   riftversus-data freshness
   riftversus-data checkpoint pack|verify|restore DIRECTORY
   riftversus-data archive resolve|publish DIRECTORY
@@ -75,7 +77,7 @@ export function parseDataCommand(argv: readonly string[]): DataCommand {
     if (args.length !== 2 || !directory?.trim() || (mode !== "pack" && mode !== "verify" && mode !== "restore")) throw new Error("checkpoint requires pack|verify|restore and a directory.");
     return { kind: "checkpoint", mode, directory };
   }
-  if (command === "migrate" || command === "sync-map-check" || command === "freshness" || command === "acceptance") {
+  if (command === "migrate" || command === "sync-map-check" || command === "freshness" || command === "acceptance" || command === "media") {
     if (args.length) throw new Error(`${command} does not accept arguments.`);
     return { kind: command };
   }
@@ -146,6 +148,7 @@ export async function runDataCli(argv: readonly string[], environment: Record<st
   }
   if (!environment.OBJECT_STORE_DIR?.trim()) throw new Error("OBJECT_STORE_DIR is required for data synchronization.");
   const objectStore = createFilesystemObjectStore(resolve(environment.OBJECT_STORE_DIR));
+  if (command.kind === "media") { console.log(JSON.stringify(await executeReviewedMediaSync(config, objectStore))); return; }
   const requests = command.kind === "history" ? historyRequests(config) : command.kind === "sync" ? [command.request] : [];
   if (requests.length === 0) throw new Error("No reviewed historical scopes are configured.");
   const errors: unknown[] = [];
