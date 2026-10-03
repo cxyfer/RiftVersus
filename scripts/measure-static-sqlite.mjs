@@ -87,6 +87,9 @@ try {
     await writeFile(resolve(output, "measurement.json"), `${JSON.stringify(measurements, null, 2)}\n`);
     await context.close();
   }
+} catch (error) {
+  await writeFile(resolve(output, "failure.json"), `${JSON.stringify({ completedRuns: measurements.length, reason: error instanceof Error ? error.message : "Browser measurement failed." }, null, 2)}\n`);
+  throw error;
 } finally {
   await browser?.close();
   await profile?.close();

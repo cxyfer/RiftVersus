@@ -64,6 +64,9 @@ export const productionPublishOperations: PublishOperations = {
       }
       if (!ready) throw new Error("Static preview did not become ready.");
       await execute("node", ["scripts/measure-static-sqlite.mjs", url, join(plan.directory, "browser-evidence")], clean);
+      if (plan.mode !== "rollback") {
+        await execute("node", ["scripts/measure-static-sqlite.mjs", url, join(plan.directory, "browser-evidence", "controlled"), "--profile=controlled", "--runs=10", "--enforce-performance"], clean);
+      }
     } finally {
       if (server.pid !== undefined) {
         try { process.kill(-server.pid, "SIGTERM"); } catch { /* Already stopped. */ }

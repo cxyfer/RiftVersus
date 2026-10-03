@@ -49,6 +49,17 @@ describe("single-writer SQLite publishing workflow", () => {
     expect(w.jobs.deploy!.steps[deployIndex + 1]?.run).toContain("scripts/measure-static-sqlite.mjs");
   });
 
+  it("retains public candidate evidence on failures without exposing the private workspace", async () => {
+    const { workflow: w } = await workflow();
+    const evidence = w.jobs.prepare!.steps.find(step => step.name === "Retain public candidate browser evidence");
+    expect(evidence?.if).toBe("always()");
+    expect(evidence?.with?.path).toBe("${{ runner.temp }}/publication-${{ github.run_id }}-${{ github.run_attempt }}/browser-evidence");
+    expect(evidence?.env).toBeUndefined();
+    const prepare = w.jobs.prepare!.steps.findIndex(step => step.name === "Prepare verified SQLite publication");
+    const upload = w.jobs.prepare!.steps.findIndex(step => step.uses?.startsWith("actions/upload-pages-artifact@"));
+    expect(prepare).toBeLessThan(upload);
+  });
+
   it("records upload, deployment and post-deploy smoke failures without checkpoint rewind", async () => {
     const { workflow: w, source } = await workflow();
     const uploadFailure = w.jobs.prepare!.steps.find(step => step.env?.FAILED_STAGE === "pages-upload");
