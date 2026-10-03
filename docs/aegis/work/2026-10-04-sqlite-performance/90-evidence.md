@@ -21,3 +21,14 @@ on the old physical SQLite, also proving correctness without new indexes.
 Raw parity: /tmp/riftversus-performance-parity-baseline.json.
 First narrow-anchor candidate: 81 GETs / 1,032,292 bytes / 17,793 ms. This did
 not meet final budgets; candidate filtering/index coverage is being improved.
+
+Subject/opponent covering indexes alone worsened reads (135 GETs / 1,294,436
+bytes). Actual WASM EXPLAIN showed game-summary CTE flattening selected broad
+region scans. CROSS JOIN candidate/series/tournament/game boundaries preserve
+the finite candidate-first order without requiring any new index name in SQL.
+The corrected query: 77 GETs / 757,860 bytes / 16,474.9 ms at 4 KiB. Results
+remain identical and actual WASM plans now use covering candidates, PK series
+lookups and series-index game lookups. Raw plan: /tmp/riftversus-wasm-plan.json;
+measurement: /tmp/riftversus-performance-fixed-order/measurement.json.
+
+pnpm test: 504 unit/workspace tests passed (67 + 12 + 38 + 169 + 141 + 77).

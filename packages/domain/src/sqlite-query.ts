@@ -74,8 +74,8 @@ function sideMatch(subject: SubjectRef, alias: "s" | "g", side: Side): SqlFragme
   const prefix = `${alias}.${sideColumn(side, "team_id")}`;
   if (subject.kind === "team") {
     return {
-      text: `(${prefix} = ? AND (? IS NULL OR ${alias}.${sideColumn(side, "era_id")} = ?))`,
-      params: [subject.id, subject.teamEraId ?? null, subject.teamEraId ?? null],
+      text: subject.teamEraId === undefined ? `${prefix} = ?` : `(${prefix} = ? AND ${alias}.${sideColumn(side, "era_id")} = ?)`,
+      params: subject.teamEraId === undefined ? [subject.id] : [subject.id, subject.teamEraId],
     };
   }
   if (subject.kind === "region") {
@@ -181,10 +181,7 @@ async function resolveSubject(executor: SqliteExecutor, subject: SubjectRef): Pr
 function seriesFilters(query: ComparisonQuery): SqlFragment {
   const parts: SqlFragment[] = [];
   const requiresDirectGame = query.left.kind === "player" || query.right.kind === "player";
-  if (requiresDirectGame) {
-    const direct = assignment(query.left, query.right, "g");
-    parts.push({ text: `EXISTS (SELECT 1 FROM game_facts g WHERE g.series_id = s.id AND ${direct.text})`, params: direct.params });
-  } else {
+  if (!requiresDirectGame) {
     parts.push(assignment(query.left, query.right, "s"));
   }
   if (query.from !== undefined) parts.push({ text: "s.date >= ?", params: [query.from] });
@@ -198,6 +195,29 @@ function seriesFilters(query: ComparisonQuery): SqlFragment {
   const tournaments = inList("s.tournament_id", query.tournamentIds);
   if (tournaments !== null) parts.push(tournaments);
   return and(parts);
+}
+
+function candidateCtes(query: ComparisonQuery): SqlFragment {
+  const player = [query.left, query.right].find(subject => subject.kind === "player");
+  if (player !== undefined) {
+    const direct = assignment(query.left, query.right, "g");
+    return {
+      text: `candidate_games AS (SELECT DISTINCT game_id AS id FROM game_players WHERE player_entity_id = ?),
+        candidate_series AS (SELECT DISTINCT g.series_id AS id FROM candidate_games cg
+          CROSS JOIN game_facts g ON g.id = cg.id WHERE ${direct.text})`,
+      params: [player.id, ...direct.params],
+    };
+  }
+  const anchor = [query.left, query.right].find(subject => subject.kind === "team") ?? query.left;
+  const opponent = anchor === query.left ? query.right : query.left;
+  const branches = (["a", "b"] as const).map(side => {
+    const filters = [sideMatch(anchor, "s", side), sideMatch(opponent, "s", side === "a" ? "b" : "a")];
+    if (query.from !== undefined) filters.push({ text: "s.date >= ?", params: [query.from] });
+    if (query.to !== undefined) filters.push({ text: "s.date <= ?", params: [query.to] });
+    const filter = and(filters);
+    return { text: `SELECT s.id FROM series_facts s WHERE ${filter.text}`, params: filter.params };
+  });
+  return { text: `candidate_series AS (${branches.map(branch => branch.text).join(" UNION ")})`, params: branches.flatMap(branch => branch.params) };
 }
 
 function matchedSeriesCte(query: ComparisonQuery): SqlFragment {
@@ -230,8 +250,9 @@ function matchedSeriesCte(query: ComparisonQuery): SqlFragment {
     selectParts.push("NULL AS series_left_team_id");
   }
   const filters = seriesFilters(query);
+  // 固定從候選 IDs 開始，避免 WASM planner 在遊戲統計中展開 CTE 後改掃全部賽事。
   return {
-    text: `matched_series AS (SELECT ${selectParts.join(", ")} FROM series_facts s JOIN tournaments t ON t.id = s.tournament_id WHERE ${filters.text})`,
+    text: `matched_series AS (SELECT ${selectParts.join(", ")} FROM candidate_series cs CROSS JOIN series_facts s ON s.id = cs.id CROSS JOIN tournaments t ON t.id = s.tournament_id WHERE ${filters.text})`,
     params: [...selectParams, ...filters.params],
   };
 }
@@ -242,17 +263,19 @@ function directGamesCte(query: ComparisonQuery): SqlFragment {
   return {
     text: `direct_games AS (SELECT g.id, g.series_id, g.played_at, g.winner_team_id,
       CASE WHEN ${leftA.text} THEN g.side_a_team_id ELSE g.side_b_team_id END AS left_team_id
-      FROM game_facts g JOIN matched_series ms ON ms.id = g.series_id
+      FROM matched_series ms CROSS JOIN game_facts g ON g.series_id = ms.id
       WHERE ${assignmentPart.text})`,
     params: [...leftA.params, ...assignmentPart.params],
   };
 }
 
 function queryCtes(query: ComparisonQuery): { text: string; params: SqliteParam[] } {
+  const candidates = candidateCtes(query);
   const matched = matchedSeriesCte(query);
   const direct = directGamesCte(query);
   return {
-      text: `WITH ${matched.text}, ${direct.text},
+      text: `WITH ${candidates.text}, ${matched.text}, ${direct.text},
+      ${query.left.kind === "player" ? `
       first_direct AS (
         SELECT current.id, current.series_id, current.left_team_id
         FROM direct_games current
@@ -262,14 +285,14 @@ function queryCtes(query: ComparisonQuery): { text: string; params: SqliteParam[
             AND (earlier.played_at < current.played_at
               OR (earlier.played_at = current.played_at AND earlier.id < current.id))
         )
-      ),
+      ),` : ""}
       oriented_matches AS (
         SELECT ms.*,
           ${query.left.kind === "player" ? "fd.left_team_id" : "ms.series_left_team_id"} AS left_team_id
         FROM matched_series ms
-        LEFT JOIN first_direct fd ON fd.series_id = ms.id
+        ${query.left.kind === "player" ? "LEFT JOIN first_direct fd ON fd.series_id = ms.id" : ""}
       )`,
-    params: [...matched.params, ...direct.params],
+    params: [...candidates.params, ...matched.params, ...direct.params],
   };
 }
 

@@ -11,9 +11,9 @@ existing measurement/publication owners only. No runtime fallback or new service
 
 ## Tasks
 
-1. Measurement/profile/baseline: verified; ready to commit.
-2. Selective SQL/indexes/parity: active.
-3. Compatible reader / Release A: pending.
+1. Measurement/profile/baseline: committed 22aaa0f.
+2. Selective SQL/indexes/parity: verified; ready to commit.
+3. Compatible reader / Release A: active.
 4. Canonical comparison reuse: pending.
 5. Unit selection / predeploy gate / Release B: pending.
 6. Final evidence/runbook: pending.
@@ -22,8 +22,12 @@ Evidence: prior diagnosis and proposal commits 7a1b05b / af917cf.
 Blockers: none currently. Local screenshots previously time out; remote runner
 screenshots remain mandatory. Local diagnostic contexts may use explicit DOM
 measurements without claiming screenshot verification.
-Next: verify covering candidate reads, commit selective SQL and compatible reader,
-then CI and Release A. Baseline: 10 runs, median 31,972.8 ms, 173 GETs and
+Next: commit selective SQL and compatible reader, then CI and Release A.
+Baseline: 10 runs, median 31,972.8 ms, 173 GETs and
 913,508 bytes each. Profile tests (2), lint, build and typecheck passed. Candidate
 SQL passed 13 tests and 48 complete production-data paginated comparisons.
+Final SQL with unchanged 4 KiB request size: 77 GETs / 757,860 bytes / 16,474.9 ms.
+Actual WASM EXPLAIN confirms covering subject-index candidates followed by
+primary-key series lookups and series-index game lookups. All 504 unit/workspace
+tests passed. Request-unit selection and final performance targets remain pending.
 Drift check: continue; no source/fact/checkpoint authority changes proposed.

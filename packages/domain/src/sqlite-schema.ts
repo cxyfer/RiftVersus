@@ -79,6 +79,10 @@ CREATE TABLE series_facts (
 );
 CREATE INDEX series_facts_played_at_idx ON series_facts (played_at, id);
 CREATE INDEX series_facts_tournament_idx ON series_facts (tournament_id, played_at, id);
+CREATE INDEX series_facts_team_a_idx ON series_facts (side_a_team_id, date, side_b_region_id, side_b_team_id, side_a_era_id, side_b_era_id, id);
+CREATE INDEX series_facts_team_b_idx ON series_facts (side_b_team_id, date, side_a_region_id, side_a_team_id, side_b_era_id, side_a_era_id, id);
+CREATE INDEX series_facts_region_a_idx ON series_facts (side_a_region_id, date, side_b_region_id, id);
+CREATE INDEX series_facts_region_b_idx ON series_facts (side_b_region_id, date, side_a_region_id, id);
 
 CREATE TABLE game_facts (
   id TEXT PRIMARY KEY,
@@ -104,6 +108,7 @@ CREATE TABLE game_players (
   PRIMARY KEY (game_id, side, player_entity_id)
 );
 CREATE INDEX game_players_game_idx ON game_players (game_id, side, player_entity_id);
+CREATE INDEX game_players_player_idx ON game_players (player_entity_id, game_id, side);
 `;
 
 export function createSqliteSchema(database: { exec(sql: string): void }): void {
