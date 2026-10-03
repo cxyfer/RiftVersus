@@ -5,6 +5,7 @@ Entries are workspace records, not authoritative runtime decisions.
 
 | Date | Kind | Path | Title |
 | --- | --- | --- | --- |
+| 2026-10-04 | spec | docs/aegis/specs/2026-10-04-sqlite-query-performance.md | Proposed selective SQLite queries and HTTPVFS performance |
 | 2026-10-03 | plan | docs/aegis/plans/2026-10-03-public-identity-real-media.md | Approved public ID and real media execution |
 | 2026-10-03 | spec | docs/aegis/specs/2026-10-03-public-identity-real-media.md | Proposed public IDs and verified real media |
 | 2026-09-14 | work | docs/aegis/work/2026-09-14-github-only/20-checkpoint.md | GitHub-only execution checkpoint and evidence |
