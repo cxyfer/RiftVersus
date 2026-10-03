@@ -5,7 +5,7 @@ const image = { sourceKey: "logo.png", entityKey: "Old Team", sourceUrl: "https:
 describe("Leaguepedia media eligibility and era ownership", () => {
   it("binds the historical logo to its exact era and deduplicates identical evidence", () => {
     const result = inspectLeaguepediaMedia([image, image], new Map([["Old Team", "team"]]), new Map([["Old Team", "old-era"]]));
-    expect(result.media).toEqual([{ sourceUrl: image.sourceUrl, license: image.license, attribution: image.attribution, entityId: "team", teamEraId: "old-era" }]);
+    expect(result.media).toEqual([{ sourceUrl: image.sourceUrl, license: image.license, attribution: image.attribution, teamEraId: "old-era" }]);
     expect(result.inventory.eligible).toBe(1);
   });
   it("reports missing, rights-blocked, invalid and conflicting images without publishing them", () => {

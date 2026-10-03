@@ -18,7 +18,7 @@ export function inspectLeaguepediaMedia(input: readonly LeaguepediaMedia[], enti
     if (entityId === undefined) { inventory.unbound++; continue; }
     const teamEraId = eraIds.get(item.entityKey);
     const owner = teamEraId ?? entityId;
-    const media = { sourceUrl: url.toString(), attribution: item.attribution.trim(), license: item.license.trim(), entityId, ...(teamEraId === undefined ? {} : { teamEraId }) };
+    const media = { sourceUrl: url.toString(), attribution: item.attribution.trim(), license: item.license.trim(), ...(teamEraId === undefined ? { entityId } : { teamEraId }) };
     byOwner.set(owner, [...(byOwner.get(owner) ?? []), media]);
   }
   for (const candidates of byOwner.values()) {

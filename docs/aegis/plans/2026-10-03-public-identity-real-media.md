@@ -87,8 +87,13 @@ verification remains assigned to GitHub CI and hosted publication smoke tests.
 Migration 009 downgrade tests now explicitly target version 009 rather than
 assuming it is the latest migration. No safety assertion was relaxed.
 
-Stage 1 commit: `7060422`. Remote verification: CI `37134704204` and
-Publish `37134704354` (results recorded after completion).
+Stage 1 commit: `7060422`. Remote CI `37134704204` passed 484 tests, 71
+integration tests and six production E2E tests. Publish `37134704354` passed
+candidate acceptance with no blockers and hosted sharing/saving/player/date/
+PNG/mobile workflows. Live site `site-37134704354-1` independently returned
+SQLite schema 3, 715 entity route owners and 104 era route owners. Benny and
+Doran both retain separate readable qualified IDs. Desktop/mobile cold reads
+were 913,508 of 7,045,120 SQLite bytes, with real Worker/WASM/identity 206 reads.
 
 Stage 2 implementation: bounded PlayerImages queries through PlayerRedirects
 and Tournaments, deterministic latest-profile selection and retained raw replay;
@@ -111,3 +116,13 @@ Stage 2 local verification: all workspace tests passed (487 tests), then the
 changed parser/ownership and UI/export suites were rerun (169 sync + 67 web
 tests passed), build and lint passed. Actual current-import inventory and hosted
 browser results remain pending remote verification.
+
+Stage 2 commit: `e248c48`. CI `37135000649` and rebuild Publish `37135000642`
+passed. Root follow-up found that assigning both entity and era owner would
+invalidate other eras through the entity-current index. Media inspection now
+emits only the era owner for team logos. A provider-to-PostgreSQL integration
+test publishes two eras for the same team and verifies both remain current,
+with no entity-wide owner. The focused integration, 169 sync tests, build and
+lint passed. Queued current import `37135017721` was cancelled for this repair.
+Current import must archive the registry in the next durable checkpoint;
+rebuild alone deliberately does not promote a new data checkpoint.

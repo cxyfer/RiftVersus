@@ -319,3 +319,40 @@ source identity; existing public history and current sync remain available.
 
 Official workflow references inspected: GitHub's custom Pages workflow guide,
 Actions concurrency guide and the pinned official Pages action definitions.
+
+## Readable Routes And Real Media
+
+`entity_public_ids` owns exact player/team/region route keys;
+`team_era_public_ids` owns era keys scoped by team. UUIDs remain fact keys.
+NFKC/trim/lowercase/whitespace-to-hyphen normalization preserves other Unicode
+and punctuation. Initial same-name players use readable real-name suffixes;
+remaining collisions extend stable identity prefixes. Published ownership is
+immutable, and later arrivals cannot take existing keys. UUID-shaped labels
+receive a suffix so legacy UUID routes remain unambiguous. Never merge by name.
+
+SQLite schema 3 resolves exact kind/key mappings before UUID comparison. Legacy
+UUID links and saved results remain loadable; successful URLs canonicalize with
+filters/era intact. Unknown keys show recovery errors, never fuzzy search results.
+Archive readers retain schema 2 rollback support. Rebuild migrates restored data
+before export; the next successful `current` sync archives the persistent registry.
+
+PlayerImages discovery is scoped to imported player pages in batches of 50,
+joined through PlayerRedirects/Tournaments with deterministic profile/date/filename
+selection and retained raw replay. Team source logos bind to exact normalized eras.
+Existing bounded downloads, license/attribution eligibility and same-origin media
+publication remain authoritative. Conflicting owners fail closed. Coverage details
+record import-scope media inventory: missing includes entities without candidates;
+blocked counts refer to candidate rows, not all historical entities.
+
+Reviewed T1 and Faker files lack per-file license/attribution metadata and retain
+generated fallback. Publish only after reviewable source rights evidence is
+available and an approved import passes; do not patch image URLs into SQLite or
+fabricate an approved license. Logos use contain sizing; portraits use cover.
+
+Commit `7060422` passed
+[CI 37134704204](https://github.com/cxyfer/RiftVersus/actions/runs/37134704204)
+and [Publish 37134704354](https://github.com/cxyfer/RiftVersus/actions/runs/37134704354).
+Independent live SQLite checksum verification found 715 entity route owners and
+104 era route owners, including distinct Benny/Doran keys. Hosted sharing,
+saving, player/date filtering, decoded PNG and mobile checks passed. Cold
+desktop/mobile reads were 913,508 of 7,045,120 SQLite bytes.

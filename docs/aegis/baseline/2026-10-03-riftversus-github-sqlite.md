@@ -33,6 +33,12 @@ avatar presentation remain enforced. Generated avatars remain presentation,
 not provider evidence. URL sharing, saved comparisons and export remain client
 features. No full database GET, JSON query engine or HTTP API fallback survives.
 
+Readable entity/era URL keys now have persistent scoped ownership in migration
+010 and SQLite schema 3; UUID facts and legacy URLs/saved results remain valid.
+Exact route resolution does not use fuzzy search. Same-name identities remain
+separate, later arrivals cannot steal published IDs, and successful links retain
+filters when canonicalized. Schema 2 immutable sites remain readable for rollback.
+
 ## Retirement And Recovery
 
 Retire the Fastify server workspace, old application Docker image/entrypoint,
@@ -79,3 +85,10 @@ The user's unrelated `.gitignore` edit is excluded from migration commits.
   the repaired historical PNG; all hosted sharing/saving/player/date/mobile
   workflows passed. Independent archive/public identity still resolves sequence 2
   with its unchanged parent; no source gates or history failures were bypassed.
+
+- Public-ID commit 7060422 passed CI 37134704204 (484 unit, 71 integration,
+  six production E2E tests) and Publish 37134704354. Root independently verified
+  the public SQLite checksum, schema 3, 715 entity mappings, 104 era mappings,
+  legacy/readable Faker equivalence and rejection of partial/wrong-kind keys.
+  Hosted sharing/saving/player/date/PNG/mobile checks passed; cold default reads
+  were 913,508 of 7,045,120 bytes. Checkpoint 2 was preserved by this rebuild.
