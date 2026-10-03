@@ -96,6 +96,22 @@ again and verified. Only this downloaded public directory is uploaded as the
 Pages artifact. Private staging directories never enter the Pages artifact.
 Current/previous immutable files are preserved by the site archive contract.
 
+Every newly built site also runs ten cold contexts against a loopback preview
+with 150 ms response delay and shared 10 Mbit/s bandwidth for assets and Worker
+XHR. Before site archive/publication, the default comparison must stay within
+30 Range GETs, 1 MiB database transfer and a ten-second median. Rejected rebuilds
+archive their attempt without publishing a site or advancing the checkpoint.
+Current/history modes may already have promoted an accepted data checkpoint;
+a later website gate failure does not undo that promotion.
+
+Explicit rollback keeps the ordinary screenshot/identity/206 transport smoke
+but does not apply new performance budgets to an older archived site. Prepare
+always retains only its public browser-evidence subdirectory as
+candidate-browser-evidence-RUN_ID-ATTEMPT for 14 days, including partial
+measurements/failure.json when available. Raw objects and private dumps stay
+outside the uploaded evidence. Hosted timings remain unshaped observations,
+not comparisons to the controlled threshold.
+
 The deployment job requires Pages/OIDC permissions, rechecks the current code
 SHA, deploys the prepared artifact, then verifies site identity and HTTPVFS
 transport against the real Pages URL. A failed smoke test marks the run failed;

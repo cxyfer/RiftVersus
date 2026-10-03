@@ -82,6 +82,7 @@ jobs:
         run: |
           pnpm lint
           pnpm test
+          node --test scripts/static-network-profile.test.mjs
       - name: Create empty restore-validation database
         env:
           PGPASSWORD: postgres
@@ -114,6 +115,14 @@ jobs:
           LEAGUEPEDIA_MAPPING_YEARS: ${{ vars.LEAGUEPEDIA_MAPPING_YEARS }}
           LEAGUEPEDIA_MAPPING_COMPETITIONS: ${{ vars.LEAGUEPEDIA_MAPPING_COMPETITIONS }}
         run: pnpm data publish prepare
+      - name: Retain public candidate browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: candidate-browser-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/publication-${{ github.run_id }}-${{ github.run_attempt }}/browser-evidence
+          if-no-files-found: ignore
+          retention-days: 14
       # Official upload-pages-artifact v4; only the downloaded, verified public site.
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
         with:

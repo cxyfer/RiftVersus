@@ -137,6 +137,15 @@ describe("publication stage ordering", () => {
     expect(h.calls.find(call => call.args[0] === "site" && call.args[1] === "publish")?.env.CHECKPOINT_ID).toBe("checkpoint-7");
   });
 
+  it("archives a rejected rebuild without publishing a site or advancing its checkpoint", async () => {
+    const h = await harness("smoke", "rebuild");
+    await expect(runPublication(h.env, h.run, h.operations)).rejects.toThrow("site-smoke");
+    expect(h.events).not.toContain("archive publish");
+    expect(h.events).not.toContain("site publish");
+    expect(h.calls.at(-1)?.env).toMatchObject({ FAILED_STAGE: "site-smoke", ATTEMPT_BASELINE_ID: "checkpoint-7" });
+    await expect(readFile(h.env.GITHUB_OUTPUT)).rejects.toThrow();
+  });
+
   it("rolls back only the explicit site, never restoring or rewriting the database", async () => {
     const h = await harness(undefined, "rollback");
     await runPublication({ ...h.env, ROLLBACK_SITE_ID: "site-old" }, h.run, h.operations);

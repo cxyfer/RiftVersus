@@ -215,7 +215,7 @@ function candidateCtes(query: ComparisonQuery): SqlFragment {
     if (query.from !== undefined) filters.push({ text: "s.date >= ?", params: [query.from] });
     if (query.to !== undefined) filters.push({ text: "s.date <= ?", params: [query.to] });
     const filter = and(filters);
-    return { text: `SELECT s.id FROM series_facts s WHERE ${filter.text}`, params: filter.params };
+    return { text: `SELECT s.* FROM series_facts s WHERE ${filter.text}`, params: filter.params };
   });
   return { text: `candidate_series AS (${branches.map(branch => branch.text).join(" UNION ")})`, params: branches.flatMap(branch => branch.params) };
 }
@@ -250,9 +250,12 @@ function matchedSeriesCte(query: ComparisonQuery): SqlFragment {
     selectParts.push("NULL AS series_left_team_id");
   }
   const filters = seriesFilters(query);
-  // 固定從候選 IDs 開始，避免 WASM planner 在遊戲統計中展開 CTE 後改掃全部賽事。
+  const source = query.left.kind === "player" || query.right.kind === "player"
+    ? "candidate_series cs CROSS JOIN series_facts s ON s.id = cs.id"
+    : "candidate_series s";
+  // 固定從候選集合開始；非選手查詢直接使用索引提供的系列賽欄位，避免逐筆回查。
   return {
-    text: `matched_series AS (SELECT ${selectParts.join(", ")} FROM candidate_series cs CROSS JOIN series_facts s ON s.id = cs.id CROSS JOIN tournaments t ON t.id = s.tournament_id WHERE ${filters.text})`,
+    text: `matched_series AS (SELECT ${selectParts.join(", ")} FROM ${source} CROSS JOIN tournaments t ON t.id = s.tournament_id WHERE ${filters.text})`,
     params: [...selectParams, ...filters.params],
   };
 }

@@ -64,6 +64,19 @@ identity, request size and each ready time are saved in measurement.json.
 Performance enforcement additionally requires --enforce-performance and at least
 ten controlled repetitions; it checks 30 Range GETs, 1 MiB reads and a ten-second
 median for the default comparison.
+For diagnostic broad queries, --summary-timeout-ms=300000 permits a longer
+observation (maximum five minutes); it does not change the performance budgets.
+
+New exports use 16 KiB requests with unchanged 4 KiB SQLite pages. The reader
+accepts only 4/16/32/64 KiB request units, preserving archived 4 KiB manifests.
+Identity, team candidate and game-series indexes cover their queried columns;
+the game_players primary key already covers game/side/player membership, so its
+identical secondary index is removed from new exports. No query requires a new
+index name, and old database layouts remain queryable.
+
+Comparisons use resolved UUIDs/eras and normalized filters as cache keys within
+one pinned API session. UUID URL canonicalization, focus/reconnect and repeated
+Apply reuse the comparison; replacing the API session resets its QueryClient.
 
 ## Failure And Version Boundaries
 

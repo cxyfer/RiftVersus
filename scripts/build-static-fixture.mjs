@@ -4,6 +4,7 @@ import { dirname, join, resolve } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { DEFAULT_COMPARISON_SUBJECTS } from "../packages/domain/dist/default-comparison.js";
+import { SQLITE_PAGE_SIZE, SQLITE_REQUEST_CHUNK_SIZE } from "../packages/domain/dist/sqlite-schema.js";
 
 const rootDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const defaultOutputDirectory = join(rootDirectory, "apps", "web", "dist");
@@ -288,8 +289,8 @@ if (
   manifest.schemaVersion !== 3
   || typeof manifest.database?.file !== "string"
   || !/^[a-f0-9]{64}\/database\.sqlite$/u.test(manifest.database.file)
-  || manifest.database.pageSize !== 4096
-  || manifest.database.requestChunkSize !== 4096
+  || manifest.database.pageSize !== SQLITE_PAGE_SIZE
+  || manifest.database.requestChunkSize !== SQLITE_REQUEST_CHUNK_SIZE
 ) {
   throw new Error("Static fixture writer must produce a schema v3 SQLite manifest.");
 }
