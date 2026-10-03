@@ -378,3 +378,8 @@ Commit: `d217293`.
   lint. ADR amendment and indexed 2026-10-03 baseline record new canonical
   owners and the historical provider blocker. Post-retirement remote CI/hosted
   verification follows the stage commit.
+- Retirement committed/pushed as a27ddbf. CI 37113352542 and Publish 37113352536
+  failed before archive access/deployment because the final documentation edit
+  called the parity reference an oracle, matching the retired-provider guard.
+  Root corrected only the active documentation wording; guard unchanged.
+  Re-run the source guard after final documentation edits, then push the fix.

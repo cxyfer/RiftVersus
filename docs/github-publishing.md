@@ -238,7 +238,7 @@ evidence below; local legacy retirement regressions are recorded separately.
 The retirement slice deletes the Fastify server workspace, application Docker
 carrier, S3/AWS transport and resident Croner scheduler. Data-owned acceptance,
 mapping, sync-health and sync-service tests move to `apps/data`. PostgreSQL
-remains build/restore tooling and an archival acceptance/parity oracle, not an
+remains build/restore tooling and an archival acceptance/parity reference, not an
 online query server. Explicit local Compose profiles preserve named volumes;
 production publication remains exclusively in GitHub Actions.
 
@@ -249,6 +249,10 @@ the retired owners are absent. Independent read-only review found no new
 evidenced blockers. The ADR amendment and new architecture baseline record
 the root cutover decision and outstanding upstream history limitation.
 Post-retirement remote CI and actual hosted verification remain the final gate.
+Initial retirement commit `a27ddbf` runs 37113352542 / 37113352536 stopped
+before archive access or deployment: the newly added parity-reference wording
+matched the retired-provider text guard. The documentation wording is corrected;
+the existing source guard and all publication gates remain unchanged.
 
 Official workflow references inspected: GitHub's custom Pages workflow guide,
 Actions concurrency guide and the pinned official Pages action definitions.
