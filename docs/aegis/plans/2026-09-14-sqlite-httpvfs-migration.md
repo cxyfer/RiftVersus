@@ -1,6 +1,7 @@
 # SQLite / SQL.js-HTTPVFS Migration
 
-Status: implementing on `design/github-pages-actions`.
+Status: GitHub / SQLite implementation and cutover complete on
+`design/github-pages-actions`; full fresh historical sync remains source-blocked.
 Authority: user explicitly requires SQLite / SQL.js-HTTPVFS, replacing JSON snapshots.
 Root owns architecture and commits; gpt-5.6-luna implementers own bounded files.
 
@@ -83,7 +84,7 @@ Continuation implementation boundaries:
 
 ## S4: Bootstrap, Cutover And Retirement
 
-Status: remote cutover verified; legacy code retirement awaiting final deployment.
+Status: remote cutover and legacy retirement verified.
 Private website `cxyfer/RiftVersus` and
 archive `cxyfer/RiftVersus-data` exist; Pages workflow hosting, archive-only
 Actions credential, remote CI and generation-8 archive bootstrap/cold restore
@@ -93,7 +94,11 @@ Worker/WASM/Range smoke. Current source synchronization 37110413823 and explicit
 site rollback 37110806436 passed. Historical source synchronization 37111081562
 failed closed because the upstream Players dimension lacks Levi; its failure
 archive and baseline isolation were independently verified. See the amended
-retirement evidence boundary below. Old application/sync containers stay stopped.
+retirement evidence boundary below. Retirement `a27ddbf` plus documentation fix
+`3214e59` passed CI 37113562693 (475 unit, 70 integration, six production E2E)
+and Publish 37113562724, including clean restore and hosted desktop/mobile.
+Latest sequence-2 data is served again after the rollback exercise. Original
+application/sync containers are stopped with restart=no; volumes remain intact.
 
 - `origin` targets the private website repository; deployment branch is `main`.
 - Configure private archive token and Pages permissions; do not expose token publicly.

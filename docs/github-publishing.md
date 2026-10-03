@@ -248,11 +248,41 @@ passed after test relocation. Negative active-source/dependency checks confirm
 the retired owners are absent. Independent read-only review found no new
 evidenced blockers. The ADR amendment and new architecture baseline record
 the root cutover decision and outstanding upstream history limitation.
-Post-retirement remote CI and actual hosted verification remain the final gate.
+Post-retirement remote CI and actual hosted verification passed below.
 Initial retirement commit `a27ddbf` runs 37113352542 / 37113352536 stopped
 before archive access or deployment: the newly added parity-reference wording
 matched the retired-provider text guard. The documentation wording is corrected;
 the existing source guard and all publication gates remain unchanged.
+
+Documentation fix `3214e59` passed remote
+[CI 37113562693](https://github.com/cxyfer/RiftVersus/actions/runs/37113562693):
+475 unit, 70 PostgreSQL integration and six production SQLite E2E tests.
+[Publish 37113562724](https://github.com/cxyfer/RiftVersus/actions/runs/37113562724)
+passed clean checkpoint restore, current SQLite acceptance (ready/no blockers),
+private immutable `site-37113562724-1`, deployment and hosted desktop/mobile
+screenshots/Worker/WASM/Range checks. Both viewports read 876,644 / 6,889,472
+bytes through 166 GETs and one HEAD; readiness was 2.70 s / 1.48 s.
+Independent archive resolution/public identity confirmed sequence 2, its original
+bootstrap parent and the current snapshot; local DOM/identity-206/gzip-HEAD
+checks passed too. Rebuild restored the current website after rollback without
+promoting another data checkpoint. Full fresh history remains source-blocked.
+
+After hosted success, the retained original app/sync were kept stopped and their
+automatic restart policies disabled. The PostgreSQL/MinIO volumes, old images,
+containers and independent dump remain recovery evidence. Re-run the narrow
+policy/verification commands without deleting any retained resources:
+
+```bash
+docker update --restart=no riftversus-complete-2013-2026-app-1 riftversus-complete-2013-2026-sync-1
+docker inspect riftversus-complete-2013-2026-app-1 riftversus-complete-2013-2026-sync-1 --format '{{.Name}} state={{.State.Status}} restart={{.HostConfig.RestartPolicy.Name}}'
+docker volume inspect riftversus-complete-2013-2026_postgres-data riftversus-complete-2013-2026_minio-data --format '{{.Name}} driver={{.Driver}}'
+```
+
+Observed: both writers `exited`, restart=`no`; both named data volumes exist.
+Do not start an old writer alongside Actions. Use the explicit archived-site
+rollback flow for website recovery; investigate source failures in immutable
+attempt archives before retrying history. Historical Compose/image commands in
+the older runbooks are retained records, not an alternate production schedule.
 
 Official workflow references inspected: GitHub's custom Pages workflow guide,
 Actions concurrency guide and the pinned official Pages action definitions.

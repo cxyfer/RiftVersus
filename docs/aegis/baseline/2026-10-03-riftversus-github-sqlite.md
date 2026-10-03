@@ -1,7 +1,7 @@
 # RiftVersus GitHub / SQLite Baseline
 
 Date: 2026-10-03
-Status: deployed architecture verified; retirement source awaiting remote gates.
+Status: deployed architecture and runtime retirement verified.
 Decision: [ADR-0001 amendment](../adr/ADR-0001-leaguepedia-facts-and-fail-closed-presentation.md).
 Operations and run evidence: [GitHub publishing](../../github-publishing.md).
 
@@ -44,6 +44,7 @@ legacy MinIO recovery profiles only; it starts no production writer.
 Retained original containers, images, named PostgreSQL/MinIO volumes and independent
 backup are recovery evidence. Physical deletion is out of scope. Old runbook
 commands remain labelled historical records, not current operational entrypoints.
+Original app/sync containers are stopped with restart=no after hosted verification.
 The user's unrelated `.gitignore` edit is excluded from migration commits.
 
 ## Verified Evidence And Limits
@@ -64,4 +65,11 @@ The user's unrelated `.gitignore` edit is excluded from migration commits.
 - Current reviewed imports are 2026/MSI; wider domestic mapping audit gaps remain.
   Pinned generation-4 archival acceptance requires its matching checkpoint.
 - Local blank-page Chromium screenshots also time out; GitHub runner screenshots
-  passed unchanged. Retirement requires fresh remote CI and hosted verification.
+  passed unchanged.
+- Retirement commits a27ddbf / 3214e59 passed remote CI 37113562693: 475 unit,
+  70 integration and six production E2E tests. Publish 37113562724 served
+  immutable site-37113562724-1 with current SQLite acceptance ready/no blockers
+  and hosted desktop/mobile screenshots. Independent archive resolution and
+  public identity confirmed sequence 2 and its unchanged parent; local desktop/
+  mobile DOM/identity-206/gzip-HEAD verification also passed. Old carriers cannot
+  auto-restart, and named volume inspection confirms both retained data volumes.

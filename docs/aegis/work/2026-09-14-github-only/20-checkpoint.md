@@ -6,9 +6,11 @@ SQLite / real HTTPVFS, GitHub bootstrap/cold restore, hosted desktop/mobile,
 current sync and independent site rollback are verified. Sequence-2 checkpoint
 is authoritative. Full history refresh failed closed on missing upstream Levi
 dimension; failed attempt is archived without promotion. Retirement is locally
-verified (475 unit, 70 integration, consumer/build/lint and independent review),
-awaiting commit and final remote CI/hosted checks. Persistent volumes, retained
-containers and the user's `.gitignore` change are preserved. Earlier status
+verified and committed (a27ddbf / 3214e59). Remote CI 37113562693 passed 475 unit,
+70 integration and six E2E tests; Publish 37113562724 passed hosted desktop/mobile.
+Original app/sync are stopped with restart=no. Persistent volumes, retained
+containers and the user's `.gitignore` change are preserved. Final evidence is
+recorded below; fresh history remains source-blocked. Earlier status
 sections below are chronological evidence, not current completion claims.
 
 ## Active User Correction
@@ -383,3 +385,17 @@ Commit: `d217293`.
   called the parity reference an oracle, matching the retired-provider guard.
   Root corrected only the active documentation wording; guard unchanged.
   Re-run the source guard after final documentation edits, then push the fix.
+- Documentation fix 3214e59 passed the unchanged 32-test source guard and was
+  pushed. CI 37113562693 passed 475 unit, 70 PG17 integration and six production
+  SQLite E2E tests. Publish 37113562724 passed current acceptance, GitHub restore,
+  private immutable site archive and hosted desktop/mobile smoke/screenshots.
+- Independent archive/public check confirmed site-37113562724-1 serves the
+  sequence-2 checkpoint with its unchanged bootstrap parent and current snapshot
+  sha256:42139d40b506d4486a82a43aca08fefaf7950cfa5ed8938454bee5fc76b12401.
+  Local desktop/mobile DOM/transport checks passed with 166 identity 206 Range
+  GETs, actual gzip HEAD and 876,644 / 6,889,472 bytes. Evidence files:
+  /tmp/riftversus-s4-20261003/retirement-final-state.json and
+  /tmp/riftversus-s4-20261003/retirement-hosted-dom-transport.json.
+- After hosted success, docker update --restart=no applied only to retained
+  original app/sync. Inspection confirms both exited/restart=no and both named
+  PostgreSQL/MinIO data volumes exist. No container, image or volume was removed.
