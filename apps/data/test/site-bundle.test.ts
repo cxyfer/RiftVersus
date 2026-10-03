@@ -283,7 +283,7 @@ describe("site bundle protocol", () => {
       const thirdBundle = await buildSiteBundle({ directory: third.directory, siteId: "site-three", codeSha: "sha-three", checkpointId: "checkpoint-three", snapshotId: third.snapshot.snapshotId, immutableFiles: thirdOwned });
       const thirdFiles = thirdBundle.manifest.files.map((entry) => entry.file);
       const firstDatabase = firstBundle.manifest.files.find((entry) => /^data\/[a-f0-9]{64}\/database\.sqlite$/u.test(entry.file))!.file;
-      const secondDatabase = secondBundle.manifest.files.find((entry) => /^data\/[a-f0-9]{64}\/database\.sqlite$/u.test(entry.file))!.file;
+      const secondDatabase = secondOwned.find((file) => /^data\/[a-f0-9]{64}\/database\.sqlite$/u.test(file))!;
       const thirdDatabase = thirdOwned.find((file) => /^data\/[a-f0-9]{64}\/database\.sqlite$/u.test(file))!;
       expect(thirdFiles).not.toContain(firstDatabase);
       expect(thirdFiles).toContain(secondDatabase);
