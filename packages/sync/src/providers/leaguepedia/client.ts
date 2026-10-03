@@ -64,6 +64,11 @@ export class LeaguepediaClient {
     return this.#queryAll({ prop: "imageinfo", iiprop: "url|mime|sha1|extmetadata", titles: titles.map((title) => title.startsWith("File:") ? title : `File:${title}`).join("|") }, new Set(["continue", "iicontinue"]));
   }
 
+  fetchMediaReviewWithEvidence(titles: readonly string[]): Promise<QueryEvidenceResult> {
+    if (titles.length === 0 || titles.length > 50 || titles.some(title => !title.trim() || title.includes("|"))) throw new Error("Leaguepedia image review requires 1 to 50 safe titles.");
+    return this.#queryAll({ prop: "imageinfo|revisions", iiprop: "url|mime|sha1|size|extmetadata", iiurlwidth: "512", rvprop: "ids|content", rvslots: "main", titles: titles.map(title => title.startsWith("File:") ? title : `File:${title}`).join("|") }, new Set(["continue", "iicontinue"]));
+  }
+
   fetchTeamsPage(input: OffsetInput): Promise<CargoPage> {
     return this.#cargo("Teams", "OverviewPage,Name,Short,Region,OrganizationPage,Image,RenamedTo", "OverviewPage ASC", input.offset);
   }

@@ -10,7 +10,7 @@ import { canonicalJson, encodeLeaguepediaRawInput } from "./serialization.js";
 import type { LeaguepediaRawInput, LeaguepediaSnapshot } from "./types.js";
 
 export { LeaguepediaApiError, LeaguepediaCargoEnvelopeError, LeaguepediaClient, LeaguepediaResourceLimitError } from "./client.js";
-export { fetchAllCargoPages, fetchLeaguepediaRawInput, fetchLeaguepediaSnapshot, LeaguepediaSnapshotError, parseLeaguepediaRawInput } from "./fetch.js";
+export { fetchAllCargoPages, fetchLeaguepediaRawInput, fetchLeaguepediaSnapshot, LeaguepediaSnapshotError, parseLeaguepediaRawInput, selectPlayerProfiles } from "./fetch.js";
 export type { LeaguepediaReadClient, SnapshotRequest, SnapshotResourceLimits, SnapshotSliceRequest, TraversedRows } from "./fetch.js";
 export { parseLeaguepediaMedia } from "./media.js";
 export { encodeLeaguepediaRawInput } from "./serialization.js";

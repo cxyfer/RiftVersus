@@ -296,11 +296,15 @@ function parseMediaEvidence(
   const pages = evidence.filter((item) => item.action === "query").flatMap((item) => isRecord(item.response) && isRecord(item.response.query) && Array.isArray(item.response.query.pages)
     ? item.response.query.pages.filter((page): page is Record<string, unknown> => isRecord(page) && Array.isArray(page.imageinfo)) : []);
   return requests.map((request) => {
-    const page = pages.find((item) => stringValue(item.title)?.replace(/^File:/, "") === request.title.replace(/^File:/, ""));
+    const page = pages.find((item) => mediaFileTitle(stringValue(item.title)) === mediaFileTitle(request.title));
     const info = page && Array.isArray(page.imageinfo) ? page.imageinfo.find(isRecord) : undefined;
     const metadata = info && isRecord(info.extmetadata) ? info.extmetadata : {};
     return { sourceKey: request.title, entityKey: request.sourceKey, sourceUrl: info ? stringValue(info.url) : null, contentType: info ? stringValue(info.mime) : null, license: metadataValue(metadata.LicenseShortName) ?? metadataValue(metadata.UsageTerms), attribution: metadataValue(metadata.Artist) ?? metadataValue(metadata.Credit) };
   });
+}
+
+function mediaFileTitle(value: string | null): string | null {
+  return value?.replace(/^File:/, "").replaceAll("_", " ") ?? null;
 }
 
 function mediaImageRequests(
@@ -325,14 +329,17 @@ function mediaImageRequests(
   return [...teamRequests, ...playerRequests];
 }
 
-function selectPlayerProfiles(
+export function selectPlayerProfiles(
   rows: readonly Record<string, unknown>[],
   redirectRows: readonly Record<string, unknown>[],
 ): ReadonlyMap<string, string> {
   const candidates = new Map<string, Record<string, unknown>[]>();
+  const profileKey = (value: unknown): unknown => typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? String(value) : value;
+  const redirects = redirectRows.map(row => ({ ...row, OverviewPage: profileKey(row.OverviewPage), AllName: profileKey(row.AllName) }));
   for (const row of rows) {
     if (!isProfileImage(row)) continue;
-    const sourceKey = playerImageSourceKey(row, redirectRows);
+    const normalized = { ...row, PlayerPage: profileKey(row.PlayerPage), PlayerRedirect: profileKey(row.PlayerRedirect), PlayerLink: profileKey(row.PlayerLink), Link: profileKey(row.Link) };
+    const sourceKey = playerImageSourceKey(normalized, redirects);
     const title = stringValue(row.FileName);
     if (sourceKey === null || title === null) continue;
     candidates.set(sourceKey, [...(candidates.get(sourceKey) ?? []), row]);
@@ -704,7 +711,7 @@ async function fetchMedia(client: LeaguepediaReadClient, requests: readonly { so
     rawEvidence.push(...result.rawEvidence);
     const pages = isRecord(result.data.query) && Array.isArray(result.data.query.pages) ? result.data.query.pages.filter(isRecord) : [];
     for (const request of batch) {
-      const page = pages.find((item) => stringValue(item.title)?.replace(/^File:/, "") === request.title.replace(/^File:/, ""));
+      const page = pages.find((item) => mediaFileTitle(stringValue(item.title)) === mediaFileTitle(request.title));
       const info = page !== undefined && Array.isArray(page.imageinfo) ? page.imageinfo.find(isRecord) : undefined;
       const metadata = info !== undefined && isRecord(info.extmetadata) ? info.extmetadata : {};
       output.push({

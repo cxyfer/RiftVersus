@@ -1,10 +1,11 @@
 import type { CanonicalFacts, CoverageInput } from "@riftversus/database";
+import type { MediaRightsBasis } from "@riftversus/contracts";
 
 import type { DownloadResult } from "./download.js";
 import type { ObjectStore } from "./storage.js";
 
 export type SyncRequest =
-  | { mode: "sync" | "sync-once" }
+  | { mode: "sync" | "sync-once" | "media" }
   | { mode: "backfill"; years: readonly number[]; competitions: readonly string[] };
 
 export interface RetainedSourceInput {
@@ -22,6 +23,7 @@ export class RetainableStageError extends Error {
 }
 
 export interface RetainedMediaInput {
+  rightsBasis?: MediaRightsBasis;
   sourceUrl: string;
   attribution: string;
   entityId?: string | null;
@@ -114,6 +116,7 @@ export interface RetainedSourceRecord {
 }
 
 export interface RetainedMediaRecord {
+  rightsBasis?: MediaRightsBasis;
   provider: string;
   sourceUrl: string;
   objectKey: string;
@@ -141,7 +144,7 @@ export interface SyncPublicationInput {
 
 export interface SyncRepository {
   withLock(provider: string, operation: () => Promise<void>): Promise<"ran" | "locked">;
-  beginRun(input: { provider: string; mode: "sync" | "backfill"; parserVersion: string }): Promise<{ id: string }>;
+  beginRun(input: { provider: string; mode: "sync" | "backfill" | "media"; parserVersion: string }): Promise<{ id: string }>;
   failRun(input: { syncRunId: string; error: string }): Promise<void>;
   recordSource(input: RetainedSourceRecord): Promise<{ id: string }>;
   findPublication(version: string): Promise<{ version: string } | null>;
@@ -161,7 +164,7 @@ export type SyncResult = { status: "locked" } | { status: "published" | "unchang
 export function validateSyncRequest(input: unknown): SyncRequest {
   if (!input || typeof input !== "object") throw new Error("Sync request must be an object.");
   const request = input as Record<string, unknown>;
-  if (request.mode === "sync" || request.mode === "sync-once") return { mode: request.mode };
+  if (request.mode === "sync" || request.mode === "sync-once" || request.mode === "media") return { mode: request.mode };
   if (request.mode !== "backfill") throw new Error("Unsupported sync mode.");
   const years = request.years;
   const competitions = request.competitions;

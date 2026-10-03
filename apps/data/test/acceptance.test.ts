@@ -160,6 +160,17 @@ function dependencies(response: ComparisonResponse = canonicalResponse()): Mocke
 }
 
 describe("historical acceptance evidence gate", () => {
+  it("accepts only the pinned retained preference while preserving the generated checkpoint", async () => {
+    const module = await import("../src/acceptance.js");
+    const snapshot = reviewedSnapshot({ expected: { ...reviewedSnapshot().expected, media: { left: { ...generatedLeft, retainedPreference: { checksum: leftMediaChecksum, contentType: "image/png" } }, right: generatedRight } } });
+    const real = generatedResponse();
+    real.subjects.left.mediaUrl = "/media/media/t1.png";
+    real.mediaUrls.left = real.subjects.left.mediaUrl;
+    await expect(module.verifyAcceptanceSnapshot(snapshot, dependencies(real))).resolves.toMatchObject({ status: "ready" });
+    await expect(module.verifyAcceptanceSnapshot(snapshot, dependencies(generatedResponse()))).resolves.toMatchObject({ status: "ready" });
+    const changed = { ...snapshot, expected: { ...snapshot.expected, media: { ...snapshot.expected.media, left: { ...generatedLeft, retainedPreference: { checksum: "f".repeat(64), contentType: "image/png" } } } } };
+    await expect(module.verifyAcceptanceSnapshot(changed, dependencies(real))).resolves.toMatchObject({ status: "blocked", blockers: expect.arrayContaining([expect.stringMatching(/reviewed media checksum/)]) });
+  });
   it("keeps the checked-in official candidate structurally reviewed without replacing the production gate", async () => {
     const snapshot = JSON.parse(await readFile(new URL("../../../data/acceptance/leaguepedia-t1-lpl-worlds-bo5.json", import.meta.url), "utf8")) as Record<string, unknown>;
 

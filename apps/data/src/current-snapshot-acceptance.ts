@@ -5,6 +5,8 @@ import { join } from "node:path";
 import type { Kysely } from "kysely";
 import {
   DateSchema,
+  MediaRightsBasisSchema,
+  validMediaRights,
   SubjectRefSchema,
   UuidSchema,
   type ComparisonQuery,
@@ -363,13 +365,15 @@ async function verifyRetainedPresentation(
     blockers.push(`Retained media ${entity.retainedObjectKey} is missing its current PostgreSQL owner or object metadata.`);
     return;
   }
-  if (!owner.license?.trim() || !owner.attribution?.trim()) blockers.push(`Retained media ${entity.retainedObjectKey} lacks license or attribution evidence.`);
+  if (!validMediaRights({ license: owner.license, attribution: owner.attribution, rightsBasis: owner.rights_basis, checksum: object.checksum })) blockers.push(`Retained media ${entity.retainedObjectKey} lacks valid rights or attribution evidence.`);
   if (publicAsset.contentType !== object.content_type || publicAsset.checksum !== object.checksum || publicAsset.bytes.byteLength !== Number(object.byte_size)) blockers.push(`Public retained media ${entity.retainedObjectKey} does not match PostgreSQL media metadata.`);
   const stored = await readStoreObject(store, entity.retainedObjectKey);
   if (stored === null || stored.metadataChecksum !== stored.checksum || stored.metadataByteSize !== stored.byteSize
     || stored.checksum !== object.checksum || stored.byteSize !== Number(object.byte_size) || stored.contentType !== object.content_type || !stored.bytes.equals(publicAsset.bytes)) blockers.push(`Retained media ${entity.retainedObjectKey} does not match the immutable object store bytes.`);
-  const attribution = snapshot.attribution?.find((item) => item.objectKey === entity.retainedObjectKey);
+  const attribution = snapshot.attribution?.find((item) => item.objectKey === entity.retainedObjectKey && (item.rightsBasis === undefined
+    || (entity.teamEraId === undefined ? item.entityId === entity.id && item.teamEraId === undefined : item.teamEraId === entity.teamEraId)));
   if (attribution === undefined || attribution.sourceUrl !== owner.source_url || attribution.license !== owner.license || attribution.attribution !== owner.attribution) blockers.push(`Public attribution for ${entity.retainedObjectKey} does not match PostgreSQL media rights metadata.`);
+  if (attribution !== undefined && JSON.stringify(attribution.rightsBasis ?? null) !== JSON.stringify(owner.rights_basis === null ? null : MediaRightsBasisSchema.parse(owner.rights_basis))) blockers.push(`Public editorial rights for ${entity.retainedObjectKey} do not match PostgreSQL evidence.`);
 }
 
 async function verifyPresentationAssets(snapshot: PublicSnapshot, directory: string, db: Db, store: ObjectStore, blockers: string[]): Promise<void> {
@@ -461,7 +465,9 @@ export async function verifyHistoricalInvariant(snapshot: PublicSnapshot, review
       blockers.push(`Reviewed ${side} presentation is missing from the public snapshot.`);
       continue;
     }
-    if (asset.checksum !== media.checksum || asset.contentType !== media.contentType) blockers.push(`Reviewed ${side} presentation checksum or content type does not match the reviewed evidence.`);
+    const retained = snapshot.entities.find(entity => entity.id === subject.id && entity.teamEraId === subject.teamEraId)?.retainedObjectKey;
+    const expectedAsset = media.kind === "generated-avatar" && retained != null && media.retainedPreference !== undefined ? media.retainedPreference : media;
+    if (asset.checksum !== expectedAsset.checksum || asset.contentType !== expectedAsset.contentType) blockers.push(`Reviewed ${side} presentation checksum or content type does not match the reviewed evidence.`);
     if (media.kind === "generated-avatar" && (subject.kind !== media.entityKind || subject.id !== media.entityId)) blockers.push(`Reviewed ${side} generated avatar identity does not match the current subject.`);
   }
 }

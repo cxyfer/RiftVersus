@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { validMediaRights } from "@riftversus/contracts";
 
 import type { ImmutableObject, ObjectStore } from "./storage.js";
 import type { RetainedMediaInput, RetainedMediaRecord, RetainedSourceInput, RetainedSourceRecord } from "./types.js";
@@ -47,6 +48,7 @@ export async function retainSource(store: ObjectStore, provider: string, parserV
 
 export async function retainMedia(store: ObjectStore, provider: string, input: RetainedMediaInput & { bytes: Uint8Array; contentType: string }): Promise<RetainedMediaRecord> {
   const checksum = sha256(input.bytes);
+  if (input.rightsBasis !== undefined && !validMediaRights({ ...input, checksum })) throw new Error("Reviewed media rights or image checksum is invalid.");
   const objectKey = await mediaObjectKey(input.bytes, input.contentType);
   await retain(store, { key: objectKey, bytes: input.bytes, checksum, contentType: input.contentType });
   return {
@@ -60,5 +62,6 @@ export async function retainMedia(store: ObjectStore, provider: string, input: R
     ...(input.entityId === undefined ? {} : { entityId: input.entityId }),
     ...(input.teamEraId === undefined ? {} : { teamEraId: input.teamEraId }),
     ...(input.license === undefined ? {} : { license: input.license }),
+    ...(input.rightsBasis === undefined ? {} : { rightsBasis: input.rightsBasis }),
   };
 }

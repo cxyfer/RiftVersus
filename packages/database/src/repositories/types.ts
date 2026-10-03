@@ -39,7 +39,7 @@ export interface MediaAsset {
 export interface SyncRun {
   id: string;
   provider: string;
-  mode: "sync" | "backfill";
+  mode: "sync" | "backfill" | "media";
   status: "running" | "succeeded" | "failed";
   parserVersion: string;
   startedAt: string;
@@ -79,7 +79,7 @@ export interface AcceptanceDatasetEvidence {
 
 export interface BeginSyncRunInput {
   provider: string;
-  mode: "sync" | "backfill";
+  mode: "sync" | "backfill" | "media";
   parserVersion: string;
 }
 
@@ -99,7 +99,7 @@ export interface StagedRegionInput { id: string; provider: string; sourceKey: st
 export interface StagedTeamEraInput { id: string; provider: string; sourceKey: string; teamEntityId: string; displayName: string; regionId?: string | null; validFrom?: string | null; validTo?: string | null }
 export interface StagedTournamentInput { id: string; provider: string; sourceKey: string; name: string; aliases: readonly string[]; category: "league" | "fst" | "msi" | "worlds" | "other"; seasonYear?: number | null; validFrom?: string | null; validTo?: string | null }
 export interface StagedDimensionsInput { entities: readonly StagedEntityInput[]; teamEras: readonly StagedTeamEraInput[]; regions: readonly StagedRegionInput[]; tournaments: readonly StagedTournamentInput[] }
-export interface PublishedMediaInput { provider: string; sourceUrl: string; objectKey: string; checksum: string; contentType: string; byteSize: string; attribution: string; entityId?: string | null; teamEraId?: string | null; license?: string | null }
+export interface PublishedMediaInput { provider: string; sourceUrl: string; objectKey: string; checksum: string; contentType: string; byteSize: string; attribution: string; entityId?: string | null; teamEraId?: string | null; license?: string | null; rightsBasis?: import("@riftversus/contracts").MediaRightsBasis }
 export interface OverrideApplicationInput { overrideFile: string; checksum: string }
 export interface PublicationScopeInput { provider: string; tournamentSourceKey: string; from: string; to: string; status: "complete" | "partial" | "missing"; unresolvedRows: number }
 

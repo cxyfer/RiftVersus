@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { createDb, destroyDb, migrateToLatest, type Database } from "@riftversus/database";
 import type { Kysely } from "kysely";
-import { loadSyncConfig, type ObjectStore, type StagedSyncBatch, type StoredObjectMetadata } from "@riftversus/sync";
+import { loadSyncConfig, runSync, type ObjectStore, type StagedSyncBatch, type StoredObjectMetadata } from "@riftversus/sync";
 import { createDatabaseSyncRepository, executeLeaguepediaSync } from "../src/sync-service.js";
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
@@ -65,5 +65,21 @@ describeWithDatabase("Leaguepedia PostgreSQL fixture composition", () => {
     expect(batches).toHaveLength(2); expect(batches.every((batch) => batch.publicationScopes.every((scope) => scope.status !== "complete"))).toBe(true);
     const runs = await db.selectFrom("sync_runs").select(["status", "reused_dataset_version_id"]).orderBy("started_at").execute();
     expect(runs).toEqual([{ status: "succeeded", reused_dataset_version_id: null }, { status: "succeeded", reused_dataset_version_id: expect.any(String) }]);
+    const preservedTables = ["series_facts", "game_facts", "game_players", "entity_public_ids", "team_era_public_ids", "coverage_status"] as const;
+    const readPreserved = async () => Promise.all(preservedTables.map(async table => JSON.stringify((await db.selectFrom(table).selectAll().execute()).map(row => JSON.stringify(row)).sort())));
+    const beforeMedia = await readPreserved();
+    const bytes = new TextEncoder().encode("reviewed image fixture");
+    const checksum = createHash("sha256").update(bytes).digest("hex");
+    const team = await db.selectFrom("entities").select("id").where("kind", "=", "team").executeTakeFirstOrThrow();
+    const mediaProvider = { id: "fixture", parserVersion: "media-test", async stage() {
+      return { version: "fixture-media-only", provenance: { parserVersion: "media-test", sourceDigest: checksum, overrideFiles: [] }, source: { sourceKey: "media-review", sourceUrl: "https://fixture.riftversus.invalid/media-review", bytes: new TextEncoder().encode("reviewed manifest"), contentType: "application/json" },
+        dimensions: { entities: [], teamEras: [], regions: [], tournaments: [] }, facts: { series: [], games: [], gamePlayers: [] }, rosterGameIds: [], publicationScopes: [], coverage: [],
+        media: [{ entityId: team.id, sourceUrl: "https://static.wikia.nocookie.net/fixture.png", license: null, attribution: "Leaguepedia fixture",
+          rightsBasis: { kind: "editorial-use" as const, policy: "leaguepedia-editorial-v1" as const, sourcePageUrl: "https://lol.fandom.com/wiki/File:Fixture.png", revisionId: 1, fileChecksum: checksum, statement: "Fixture source rights statement.", reviewedNote: "Fixture exact owner reviewed." } }] };
+    } };
+    expect((await runSync(mediaProvider, { mode: "media" }, { objectStore, repository: createDatabaseSyncRepository(db), validate: () => undefined,
+      downloadMedia: async () => ({ bytes, contentType: "image/png", finalUrl: "https://static.wikia.nocookie.net/fixture.png" }) })).status).toBe("published");
+    expect(await readPreserved()).toEqual(beforeMedia);
+    expect(await db.selectFrom("sync_runs").select("mode").where("parser_version", "=", "media-test").executeTakeFirstOrThrow()).toEqual({ mode: "media" });
   });
 });

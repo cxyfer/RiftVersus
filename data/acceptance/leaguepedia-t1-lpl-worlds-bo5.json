@@ -76,7 +76,11 @@
         "abbreviation": "T1",
         "algorithm": "canonical-avatar-v2",
         "checksum": "d5b14ff6984ca747067f2e650adeb74e823d12d8b1a111e3f47dc3c96f959da5",
-        "contentType": "image/svg+xml"
+        "contentType": "image/svg+xml",
+        "retainedPreference": {
+          "checksum": "fa41e6a553710ceece948001a8cb691f4b2b17357ac93e301630821564828585",
+          "contentType": "image/png"
+        }
       },
       "right": {
         "kind": "generated-avatar",

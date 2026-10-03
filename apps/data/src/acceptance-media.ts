@@ -29,6 +29,7 @@ export const ExpectedPresentationSchema = z.discriminatedUnion("kind", [
     algorithm: z.literal(CANONICAL_AVATAR_ALGORITHM),
     checksum: ChecksumSchema,
     contentType: z.literal(CANONICAL_AVATAR_CONTENT_TYPE),
+    retainedPreference: z.object({ checksum: ChecksumSchema, contentType: z.enum(["image/png", "image/jpeg", "image/webp", "image/gif"]) }).strict().optional(),
   }).strict(),
 ]);
 
@@ -146,6 +147,14 @@ export async function verifyPresentation(
 ): Promise<void> {
   if (expected.kind === "retained-media") {
     await verifyRetainedMedia(side, mediaUrl, expected, dependencies, blockers);
+    return;
+  }
+  if (expected.retainedPreference !== undefined && mediaUrl.startsWith("/media/")) {
+    if (subject.kind !== expected.entityKind || subject.id.toLowerCase() !== expected.entityId.toLowerCase()) {
+      blockers.push(`Retained preference subject identity does not match reviewed evidence for ${side}.`);
+      return;
+    }
+    await verifyRetainedMedia(side, mediaUrl, { kind: "retained-media", ...expected.retainedPreference }, dependencies, blockers);
     return;
   }
   await verifyGeneratedAvatar(side, subject, mediaUrl, expected, dependencies, blockers);

@@ -13,7 +13,7 @@ export async function runSync(provider: SyncProvider, requestInput: SyncRequest,
     try {
       const run = await dependencies.repository.beginRun({
         provider: provider.id,
-        mode: request.mode === "backfill" ? "backfill" : "sync",
+        mode: request.mode === "backfill" ? "backfill" : request.mode === "media" ? "media" : "sync",
         parserVersion: provider.parserVersion,
       });
       syncRunId = run.id;
