@@ -296,11 +296,15 @@ function parseMediaEvidence(
   const pages = evidence.filter((item) => item.action === "query").flatMap((item) => isRecord(item.response) && isRecord(item.response.query) && Array.isArray(item.response.query.pages)
     ? item.response.query.pages.filter((page): page is Record<string, unknown> => isRecord(page) && Array.isArray(page.imageinfo)) : []);
   return requests.map((request) => {
-    const page = pages.find((item) => stringValue(item.title)?.replace(/^File:/, "") === request.title.replace(/^File:/, ""));
+    const page = pages.find((item) => mediaFileTitle(stringValue(item.title)) === mediaFileTitle(request.title));
     const info = page && Array.isArray(page.imageinfo) ? page.imageinfo.find(isRecord) : undefined;
     const metadata = info && isRecord(info.extmetadata) ? info.extmetadata : {};
     return { sourceKey: request.title, entityKey: request.sourceKey, sourceUrl: info ? stringValue(info.url) : null, contentType: info ? stringValue(info.mime) : null, license: metadataValue(metadata.LicenseShortName) ?? metadataValue(metadata.UsageTerms), attribution: metadataValue(metadata.Artist) ?? metadataValue(metadata.Credit) };
   });
+}
+
+function mediaFileTitle(value: string | null): string | null {
+  return value?.replace(/^File:/, "").replaceAll("_", " ") ?? null;
 }
 
 function mediaImageRequests(
@@ -704,7 +708,7 @@ async function fetchMedia(client: LeaguepediaReadClient, requests: readonly { so
     rawEvidence.push(...result.rawEvidence);
     const pages = isRecord(result.data.query) && Array.isArray(result.data.query.pages) ? result.data.query.pages.filter(isRecord) : [];
     for (const request of batch) {
-      const page = pages.find((item) => stringValue(item.title)?.replace(/^File:/, "") === request.title.replace(/^File:/, ""));
+      const page = pages.find((item) => mediaFileTitle(stringValue(item.title)) === mediaFileTitle(request.title));
       const info = page !== undefined && Array.isArray(page.imageinfo) ? page.imageinfo.find(isRecord) : undefined;
       const metadata = info !== undefined && isRecord(info.extmetadata) ? info.extmetadata : {};
       output.push({

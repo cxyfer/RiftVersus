@@ -1303,7 +1303,7 @@ describe("Leaguepedia fetching", () => {
     const requestedPlayerPages: string[][] = [];
     const snapshot = await fetchLeaguepediaSnapshot({
       fetchTeamsPage: async ({ offset }) => cargoPage("Teams", offset, [
-        { OverviewPage: "T1", Name: "T1", Aliases: "SKT", Region: "Korea", Image: "T1.png", RenamedTo: "Current T1" },
+        { OverviewPage: "T1", Name: "T1", Aliases: "SKT", Region: "Korea", Image: "T1_logo.png", RenamedTo: "Current T1" },
         { OverviewPage: "Current T1", Name: "Current T1", Region: "Korea", Image: "Current T1.png" },
         { OverviewPage: "Bilibili Gaming", Name: "Bilibili Gaming", Aliases: "BLG", Region: "China" },
         { OverviewPage: "Unrelated Team", Name: "Unrelated Team", Region: "Europe", Image: "Unrelated Team.png" },
@@ -1338,7 +1338,7 @@ describe("Leaguepedia fetching", () => {
       fetchImageInfoWithEvidence: async (titles) => {
         requestedImages.push([...titles]);
         const pages = titles.map((title) => ({
-          title: `File:${title}`,
+          title: `File:${title.replaceAll("_", " ")}`,
           imageinfo: [{
             url: `https://media.leaguepedia.example/${title.toLowerCase()}`,
             mime: "image/png",
@@ -1359,7 +1359,7 @@ describe("Leaguepedia fetching", () => {
     ]));
     expect(snapshot.tournaments).toEqual(expect.arrayContaining([expect.objectContaining({ sourceKey: "2024 Season World Championship" })]));
     expect(requestedPlayerPages).toEqual([["Faker"]]);
-    expect(requestedImages).toEqual([["T1.png", "Faker.png"]]);
+    expect(requestedImages).toEqual([["T1_logo.png", "Faker.png"]]);
     expect(snapshot.media.some((item) => item.sourceKey === "wrong-player.png")).toBe(false);
     expect(snapshot.slices[0]).toMatchObject({ competition: "2024 Season World Championship", seasonYear: 2024, gameSourceKeys: ["G1"] });
     expect(snapshot.entities.some((entity) => entity.sourceKey === "Current T1")).toBe(false);
@@ -1407,6 +1407,35 @@ describe("Leaguepedia fetching", () => {
       expect.objectContaining({ entityKey: "Faker (Player)", sourceKey: "Faker latest.png", sourceUrl: "https://fixture.riftversus.invalid/media/faker-latest.png" }),
     ]));
     expect(snapshot.media.some((item) => item.sourceKey === "Faker older.png" || item.sourceKey === "Faker not-profile.png")).toBe(false);
+  });
+
+  it.each([
+    ["File:T1 logo", true, "CC BY-SA", "Leaguepedia contributors"],
+    ["File:T1_logo", true, "CC BY-SA", "Leaguepedia contributors"],
+    ["File:t1 logo", false, "CC BY-SA", "Leaguepedia contributors"],
+    ["File:T1 logo", true, null, null],
+  ])("matches retained file %s without changing case or inferring rights (%s, %s, %s)", async (title, matched, license, attribution) => {
+    const input = await rawFixture();
+    const rawInput: LeaguepediaRawInput = {
+      ...input,
+      rawEvidence: input.rawEvidence.map((item) => {
+        if (item.table === "Teams") return { ...item, response: (item.response as Record<string, unknown>[]).map((row) => row.OverviewPage === "T1" ? { ...row, Image: "File:T1_logo" } : row) };
+        if (item.action !== "query") return item;
+        return { ...item, response: { query: { pages: [{ title, imageinfo: [{
+          url: "https://fixture.riftversus.invalid/media/t1.png",
+          mime: "image/png",
+          extmetadata: license === null ? {} : { LicenseShortName: { value: license }, Artist: { value: attribution } },
+        }] }] } } };
+      }),
+    };
+    const media = parseLeaguepediaRawInput(rawInput).media.find((item) => item.entityKey === "T1")!;
+    expect(media).toMatchObject({
+      sourceKey: "File:T1_logo",
+      sourceUrl: matched ? "https://fixture.riftversus.invalid/media/t1.png" : null,
+      license: matched ? license : null,
+      attribution: matched ? attribution : null,
+    });
+    expect(parseLeaguepediaMedia([media], new Map([["T1", "11111111-1111-5111-8111-111111111111"]]))).toHaveLength(matched && license !== null ? 1 : 0);
   });
 
   it("fails on a malformed required game row instead of silently completing traversal", async () => {
