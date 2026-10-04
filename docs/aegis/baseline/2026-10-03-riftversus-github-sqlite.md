@@ -9,6 +9,10 @@ Operations and run evidence: [GitHub publishing](../../github-publishing.md).
 
 - Leaguepedia owns source facts. Reviewed exact tournament mappings and player
   redirects fail closed; presentation does not invent missing source identity.
+- `data/leaguepedia/competition-map.json` owns reviewed exact competition/year
+  source keys. LCK/Champions, LPL and EWC main events share the existing
+  one-shot publisher. BO2 draws are completed 1:1 series with no winner; missing
+  source rows, redirects or format evidence keep a scope partial/failed.
 - `cxyfer/RiftVersus-data` private immutable checkpoint Releases own durable
   PostgreSQL dumps, raw source objects and verified lineage. Failed attempts are
   separate immutable forensic archives, never authoritative restore bases.
@@ -85,6 +89,29 @@ The user's unrelated `.gitignore` edit is excluded from migration commits.
   the repaired historical PNG; all hosted sharing/saving/player/date/mobile
   workflows passed. Independent archive/public identity still resolves sequence 2
   with its unchanged parent; no source gates or history failures were bypassed.
+
+### Historical Domestic and EWC Import Extension
+
+2026-10-04 code adds reviewed first-division LCK/Champions, LPL and EWC-main
+event keys with a separate upstream count/date audit. Exact league scope sets
+the persistent LCK/LPL slug. Contracts, PostgreSQL migration 013, PostgreSQL
+queries, export schema and the browser recognize BO2 draws and the EWC category.
+The publish workflow reads this repository map and keeps domestic/EWC history
+requests to one year each.
+
+Isolated PostgreSQL 17 restored verified checkpoint 4 before import. Thirty-two
+year scopes were audited; 16 passed and were retried after repairing evidenced
+same-name player, stable-slug and KSV-to-Gen.G identity handling. Local SQLite
+now contains 1,906 LCK, 1,153 LPL and 35 EWC series, alongside the unchanged
+686 Worlds and 380 MSI. T1-HLE returns 35 LCK series; the original Worlds result
+remains present. BLG-TES returns five LPL 2024 meetings; the 2024 T1-TES EWC
+final returns 3:1. The clean 42,344,448-byte SQLite export has ID
+`sha256:a209f805a9ce9d6720800df177ef5ef16123c6a206a0bbefde808621e5c57c16`.
+Live raw evidence, queries and browser checks are staged under
+`/tmp/riftversus-leagues-live-evidence/`. Sixteen scopes still fail closed on
+source row/score/schedule/format gaps, a missing Levi player dimension, partial
+coverage, or an unreviewed EStar/Ultra Prime lineage. Local data was not
+promoted to a private checkpoint or GitHub Pages. No production state changed.
 
 - Public-ID commit 7060422 passed CI 37134704204 (484 unit, 71 integration,
   six production E2E tests) and Publish 37134704354. Root independently verified

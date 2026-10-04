@@ -1,3 +1,4 @@
+import { isCompletedSeriesScore } from "@riftversus/contracts";
 import { LEAGUEPEDIA_CARGO_LIMIT, LeaguepediaApiError, LeaguepediaCargoEnvelopeError } from "./client.js";
 import { decodeCargoExportRows } from "./cargo-export.js";
 import type {
@@ -654,14 +655,14 @@ function parseSeries(scheduleRows: readonly Record<string, unknown>[], games: re
     const sideBTeam = requiredTeamSourceKey(teamSourceKeys, rawSideB, `MatchSchedule ${sourceKey} Team2`);
     if (sideATeam === sideBTeam) throw new Error(`MatchSchedule ${sourceKey} has identical sides.`);
     const bestOfValue = positiveInteger(schedule.BestOf, `MatchSchedule ${sourceKey} BestOf`);
-    if (bestOfValue !== 1 && bestOfValue !== 3 && bestOfValue !== 5) throw new Error(`MatchSchedule ${sourceKey} BestOf must be 1, 3, or 5.`);
-    const bestOf = bestOfValue as 1 | 3 | 5;
+    if (bestOfValue !== 1 && bestOfValue !== 2 && bestOfValue !== 3 && bestOfValue !== 5) throw new Error(`MatchSchedule ${sourceKey} BestOf must be 1, 2, 3, or 5.`);
+    const bestOf = bestOfValue as 1 | 2 | 3 | 5;
     const sideAScore = nonNegativeInteger(schedule.Team1Score, `MatchSchedule ${sourceKey} Team1Score`);
     const sideBScore = nonNegativeInteger(schedule.Team2Score, `MatchSchedule ${sourceKey} Team2Score`);
     validateCompletedScore(bestOf, sideAScore, sideBScore, sourceKey);
     const winner = requiredInteger(schedule.Winner, `MatchSchedule ${sourceKey} Winner`);
-    if (winner !== 1 && winner !== 2) throw new Error(`MatchSchedule ${sourceKey} Winner must be side 1 or 2.`);
-    const expectedWinner = sideAScore > sideBScore ? 1 : 2;
+    if (winner !== 0 && winner !== 1 && winner !== 2) throw new Error(`MatchSchedule ${sourceKey} Winner must be draw or side 1 or 2.`);
+    const expectedWinner = sideAScore === sideBScore ? 0 : sideAScore > sideBScore ? 1 : 2;
     if (winner !== expectedWinner) throw new Error(`MatchSchedule ${sourceKey} winner conflicts with final score ${sideAScore}-${sideBScore}.`);
     for (const game of matchGames) {
       const normalOrder = game.sideATeam === sideATeam && game.sideBTeam === sideBTeam;
@@ -692,12 +693,11 @@ function validateSeriesGames(series: readonly LeaguepediaSeries[], games: readon
     const rows = games.filter((game) => game.seriesKey === item.sourceKey).sort((a, b) => a.gameNumber - b.gameNumber);
     const expected = (item.sideAScore ?? 0) + (item.sideBScore ?? 0);
     const numbers = rows.map((game) => game.gameNumber);
-    const expectedNumbers = Array.from({ length: expected }, (_, index) => index + 1);
     const sideAWins = rows.filter((game) => game.winnerTeam === item.sideATeam).length;
     const sideBWins = rows.filter((game) => game.winnerTeam === item.sideBTeam).length;
-    if (rows.length !== expected || JSON.stringify(numbers) !== JSON.stringify(expectedNumbers)
-      || sideAWins !== item.sideAScore || sideBWins !== item.sideBScore) {
-      throw new Error(`Series ${item.sourceKey} game rows do not exactly explain final score ${item.sideAScore}-${item.sideBScore} (rows=${rows.length}, numbers=${numbers.join(",")}, wins=${sideAWins}-${sideBWins}).`);
+    const hasInvalidNumbers = new Set(numbers).size !== numbers.length || numbers.some((number) => number > expected);
+    if (rows.length > expected || hasInvalidNumbers || sideAWins > (item.sideAScore ?? 0) || sideBWins > (item.sideBScore ?? 0)) {
+      throw new Error(`Series ${item.sourceKey} game rows conflict with final score ${item.sideAScore}-${item.sideBScore} (rows=${rows.length}/${expected}, numbers=${numbers.join(",")}, wins=${sideAWins}-${sideBWins}).`);
     }
   }
 }
@@ -745,7 +745,7 @@ function assertSliceScope(evidence: readonly RawApiEvidence[], slice: SnapshotSl
 }
 function validateGameRowScope(row: Record<string, unknown>, scope: { sourceCompetition: string; from: string; to: string }, evidence: RawApiEvidence): void {
   const tournament = requiredString(row.Tournament, "ScoreboardGames Tournament");
-  if (tournament !== scope.sourceCompetition) throw new LeaguepediaSnapshotError(`Retained game row tournament ${tournament} does not match requested source key ${scope.sourceCompetition}.`, [evidence], evidence.sourceUrl);
+  if (!sameSourceKey(tournament, scope.sourceCompetition)) throw new LeaguepediaSnapshotError(`Retained game row tournament ${tournament} does not match requested source key ${scope.sourceCompetition}.`, [evidence], evidence.sourceUrl);
   const timestamp = requiredTimestamp(row.DateTime_UTC, requiredString(row.GameId, "ScoreboardGames GameId"));
   const playedAt = new Date(timestamp).valueOf(); const from = new Date(`${scope.from}T00:00:00Z`).valueOf(); const to = new Date(`${scope.to}T00:00:00Z`).valueOf();
   if (playedAt < from || playedAt >= to) throw new LeaguepediaSnapshotError(`Retained game row timestamp ${timestamp} is outside [${scope.from}, ${scope.to}).`, [evidence], evidence.sourceUrl);
@@ -755,6 +755,7 @@ function validateSliceBounds(from: string, to: string, sliceId: string, input: L
   const fromTime = new Date(`${from}T00:00:00Z`).valueOf(); const toTime = new Date(`${to}T00:00:00Z`).valueOf();
   if (!format.test(from) || !format.test(to) || !Number.isFinite(fromTime) || !Number.isFinite(toTime) || fromTime >= toTime) throw new LeaguepediaSnapshotError(`Retained slice ${sliceId} has invalid date bounds.`, input.rawEvidence, input.sourceUrl);
 }
+function sameSourceKey(left: string, right: string): boolean { return left.trim().toLocaleLowerCase() === right.trim().toLocaleLowerCase(); }
 function validateEvidenceScopes(input: LeaguepediaRawInput): void {
   const declared = new Set(input.slices.map((slice) => slice.sliceId));
   if (declared.size !== input.slices.length) throw new LeaguepediaSnapshotError("Retained input contains duplicate sliceIds.", input.rawEvidence, input.sourceUrl);
@@ -814,7 +815,7 @@ class SnapshotBudget {
   }
 }
 function positiveLimit(value: number, name: string): number { if (!Number.isInteger(value) || value <= 0) throw new Error(`${name} must be a positive integer.`); return value; }
-function validateCompletedScore(bestOf: 1 | 3 | 5, a: number, b: number, sourceKey: string): void { const target = Math.floor(bestOf / 2) + 1; if (!((a === target && b < target) || (b === target && a < target))) throw new Error(`Series ${sourceKey} score is inconsistent with BestOf ${bestOf}.`); }
+function validateCompletedScore(bestOf: 1 | 2 | 3 | 5, a: number, b: number, sourceKey: string): void { if (!isCompletedSeriesScore(bestOf, a, b)) throw new Error(`Series ${sourceKey} score is inconsistent with BestOf ${bestOf}.`); }
 function topLevelTraversal(evidence: readonly RawApiEvidence[], slices: readonly LeaguepediaSliceEvidence[]): TraversalEvidence {
   const requestIds = new Set(evidence.map((item, index) => requiredString(item.requestId, `Raw evidence row ${index} requestId`)));
   return { requestedPages: requestIds.size, visitedPages: requestIds.size, complete: slices.every((slice) => slice.traversal.complete) };

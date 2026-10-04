@@ -90,6 +90,20 @@ describeWithDatabase("sync publication repository", () => {
     ])).resolves.toEqual([{ count: "1" }, { count: "1" }, { count: "1" }]);
   });
 
+  it("keeps distinct same-name players queryable across publication batches", async () => {
+    const ids = [randomUUID(), randomUUID()];
+    const entity = (index: number) => ({ id: ids[index]!, provider: "fixture", sourceKeys: [`Same-name player ${index}`], kind: "player" as const, canonicalName: "Kim Dong-hyeon", playerId: index === 0 ? "Chasy" : "Loopy", aliases: [] });
+    for (const [index, entities] of [[entity(0)], [entity(0), entity(1)], [entity(1), entity(0)]].entries()) {
+      const run = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+      await publishDataset({ syncRunId: run.id, version: `same-name-${index}`, coverage: [], dimensions: { entities, regions: [], teamEras: [], tournaments: [] } }, db);
+    }
+    const rows = await db.selectFrom("entities").select(["id", "slug", "player_id"]).where("id", "in", ids).execute();
+    expect(rows).toHaveLength(2);
+    expect(rows.find(row => row.id === ids[0])?.slug).toBe("kim-dong-hyeon");
+    expect(rows.find(row => row.id === ids[1])?.slug).toBe(`kim-dong-hyeon-${ids[1]}`);
+    expect(new Set(rows.map(row => row.player_id))).toEqual(new Set(["Chasy", "Loopy"]));
+  });
+
   it("keeps timestamp and timestamptz codecs delegated to the PostgreSQL defaults", async () => {
     const result = await sql<{ timestamp_value: unknown; timestamptz_value: unknown }>`
       select '2025-11-09 12:34:56'::timestamp as timestamp_value,

@@ -20,6 +20,7 @@ export function classifyTournament(input: TournamentClassificationInput, overrid
   }
 
   const name = input.name.toLocaleLowerCase();
+  if (name.includes("esports world cup") || /\bewc\b/.test(name)) return "ewc";
   if (name.includes("world championship") || /\bworlds\b/.test(name)) {
     return "worlds";
   }

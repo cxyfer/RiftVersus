@@ -18,7 +18,7 @@ export interface TournamentOverride {
   sourceKey: string;
   canonicalName: string;
   canonicalId: string;
-  category: "league" | "fst" | "msi" | "worlds" | "other";
+  category: "league" | "fst" | "msi" | "worlds" | "ewc" | "other";
   reviewedNote: string;
 }
 
@@ -95,7 +95,7 @@ function parseIdentity(input: unknown): IdentityOverride {
 function parseTournament(input: unknown): TournamentOverride {
   const rule = asRecord(input, "tournament override");
   const category = rule.category;
-  if (category !== "league" && category !== "fst" && category !== "msi" && category !== "worlds" && category !== "other") throw new Error("Tournament override category is invalid.");
+  if (category !== "league" && category !== "fst" && category !== "msi" && category !== "worlds" && category !== "ewc" && category !== "other") throw new Error("Tournament override category is invalid.");
   return {
     sourceKey: requiredString(rule.sourceKey, "tournament sourceKey"),
     canonicalName: requiredString(rule.canonicalName, "tournament canonicalName"),

@@ -65,7 +65,8 @@ export interface StagedTournamentDefinition {
   sourceKey: string;
   name: string;
   aliases: readonly string[];
-  category: "league" | "fst" | "msi" | "worlds" | "other";
+  leagueSlug?: "lck" | "lpl" | "lec" | "lcs" | null;
+  category: "league" | "fst" | "msi" | "worlds" | "ewc" | "other";
   seasonYear?: number | null;
   validFrom?: string | null;
   validTo?: string | null;

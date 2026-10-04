@@ -49,10 +49,11 @@ type PageRow = Record<string, unknown> & {
   side_b_name: string;
   side_a_score: number;
   side_b_score: number;
+  game_details_complete: number;
   side_a_team_id: string;
   side_b_team_id: string;
   left_team_id: string;
-  winner_team_id: string;
+  winner_team_id: string | null;
 };
 
 type SummaryRow = Record<string, unknown> & {
@@ -299,8 +300,9 @@ function queryCtes(query: ComparisonQuery): { text: string; params: SqliteParam[
   };
 }
 
-function record(wins: number, losses: number, total: number): { wins: number; losses: number; total: number; winRate: number } {
-  return { wins, losses, total, winRate: total === 0 ? 0 : wins / total };
+function record(wins: number, losses: number, total: number): { wins: number; losses: number; total: number; winRate: number; draws?: number } {
+  const draws = total - wins - losses;
+  return { wins, losses, total, ...(draws > 0 ? { draws } : {}), winRate: total === 0 ? 0 : wins / total };
 }
 
 async function readMetadata(executor: SqliteExecutor): Promise<{ dataset: ReturnType<typeof DatasetSchema.parse>; coverageWarnings: ReturnType<typeof CoverageWarningSchema.parse>[] }> {
@@ -359,15 +361,25 @@ export async function compareSqlite(
     readMetadata(executor),
   ]);
   const ctes = queryCtes(query);
+  const playerComparison = query.left.kind === "player" || query.right.kind === "player";
+  const gameWinsSql = playerComparison
+    ? "(SELECT COALESCE(SUM(CASE WHEN winner_team_id = left_team_id THEN 1 ELSE 0 END), 0) FROM direct_games)"
+    : "COALESCE(SUM(CASE WHEN left_team_id = side_a_team_id THEN side_a_score ELSE side_b_score END), 0)";
+  const gameLossesSql = playerComparison
+    ? "(SELECT COALESCE(SUM(CASE WHEN winner_team_id IS NOT NULL AND winner_team_id <> left_team_id THEN 1 ELSE 0 END), 0) FROM direct_games)"
+    : "COALESCE(SUM(CASE WHEN left_team_id = side_a_team_id THEN side_b_score ELSE side_a_score END), 0)";
+  const gameTotalSql = playerComparison
+    ? "(SELECT COUNT(winner_team_id) FROM direct_games)"
+    : "COALESCE(SUM(side_a_score + side_b_score), 0)";
   const summary = await executor.all<SummaryRow>(
     `${ctes.text}
      SELECT
        COALESCE(SUM(CASE WHEN winner_team_id = left_team_id THEN 1 ELSE 0 END), 0) AS series_wins,
        COALESCE(SUM(CASE WHEN winner_team_id <> left_team_id THEN 1 ELSE 0 END), 0) AS series_losses,
        COUNT(*) AS series_total,
-       (SELECT COALESCE(SUM(CASE WHEN winner_team_id = left_team_id THEN 1 ELSE 0 END), 0) FROM direct_games) AS game_wins,
-       (SELECT COALESCE(SUM(CASE WHEN winner_team_id IS NOT NULL AND winner_team_id <> left_team_id THEN 1 ELSE 0 END), 0) FROM direct_games) AS game_losses,
-       (SELECT COUNT(winner_team_id) FROM direct_games) AS game_total
+       ${gameWinsSql} AS game_wins,
+       ${gameLossesSql} AS game_losses,
+       ${gameTotalSql} AS game_total
      FROM oriented_matches`,
     ctes.params,
   );
@@ -381,7 +393,8 @@ export async function compareSqlite(
     `${ctes.text}
      SELECT id, played_at, date, tournament_id, tournament_name, category, best_of,
        side_a_name, side_b_name, side_a_score, side_b_score,
-       side_a_team_id, side_b_team_id, left_team_id, winner_team_id
+       side_a_team_id, side_b_team_id, left_team_id, winner_team_id,
+       (SELECT COUNT(*) FROM game_facts g WHERE g.series_id = oriented_matches.id) = side_a_score + side_b_score AS game_details_complete
      FROM oriented_matches
      WHERE ${cursorFilter}
      ORDER BY played_at DESC, id DESC
@@ -401,7 +414,8 @@ export async function compareSqlite(
       rightName: leftOnA ? row.side_b_name : row.side_a_name,
       leftScore: leftOnA ? Number(row.side_a_score) : Number(row.side_b_score),
       rightScore: leftOnA ? Number(row.side_b_score) : Number(row.side_a_score),
-      winner: row.winner_team_id === row.left_team_id ? "left" as const : "right" as const,
+      gameDetailsComplete: Number(row.game_details_complete) === 1,
+      winner: row.winner_team_id === null ? "draw" as const : row.winner_team_id === row.left_team_id ? "left" as const : "right" as const,
     };
   });
   return {

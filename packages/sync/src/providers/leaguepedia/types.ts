@@ -62,7 +62,7 @@ export interface LeaguepediaSeries {
   sourceKey: string;
   tournamentKey: string;
   playedAt: string;
-  bestOf: 1 | 3 | 5;
+  bestOf: 1 | 2 | 3 | 5;
   sideATeam: string;
   sideBTeam: string;
   sideAScore: number | null;

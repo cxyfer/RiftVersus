@@ -1,0 +1,1074 @@
+{
+  "retrievedAt": "2026-10-04T01:10:39.077665+00:00",
+  "source": "https://lol.fandom.com/wiki/Special:CargoExport",
+  "table": "ScoreboardGames",
+  "fields": "Tournament,COUNT(*)=Games,MIN(DateTime_UTC)=FirstGame,MAX(DateTime_UTC)=LastGame",
+  "scope": "first-division seasons, playoffs, placements, cups, MSI and regional finals; EWC main events",
+  "excluded": "academy, exhibitions, all-star, scrims, promotion, EWC online qualifiers",
+  "tournaments": [
+    {
+      "competition": "LCK",
+      "Tournament": "Champions 2012 Spring",
+      "Games": 44,
+      "FirstGame": "2012-03-21 08:30:00",
+      "LastGame": "2012-05-19 10:00:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Champions 2012 Summer",
+      "Games": 46,
+      "FirstGame": "2012-07-04 09:00:00",
+      "LastGame": "2012-09-08 13:00:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Champions 2013 Spring",
+      "Games": 87,
+      "FirstGame": "2013-04-03 09:30:00",
+      "LastGame": "2013-06-15 10:00:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Champions 2013 Summer",
+      "Games": 80,
+      "FirstGame": "2013-07-03 10:00:00",
+      "LastGame": "2013-08-31 12:30:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Champions 2013 Winter",
+      "Games": 112,
+      "FirstGame": "2012-11-09 09:00:00",
+      "LastGame": "2013-02-02 09:00:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Champions 2014 Spring",
+      "Games": 85,
+      "FirstGame": "2014-03-06 10:00:00",
+      "LastGame": "2014-05-23 13:00:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Champions 2014 Summer",
+      "Games": 82,
+      "FirstGame": "2014-06-18 10:00:00",
+      "LastGame": "2014-08-16 13:00:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Champions 2014 Winter",
+      "Games": 77,
+      "FirstGame": "2013-11-14 23:00:00",
+      "LastGame": "2014-01-25 08:00:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Champions 2015 Spring",
+      "Games": 128,
+      "FirstGame": "2015-01-07 08:56:00",
+      "LastGame": "2015-04-11 12:24:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Champions 2015 Spring Playoffs",
+      "Games": 11,
+      "FirstGame": "2015-04-17 08:58:00",
+      "LastGame": "2015-05-02 10:36:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Champions 2015 Summer",
+      "Games": 217,
+      "FirstGame": "2015-05-20 08:00:00",
+      "LastGame": "2015-08-13 05:50:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Champions 2015 Summer Playoffs",
+      "Games": 14,
+      "FirstGame": "2015-08-16 09:00:00",
+      "LastGame": "2015-08-29 10:28:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "China Regional Finals 2014",
+      "Games": 15,
+      "FirstGame": "2014-09-06 05:00:00",
+      "LastGame": "2014-09-07 12:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "China Regional Finals 2015",
+      "Games": 14,
+      "FirstGame": "2015-09-04 05:20:00",
+      "LastGame": "2015-09-05 11:55:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "China Regional Finals 2016",
+      "Games": 15,
+      "FirstGame": "2016-08-27 04:39:00",
+      "LastGame": "2016-08-28 08:55:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "China Regional Finals 2017",
+      "Games": 8,
+      "FirstGame": "2017-09-02 08:02:00",
+      "LastGame": "2017-09-03 10:33:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "China Regional Finals 2018",
+      "Games": 9,
+      "FirstGame": "2018-09-15 08:17:00",
+      "LastGame": "2018-09-16 09:36:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "China Regional Finals Season 3",
+      "Games": 15,
+      "FirstGame": "2013-09-07 05:45:00",
+      "LastGame": "2013-09-08 11:40:00"
+    },
+    {
+      "competition": "EWC",
+      "Tournament": "Esports World Cup 2024",
+      "Games": 19,
+      "FirstGame": "2024-07-04 15:07:00",
+      "LastGame": "2024-07-07 19:38:00"
+    },
+    {
+      "competition": "EWC",
+      "Tournament": "Esports World Cup 2025",
+      "Games": 33,
+      "FirstGame": "2025-07-16 09:32:00",
+      "LastGame": "2025-07-20 15:29:00"
+    },
+    {
+      "competition": "EWC",
+      "Tournament": "Esports World Cup 2026",
+      "Games": 51,
+      "FirstGame": "2026-07-15 09:41:00",
+      "LastGame": "2026-07-19 15:15:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Korea Regional Finals 2014",
+      "Games": 13,
+      "FirstGame": "2014-08-27 10:00:00",
+      "LastGame": "2014-08-30 12:30:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Korea Regional Finals 2015",
+      "Games": 12,
+      "FirstGame": "2015-09-02 08:55:00",
+      "LastGame": "2015-09-05 11:58:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Korea Regional Finals 2016",
+      "Games": 14,
+      "FirstGame": "2016-08-29 07:56:00",
+      "LastGame": "2016-09-03 11:33:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Korea Regional Finals 2017",
+      "Games": 13,
+      "FirstGame": "2017-08-28 07:35:00",
+      "LastGame": "2017-09-02 10:26:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Korea Regional Finals 2018",
+      "Games": 13,
+      "FirstGame": "2018-09-12 07:35:00",
+      "LastGame": "2018-09-16 09:48:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Korea Regional Finals Season 2",
+      "Games": 16,
+      "FirstGame": "2012-09-12 10:30:00",
+      "LastGame": "2012-09-21 13:30:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "Korea Regional Finals Season 3",
+      "Games": 13,
+      "FirstGame": "2013-09-04 10:00:00",
+      "LastGame": "2013-09-07 13:00:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2016 Spring",
+      "Games": 215,
+      "FirstGame": "2016-01-13 08:01:00",
+      "LastGame": "2016-04-09 13:00:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2016 Spring Playoffs",
+      "Games": 13,
+      "FirstGame": "2016-04-13 08:52:00",
+      "LastGame": "2016-04-23 12:00:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2016 Summer",
+      "Games": 212,
+      "FirstGame": "2016-05-25 07:51:00",
+      "LastGame": "2016-08-06 09:42:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2016 Summer Playoffs",
+      "Games": 15,
+      "FirstGame": "2016-08-08 08:28:00",
+      "LastGame": "2016-08-20 12:22:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2017 Spring",
+      "Games": 222,
+      "FirstGame": "2017-01-17 07:10:00",
+      "LastGame": "2017-04-02 14:17:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2017 Spring Playoffs",
+      "Games": 11,
+      "FirstGame": "2017-04-07 07:13:00",
+      "LastGame": "2017-04-22 10:19:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2017 Summer",
+      "Games": 219,
+      "FirstGame": "2017-05-30 06:53:00",
+      "LastGame": "2017-08-06 12:21:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2017 Summer Playoffs",
+      "Games": 14,
+      "FirstGame": "2017-08-12 07:37:00",
+      "LastGame": "2017-08-26 11:37:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2018 Spring",
+      "Games": 214,
+      "FirstGame": "2018-01-16 08:09:00",
+      "LastGame": "2018-03-25 13:05:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2018 Spring Playoffs",
+      "Games": 15,
+      "FirstGame": "2018-03-31 08:31:00",
+      "LastGame": "2018-04-14 12:40:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2018 Summer",
+      "Games": 218,
+      "FirstGame": "2018-06-12 08:31:00",
+      "LastGame": "2018-08-09 11:40:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2018 Summer Playoffs",
+      "Games": 16,
+      "FirstGame": "2018-08-12 07:11:00",
+      "LastGame": "2018-09-08 13:12:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2019 Regional Finals",
+      "Games": 13,
+      "FirstGame": "2019-09-03 04:49:00",
+      "LastGame": "2019-09-07 10:33:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2019 Spring",
+      "Games": 208,
+      "FirstGame": "2019-01-16 07:35:00",
+      "LastGame": "2019-03-31 12:01:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2019 Spring Playoffs",
+      "Games": 12,
+      "FirstGame": "2019-04-03 06:41:00",
+      "LastGame": "2019-04-13 10:12:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2019 Summer",
+      "Games": 218,
+      "FirstGame": "2019-06-05 07:42:00",
+      "LastGame": "2019-08-18 11:18:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2019 Summer Playoffs",
+      "Games": 13,
+      "FirstGame": "2019-08-21 06:04:00",
+      "LastGame": "2019-08-31 09:51:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2020 Regional Finals",
+      "Games": 10,
+      "FirstGame": "2020-09-07 06:53:00",
+      "LastGame": "2020-09-09 09:51:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2020 Spring",
+      "Games": 223,
+      "FirstGame": "2020-02-05 06:34:00",
+      "LastGame": "2020-04-16 11:18:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2020 Spring Playoffs",
+      "Games": 15,
+      "FirstGame": "2020-04-18 06:11:00",
+      "LastGame": "2020-04-25 09:30:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2020 Summer",
+      "Games": 211,
+      "FirstGame": "2020-06-17 05:27:00",
+      "LastGame": "2020-08-23 13:18:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2020 Summer Playoffs",
+      "Games": 14,
+      "FirstGame": "2020-08-26 06:29:00",
+      "LastGame": "2020-09-05 10:37:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2021 Regional Finals",
+      "Games": 12,
+      "FirstGame": "2021-08-31 07:00:00",
+      "LastGame": "2021-09-02 11:26:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2021 Spring",
+      "Games": 215,
+      "FirstGame": "2021-01-13 07:00:00",
+      "LastGame": "2021-03-28 12:15:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2021 Spring Playoffs",
+      "Games": 18,
+      "FirstGame": "2021-03-31 07:03:00",
+      "LastGame": "2021-04-10 10:29:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2021 Summer",
+      "Games": 226,
+      "FirstGame": "2021-06-09 06:29:00",
+      "LastGame": "2021-08-15 11:34:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2021 Summer Playoffs",
+      "Games": 18,
+      "FirstGame": "2021-08-18 06:13:00",
+      "LastGame": "2021-08-28 11:09:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2022 Regional Finals",
+      "Games": 14,
+      "FirstGame": "2022-09-01 08:08:00",
+      "LastGame": "2022-09-03 11:59:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2022 Spring",
+      "Games": 212,
+      "FirstGame": "2022-01-12 08:27:00",
+      "LastGame": "2022-03-20 11:38:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2022 Spring Playoffs",
+      "Games": 20,
+      "FirstGame": "2022-03-23 08:08:00",
+      "LastGame": "2022-04-02 11:56:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2022 Summer",
+      "Games": 214,
+      "FirstGame": "2022-06-15 08:20:00",
+      "LastGame": "2022-08-14 10:36:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2022 Summer Playoffs",
+      "Games": 21,
+      "FirstGame": "2022-08-17 08:07:00",
+      "LastGame": "2022-08-28 08:42:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2023 Regional Finals",
+      "Games": 11,
+      "FirstGame": "2023-08-24 08:06:00",
+      "LastGame": "2023-08-26 09:00:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2023 Spring",
+      "Games": 190,
+      "FirstGame": "2023-01-18 08:17:00",
+      "LastGame": "2023-03-17 08:07:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2023 Spring Playoffs",
+      "Games": 33,
+      "FirstGame": "2023-03-22 08:04:00",
+      "LastGame": "2023-04-09 09:27:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2023 Summer",
+      "Games": 206,
+      "FirstGame": "2023-06-07 08:11:00",
+      "LastGame": "2023-08-06 09:44:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2023 Summer Playoffs",
+      "Games": 31,
+      "FirstGame": "2023-08-08 08:07:00",
+      "LastGame": "2023-08-20 08:17:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2024 Regional Finals",
+      "Games": 13,
+      "FirstGame": "2024-09-12 08:07:00",
+      "LastGame": "2024-09-14 09:36:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2024 Spring",
+      "Games": 210,
+      "FirstGame": "2024-01-17 08:20:00",
+      "LastGame": "2024-03-24 09:41:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2024 Spring Playoffs",
+      "Games": 32,
+      "FirstGame": "2024-03-30 06:10:00",
+      "LastGame": "2024-04-14 10:19:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2024 Summer",
+      "Games": 209,
+      "FirstGame": "2024-06-12 08:12:00",
+      "LastGame": "2024-08-18 09:47:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2024 Summer Playoffs",
+      "Games": 31,
+      "FirstGame": "2024-08-23 08:10:00",
+      "LastGame": "2024-09-08 10:44:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2025 Road to MSI",
+      "Games": 18,
+      "FirstGame": "2025-06-07 06:07:00",
+      "LastGame": "2025-06-15 08:16:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2025 Rounds 1-2",
+      "Games": 222,
+      "FirstGame": "2025-04-02 08:11:00",
+      "LastGame": "2025-06-04 10:08:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2025 Rounds 3-5",
+      "Games": 145,
+      "FirstGame": "2025-07-23 08:08:00",
+      "LastGame": "2025-08-31 10:13:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2025 Season Play-In",
+      "Games": 21,
+      "FirstGame": "2025-09-03 08:08:00",
+      "LastGame": "2025-09-07 08:06:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2025 Season Playoffs",
+      "Games": 40,
+      "FirstGame": "2025-09-10 08:11:00",
+      "LastGame": "2025-09-28 08:21:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2026 Road to MSI",
+      "Games": 20,
+      "FirstGame": "2026-06-06 08:12:00",
+      "LastGame": "2026-06-14 10:35:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2026 Rounds 1-2",
+      "Games": 204,
+      "FirstGame": "2026-04-01 08:11:00",
+      "LastGame": "2026-05-31 11:10:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2026 Rounds 3-4",
+      "Games": 98,
+      "FirstGame": "2026-07-29 08:05:00",
+      "LastGame": "2026-08-23 11:57:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2026 Season Play-In",
+      "Games": 14,
+      "FirstGame": "2026-08-26 08:08:00",
+      "LastGame": "2026-08-28 11:40:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK 2026 Season Playoffs",
+      "Games": 41,
+      "FirstGame": "2026-08-29 08:07:00",
+      "LastGame": "2026-09-13 08:19:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2013 Spring",
+      "Games": 112,
+      "FirstGame": "2013-03-16 06:00:00",
+      "LastGame": "2013-05-18 09:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2013 Spring Playoffs",
+      "Games": 12,
+      "FirstGame": "2013-06-16 05:00:00",
+      "LastGame": "2013-06-23 12:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2013 Summer",
+      "Games": 84,
+      "FirstGame": "2013-07-12 08:00:00",
+      "LastGame": "2013-09-01 12:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2013 Summer Playoffs",
+      "Games": 7,
+      "FirstGame": "2013-11-20 10:30:00",
+      "LastGame": "2013-11-24 12:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2014 Spring",
+      "Games": 112,
+      "FirstGame": "2014-02-22 08:00:00",
+      "LastGame": "2014-04-26 12:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2014 Spring Playoffs",
+      "Games": 12,
+      "FirstGame": "2014-05-24 08:00:00",
+      "LastGame": "2014-05-25 12:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2014 Summer",
+      "Games": 112,
+      "FirstGame": "2014-06-14 08:00:00",
+      "LastGame": "2014-08-16 07:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2014 Summer Playoffs",
+      "Games": 22,
+      "FirstGame": "2014-08-19 08:00:00",
+      "LastGame": "2014-08-24 09:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2015 Spring",
+      "Games": 264,
+      "FirstGame": "2015-01-16 05:00:00",
+      "LastGame": "2015-04-12 12:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2015 Spring Playoffs",
+      "Games": 32,
+      "FirstGame": "2015-04-14 09:00:00",
+      "LastGame": "2015-04-26 13:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2015 Summer",
+      "Games": 264,
+      "FirstGame": "2015-05-22 05:00:00",
+      "LastGame": "2015-08-09 12:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2015 Summer Playoffs",
+      "Games": 37,
+      "FirstGame": "2015-08-11 09:00:00",
+      "LastGame": "2015-08-23 13:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2016 Spring",
+      "Games": 226,
+      "FirstGame": "2016-01-14 09:55:00",
+      "LastGame": "2016-04-10 12:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2016 Spring Playoffs",
+      "Games": 24,
+      "FirstGame": "2016-04-13 05:00:00",
+      "LastGame": "2016-04-23 10:00:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2016 Summer",
+      "Games": 232,
+      "FirstGame": "2016-05-26 09:00:00",
+      "LastGame": "2016-08-07 11:29:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2016 Summer Playoffs",
+      "Games": 32,
+      "FirstGame": "2016-08-10 05:00:00",
+      "LastGame": "2016-08-26 10:36:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2017 Spring",
+      "Games": 231,
+      "FirstGame": "2017-01-19 00:45:00",
+      "LastGame": "2017-04-16 12:02:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2017 Spring Playoffs",
+      "Games": 31,
+      "FirstGame": "2017-04-18 06:17:00",
+      "LastGame": "2017-04-29 10:28:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2017 Summer",
+      "Games": 233,
+      "FirstGame": "2017-06-08 09:31:00",
+      "LastGame": "2017-08-20 11:53:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2017 Summer Playoffs",
+      "Games": 31,
+      "FirstGame": "2017-08-22 06:20:00",
+      "LastGame": "2017-09-01 12:13:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2018 Spring",
+      "Games": 317,
+      "FirstGame": "2018-01-15 09:40:00",
+      "LastGame": "2018-04-08 13:49:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2018 Spring Playoffs",
+      "Games": 30,
+      "FirstGame": "2018-04-12 09:33:00",
+      "LastGame": "2018-04-28 11:05:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2018 Summer",
+      "Games": 328,
+      "FirstGame": "2018-06-11 09:30:00",
+      "LastGame": "2018-09-02 13:09:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2018 Summer Playoffs",
+      "Games": 32,
+      "FirstGame": "2018-09-05 08:47:00",
+      "LastGame": "2018-09-14 12:26:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2019 Regional Finals",
+      "Games": 10,
+      "FirstGame": "2019-09-07 06:10:00",
+      "LastGame": "2019-09-08 11:21:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2019 Spring",
+      "Games": 292,
+      "FirstGame": "2019-01-14 09:24:00",
+      "LastGame": "2019-03-31 12:05:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2019 Spring Playoffs",
+      "Games": 31,
+      "FirstGame": "2019-04-04 09:23:00",
+      "LastGame": "2019-04-21 10:11:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2019 Summer",
+      "Games": 287,
+      "FirstGame": "2019-06-01 09:25:00",
+      "LastGame": "2019-08-18 12:22:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2019 Summer Playoffs",
+      "Games": 31,
+      "FirstGame": "2019-08-22 09:23:00",
+      "LastGame": "2019-09-06 11:25:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2020 Regional Finals",
+      "Games": 12,
+      "FirstGame": "2020-08-28 07:26:00",
+      "LastGame": "2020-08-30 12:58:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2020 Spring",
+      "Games": 330,
+      "FirstGame": "2020-01-13 09:22:00",
+      "LastGame": "2020-04-20 13:26:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2020 Spring Playoffs",
+      "Games": 31,
+      "FirstGame": "2020-04-22 09:20:00",
+      "LastGame": "2020-05-02 13:46:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2020 Summer",
+      "Games": 335,
+      "FirstGame": "2020-06-05 09:24:00",
+      "LastGame": "2020-08-09 15:31:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2020 Summer Playoffs",
+      "Games": 30,
+      "FirstGame": "2020-08-13 09:20:00",
+      "LastGame": "2020-08-27 13:38:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2021 Regional Finals",
+      "Games": 10,
+      "FirstGame": "2021-09-03 07:40:00",
+      "LastGame": "2021-09-05 13:12:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2021 Spring",
+      "Games": 306,
+      "FirstGame": "2021-01-09 09:22:00",
+      "LastGame": "2021-03-28 12:14:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2021 Spring Playoffs",
+      "Games": 48,
+      "FirstGame": "2021-04-01 09:24:00",
+      "LastGame": "2021-04-18 12:22:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2021 Summer",
+      "Games": 328,
+      "FirstGame": "2021-06-07 09:19:00",
+      "LastGame": "2021-08-08 13:14:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2021 Summer Playoffs",
+      "Games": 46,
+      "FirstGame": "2021-08-12 09:26:00",
+      "LastGame": "2021-09-02 12:42:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2022 Regional Finals",
+      "Games": 14,
+      "FirstGame": "2022-09-02 08:18:00",
+      "LastGame": "2022-09-04 13:35:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2022 Spring",
+      "Games": 341,
+      "FirstGame": "2022-01-10 09:24:00",
+      "LastGame": "2022-03-25 12:46:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2022 Spring Playoffs",
+      "Games": 51,
+      "FirstGame": "2022-03-26 09:13:00",
+      "LastGame": "2022-04-23 14:01:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2022 Summer",
+      "Games": 343,
+      "FirstGame": "2022-06-10 09:12:00",
+      "LastGame": "2022-08-14 13:11:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2022 Summer Playoffs",
+      "Games": 51,
+      "FirstGame": "2022-08-16 09:15:00",
+      "LastGame": "2022-09-01 13:37:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2023 Regional Finals",
+      "Games": 13,
+      "FirstGame": "2023-08-06 08:25:00",
+      "LastGame": "2023-08-08 11:51:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2023 Spring",
+      "Games": 329,
+      "FirstGame": "2023-01-14 07:23:00",
+      "LastGame": "2023-03-26 13:32:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2023 Spring Playoffs",
+      "Games": 50,
+      "FirstGame": "2023-03-30 09:21:00",
+      "LastGame": "2023-04-15 11:19:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2023 Summer",
+      "Games": 324,
+      "FirstGame": "2023-05-29 09:20:00",
+      "LastGame": "2023-07-17 14:09:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2023 Summer Playoffs",
+      "Games": 52,
+      "FirstGame": "2023-07-20 09:15:00",
+      "LastGame": "2023-08-05 13:15:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2024 Regional Finals",
+      "Games": 13,
+      "FirstGame": "2024-08-31 08:58:00",
+      "LastGame": "2024-09-02 12:21:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2024 Spring",
+      "Games": 324,
+      "FirstGame": "2024-01-22 09:24:00",
+      "LastGame": "2024-03-27 12:07:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2024 Spring Playoffs",
+      "Games": 51,
+      "FirstGame": "2024-03-31 10:19:00",
+      "LastGame": "2024-04-20 12:03:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2024 Summer",
+      "Games": 152,
+      "FirstGame": "2024-07-05 09:18:00",
+      "LastGame": "2024-07-31 12:19:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2024 Summer Placements",
+      "Games": 130,
+      "FirstGame": "2024-06-01 09:22:00",
+      "LastGame": "2024-06-29 12:02:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2024 Summer Playoffs",
+      "Games": 60,
+      "FirstGame": "2024-08-03 10:17:00",
+      "LastGame": "2024-08-30 10:16:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2025 Grand Finals",
+      "Games": 73,
+      "FirstGame": "2025-08-30 09:11:00",
+      "LastGame": "2025-09-21 12:03:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2025 Regional Finals",
+      "Games": 12,
+      "FirstGame": "2025-09-25 09:14:00",
+      "LastGame": "2025-09-27 12:01:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2025 Split 1",
+      "Games": 88,
+      "FirstGame": "2025-01-12 09:24:00",
+      "LastGame": "2025-02-16 11:10:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2025 Split 1 Playoffs",
+      "Games": 42,
+      "FirstGame": "2025-02-22 06:13:00",
+      "LastGame": "2025-03-01 12:07:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2025 Split 2",
+      "Games": 259,
+      "FirstGame": "2025-04-05 07:27:00",
+      "LastGame": "2025-05-22 12:29:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2025 Split 2 Placements",
+      "Games": 60,
+      "FirstGame": "2025-03-22 08:12:00",
+      "LastGame": "2025-03-31 12:56:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2025 Split 2 Playoffs",
+      "Games": 71,
+      "FirstGame": "2025-05-24 09:13:00",
+      "LastGame": "2025-06-14 12:20:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2025 Split 3",
+      "Games": 212,
+      "FirstGame": "2025-07-19 07:13:00",
+      "LastGame": "2025-08-28 13:01:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2026 Grand Finals",
+      "Games": 55,
+      "FirstGame": "2026-08-28 06:12:00",
+      "LastGame": "2026-09-13 12:03:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2026 Regional Finals",
+      "Games": 12,
+      "FirstGame": "2026-09-17 09:11:00",
+      "LastGame": "2026-09-19 12:09:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2026 Split 1",
+      "Games": 137,
+      "FirstGame": "2026-01-14 09:13:00",
+      "LastGame": "2026-02-07 12:12:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2026 Split 1 Playoffs",
+      "Games": 77,
+      "FirstGame": "2026-02-09 06:09:00",
+      "LastGame": "2026-03-08 12:04:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2026 Split 2",
+      "Games": 171,
+      "FirstGame": "2026-04-04 07:13:00",
+      "LastGame": "2026-05-17 13:35:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2026 Split 2 Playoffs",
+      "Games": 68,
+      "FirstGame": "2026-05-23 06:07:00",
+      "LastGame": "2026-06-14 10:20:00"
+    },
+    {
+      "competition": "LPL",
+      "Tournament": "LPL 2026 Split 3",
+      "Games": 167,
+      "FirstGame": "2026-07-22 09:13:00",
+      "LastGame": "2026-08-23 14:45:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK Cup 2025",
+      "Games": 109,
+      "FirstGame": "2025-01-15 08:09:00",
+      "LastGame": "2025-02-23 09:50:00"
+    },
+    {
+      "competition": "LCK",
+      "Tournament": "LCK Cup 2026",
+      "Games": 125,
+      "FirstGame": "2026-01-14 08:13:00",
+      "LastGame": "2026-03-01 10:01:00"
+    }
+  ]
+}

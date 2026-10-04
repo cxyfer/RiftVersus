@@ -34,6 +34,7 @@ function row(index: number): SeriesRow {
     rightName: "Weibo Gaming",
     leftScore: 3,
     rightScore: index % 2,
+    gameDetailsComplete: true,
     winner: "left",
   };
 }
@@ -100,6 +101,13 @@ describe("browser comparison export", () => {
     expect(document.querySelector(".export-sheet")).toBeNull();
   });
 
+  it("marks incomplete game detail in the exported match row", async () => {
+    const incomplete = { ...row(1), gameDetailsComplete: false };
+    await exportComparison({ api: apiFor([incomplete]), query, initial: response([incomplete]) });
+    const root = mocks.toPng.mock.calls[0]?.[0] as HTMLElement;
+    expect(root.querySelector(".export-sheet__rows")?.textContent).toContain("單局明細不完整");
+  });
+
   it.each([[51, 2], [101, 3]] as const)("exports %s rows into a %s-page ZIP preserving 50-row pages", async (count, pages) => {
     const rows = Array.from({ length: count }, (_, index) => row(index + 1));
     const api = apiFor(rows);
@@ -129,6 +137,17 @@ describe("browser comparison export", () => {
     expect(secondRoot.textContent).toContain("GENERATED 2026-07-12 12:34:56 UTC");
     expect(Array.from(firstRoot.querySelectorAll(".export-sheet__row strong"), (node) => node.textContent)).toEqual(rows.slice(0, 50).map((item) => `${item.leftName} ${item.leftScore}:${item.rightScore} ${item.rightName}`));
     expect(Array.from(secondRoot.querySelectorAll(".export-sheet__row strong"), (node) => node.textContent)).toEqual(rows.slice(50).map((item) => `${item.leftName} ${item.leftScore}:${item.rightScore} ${item.rightName}`));
+  });
+
+  it("exports a BO2 draw without counting or labeling it as a loss", async () => {
+    const draw = { ...row(1), bestOf: 2 as const, leftScore: 1, rightScore: 1, winner: "draw" as const };
+    const drawQuery = { ...query, eventCategories: ["league" as const], bestOf: [2 as const] };
+    const initial = { ...response([draw], undefined, { query: drawQuery }), seriesSummary: { wins: 0, losses: 0, draws: 1, total: 1, winRate: 0 } };
+    await exportComparison({ api: apiFor([draw]), query: drawQuery, initial });
+    const root = mocks.toPng.mock.calls[0]?.[0] as HTMLElement;
+    expect(root.textContent).toContain("1 DRAWS");
+    expect(root.querySelector(".export-sheet__draw")?.textContent).toBe("DRAW");
+    expect(root.querySelector(".export-sheet__loss")).toBeNull();
   });
 
   it("stops before capture when sequential pagination exceeds the 1000 row cap", async () => {

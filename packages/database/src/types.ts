@@ -8,7 +8,7 @@ export type DateColumn = ColumnType<string, string, string>;
 export type NullableDateColumn = ColumnType<string | null, string | null | undefined, string | null | undefined>;
 
 export type EntityKind = "player" | "team" | "region";
-export type TournamentCategory = "league" | "fst" | "msi" | "worlds" | "other";
+export type TournamentCategory = "league" | "fst" | "msi" | "worlds" | "ewc" | "other";
 export type CompetitiveSide = "a" | "b";
 
 export interface EntitiesTable {
@@ -75,7 +75,7 @@ export interface SeriesFactsTable {
   source_key: string;
   tournament_id: string;
   played_at: RequiredTimestamp;
-  best_of: 1 | 3 | 5;
+  best_of: 1 | 2 | 3 | 5;
   completed: boolean;
   side_a_team_id: string;
   side_a_era_id: string | null;

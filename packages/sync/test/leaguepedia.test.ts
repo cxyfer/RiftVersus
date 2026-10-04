@@ -734,7 +734,7 @@ describe("Leaguepedia fetching", () => {
     ]);
   });
 
-  it("fails closed when retained game rows do not exactly explain the final series score", async () => {
+  it("retains the MatchSchedule result when retained game rows are incomplete", async () => {
     const input = await currentCargoExportInput();
     const broken = {
       ...input,
@@ -742,7 +742,9 @@ describe("Leaguepedia fetching", () => {
         ? { ...evidence, response: (evidence.response as Record<string, unknown>[]).slice(0, 4) }
         : evidence),
     };
-    expect(() => parseLeaguepediaRawInput(broken)).toThrow(/do not exactly explain final score|game count/i);
+    const parsed = parseLeaguepediaRawInput(broken);
+    expect(parsed.series[0]).toMatchObject({ sideAScore: 3, sideBScore: 2 });
+    expect(parsed.games).toHaveLength(4);
   });
 
   it.each([
@@ -777,7 +779,7 @@ describe("Leaguepedia fetching", () => {
 
   it.each([
     ["winner", { Winner: 2 }, /winner.*final score/i],
-    ["score", { Team1Score: 3, Team2Score: 1 }, /do not exactly explain final score|game count/i],
+    ["score", { Team1Score: 3, Team2Score: 1 }, /game rows conflict with final score|game rows do not exactly explain final score|game count/i],
     ["BestOf", { BestOf: 3 }, /BestOf.*inconsistent|inconsistent.*BestOf/i],
   ])("fails closed on MatchSchedule %s conflict", async (_label, replacement, expected) => {
     const input = await currentCargoExportInput();
@@ -1210,6 +1212,14 @@ describe("Leaguepedia fetching", () => {
       ...item, response: (item.response as Record<string, unknown>[]).map((row) => ({ ...row, Tournament: "2024 Mid-Season Invitational" })),
     } : item) };
     expect(() => parseLeaguepediaRawInput(wrong)).toThrow(/does not match requested source key/);
+  });
+
+  it("accepts a game row whose tournament source key differs only by case", async () => {
+    const input = await rawFixture();
+    const caseVariant: LeaguepediaRawInput = { ...input, rawEvidence: input.rawEvidence.map((item) => item.table === "ScoreboardGames" ? {
+      ...item, response: (item.response as Record<string, unknown>[]).map((row) => ({ ...row, Tournament: String(row.Tournament).toLocaleLowerCase() })),
+    } : item) };
+    expect(parseLeaguepediaRawInput(caseVariant).games).not.toHaveLength(0);
   });
 
   it("treats slice from as inclusive and to as exclusive", async () => {
@@ -1997,13 +2007,16 @@ describe("Leaguepedia coverage and provider", () => {
     expect(batch.coverage).toEqual([expect.objectContaining({ status: "partial", detail: expect.stringContaining("synthetic fixture is not source coverage") })]);
   });
 
-  it("fails closed when a completed series is missing an expected game", async () => {
+  it("retains a completed series when an individual game row is missing", async () => {
     const input = await rawFixture();
     const missing: LeaguepediaRawInput = { ...input, rawEvidence: input.rawEvidence.map((item) => {
       if (item.table !== "ScoreboardGames" && item.table !== "ScoreboardPlayers") return item;
       return { ...item, response: (item.response as Record<string, unknown>[]).filter((row) => row.GameId !== "WORLD24-FINAL-G3") };
     }) };
-    await expect(createLeaguepediaProvider({ loadRawInput: async () => missing, overrides: await overrides() }).stage({ mode: "sync-once" })).rejects.toThrow(/game rows do not exactly explain final score|game numbers must be contiguous/);
+    const batch = await createLeaguepediaProvider({ loadRawInput: async () => missing, overrides: await overrides() }).stage({ mode: "sync-once" });
+    expect(batch.facts.series).toHaveLength(1);
+    expect(batch.facts.series[0]).toMatchObject({ sideAScore: 3, sideBScore: 2 });
+    expect(batch.facts.games).toHaveLength(4);
   });
 
   it("emits one inferred coverage row per logical competition and year", async () => {

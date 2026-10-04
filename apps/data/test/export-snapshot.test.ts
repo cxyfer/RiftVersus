@@ -68,6 +68,19 @@ describe("public SQLite snapshot", () => {
     await expect(writeSnapshotData(root, incomplete)).rejects.toThrow("completed series");
   });
 
+  it("round trips completed BO2 draws alongside EWC facts", async () => {
+    const root = await directory();
+    const original = series(1, 2024);
+    const draw: SnapshotSeries = { ...original, tournament: { ...original.tournament, category: "league", league: "lck" }, bestOf: 2, winnerSide: null, score: { a: 1, b: 1 },
+      games: [...original.games, { ...original.games[0]!, id: uuid(2001), gameNumber: 2, winnerSide: "b" }] };
+    const ewc = { ...series(2, 2024), tournament: { ...original.tournament, id: uuid(200), name: "Esports World Cup 2024", category: "ewc" as const } };
+    const snapshot = await writeSnapshotData(root, { ...projection, series: [draw, ewc] });
+    const verified = await verifyPublicSnapshot(root);
+    expect(verified).toEqual(snapshot);
+    expect(verified.series.find(item => item.id === draw.id)).toMatchObject({ completed: true, bestOf: 2, winnerSide: null, score: { a: 1, b: 1 } });
+    expect(verified.series.find(item => item.id === ewc.id)?.tournament.category).toBe("ewc");
+  });
+
   it("keeps the database physical checksum separate from the logical snapshot ID", async () => {
     const root = await directory();
     const snapshot = await writeSnapshotData(root, projection);

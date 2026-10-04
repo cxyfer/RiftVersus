@@ -6,12 +6,12 @@ import { DateSchema } from "./primitives.js";
 
 export { DateSchema } from "./primitives.js";
 
-export const EventCategorySchema = z.enum(["league", "fst", "msi", "worlds", "other"]);
+export const EventCategorySchema = z.enum(["league", "fst", "msi", "worlds", "ewc", "other"]);
 export const LeagueSlugSchema = z.enum(["lck", "lpl", "lec", "lcs"]);
 
 export const BestOfSchema = z.preprocess(
   (value) => (typeof value === "string" ? Number(value) : value),
-  z.union([z.literal(1), z.literal(3), z.literal(5)]),
+  z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(5)]),
 );
 
 export const OpaqueCursorSchema = z.string().min(1);
@@ -52,6 +52,7 @@ export const ComparisonRouteQuerySchema = ComparisonQuerySchema.safeExtend({ lef
 export const RecordSummarySchema = z.object({
   wins: z.number().int().min(0),
   losses: z.number().int().min(0),
+  draws: z.number().int().min(0).optional(),
   total: z.number().int().min(0),
   winRate: z.number().min(0).max(1),
 });
@@ -69,7 +70,8 @@ export const SeriesRowSchema = z.object({
   rightName: z.string().min(1),
   leftScore: z.number().int().min(0),
   rightScore: z.number().int().min(0),
-  winner: z.enum(["left", "right"]),
+  gameDetailsComplete: z.boolean(),
+  winner: z.enum(["left", "right", "draw"]),
 });
 
 export const CoverageWarningSchema = z.object({

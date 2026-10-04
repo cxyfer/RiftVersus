@@ -31,6 +31,14 @@ Required source variables for builds/sync: `LEAGUEPEDIA_ENDPOINT`,
 The competition map is reviewed JSON configuration, not shell code. See the
 existing source documentation for endpoint/contact/mapping restrictions.
 
+The workflow loads `data/leaguepedia/competition-map.json` from the reviewed
+code revision and requires mappings for `MSI,LCK,LPL,EWC`. For a local one-shot
+history/backfill, pass the same JSON as `LEAGUEPEDIA_COMPETITION_MAP` and set
+`LEAGUEPEDIA_SYNC_COMPETITIONS` to the intended competitions; do not maintain a
+second private map. Domestic and EWC scopes are planned one calendar year per
+request to keep Leaguepedia page and row budgets bounded. See
+`data/leaguepedia/domestic-ewc-audit.json` for audited source key/date evidence.
+
 ## Modes
 
 | Trigger/mode | Behavior |

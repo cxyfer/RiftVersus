@@ -136,6 +136,7 @@ describe("shared runtime contracts", () => {
           rightName: "Bilibili Gaming",
           leftScore: 3,
           rightScore: 2,
+          gameDetailsComplete: true,
           winner: "left",
         },
       ],

@@ -13,9 +13,9 @@ import type { ComparisonApi, EntityOption } from "./api/types.js";
 
 const placeholderMedia = `${import.meta.env.BASE_URL}media-placeholder.svg`;
 const kindLabel: Record<EntityKind, string> = { player: "選手", team: "戰隊", region: "賽區" };
-const eventOptions: Array<[EventCategory, string]> = [["league", "聯賽"], ["fst", "FST"], ["msi", "MSI"], ["worlds", "Worlds"]];
+const eventOptions: Array<[EventCategory, string]> = [["league", "聯賽"], ["fst", "FST"], ["msi", "MSI"], ["worlds", "Worlds"], ["ewc", "EWC"]];
 const leagueOptions: LeagueCode[] = ["lck", "lpl", "lec", "lcs"];
-const bestOfOptions: BestOf[] = [1, 3, 5];
+const bestOfOptions: BestOf[] = [1, 2, 3, 5];
 const reloadPage = () => window.location.reload();
 
 function subjectOption(subject: ResolvedSubject): EntityOption {
@@ -80,13 +80,13 @@ function ToggleGroup<T extends string | number>({ label, values, selected, onCha
 
 function Summary({ result }: { result: ComparisonResponse }) {
   const series = result.seriesSummary; const games = result.gameSummary;
-  return <section className="result-summary" aria-label="比較摘要"><div className="subject subject--left"><Avatar src={result.mediaUrls.left} name={result.subjects.left.displayName} kind={result.subjects.left.kind} size="large" /><div><strong>{result.subjects.left.displayName}</strong><span>{series.wins} series wins · {(series.winRate * 100).toFixed(0)}%</span></div></div><div className="scoreboard"><span>Series</span><strong>{series.wins}<i>-</i>{series.losses}</strong><small>Games {games.wins}-{games.losses} · {(games.winRate * 100).toFixed(0)}%</small></div><div className="subject subject--right"><Avatar src={result.mediaUrls.right} name={result.subjects.right.displayName} kind={result.subjects.right.kind} size="large" /><div><strong>{result.subjects.right.displayName}</strong><span>{series.losses} series wins</span></div></div></section>;
+  return <section className="result-summary" aria-label="比較摘要"><div className="subject subject--left"><Avatar src={result.mediaUrls.left} name={result.subjects.left.displayName} kind={result.subjects.left.kind} size="large" /><div><strong>{result.subjects.left.displayName}</strong><span>{series.wins} series wins · {(series.winRate * 100).toFixed(0)}%</span></div></div><div className="scoreboard"><span>Series</span><strong>{series.wins}<i>-</i>{series.losses}</strong>{series.draws ? <small>{series.draws} draws</small> : null}<small>Games {games.wins}-{games.losses} · {(games.winRate * 100).toFixed(0)}%</small></div><div className="subject subject--right"><Avatar src={result.mediaUrls.right} name={result.subjects.right.displayName} kind={result.subjects.right.kind} size="large" /><div><strong>{result.subjects.right.displayName}</strong><span>{series.losses} series wins</span></div></div></section>;
 }
 
 function Results({ result, onMore, loadingMore }: { result: ComparisonResponse; onMore: () => void; loadingMore: boolean }) {
   const activeFilters = [...result.query.eventCategories.map((item) => item.toUpperCase()), ...result.query.leagues.map((item) => item.toUpperCase()), ...result.query.bestOf.map((item) => `BO${item}`)];
   return <section className="results" aria-live="polite"><div className="result-meta"><span className="chip"><Database size={14} /> {result.dataset.version}</span><span className="chip"><CalendarDays size={14} /> {result.dataset.coverage.from} - {result.dataset.coverage.to}</span><span className="chip chip--good">fresh {new Date(result.dataset.lastSuccessfulSyncAt).toLocaleDateString("en-CA")}</span>{activeFilters.map((filter) => <span className="chip chip--active" key={filter}>{filter}</span>)}</div>{result.coverageWarnings.map((warning) => <p className="warning" key={warning.code}>{warning.message}</p>)}
-    {result.rows.length === 0 ? <div className="empty-state result-empty">沒有符合目前篩選條件的對戰紀錄。</div> : <div className="match-table" role="table" aria-label="對戰紀錄"><div className="match-head" role="row"><span>日期 / 賽事</span><span>系列賽</span><span>結果</span></div>{result.rows.map((row) => <div className="match-row" role="row" key={row.id}><span><strong>{row.event.name}</strong><small>{row.date} · BO{row.bestOf}</small></span><span>{row.leftName} <b>{row.leftScore}:{row.rightScore}</b> {row.rightName}</span><span className={row.winner === "left" ? "outcome win" : "outcome loss"}>{row.winner === "left" ? "WIN" : "LOSS"}</span></div>)}</div>}
+    {result.rows.length === 0 ? <div className="empty-state result-empty">沒有符合目前篩選條件的對戰紀錄。</div> : <div className="match-table" role="table" aria-label="對戰紀錄"><div className="match-head" role="row"><span>日期 / 賽事</span><span>系列賽</span><span>結果</span></div>{result.rows.map((row) => <div className="match-row" role="row" key={row.id}><span><strong>{row.event.name}</strong><small>{row.date} · BO{row.bestOf}</small></span><span>{row.leftName} <b>{row.leftScore}:{row.rightScore}</b> {row.rightName}{!row.gameDetailsComplete && <small className="incomplete-detail">單局明細不完整</small>}</span><span className={row.winner === "draw" ? "outcome draw" : row.winner === "left" ? "outcome win" : "outcome loss"}>{row.winner === "draw" ? "DRAW" : row.winner === "left" ? "WIN" : "LOSS"}</span></div>)}</div>}
     {result.nextCursor && <button className="load-more" type="button" onClick={onMore} disabled={loadingMore}>{loadingMore ? "載入中" : "載入更多"}<ChevronDown size={16} aria-hidden="true" /></button>}
   </section>;
 }

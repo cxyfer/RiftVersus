@@ -21,7 +21,11 @@ second.
 Logical competition names are not fuzzy matched. Every requested
 competition/year pair must have an exact Leaguepedia tournament key in
 `LEAGUEPEDIA_COMPETITION_MAP`; an absent year mapping stops the run before the
-repository is opened. The reviewed canonical mappings are
+repository is opened. Production uses the reviewed exact-key registry at
+`data/leaguepedia/competition-map.json`, including historical LCK/Champions,
+LPL and EWC main events; `domestic-ewc-audit.json` records source counts and
+date spans. Missing or partial upstream scopes remain unpublishable as complete.
+The reviewed canonical mappings are
 `data/overrides/identities.yaml`, `data/overrides/tournaments.yaml`, and
 `data/overrides/regions.yaml`; the third maps source-region values such as LPL
 to canonical regions. Their checksums are retained with each sync run, and
@@ -35,6 +39,9 @@ infer aliases from names, short names, current teams, or other dimension
 fields. A player redirect collision is accepted only when structural parsing
 leaves exactly one valid Players row; zero or multiple valid targets fail
 closed and all source rows remain in immutable evidence.
+Players with different Leaguepedia IDs/pages may share a real name. Those
+source identities remain separate, and publication adds the canonical ID to a
+colliding URL slug without changing an existing player's slug.
 
 Leaguepedia `Players.ID` and `Players.Name` have separate owners in the
 published identity model. `player_id` stores the public competitive ID (for
@@ -51,10 +58,17 @@ renaming an existing player.
 `ScoreboardGames.MatchId` must join exactly one retained schedule row; the
 schedule provides tournament identity, scheduled provenance, teams, `BestOf`,
 final score, and winner. The game rows own actual timestamps, individual game
-sequence, and winners and must exactly explain that final. Canonical series
-`playedAt` is the earliest actual game timestamp for the exact `MatchId`.
-Missing, duplicate, orphan, or conflicting schedule evidence stops the run. The
-importer does not infer a series score or `BestOf` from `ScoreboardGames` fields.
+sequence, and winners. Every observed game must agree with the schedule teams
+and stay within its final score; a source may omit some individual game rows.
+Canonical series `playedAt` is the earliest available actual game timestamp
+for the exact `MatchId`. Duplicate, orphan, or contradictory schedule/game
+evidence stops the run. Team game totals use the schedule's final score, while
+player comparisons use only observed game and roster rows. Comparison rows
+mark series whose game detail is incomplete. The importer does not infer a
+series score or `BestOf` from `ScoreboardGames` fields.
+Completed BO2 series use exact 1:1 scores for a draw with no winner; the two
+game winners remain required. Draws count toward series totals and win-rate
+denominators, but not toward either side's wins or losses.
 
 Comparison subjects describe what the user selected; historical series rows
 describe the teams that actually participated. Each row's `leftName` and

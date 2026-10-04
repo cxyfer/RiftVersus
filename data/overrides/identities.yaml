@@ -1,5 +1,12 @@
 version: 1
 rules:
+  - sourceKey: KSV eSports
+    canonicalName: Gen.G
+    canonicalId: 8d3d4d08-7619-585a-8394-7d9aeb2e93c9
+    kind: team
+    aliases:
+      - KSV
+    reviewedNote: Leaguepedia Teams OverviewPage KSV eSports has RenamedTo Gen.G, independently resolved through TeamRedirects; both participate in the 2018 LCK source scope. Keep the existing Gen.G canonical ID and infer non-overlapping historical eras from retained match dates.
   - sourceKey: SK Telecom T1
     canonicalName: T1
     canonicalId: 11111111-1111-5111-8111-111111111111

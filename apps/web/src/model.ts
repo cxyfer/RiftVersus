@@ -40,9 +40,9 @@ export const defaultRouteState: ComparisonRouteState = {
 };
 
 const kinds = new Set<EntityKind>(["player", "team", "region"]);
-const events = new Set<EventCategory>(["league", "fst", "msi", "worlds", "other"]);
+const events = new Set<EventCategory>(["league", "fst", "msi", "worlds", "ewc", "other"]);
 const leagues = new Set<LeagueCode>(["lck", "lpl", "lec", "lcs"]);
-const bestOf = new Set<BestOf>([1, 3, 5]);
+const bestOf = new Set<BestOf>([1, 2, 3, 5]);
 
 function csv(value: string | null): string[] {
   return value?.split(",").map((item) => item.trim()).filter(Boolean) ?? [];

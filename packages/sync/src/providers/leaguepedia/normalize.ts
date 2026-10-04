@@ -1,3 +1,4 @@
+import { isCompletedSeriesScore } from "@riftversus/contracts";
 import { createHash } from "node:crypto";
 
 import type { GameFactInput, GamePlayerInput, SeriesFactInput } from "@riftversus/database";
@@ -104,6 +105,21 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
     }
   }
 
+  // 聯賽歸屬由已審核的匯入 scope 決定，不從隊伍賽區或賽事名稱猜測。
+  const tournamentBySeries = new Map(snapshot.series.map(series => [series.sourceKey, series.tournamentKey]));
+  const tournamentByGame = new Map(snapshot.games.map(game => [game.sourceKey, tournamentBySeries.get(game.seriesKey)]));
+  const leaguesByTournament = new Map<string, "lck" | "lpl" | "lec" | "lcs">();
+  for (const slice of snapshot.slices) {
+    const league = slice.competition.toLowerCase();
+    if (league !== "lck" && league !== "lpl" && league !== "lec" && league !== "lcs") continue;
+    for (const key of slice.gameSourceKeys) {
+      const tournament = tournamentByGame.get(key);
+      if (tournament === undefined) throw new Error(`League scope references unknown game ${key}.`);
+      const previous = leaguesByTournament.get(tournament);
+      if (previous !== undefined && previous !== league) throw new Error(`Tournament ${tournament} has conflicting league scopes.`);
+      leaguesByTournament.set(tournament, league);
+    }
+  }
   const tournamentIds = new Map<string, string>();
   const tournaments: StagedTournamentDefinition[] = snapshot.tournaments.map((item) => {
     const override = overrides.tournaments.get(item.sourceKey);
@@ -111,7 +127,7 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
     tournamentIds.set(item.sourceKey, id);
     const seasonYear = yearFrom(item.validFrom);
     const name = override?.canonicalName ?? item.displayName;
-    return { id, provider: PROVIDER, sourceKey: item.sourceKey, name, aliases: unique([item.displayName, name]), category: override?.category ?? tournamentCategory(item.displayName), seasonYear, validFrom: item.validFrom ?? null, validTo: item.validTo ?? null };
+    return { id, provider: PROVIDER, sourceKey: item.sourceKey, name, aliases: unique([item.displayName, name]), category: override?.category ?? (leaguesByTournament.has(item.sourceKey) ? "league" : tournamentCategory(item.displayName)), leagueSlug: leaguesByTournament.get(item.sourceKey) ?? null, seasonYear, validFrom: item.validFrom ?? null, validTo: item.validTo ?? null };
   });
 
   const quarantinedKeys = new Set(quarantine.map((item) => item.sourceKey));
@@ -136,7 +152,7 @@ export function normalizeLeaguepediaSnapshot(snapshot: LeaguepediaSnapshot, over
       id, provider: PROVIDER, sourceKey: item.sourceKey, tournamentId, playedAt: validDate(item.playedAt, item.sourceKey),
       bestOf: item.bestOf, completed: true, sideATeamId, sideAEraId: sideAEra.id, sideARegionId: sideAEra.regionId ?? null,
       sideBTeamId, sideBEraId: sideBEra.id, sideBRegionId: sideBEra.regionId ?? null,
-      sideAScore: scores.a, sideBScore: scores.b, winnerTeamId: scores.a > scores.b ? sideATeamId : sideBTeamId,
+      sideAScore: scores.a, sideBScore: scores.b, winnerTeamId: scores.a === scores.b ? null : scores.a > scores.b ? sideATeamId : sideBTeamId,
     };
   });
 
@@ -218,7 +234,20 @@ export function deriveLeaguepediaCoverage(evidence: LeaguepediaCoverageEvidence)
   return { ...base, status: "complete", detail: `Verified ${evidence.observedRows} rows across ${evidence.traversal.visitedPages} bounded pages.` };
 }
 
-function ambiguousKeys(snapshot: LeaguepediaSnapshot): Set<string> { const owners = new Map<string, Set<string>>(); for (const entity of snapshot.entities) for (const name of [entity.displayName, ...entity.aliases]) { const key = name.trim().toLocaleLowerCase(); if (key) owners.set(key, new Set([...(owners.get(key) ?? []), entity.sourceKey])); } return new Set([...owners.values()].filter((values) => values.size > 1).flatMap((values) => [...values])); }
+function ambiguousKeys(snapshot: LeaguepediaSnapshot): Set<string> {
+  const owners = new Map<string, Set<string>>();
+  for (const entity of snapshot.entities) {
+    // 本名同名不代表身份衝突；選手仍由來源頁、遊戲 ID 與 redirects 辨識。
+    const names = entity.kind === "player" && entity.playerId
+      ? [entity.sourceKey, entity.playerId, ...entity.aliases.filter(name => name !== entity.displayName)]
+      : [entity.displayName, ...entity.aliases];
+    for (const name of names) {
+      const key = name.trim().toLocaleLowerCase();
+      if (key) owners.set(key, new Set([...(owners.get(key) ?? []), entity.sourceKey]));
+    }
+  }
+  return new Set([...owners.values()].filter(values => values.size > 1).flatMap(values => [...values]));
+}
 function observedTeamFactDates(snapshot: LeaguepediaSnapshot): Map<string, { from: string; to: string }> {
   const result = new Map<string, { from: string; to: string }>();
   for (const fact of [...snapshot.series, ...snapshot.games]) {
@@ -285,10 +314,10 @@ function previousDay(day: string): string {
 }
 function requiredEntityId(ids: ReadonlyMap<string, string>, key: string, factKey: string): string { const id = ids.get(key); if (id === undefined) throw new Error(`Fact ${factKey} references unresolved or quarantined identity ${key}.`); return id; }
 function selectEra(eras: readonly StagedTeamEraDefinition[], teamEntityId: string, playedAt: string, factKey: string): StagedTeamEraDefinition { const day = playedAt.slice(0, 10); const candidates = eras.filter((era) => era.teamEntityId === teamEntityId && (!era.validFrom || era.validFrom <= day) && (!era.validTo || era.validTo >= day)); if (candidates.length !== 1) throw new Error(`Fact ${factKey} requires exactly one team era at ${day}; found ${candidates.length}.`); return candidates[0]!; }
-function completedScores(bestOf: 1 | 3 | 5, a: number | null, b: number | null, key: string): { a: number; b: number } { if (a === null || b === null || !Number.isInteger(a) || !Number.isInteger(b) || a < 0 || b < 0) throw new Error(`Series ${key} scores are invalid.`); const target = Math.floor(bestOf / 2) + 1; if (!((a === target && b < target) || (b === target && a < target))) throw new Error(`Series ${key} score is inconsistent with BestOf ${bestOf}.`); return { a, b }; }
+function completedScores(bestOf: 1 | 2 | 3 | 5, a: number | null, b: number | null, key: string): { a: number; b: number } { if (a === null || b === null || !Number.isInteger(a) || !Number.isInteger(b) || a < 0 || b < 0) throw new Error(`Series ${key} scores are invalid.`); if (!isCompletedSeriesScore(bestOf, a, b)) throw new Error(`Series ${key} score is inconsistent with BestOf ${bestOf}.`); return { a, b }; }
 function validDate(value: string, key: string): Date { const date = new Date(value); if (Number.isNaN(date.valueOf())) throw new Error(`Invalid date for ${key}.`); return date; }
 function positiveInteger(value: number, key: string): number { if (!Number.isInteger(value) || value <= 0) throw new Error(`Invalid game number for ${key}.`); return value; }
 function yearFrom(value: string | null | undefined): number | null { if (!value) return null; const result = Number(value.slice(0, 4)); return Number.isInteger(result) ? result : null; }
-function tournamentCategory(name: string): StagedTournamentDefinition["category"] { if (/world/i.test(name)) return "worlds"; if (/mid.?season|msi/i.test(name)) return "msi"; if (/first stand|fst/i.test(name)) return "fst"; if (/league|lck|lpl|lec|lcs/i.test(name)) return "league"; return "other"; }
+function tournamentCategory(name: string): StagedTournamentDefinition["category"] { if (/esports world cup|\bewc\b/i.test(name)) return "ewc"; if (/world/i.test(name)) return "worlds"; if (/mid.?season|msi/i.test(name)) return "msi"; if (/first stand|fst/i.test(name)) return "fst"; if (/league|lck|lpl|lec|lcs|^champions|^(korea|china) regional finals/i.test(name)) return "league"; return "other"; }
 function unique(values: readonly string[]): string[] { return [...new Set(values.map((value) => value.trim()).filter(Boolean))]; }
 function stableUuid(value: string): string { const hex = createHash("sha256").update(`riftversus:${PROVIDER}:${value}`).digest("hex").slice(0, 32); return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-5${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20)}`; }

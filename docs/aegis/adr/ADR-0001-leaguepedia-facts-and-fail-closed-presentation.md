@@ -178,3 +178,36 @@ images; 22 players without an exact binding and all regions retain generated
 presentation. Images are static files outside SQLite. The existing export
 request-unit owner now uses 32 KiB following ten passing controlled cold runs;
 SQL schema, logical snapshot and performance gates remain unchanged.
+
+## Amendment - 2026-10-04 - Add source-reviewed historical LCK/LPL ownership, EWC category and BO2 draw semantics while preserving fail-closed imports.
+
+- Status: amended
+
+### Source Evidence
+
+- data/leaguepedia/competition-map.json; data/leaguepedia/domestic-ewc-audit.json; /tmp/riftversus-leagues-live-evidence/query-evidence.json; isolated PostgreSQL and SQLite verification.
+### Change Summary
+
+Add source-reviewed historical LCK/LPL ownership, EWC category and BO2 draw semantics while preserving fail-closed imports.
+
+### Compatibility Boundary
+
+Leaguepedia remains the sole facts owner; exact reviewed tournament mappings assign lck/lpl, EWC is a separate category, and valid BO2 1:1 draws have no winner and count in totals. Existing Worlds/MSI facts and schema 2 rollback sites remain readable.
+
+### Retirement Impact
+
+No legacy provider or runtime writer retained. Old BO1/3/5 constraints remain for existing formats; downgrade is guarded when BO2 or EWC facts exist.
+
+### Baseline Sync
+
+- Needed: needed
+- Target: docs/aegis/baseline/2026-10-03-riftversus-github-sqlite.md
+- Action: update baseline
+- Reason: Current architecture now includes the historical domestic/EWC schema, mapping and publication contract.
+
+### Evidence References
+
+- docs/aegis/plans/2026-10-04-domestic-leagues-ewc.md
+### Boundary
+
+This amendment is an advisory Aegis Method Pack record. It does not grant completion authority or replace project-authoritative architecture sources.

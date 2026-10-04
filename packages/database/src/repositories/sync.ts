@@ -290,6 +290,17 @@ async function publishDimensions(input: PublishDatasetInput, trx: Kysely<Databas
     ...dimensions.entities.map((item) => ({ id: item.id, provider: item.provider, sourceKeys: item.sourceKeys, kind: item.kind, canonicalName: item.canonicalName, slug: slug(item.canonicalName), playerId: item.playerId ?? null })),
   ];
   const canonicalEntityRows = mergeConsistentStagedEntities(entityRows);
+  const publishedSlugs = await trx.selectFrom("entities").select(["id", "slug"]).execute();
+  const slugOwners = new Map(publishedSlugs.map(row => [row.slug, row.id]));
+  const existingSlugs = new Map(publishedSlugs.map(row => [row.id, row.slug]));
+  // 不同選手可能同名；以 canonical ID 區分網址，保留已發佈的 slug。
+  for (const item of [...canonicalEntityRows].sort((a, b) => a.id.localeCompare(b.id))) {
+    const distinctSlug = `${item.slug}-${item.id}`;
+    if (existingSlugs.get(item.id) === distinctSlug || (slugOwners.has(item.slug) && slugOwners.get(item.slug) !== item.id)) item.slug = distinctSlug;
+    const owner = slugOwners.get(item.slug);
+    if (owner !== undefined && owner !== item.id) throw new Error(`Canonical slug ${item.slug} conflicts with published entity ${owner}.`);
+    slugOwners.set(item.slug, item.id);
+  }
   for (const item of canonicalEntityRows) await assertImmutableEntity(item.id, item, trx);
   for (const item of canonicalEntityRows) await trx.insertInto("entities").values({
     id: item.id, kind: item.kind, canonical_name: item.canonicalName, slug: item.slug, player_id: item.playerId,
@@ -324,9 +335,9 @@ async function publishDimensions(input: PublishDatasetInput, trx: Kysely<Databas
   }
   await ensurePublicIds(trx);
   for (const tournament of dimensions.tournaments) {
-    const existing = await trx.selectFrom("tournaments").select(["id", "provider", "source_key", "name", "category", "start_date", "end_date"]).where((eb) => eb.or([eb("id", "=", tournament.id), eb.and([eb("provider", "=", tournament.provider), eb("source_key", "=", tournament.sourceKey)])])).executeTakeFirst();
-    if (existing !== undefined && (existing.id !== tournament.id || existing.provider !== tournament.provider || existing.source_key !== tournament.sourceKey || existing.name !== tournament.name || existing.category !== tournament.category || existing.start_date !== (tournament.validFrom ?? null) || existing.end_date !== (tournament.validTo ?? null))) throw new Error(`Immutable tournament identity ${tournament.provider}:${tournament.sourceKey} conflicts with staged data.`);
-    await trx.insertInto("tournaments").values({ id: tournament.id, provider: tournament.provider, source_key: tournament.sourceKey, name: tournament.name, category: tournament.category, start_date: tournament.validFrom ?? null, end_date: tournament.validTo ?? null }).onConflict((conflict) => conflict.column("id").doNothing()).execute();
+    const existing = await trx.selectFrom("tournaments").select(["id", "provider", "source_key", "name", "category", "league_slug", "start_date", "end_date"]).where((eb) => eb.or([eb("id", "=", tournament.id), eb.and([eb("provider", "=", tournament.provider), eb("source_key", "=", tournament.sourceKey)])])).executeTakeFirst();
+    if (existing !== undefined && (existing.id !== tournament.id || existing.provider !== tournament.provider || existing.source_key !== tournament.sourceKey || existing.name !== tournament.name || existing.category !== tournament.category || existing.league_slug !== (tournament.leagueSlug ?? null) || existing.start_date !== (tournament.validFrom ?? null) || existing.end_date !== (tournament.validTo ?? null))) throw new Error(`Immutable tournament identity ${tournament.provider}:${tournament.sourceKey} conflicts with staged data.`);
+    await trx.insertInto("tournaments").values({ id: tournament.id, provider: tournament.provider, source_key: tournament.sourceKey, name: tournament.name, category: tournament.category, league_slug: tournament.leagueSlug ?? null, start_date: tournament.validFrom ?? null, end_date: tournament.validTo ?? null }).onConflict((conflict) => conflict.column("id").doNothing()).execute();
   }
 }
 

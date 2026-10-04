@@ -176,12 +176,12 @@ afterEach(() => {
 
 describe("SQLite query layer", () => {
   it.each([
-    [{ kind: "team", id: ids.t1 }, { kind: "team", id: ids.blg }, 4, 5],
-    [{ kind: "team", id: ids.t1 }, { kind: "region", id: ids.lpl }, 4, 4],
+    [{ kind: "team", id: ids.t1 }, { kind: "team", id: ids.blg }, 4, 15],
+    [{ kind: "team", id: ids.t1 }, { kind: "region", id: ids.lpl }, 4, 15],
     [{ kind: "team", id: ids.t1 }, { kind: "player", id: ids.xiaohu }, 3, 4],
     [{ kind: "player", id: ids.faker }, { kind: "player", id: ids.xiaohu }, 3, 3],
     [{ kind: "player", id: ids.faker }, { kind: "region", id: ids.lpl }, 3, 3],
-    [{ kind: "region", id: ids.lck }, { kind: "region", id: ids.lpl }, 4, 5],
+    [{ kind: "region", id: ids.lck }, { kind: "region", id: ids.lpl }, 4, 15],
   ] as const)("preserves complete pagination and totals for %j versus %j", async (left, right, seriesTotal, gameTotal) => {
     const { executor } = createFixture();
     for (const [a, b] of [[left, right], [right, left]]) {
@@ -240,7 +240,15 @@ describe("SQLite query layer", () => {
     }, snapshotId);
 
     expect(response.rows).toHaveLength(1);
-    expect(response.rows[0]).toMatchObject({ id: ids.leagueSeries, leftName: "T1", rightName: "Gen.G", winner: "left" });
+    expect(response.rows[0]).toMatchObject({ id: ids.leagueSeries, leftName: "T1", rightName: "Gen.G", winner: "left", gameDetailsComplete: false });
+  });
+
+  it("uses scheduled scores for team game totals and flags incomplete game detail", async () => {
+    const { executor } = createFixture();
+    const response = await compareSqlite(executor, query({ kind: "team", id: ids.t1 }, { kind: "team", id: ids.genG }), snapshotId);
+
+    expect(response.gameSummary).toEqual({ wins: 3, losses: 1, total: 4, winRate: 0.75 });
+    expect(response.rows[0]).toMatchObject({ id: ids.leagueSeries, gameDetailsComplete: false });
   });
 
   it("uses series-side team orientation when the right player changes region/team affiliation in a game", async () => {
@@ -272,5 +280,21 @@ describe("SQLite query layer", () => {
     const response = await compareSqlite(executor, query({ kind: "team", id: ids.t1, teamEraId: ids.sktEra }, { kind: "team", id: ids.blg }), snapshotId);
     expect(response.subjects.left).toMatchObject({ id: ids.t1, teamEraId: ids.sktEra, displayName: "SK Telecom T1", eraLabel: "SK Telecom T1" });
     await expect(compareSqlite(executor, query({ kind: "team", id: ids.blg, teamEraId: ids.sktEra }, { kind: "team", id: ids.t1 }), snapshotId)).rejects.toThrow("Team era does not belong");
+  });
+});
+
+
+describe("historical BO2 outcomes", () => {
+  it("counts a finished draw in totals without assigning either side a loss", async () => {
+    const { database, executor } = createFixture();
+    database.prepare("UPDATE series_facts SET best_of=2, side_a_score=1, side_b_score=1, winner_team_id=NULL WHERE id=?").run(ids.leagueSeries);
+    for (const [left, right] of [[ids.t1, ids.genG], [ids.genG, ids.t1]]) {
+      const result = await compareSqlite(executor, { ...query({ kind: "team", id: left! }, { kind: "team", id: right! }), leagues: ["lck"], bestOf: [2] }, snapshotId);
+      expect(result.seriesSummary).toEqual({ wins: 0, losses: 0, draws: 1, total: 1, winRate: 0 });
+      expect(result.rows).toEqual([expect.objectContaining({ winner: "draw", leftScore: 1, rightScore: 1, bestOf: 2 })]);
+    }
+    database.prepare("UPDATE series_facts SET side_a_score=2, side_b_score=0, winner_team_id=? WHERE id=?").run(ids.t1, ids.leagueSeries);
+    const swept = await compareSqlite(executor, { ...query({ kind: "team", id: ids.t1 }, { kind: "team", id: ids.genG }), bestOf: [2] }, snapshotId);
+    expect(swept.seriesSummary).toEqual({ wins: 1, losses: 0, total: 1, winRate: 1 });
   });
 });

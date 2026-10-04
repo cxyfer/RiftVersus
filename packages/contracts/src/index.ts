@@ -7,3 +7,5 @@ export * from "./snapshot.js";
 export * from "./media-rights.js";
 
 export const packageName = "@riftversus/contracts";
+
+export { isCompletedSeriesScore } from "./series-format.js";
