@@ -142,7 +142,7 @@ generated fallback remain. Baseline/runbook record these evidence and limits.
 
 ## Amendment - 2026-10-04 - Approved reviewed Leaguepedia editorial images
 
-Status: user-approved design; release verification pending.
+Status: user-approved design; deployed and independently verified.
 
 The user explicitly approved the reviewed noncommercial esports identification
 policy in docs/media-policy.md. For these reviewed assets only, a structured
@@ -168,3 +168,13 @@ immutable GitHub media Release, separately from data checkpoints and site
 archives. Publication verifies the archive and each bounded file; Leaguepedia
 file pages/revisions remain attribution and rights sources. Re-fetching mutable
 CDN derivatives cannot replace reviewed bytes or relax the image checksum gate.
+
+Release verification: PR 6 CI 37163237620 passed and Publish 37163518698 deployed
+immutable site-37163518698-1 from verified checkpoint 4. Independent hosted
+browser checks confirmed real same-origin T1/Faker images, historical SKT,
+source/rights credits, mobile layout, PNG export and unchanged match facts.
+579 players, 99 canonical teams and 104 historical eras use reviewed retained
+images; 22 players without an exact binding and all regions retain generated
+presentation. Images are static files outside SQLite. The existing export
+request-unit owner now uses 32 KiB following ten passing controlled cold runs;
+SQL schema, logical snapshot and performance gates remain unchanged.

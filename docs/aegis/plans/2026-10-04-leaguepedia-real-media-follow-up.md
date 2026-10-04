@@ -1,7 +1,7 @@
 # Leaguepedia Real Media Follow-Up
 
 Date: 2026-10-04
-Status: reviewed media checkpoint cold-restored and published; Pages verification in progress.
+Status: deployed and independently verified on GitHub Pages.
 Branch: fix/leaguepedia-real-media
 
 ## Actual Failure
@@ -253,3 +253,24 @@ gates passed and T1/LPL results remained correct. Evidence:
 The alternative attribution-tail layout experiment is not part of this change.
 Fresh CI and a normal rebuild must independently verify the new export default
 before the retained images are considered deployed.
+
+PR 6 passed full CI 37163237620 and merged as
+122e8cbdf9db213efc5a54337b5155d89f64c77f. Normal rebuild/deployment
+37163518698 completed successfully, independently restoring checkpoint 4,
+passing acceptance, retaining immutable site-37163518698-1 and passing hosted
+identity/HTTPVFS verification. The ten controlled production-data cold runs
+each read 983,140 bytes in 21 GETs; median ready time was 7,682.265373 ms.
+The SQLite remains 9,850,880 bytes with logical snapshot 310f313e52edab759e32b209d0febf8fb672fe325619fd1fdb74efcf128a4290.
+
+Independent Playwright verification of https://cxyfer.github.io/RiftVersus/
+decoded T1 and Faker same-origin PNGs and checked their exact reviewed SHA-256,
+verified the historical SKT logo and credits/revision/rights statement, applied
+2017 Faker filters with correct participating-team labels, and checked desktop,
+390-pixel mobile layout and an exported PNG's visible pixels. There were no
+page errors. Independently downloaded SQLite matched the served manifest size
+and checksum and confirmed 579 retained players / 22 generated players,
+99 retained canonical teams / 104 retained historical eras and unchanged
+1,066 series / 1,664 games / 16,640 game-player rows. Evidence:
+/tmp/riftversus-real-media-browser/evidence.json plus screenshots/export PNG.
+Images are static presentation/<sha256>.png files, not HTTPVFS payloads.
+The 22 missing or ambiguous source bindings remain explicit inventory gaps.
