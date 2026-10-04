@@ -441,4 +441,32 @@ gh workflow run publish.yml --repo cxyfer/RiftVersus --ref main -f mode=rebuild
 ```
 
 This independently restores the published checkpoint and passes site/browser
-checks before Pages deployment. Hosted verification is still in progress.
+checks before Pages deployment.
+
+### Verified Real-Media Deployment
+
+[Publish 37163518698](https://github.com/cxyfer/RiftVersus/actions/runs/37163518698)
+successfully restored checkpoint 4 and deployed immutable `site-37163518698-1`
+from code `122e8cbdf9db213efc5a54337b5155d89f64c77f`. The public SQLite is
+9,850,880 bytes and the logical snapshot remains
+`sha256:310f313e52edab759e32b209d0febf8fb672fe325619fd1fdb74efcf128a4290`.
+New manifests use 32 KiB HTTPVFS request units: ten controlled cold runs each
+read 983,140 bytes in 21 GETs, with median readiness 7.68 s. Existing byte,
+request and latency gates remain enforced. Archived 16 KiB manifests stay valid.
+
+Images are separate static same-origin `presentation/<sha256>.png` (or their
+verified original format) files, fetched directly by browser image requests.
+SQLite contains owner paths and attribution metadata, not image bytes.
+Coverage: 579 player portraits, 99 canonical team logos and 104 historical-era
+logos; 22 players without an exact reviewed binding retain generated images.
+Regions retain generated presentation. The
+[public credits page](https://cxyfer.github.io/RiftVersus/presentation/image-credits.html)
+records source file pages/revisions and the approved rights basis.
+
+Independent hosted Playwright checks verified T1/Faker PNG checksums, historical
+SKT, readable default routes, historical participant labels, desktop/mobile,
+PNG export, credits and zero page errors. Downloaded SQLite matched its manifest
+and confirmed unchanged match/roster counts. Local evidence is
+`/tmp/riftversus-real-media-browser/evidence.json`; Actions retains hosted
+browser evidence separately. The website is
+https://cxyfer.github.io/RiftVersus/.
