@@ -15,8 +15,8 @@ const scope = { competition: "MSI", seasonYear: 2026, status: "complete", checke
 
 describe("sync health and scope planning", () => {
   it("uses only explicitly mapped historical years without inventing missing or future events", () => {
-    expect(historyRequests(config)).toEqual([
-      { mode: "backfill", competitions: ["Worlds"], years: [2025] },
+    const scopedConfig = { ...config, leaguepedia: { ...config.leaguepedia, mappingCompetitions: ["MSI"] } };
+    expect(historyRequests(scopedConfig)).toEqual([
       { mode: "backfill", competitions: ["MSI"], years: [2019, 2021] },
     ]);
   });

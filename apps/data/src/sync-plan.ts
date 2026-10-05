@@ -3,7 +3,8 @@ import type { SyncConfig as Config } from "@riftversus/sync";
 
 export function historyRequests(config: Config): Extract<SyncRequest, { mode: "backfill" }>[] {
   const cutoff = Math.min(...config.leaguepedia.syncYears);
-  return Object.entries(config.leaguepedia.competitionMap).flatMap(([competition, mapping]) => {
+  const enabled = new Set(config.leaguepedia.mappingCompetitions);
+  return Object.entries(config.leaguepedia.competitionMap).filter(([competition]) => enabled.has(competition)).flatMap(([competition, mapping]) => {
     const years = Object.keys(mapping).map(Number).filter((year) => year < cutoff).sort((a, b) => a - b);
     const requests: Extract<SyncRequest, { mode: "backfill" }>[] = [];
     const batchSize = /^(LCK|LPL|EWC)$/i.test(competition) ? 1 : 20;
