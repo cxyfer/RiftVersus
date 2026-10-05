@@ -1,0 +1,168 @@
+{
+  "reviewedAt": "2026-10-05",
+  "authorization": "User explicitly requested other sources and manual replacement of missing Game 1.",
+  "matchId": "LCK/2026 Season/Rounds 3-4_Week 10_8",
+  "gameNumber": 1,
+  "sourceKey": "manual-vod:tiQQhgeWZ4I:1",
+  "date": "2026-08-01",
+  "blueTeam": "Gen.G",
+  "redTeam": "Dplus Kia",
+  "winner": "Dplus Kia",
+  "bluePlayers": [
+    "Kiin",
+    "Canyon",
+    "Chovy",
+    "Ruler",
+    "Duro"
+  ],
+  "redPlayers": [
+    "Siwoo",
+    "Lucid",
+    "ShowMaker",
+    "Smash",
+    "Career"
+  ],
+  "primarySource": {
+    "url": "https://www.youtube.com/watch?v=tiQQhgeWZ4I",
+    "author": "LCK Global",
+    "title": "GEN vs DK | Match 98 Game 1 | 2026 LCK",
+    "officialVideoLengthSeconds": 2482,
+    "observedGameDuration": "33:06",
+    "observedFinalKills": {
+      "Gen.G": 14,
+      "Dplus Kia": 21
+    },
+    "rosterObservation": "Official live storyboard L3 M166 frame 6 lists all ten starting players; game-specific video L3 M26 frames 7-8 shows the final 0:1 series result."
+  },
+  "corroboration": [
+    {
+      "url": "https://www.inven.co.kr/webzine/news/?news=319106",
+      "finding": "First-hand August 1 Game 1 report states DK won; independently names Lucid, Kiin, Canyon, Chovy, Duro, ShowMaker and Siwoo with the matching Game 1 champions."
+    },
+    {
+      "url": "https://draftlol.ai/es/matches/gen-g-vs-dplus-kia-lck-2026-08-01",
+      "finding": "Ten player names match official video. Ignore inconsistent game summary duration/draft because it contains Game 2 values."
+    }
+  ],
+  "timestampReview": {
+    "value": "2026-08-01T11:11:00Z",
+    "precision": "minute",
+    "basis": "inferred official broadcast start minute, not game-server timestamp",
+    "officialLiveUrl": "https://www.youtube.com/watch?v=QSxitEXHt20",
+    "officialLiveStart": "2026-08-01T07:01:05Z",
+    "storyboardWindowSeconds": [
+      15000,
+      15020
+    ],
+    "finding": "Stream changes from the full ten-player introduction to live Game 1 in this window (11:11:05-11:11:25 UTC). Rounded broadcast start minute is used solely to place the observed game on its verified day; subminute/server start is unknown."
+  },
+  "rejectedEvidence": [
+    {
+      "url": "https://gol.gg/game/stats/80675/page-game/",
+      "reason": "Gen.G WIN heading conflicts with DK player rows and official Game 1 result; draft/stats resemble Game 2. Do not import this record."
+    },
+    {
+      "url": "https://escorenews.com/en/lol/lck-2026/stage-2/gen-g-vs-damwon-655727",
+      "reason": "Win/kills corroborate but listed duration differs from official scoreboard; page retrieval returns a bot challenge. Not used for exact facts."
+    }
+  ],
+  "sourceCaptureChecksums": {
+    "official-vod.html": "500f2d2c2832e2cecfb534777323310403bf4006f87a04cc4e9e70452d9eab60",
+    "official-player.json": "91e534d76e69b2601e48dbc3053c27ecebc4feb06b899f1f21ff37df5343a299",
+    "official-live.html": "80dd596e3239cd06f5023f2d9226a5c1c34a88b1f1fedcf9af4ae6cc429831df",
+    "official-live-player.json": "9b2b0dcc793b0526f92303e552ec9a93b350a54620e2655afcc2512345fa4d10",
+    "game1-end.jpg": "388ff420c8a4d70f7d81267bfd0f8c94cf46a7fbb37ccffbf07f69165dc7fdcc",
+    "live-detail-M166.jpg": "813fa0b19e6d2316e05cda5879e3d97f46715ddaa48c2cac2c27563cdcd2dad7",
+    "live-detail-M167.jpg": "a6274aed18f6d1f33576a712dc899323198b3e8c5e1e9af63f5a3584ddb0d0dc"
+  },
+  "boundary": "Manual fact review only; copyrighted videos/images are not redistributed or added as presentation assets. Leaguepedia original response remains unchanged.",
+  "playerIdentityBindings": {
+    "Lucid": "Lucid (Choi Yong-hyeok)",
+    "Smash": "Smash (Shin Geum-jae)"
+  },
+  "identityEvidence": "Official Game 1 identifies ten participants directly; retained Leaguepedia Dplus Kia player facts/profiles bind display IDs Lucid and Smash to their distinct exact source pages. Do not apply ambiguous short names as global aliases.",
+  "reviewCompletedAt": "2026-10-06",
+  "validation": {
+    "publication": {
+      "status": "published",
+      "version": "leaguepedia-38accd9346f6b1bd328f1680fe58265db17eb3dba438a44e39beb38b1c0e1eda"
+    },
+    "lck2026Series": 188,
+    "lck2026Games": 503,
+    "recoveredPlayerFacts": 10,
+    "manualReviewEnvelopes": 1,
+    "mergedSnapshotId": "sha256:21a8e4aacc35afa7aee229dd9f4d0bcf36f48584658b1bcdb4648bc73b1a491f",
+    "mergedSeries": 7316,
+    "teamComparison": {
+      "seriesSummary": {
+        "wins": 0,
+        "losses": 1,
+        "total": 1,
+        "winRate": 0
+      },
+      "gameSummary": {
+        "wins": 0,
+        "losses": 2,
+        "total": 2,
+        "winRate": 0
+      },
+      "rows": [
+        {
+          "id": "0bae8198-c795-59ac-88a2-00e957448015",
+          "date": "2026-08-01",
+          "event": {
+            "id": "f197aac3-f6a9-579b-8648-aae553279a0c",
+            "name": "LCK 2026 Rounds 3-4",
+            "category": "league"
+          },
+          "bestOf": 3,
+          "leftName": "Gen.G",
+          "rightName": "Dplus Kia",
+          "leftScore": 0,
+          "rightScore": 2,
+          "gameDetailsComplete": true,
+          "winner": "right"
+        }
+      ]
+    },
+    "playerComparison": {
+      "seriesSummary": {
+        "wins": 0,
+        "losses": 1,
+        "total": 1,
+        "winRate": 0
+      },
+      "gameSummary": {
+        "wins": 0,
+        "losses": 2,
+        "total": 2,
+        "winRate": 0
+      },
+      "rows": [
+        {
+          "id": "0bae8198-c795-59ac-88a2-00e957448015",
+          "date": "2026-08-01",
+          "event": {
+            "id": "f197aac3-f6a9-579b-8648-aae553279a0c",
+            "name": "LCK 2026 Rounds 3-4",
+            "category": "league"
+          },
+          "bestOf": 3,
+          "leftName": "Gen.G",
+          "rightName": "Dplus Kia",
+          "leftScore": 0,
+          "rightScore": 2,
+          "gameDetailsComplete": true,
+          "winner": "right"
+        }
+      ]
+    },
+    "database": {
+      "file": "c789d4e1fb42ee25cfeafdbc8c8e5d30d1a1cad5d931093b1b500dd59a17cb67/database.sqlite",
+      "checksum": "c789d4e1fb42ee25cfeafdbc8c8e5d30d1a1cad5d931093b1b500dd59a17cb67",
+      "byteSize": 73908224,
+      "pageSize": 4096,
+      "requestChunkSize": 32768
+    }
+  }
+}

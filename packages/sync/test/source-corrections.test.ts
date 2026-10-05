@@ -1,10 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { parseSourceCorrections, projectSourceRows, sourceScheduleIds } from "../src/providers/leaguepedia/source-corrections.js";
+import { alternativeReviewEvidence, parseSourceCorrections, projectSourceRows, sourceScheduleIds } from "../src/providers/leaguepedia/source-corrections.js";
 
 const proof = { sourceUrl: "https://lol.fandom.com/wiki/Reviewed_Tournament?oldid=123", reviewedNote: "Verified exact match and tournament format." };
 const alias = { ...proof, table: "MatchSchedule", key: "MatchId", value: "schedule-1", field: "MatchId", expected: "schedule-1", replacement: "games-1" };
 
 describe("reviewed source corrections", () => {
+  it("allows explicitly reviewed alternative video evidence only for missing game and roster rows", () => {
+    const row = { GameId: "manual-vod:abcdefghijk:1", MatchId: "m1", Tournament: "LCK", DateTime_UTC: "2026-08-01T11:11:00Z", N_GameInMatch: 1, Team1: "A", Team2: "B", Winner: 2 };
+    const alternative = { ...proof, sourceKind: "reviewed-alternative", sourceUrl: "https://www.youtube.com/watch?v=abcdefghijk", corroboratingUrls: ["https://www.inven.co.kr/webzine/news/?news=123"], table: "ScoreboardGames", key: "GameId", value: row.GameId, row };
+    const rules = parseSourceCorrections([alternative]);
+    const retained = alternativeReviewEvidence(rules, new Set([row.GameId]));
+    expect(retained).toHaveLength(1);
+    expect(retained[0]).toMatchObject({ action: "review", sourceUrl: alternative.sourceUrl, response: { kind: "reviewed-alternative", corrections: rules } });
+    expect(alternativeReviewEvidence(rules, new Set(["other-game"]))).toEqual([]);
+    expect(alternativeReviewEvidence(rules, new Set([row.GameId]))).toEqual(retained);
+    expect(() => parseSourceCorrections([{ ...alternative, sourceKind: undefined }])).toThrow(/reviewed Leaguepedia/);
+    expect(() => parseSourceCorrections([{ ...alternative, table: "Players", key: "OverviewPage" }])).toThrow(/Alternative game corrections/);
+    expect(() => parseSourceCorrections([{ ...alternative, corroboratingUrls: [] }])).toThrow(/corroborating/);
+    expect(() => parseSourceCorrections([{ ...alternative, sourceUrl: "https://www.youtube.com.evil.example/watch?v=abcdefghijk" }])).toThrow(/Alternative/);
+  });
+
   it("maps live request IDs and retained rows consistently without mutating raw evidence", () => {
     const rules = parseSourceCorrections([alias, { ...proof, table: "MatchSchedule", key: "MatchId", value: "schedule-1", field: "BestOf", expected: null, replacement: 5 }]);
     const raw = [{ MatchId: "schedule-1", BestOf: null, Team1Score: 3, Team2Score: 2 }];

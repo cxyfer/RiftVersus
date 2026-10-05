@@ -15,7 +15,7 @@
     "Existing identity UUID owners",
     "Worlds/MSI preservation"
   ],
-  "compatBoundary": "Existing source, publisher and SQLite remain canonical; corrections are checksummed exact-key projections.",
+  "compatBoundary": "Same Leaguepedia automatic provider/publisher; explicitly user-authorized missing game/roster supplements use official video plus corroboration and distinct review evidence; native upstream rows retain precedence.",
   "nonGoals": [
     "Alternate provider",
     "Persistent raw rewrite",

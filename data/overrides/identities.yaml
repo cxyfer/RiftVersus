@@ -2286,3 +2286,185 @@ sourceCorrections:
     reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
       CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
       Cargo rows and preserve any upstream row.
+  - sourceKind: reviewed-alternative
+    sourceUrl: https://www.youtube.com/watch?v=tiQQhgeWZ4I
+    corroboratingUrls: &a1
+      - https://www.inven.co.kr/webzine/news/?news=319106
+      - https://draftlol.ai/es/matches/gen-g-vs-dplus-kia-lck-2026-08-01
+    reviewedNote: User authorized a manual alternative-source supplement. Official LCK Global Game 1 video and full live
+      broadcast identify winner and all ten players; first-hand Korean Inven report corroborates. UTC 11:11 is an
+      inferred official-broadcast start minute, not a precise game-server timestamp; see
+      data/leaguepedia/alternative-game-review.json. Never use scheduled placeholder time or mislabeled Game 2
+      statistics.
+    table: ScoreboardGames
+    key: GameId
+    value: manual-vod:tiQQhgeWZ4I:1
+    row:
+      GameId: manual-vod:tiQQhgeWZ4I:1
+      MatchId: LCK/2026 Season/Rounds 3-4_Week 10_8
+      Tournament: LCK 2026 Rounds 3-4
+      DateTime_UTC: 2026-08-01T11:11:00Z
+      N_GameInMatch: 1
+      Team1: Gen.G
+      Team2: Dplus Kia
+      Winner: 2
+  - sourceKind: reviewed-alternative
+    sourceUrl: https://www.youtube.com/watch?v=tiQQhgeWZ4I
+    corroboratingUrls: *a1
+    reviewedNote: User authorized a manual alternative-source supplement. Official LCK Global Game 1 video and full live
+      broadcast identify winner and all ten players; first-hand Korean Inven report corroborates. UTC 11:11 is an
+      inferred official-broadcast start minute, not a precise game-server timestamp; see
+      data/leaguepedia/alternative-game-review.json. Never use scheduled placeholder time or mislabeled Game 2
+      statistics.
+    table: ScoreboardPlayers
+    key: GameId
+    value: manual-vod:tiQQhgeWZ4I:1
+    row:
+      GameId: manual-vod:tiQQhgeWZ4I:1
+      PlayerName: Kiin
+      Team: Gen.G
+      PlayerWin: No
+  - sourceKind: reviewed-alternative
+    sourceUrl: https://www.youtube.com/watch?v=tiQQhgeWZ4I
+    corroboratingUrls: *a1
+    reviewedNote: User authorized a manual alternative-source supplement. Official LCK Global Game 1 video and full live
+      broadcast identify winner and all ten players; first-hand Korean Inven report corroborates. UTC 11:11 is an
+      inferred official-broadcast start minute, not a precise game-server timestamp; see
+      data/leaguepedia/alternative-game-review.json. Never use scheduled placeholder time or mislabeled Game 2
+      statistics.
+    table: ScoreboardPlayers
+    key: GameId
+    value: manual-vod:tiQQhgeWZ4I:1
+    row:
+      GameId: manual-vod:tiQQhgeWZ4I:1
+      PlayerName: Canyon
+      Team: Gen.G
+      PlayerWin: No
+  - sourceKind: reviewed-alternative
+    sourceUrl: https://www.youtube.com/watch?v=tiQQhgeWZ4I
+    corroboratingUrls: *a1
+    reviewedNote: User authorized a manual alternative-source supplement. Official LCK Global Game 1 video and full live
+      broadcast identify winner and all ten players; first-hand Korean Inven report corroborates. UTC 11:11 is an
+      inferred official-broadcast start minute, not a precise game-server timestamp; see
+      data/leaguepedia/alternative-game-review.json. Never use scheduled placeholder time or mislabeled Game 2
+      statistics.
+    table: ScoreboardPlayers
+    key: GameId
+    value: manual-vod:tiQQhgeWZ4I:1
+    row:
+      GameId: manual-vod:tiQQhgeWZ4I:1
+      PlayerName: Chovy
+      Team: Gen.G
+      PlayerWin: No
+  - sourceKind: reviewed-alternative
+    sourceUrl: https://www.youtube.com/watch?v=tiQQhgeWZ4I
+    corroboratingUrls: *a1
+    reviewedNote: User authorized a manual alternative-source supplement. Official LCK Global Game 1 video and full live
+      broadcast identify winner and all ten players; first-hand Korean Inven report corroborates. UTC 11:11 is an
+      inferred official-broadcast start minute, not a precise game-server timestamp; see
+      data/leaguepedia/alternative-game-review.json. Never use scheduled placeholder time or mislabeled Game 2
+      statistics.
+    table: ScoreboardPlayers
+    key: GameId
+    value: manual-vod:tiQQhgeWZ4I:1
+    row:
+      GameId: manual-vod:tiQQhgeWZ4I:1
+      PlayerName: Ruler
+      Team: Gen.G
+      PlayerWin: No
+  - sourceKind: reviewed-alternative
+    sourceUrl: https://www.youtube.com/watch?v=tiQQhgeWZ4I
+    corroboratingUrls: *a1
+    reviewedNote: User authorized a manual alternative-source supplement. Official LCK Global Game 1 video and full live
+      broadcast identify winner and all ten players; first-hand Korean Inven report corroborates. UTC 11:11 is an
+      inferred official-broadcast start minute, not a precise game-server timestamp; see
+      data/leaguepedia/alternative-game-review.json. Never use scheduled placeholder time or mislabeled Game 2
+      statistics.
+    table: ScoreboardPlayers
+    key: GameId
+    value: manual-vod:tiQQhgeWZ4I:1
+    row:
+      GameId: manual-vod:tiQQhgeWZ4I:1
+      PlayerName: Duro
+      Team: Gen.G
+      PlayerWin: No
+  - sourceKind: reviewed-alternative
+    sourceUrl: https://www.youtube.com/watch?v=tiQQhgeWZ4I
+    corroboratingUrls: *a1
+    reviewedNote: User authorized a manual alternative-source supplement. Official LCK Global Game 1 video and full live
+      broadcast identify winner and all ten players; first-hand Korean Inven report corroborates. UTC 11:11 is an
+      inferred official-broadcast start minute, not a precise game-server timestamp; see
+      data/leaguepedia/alternative-game-review.json. Never use scheduled placeholder time or mislabeled Game 2
+      statistics.
+    table: ScoreboardPlayers
+    key: GameId
+    value: manual-vod:tiQQhgeWZ4I:1
+    row:
+      GameId: manual-vod:tiQQhgeWZ4I:1
+      PlayerName: Siwoo
+      Team: Dplus Kia
+      PlayerWin: Yes
+  - sourceKind: reviewed-alternative
+    sourceUrl: https://www.youtube.com/watch?v=tiQQhgeWZ4I
+    corroboratingUrls: *a1
+    reviewedNote: User authorized a manual alternative-source supplement. Official LCK Global Game 1 video and full live
+      broadcast identify winner and all ten players; first-hand Korean Inven report corroborates. UTC 11:11 is an
+      inferred official-broadcast start minute, not a precise game-server timestamp; see
+      data/leaguepedia/alternative-game-review.json. Never use scheduled placeholder time or mislabeled Game 2
+      statistics.
+    table: ScoreboardPlayers
+    key: GameId
+    value: manual-vod:tiQQhgeWZ4I:1
+    row:
+      GameId: manual-vod:tiQQhgeWZ4I:1
+      PlayerName: Lucid (Choi Yong-hyeok)
+      Team: Dplus Kia
+      PlayerWin: Yes
+  - sourceKind: reviewed-alternative
+    sourceUrl: https://www.youtube.com/watch?v=tiQQhgeWZ4I
+    corroboratingUrls: *a1
+    reviewedNote: User authorized a manual alternative-source supplement. Official LCK Global Game 1 video and full live
+      broadcast identify winner and all ten players; first-hand Korean Inven report corroborates. UTC 11:11 is an
+      inferred official-broadcast start minute, not a precise game-server timestamp; see
+      data/leaguepedia/alternative-game-review.json. Never use scheduled placeholder time or mislabeled Game 2
+      statistics.
+    table: ScoreboardPlayers
+    key: GameId
+    value: manual-vod:tiQQhgeWZ4I:1
+    row:
+      GameId: manual-vod:tiQQhgeWZ4I:1
+      PlayerName: ShowMaker
+      Team: Dplus Kia
+      PlayerWin: Yes
+  - sourceKind: reviewed-alternative
+    sourceUrl: https://www.youtube.com/watch?v=tiQQhgeWZ4I
+    corroboratingUrls: *a1
+    reviewedNote: User authorized a manual alternative-source supplement. Official LCK Global Game 1 video and full live
+      broadcast identify winner and all ten players; first-hand Korean Inven report corroborates. UTC 11:11 is an
+      inferred official-broadcast start minute, not a precise game-server timestamp; see
+      data/leaguepedia/alternative-game-review.json. Never use scheduled placeholder time or mislabeled Game 2
+      statistics.
+    table: ScoreboardPlayers
+    key: GameId
+    value: manual-vod:tiQQhgeWZ4I:1
+    row:
+      GameId: manual-vod:tiQQhgeWZ4I:1
+      PlayerName: Smash (Shin Geum-jae)
+      Team: Dplus Kia
+      PlayerWin: Yes
+  - sourceKind: reviewed-alternative
+    sourceUrl: https://www.youtube.com/watch?v=tiQQhgeWZ4I
+    corroboratingUrls: *a1
+    reviewedNote: User authorized a manual alternative-source supplement. Official LCK Global Game 1 video and full live
+      broadcast identify winner and all ten players; first-hand Korean Inven report corroborates. UTC 11:11 is an
+      inferred official-broadcast start minute, not a precise game-server timestamp; see
+      data/leaguepedia/alternative-game-review.json. Never use scheduled placeholder time or mislabeled Game 2
+      statistics.
+    table: ScoreboardPlayers
+    key: GameId
+    value: manual-vod:tiQQhgeWZ4I:1
+    row:
+      GameId: manual-vod:tiQQhgeWZ4I:1
+      PlayerName: Career
+      Team: Dplus Kia
+      PlayerWin: Yes

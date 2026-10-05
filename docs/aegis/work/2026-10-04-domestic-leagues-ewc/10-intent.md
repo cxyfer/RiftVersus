@@ -19,3 +19,9 @@ primary-source projections with immutable original evidence; preserve incomplete
 details where no source-backed reconstruction is available. This grants source
 research, correction implementation and isolated local import, not a Pages
 production deployment or modification of unrelated edits.
+
+2026-10-06 continuation: user explicitly authorizes other sources and manual
+replacement of the remaining Game 1. Official LCK video and first-hand reporting
+may supply exact game/roster facts via the existing checksummed correction owner.
+Record uncertain time precision, conflicting/rejected sites and separate review
+provenance. Preserve the same automatic provider and production deployment fence.

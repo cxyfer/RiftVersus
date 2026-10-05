@@ -1,6 +1,6 @@
 {
   "schemaVersion": "aegis.schema.v0",
-  "requestedOutcome": "Research and resolve blocked historical LCK/LPL/EWC scopes independently.",
+  "requestedOutcome": "Research other sources and manually replace the remaining LCK 2026 Game 1 gap.",
   "goal": "Import all 32 reviewed mapped annual scopes with primary-source evidence.",
   "successEvidence": [
     "data/leaguepedia/historical-source-closure.json",
@@ -13,7 +13,8 @@
     "data-import"
   ],
   "riskHints": [
-    "Incomplete upstream historical archive"
+    "Contradictory third-party statistics",
+    "Exact game-server time unavailable"
   ],
   "nonGoals": [
     "Production deployment",

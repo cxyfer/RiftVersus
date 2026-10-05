@@ -245,3 +245,37 @@ Retain original checkpoints, snapshots and raw responses. Remove exact source wo
 ### Boundary
 
 This amendment is an advisory Aegis Method Pack record. It does not grant completion authority or replace project-authoritative architecture sources.
+
+## Amendment - 2026-10-06 - Allow explicitly user-authorized official-video manual supplements for exact missing games and rosters.
+
+- Status: amended
+
+### Source Evidence
+
+- User requests other sources and manual completion; official LCK video and first-hand Inven report restore LCK 2026 August 1 Game 1 and ten players. Strict local publication, SQLite team/player comparisons and browser checks pass.
+### Change Summary
+
+Allow explicitly user-authorized official-video manual supplements for exact missing games and rosters.
+
+### Compatibility Boundary
+
+Leaguepedia remains the sole automatic provider. Existing checksummed projection accepts explicit reviewed-alternative video URLs only for missing game/roster rows with corroboration. Manual evidence uses review action, never forged Cargo/query responses. Exact score, identity, slice/date and roster-query constraints remain. Timestamp is explicitly inferred broadcast-minute precision; exact server start unknown.
+
+### Retirement Impact
+
+Native same-series/game-number rows suppress the manual supplement when upstream repairs it. Preserve raw responses, prior snapshots and immutable source objects. No alternate fetcher, scheduled provider, duplicate writer or presentation reuse of copyrighted video/images. Remove exact manual rules after verified native repair.
+
+### Baseline Sync
+
+- Needed: needed
+- Target: docs/aegis/baseline/2026-10-03-riftversus-github-sqlite.md
+- Action: update baseline
+- Reason: Document the explicit user-authorized source exception and time precision while preserving automatic provider, deployment and persistence owners.
+
+### Evidence References
+
+- data/leaguepedia/alternative-game-review.json
+- docs/aegis/work/2026-10-04-domestic-leagues-ewc/90-evidence.md
+### Boundary
+
+This amendment is an advisory Aegis Method Pack record. It does not grant completion authority or replace project-authoritative architecture sources.

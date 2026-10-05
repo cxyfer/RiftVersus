@@ -1,7 +1,7 @@
 import { isCompletedSeriesScore } from "@riftversus/contracts";
 import { LEAGUEPEDIA_CARGO_LIMIT, LeaguepediaApiError, LeaguepediaCargoEnvelopeError } from "./client.js";
 import { decodeCargoExportRows } from "./cargo-export.js";
-import { projectSourceRows, sourceScheduleIds, type SourceCorrection } from "./source-corrections.js";
+import { alternativeReviewEvidence, projectSourceRows, sourceScheduleIds, type SourceCorrection } from "./source-corrections.js";
 import type {
   CargoPage, GamePlayersPageInput, GamesPageInput, LeaguepediaEntity, LeaguepediaGame, LeaguepediaGamePlayer,
   LeaguepediaMedia, LeaguepediaSeries, LeaguepediaSliceEvidence, LeaguepediaSnapshot, LeaguepediaTournament,
@@ -165,6 +165,8 @@ export function parseLeaguepediaRawInput(input: LeaguepediaRawInput, corrections
   const correctedGameRows = projectSourceRows("ScoreboardGames", input.rawEvidence.filter((item) => item.table === "ScoreboardGames").flatMap(strictEvidenceRows), corrections);
   const gameKeys = new Set(correctedGameRows.map((row) => row.GameId));
   const applicableCorrections = corrections.filter((rule) => rule.table !== "ScoreboardPlayers" || gameKeys.has(rule.value));
+  const existingEvidenceIds = new Set(input.rawEvidence.map((item) => item.requestId));
+  input = { ...input, rawEvidence: [...input.rawEvidence, ...alternativeReviewEvidence(applicableCorrections, gameKeys).filter((item) => !existingEvidenceIds.has(item.requestId))] };
   const rows = (table: NonNullable<RawApiEvidence["table"]>): Record<string, unknown>[] => projectSourceRows(table, input.rawEvidence.filter((item) => item.table === table).flatMap(strictEvidenceRows), applicableCorrections);
   const teamRows = rows("Teams");
   const teamRedirectRows = rows("TeamRedirects");

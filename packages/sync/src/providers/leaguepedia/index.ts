@@ -46,6 +46,7 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
       let normalized: ReturnType<typeof normalizeLeaguepediaSnapshot>;
       try {
         snapshot = parseLeaguepediaRawInput(rawInput, options.overrides.sourceCorrections);
+        rawInput = { ...rawInput, rawEvidence: snapshot.rawEvidence };
         validateRawEvidence(snapshot);
         normalized = normalizeLeaguepediaSnapshot(snapshot, options.overrides);
       } catch (error) {
@@ -146,7 +147,10 @@ function validateRawEvidence(snapshot: LeaguepediaSnapshot): void {
     requireHttps(item.sourceUrl);
     const validQuery = item.action === "query" && typeof item.response === "object" && item.response !== null && !Array.isArray(item.response);
     const validCargo = item.action === "cargoexport" && Array.isArray(item.response);
-    if (!validQuery && !validCargo) throw new Error(`Raw evidence ${item.requestId} response is invalid.`);
+    const validReview = item.action === "review" && item.table === undefined && typeof item.response === "object"
+      && item.response !== null && "kind" in item.response && item.response.kind === "reviewed-alternative"
+      && "corrections" in item.response && Array.isArray(item.response.corrections) && item.response.corrections.length > 0;
+    if (!validQuery && !validCargo && !validReview) throw new Error(`Raw evidence ${item.requestId} response is invalid.`);
   }
   const evidenceRevisions = [...new Set(snapshot.rawEvidence.flatMap((item) => item.revisionIds))].sort((a, b) => a - b);
   const declaredRevisions = [...snapshot.revisionIds].sort((a, b) => a - b);

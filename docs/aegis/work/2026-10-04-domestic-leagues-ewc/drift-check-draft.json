@@ -5,11 +5,12 @@
   "baselineRefs": [
     "docs/aegis/baseline/2026-10-03-riftversus-github-sqlite.md"
   ],
-  "scopeStatus": "All 32 mapped annual source scopes accepted locally; upstream exhaustive archive not claimed.",
-  "compatStatus": "Existing owner, raw, UUID, historical label and score contracts preserved.",
+  "scopeStatus": "All 32 mapped annual source scopes accepted locally; LCK 2026 Game 1 restored by an explicit user-authorized official-video supplement.",
+  "compatStatus": "Existing automatic provider, publisher, raw API responses, scores and identity owners preserved; bounded manual game/roster source exception authorized by user.",
   "retirementStatus": "Exact source workarounds retained until verified upstream repair; native game rows prevent duplicates.",
   "newRiskSignals": [
-    "One LCK 2026 Game 1 remains missing; fourteen awarded-score rows share incomplete marker."
+    "Exact game-server start unknown; inferred official-broadcast minute is retained in manual provenance.",
+    "Fourteen awarded-score series retain existing incomplete marker."
   ],
   "decision": "continue"
 }

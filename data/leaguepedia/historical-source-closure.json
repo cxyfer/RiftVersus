@@ -3,15 +3,15 @@
   "provider": "leaguepedia",
   "boundary": "Major-league mapped calendar-year scopes; complete denotes reviewed bounded traversal, not proof that upstream contains every match ever played.",
   "correctionsFile": "data/overrides/identities.yaml",
-  "correctionsFileChecksum": "130c4615e2105d508f4f44e11798e137e6fb62be7761d30782547889cd8eaa13",
+  "correctionsFileChecksum": "sha256:cece3a3e336602cb2a8f8616ab6012305dea89951425edaf31ecf76dfe144911",
   "correctionCounts": {
-    "total": 196,
+    "total": 207,
     "scheduleAliases": 121,
     "missingFormats": 8,
     "historicalTeamLabels": 1,
     "profileAndRedirectSupplements": 3,
-    "gameSupplements": 3,
-    "rosterRows": 60
+    "gameSupplements": 4,
+    "rosterRows": 70
   },
   "acceptedScopes": [
     {
@@ -674,7 +674,8 @@
     "Qiao Gu Reapers (Newbee rename) and QG Reapers (separate team) remain distinct.",
     "Calendar-date conflicts in 2013 brackets retain MatchSchedule dates after exact bracket/teams/score verification.",
     "Successful empty roster queries produce partial coverage; missing declared query scope, contradictory identities, unexpected source values and score conflicts still fail closed.",
-    "No production Pages/site archive publication occurred."
+    "No production Pages/site archive publication occurred.",
+    "User-authorized official-video manual supplement resolves LCK 2026 Game 1; retained as review evidence, not a fabricated Cargo response. Its inferred broadcast timestamp has minute precision; exact game-server start is unknown."
   ],
   "reviewedIdentities": [
     {
@@ -727,7 +728,7 @@
     }
   ],
   "verifiedLocalSnapshot": {
-    "snapshotId": "sha256:5b108aa7772caa7384a6809f6362e9849f795393acd74f4b5202ee43a4d43f2b",
+    "snapshotId": "sha256:21a8e4aacc35afa7aee229dd9f4d0bcf36f48584658b1bcdb4648bc73b1a491f",
     "totalSeries": 7316,
     "entities": 1787,
     "counts": {
@@ -738,27 +739,16 @@
       "ewc": 53
     },
     "database": {
-      "file": "24dfa7c26851ee16c6620d37450f8d224ee323367baa4db263eef36f177bd474/database.sqlite",
-      "checksum": "24dfa7c26851ee16c6620d37450f8d224ee323367baa4db263eef36f177bd474",
-      "byteSize": 73867264,
+      "file": "c789d4e1fb42ee25cfeafdbc8c8e5d30d1a1cad5d931093b1b500dd59a17cb67/database.sqlite",
+      "checksum": "c789d4e1fb42ee25cfeafdbc8c8e5d30d1a1cad5d931093b1b500dd59a17cb67",
+      "byteSize": 73908224,
       "pageSize": 4096,
       "requestChunkSize": 32768
     },
     "completeDomesticYearScopes": 32,
     "scopeBoundary": "All reviewed mapped and bounded source rows accepted locally; not a claim that Leaguepedia contains every official historical match, nor a production deployment.",
     "seriesScoreGameRowDifferences": {
-      "actualMissingDetail": [
-        {
-          "id": "0bae8198-c795-59ac-88a2-00e957448015",
-          "date": "2026-08-01",
-          "tournament": "LCK 2026 Rounds 3-4",
-          "scores": {
-            "a": 0,
-            "b": 2
-          },
-          "gameRows": 1
-        }
-      ],
+      "actualMissingDetail": [],
       "reviewedAwardedStarts": [
         {
           "id": "018b7dc4-f594-57aa-83c1-2c314daf8bf2",
@@ -1050,6 +1040,52 @@
       2
     ],
     "primaryScoreboardFinding": "Game 1 is only a Scoreboard/Season 5 placeholder with notplayed=Game Data not available.; no actual game RPGID or roster. Game 2 has the full scoreboard and RPGID LOLTMNT02_444730.",
-    "decision": "Preserve authoritative series score and incomplete detail; do not convert a placeholder clock or score into actual game/player facts."
+    "decision": "Preserve authoritative series score and incomplete detail; do not convert a placeholder clock or score into actual game/player facts.",
+    "resolution": {
+      "status": "resolved-by-reviewed-alternative",
+      "reviewCompletedAt": "2026-10-06",
+      "reviewFile": "data/leaguepedia/alternative-game-review.json",
+      "gameSourceKey": "manual-vod:tiQQhgeWZ4I:1"
+    }
+  },
+  "initialCorrectionReview": {
+    "reviewedAt": "2026-10-05",
+    "checksum": "130c4615e2105d508f4f44e11798e137e6fb62be7761d30782547889cd8eaa13",
+    "counts": {
+      "total": 207,
+      "scheduleAliases": 121,
+      "missingFormats": 8,
+      "historicalTeamLabels": 1,
+      "profileAndRedirectSupplements": 3,
+      "gameSupplements": 4,
+      "rosterRows": 70
+    },
+    "snapshotId": "sha256:5b108aa7772caa7384a6809f6362e9849f795393acd74f4b5202ee43a4d43f2b"
+  },
+  "alternativeSupplement": {
+    "reviewFile": "data/leaguepedia/alternative-game-review.json",
+    "approvedBy": "Explicit user request for other sources and manual replacement",
+    "sourceKind": "reviewed-alternative",
+    "sourceUrl": "https://www.youtube.com/watch?v=tiQQhgeWZ4I",
+    "corroboratingUrls": [
+      "https://www.inven.co.kr/webzine/news/?news=319106",
+      "https://draftlol.ai/es/matches/gen-g-vs-dplus-kia-lck-2026-08-01"
+    ],
+    "timestampBasis": {
+      "value": "2026-08-01T11:11:00Z",
+      "precision": "minute",
+      "basis": "inferred official broadcast start minute, not game-server timestamp",
+      "officialLiveUrl": "https://www.youtube.com/watch?v=QSxitEXHt20",
+      "officialLiveStart": "2026-08-01T07:01:05Z",
+      "storyboardWindowSeconds": [
+        15000,
+        15020
+      ],
+      "finding": "Stream changes from the full ten-player introduction to live Game 1 in this window (11:11:05-11:11:25 UTC). Rounded broadcast start minute is used solely to place the observed game on its verified day; subminute/server start is unknown."
+    },
+    "publication": {
+      "status": "published",
+      "version": "leaguepedia-38accd9346f6b1bd328f1680fe58265db17eb3dba438a44e39beb38b1c0e1eda"
+    }
   }
 }

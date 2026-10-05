@@ -145,3 +145,18 @@ Local verified coverage now includes all 32 mapped domestic/EWC annual scopes,
 starts, not missing played games. This is local mapped-source publication, not a
 claim of complete official archives or a new deployed Pages/checkpoint baseline.
 Existing Actions, SQLite, checkpoint and source/media ownership remain intact.
+
+## User-authorized manual alternative facts — 2026-10-06
+
+Leaguepedia remains the sole automatic provider. The explicit request for other
+sources/manual completion authorizes an exact missing-game/roster exception in
+the existing correction projection: official LCK video plus first-hand reporting,
+separate manual review provenance, bounded observed-series anchor and native
+precedence. This is recorded by the 2026-10-06 ADR amendment and
+`data/leaguepedia/alternative-game-review.json`; no alternative fetcher or writer.
+
+The LCK 2026 Game 1 gap is resolved locally: 188 series/503 games, all ten players,
+correct team/player 0:2 result. UTC time is explicitly inferred at broadcast-minute
+precision, not server precision. Snapshot now has 7,316 series and 32 annual
+scopes, unchanged Worlds/MSI. Only fourteen awarded-score rows retain the current
+incomplete marker. Deployment/checkpoint owners and production state are intact.

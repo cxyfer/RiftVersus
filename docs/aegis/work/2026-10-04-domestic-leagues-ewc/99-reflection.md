@@ -32,3 +32,16 @@ the current comparison marker also flags them; team totals retain schedule
 scores and player totals retain played roster facts. No broader scoring UI
 redesign or production deployment occurred. The user's unrelated .gitignore edit
 is preserved. Existing checkpoints and Worlds/MSI records were not deleted.
+
+## Authorized alternative review — 2026-10-06
+
+The remaining LCK 2026 Game 1 winner and ten-player roster are now recovered from
+official video and first-hand reporting. This supersedes the prior unresolved
+statement at the observed-game/roster boundary. Exact server start remains unknown;
+only inferred broadcast-minute precision is recorded. Official video is preferred
+over conflicting third-party labels or mixed Game 2 summaries. This is an explicit
+user-approved, exact-key manual exception, not a scheduled alternate provider.
+One retained review envelope documents provenance without forging upstream API
+responses. Existing publication, scope, identity and native-source recovery owners
+remain intact. Remove the temporary manual supplement after proven native repair.
+No global name alias, unverified stat, production deployment or data deletion.

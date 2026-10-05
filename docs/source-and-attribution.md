@@ -192,3 +192,27 @@ Awarded initial wins are not played games. Final team scores remain authoritativ
 while player comparisons contain only observed game/roster facts. The existing
 incomplete-detail marker also covers awarded-score versus played-row differences;
 it does not imply every such difference is a missing played game.
+
+## Explicitly reviewed alternative game facts
+
+The user's explicit request to search other sources and manually replace a missing
+game authorizes a bounded exception to the Leaguepedia-only fact policy. Existing
+source corrections may use sourceKind=reviewed-alternative only for absent game
+and roster rows, with a reviewed official YouTube video and corroborating HTTPS
+sources. No automatic alternate provider, API or scheduled fallback is added.
+
+The existing projection keeps the native game/roster precedence and requires the
+same observed-series anchor, date bounds, scores, exact player identities and
+bounded roster queries. A separate review evidence action retains the manual
+rules and URLs with content-derived identity inside the published raw object;
+it never pretends the supplemental row was returned by Cargo/MediaWiki. Original
+responses remain unchanged and the overrides checksum binds the exact facts.
+
+For [the reviewed LCK 2026 Game 1](../data/leaguepedia/alternative-game-review.json),
+only winner, sides, game number and explicit participants are imported. Time is
+an inferred official-broadcast minute, not a precise game-server timestamp; this
+limitation stays in the manual provenance. Current public comparisons expose the
+verified calendar day. Complete game detail refers to observed game/roster
+coverage, not a guarantee of precise server timestamps. Conflicting third-party
+statistics are rejected. Video/images stay local evidence and are not reused as
+presentation assets. Retire the supplement after verified native source repair.

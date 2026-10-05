@@ -84,3 +84,21 @@ ADR-0001 and SQLite baseline sync record the executed boundary. Exact counts,
 primary revision evidence and verification are in the work record and
 `data/leaguepedia/historical-source-closure.json`. Later commit/push authorization
 supersedes the initial Git scope fence; unrelated .gitignore stays excluded.
+
+## User-authorized alternative review — 2026-10-05
+
+The user explicitly requests other sources and manual replacement of the remaining
+Game 1. This supersedes the sole-Leaguepedia restriction for an exact reviewed
+missing game/roster supplement, not for an automatic alternate provider. Official
+LCK Global video and first-hand Inven reporting establish the game winner and
+explicit participants. Keep the existing provider projection/publisher; permit
+reviewed official-video URLs only for game/roster rows with corroborating sources.
+Retain manual evidence with its own review action and override checksum, never
+as a fabricated Cargo response. Native upstream rows continue to take precedence.
+
+Change Necessity: code-change; the source URL gate currently rejects authorized
+alternative facts. Minimality: sufficient repair at the existing correction owner,
+no alternate fetcher/provider or schema. TDD Route: off; focused regression tests
+cover restricted tables/URLs, immutable manual review retention, scope isolation,
+replay idempotence, native repair and actual strict import. Broadcast time is
+reconstructed at minute precision and declared as inferred, not server timestamp.

@@ -1262,6 +1262,28 @@ describe("Leaguepedia fetching", () => {
     expect(() => parseLeaguepediaRawInput(input, reviewed.sourceCorrections)).toThrow(/scope does not cover/);
   });
 
+  it("retains alternative manual provenance separately and replays it without changing Cargo responses", async () => {
+    const input = await rawFixture();
+    const games = input.rawEvidence.find((item) => item.table === "ScoreboardGames")!;
+    const row = decodeCargoExportRows("ScoreboardGames", games.response)[1]!;
+    games.response = (games.response as Record<string, unknown>[]).filter((game) => game.GameId !== row.GameId);
+    const original = JSON.stringify(input);
+    const reviewed = await overrides();
+    reviewed.sourceCorrections = [{ table: "ScoreboardGames", key: "GameId", value: row.GameId as string, row,
+      sourceKind: "reviewed-alternative", sourceUrl: "https://www.youtube.com/watch?v=abcdefghijk",
+      corroboratingUrls: ["https://www.inven.co.kr/webzine/news/?news=123"], reviewedNote: "Official game-specific video and independent report identify winner and participants." }];
+    const snapshot = parseLeaguepediaRawInput(input, reviewed.sourceCorrections);
+    expect(snapshot.games).toHaveLength(5);
+    expect(snapshot.rawEvidence.filter((item) => item.action === "review")).toHaveLength(1);
+    const replay = parseLeaguepediaRawInput({ ...input, rawEvidence: snapshot.rawEvidence }, reviewed.sourceCorrections);
+    expect(replay.rawEvidence).toEqual(snapshot.rawEvidence);
+    expect(JSON.stringify(input)).toBe(original);
+    const batch = await createLeaguepediaProvider({ loadRawInput: async () => input, overrides: reviewed }).stage({ mode: "sync-once" });
+    const retained = JSON.parse(new TextDecoder().decode(batch.source.bytes));
+    expect(retained.input.rawEvidence.filter((item: { action: string }) => item.action === "review")).toHaveLength(1);
+    expect(batch.facts.games).toHaveLength(5);
+  });
+
   it("accepts shared fact evidence whose scope includes extra IDs from another slice", async () => {
     const scheduleShared = shareFactEvidenceAcrossSlices(await twoCompleteSlicesInput(), "MatchSchedule");
     const fullyShared = shareFactEvidenceAcrossSlices(scheduleShared, "ScoreboardPlayers");

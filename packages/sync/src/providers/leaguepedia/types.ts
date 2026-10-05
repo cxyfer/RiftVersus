@@ -19,7 +19,7 @@ export interface LeaguepediaClientOptions {
 
 export interface RawApiEvidence {
   requestId: string;
-  action: "query" | "cargoexport";
+  action: "query" | "cargoexport" | "review";
   table?: LeaguepediaCargoTable;
   offset?: number;
   continuation?: Readonly<Record<string, string>>;

@@ -147,3 +147,66 @@ URLs, revision IDs, checksum provenance and exact reviewed facts for repeat impo
 - Source: data/leaguepedia/historical-source-closure.json
 - Summary: 32 mapped annual scopes accepted; 7,316 merged series; reviewed primary sources; SQLite and browser verification recorded in 90-evidence.md.
 - Verifier: Strict Leaguepedia publication, verifyPublicSnapshot, real SQLite comparisons, Playwright and repository tests
+
+## User-authorized alternative Game 1 review — 2026-10-06
+
+The user explicitly requested searching other sources and manually filling the
+remaining gap. This supersedes the earlier no-alternate-facts restriction for
+this reviewed missing game, while preserving the single automatic provider.
+[Alternative review](../../../../data/leaguepedia/alternative-game-review.json)
+records the exact observed facts, citations, rejected alternatives and validation.
+
+The [official LCK Global Game 1 video](https://www.youtube.com/watch?v=tiQQhgeWZ4I)
+and [full official broadcast](https://www.youtube.com/watch?v=QSxitEXHt20)
+identify Gen.G on blue, Dplus Kia on red, and all ten participants. The official
+postgame scoreboard shows DK wins Game 1 (series 0:1), 14:21 kills and 33:06 game
+length. [First-hand Inven report](https://www.inven.co.kr/webzine/news/?news=319106)
+independently confirms that game result and named participants/champions.
+Draftlol roster names corroborate, but its mixed Game 2 summaries are rejected.
+Games of Legends has contradictory team labels and Game 2-like statistics and
+is rejected. No unverified KDA, draft or duration statistics enter match facts.
+
+Source key is manual-vod:tiQQhgeWZ4I:1, separate from native Cargo or official
+RPGIDs. Ten explicit players are Kiin, Canyon, Chovy, Ruler, Duro versus Siwoo,
+Lucid, ShowMaker, Smash, Career. The latter Lucid/Smash identities bind to their
+full exact Dplus source pages, never ambiguous global short-name aliases.
+
+Time precision is bounded: official full-stream start is 07:01:05 UTC; the
+15000-15020-second video window transitions from player introduction to Game 1.
+11:11 UTC is an inferred broadcast minute, not a precise game-server timestamp.
+The raw manual review and committed record retain this uncertainty. Website
+comparison dates stay August 1; no precision upgrade is claimed.
+
+The existing projection accepts explicit reviewed-alternative video URLs only
+for missing game/roster rows, with corroborating HTTPS sources. Manual evidence
+has its own review action and content-derived request ID, and is retained inside
+the source object plus override checksum provenance. It is not an API response.
+The original Cargo responses remain untouched. Native same-series/game-number
+rows suppress the supplement after source repair; irrelevant games have no manual
+review. Exact score, date bounds, identity and declared roster-query gates remain.
+
+Strict local publication passed: LCK 2026 188 series, 503 games, ten recovered
+player facts, one retained manual review. Complete merged SQLite has 7,316 series
+and all 32 annual scopes; old Worlds/MSI and prior domestic scopes are preserved.
+Snapshot: sha256:21a8e4aacc35afa7aee229dd9f4d0bcf36f48584658b1bcdb4648bc73b1a491f.
+Gen.G/Dplus Kia and Chovy/ShowMaker both have one series, two games, losses 0:2,
+and gameDetailsComplete=true on August 1. Ten legacy team queries and the prior
+LCK 2023 restored-game player query pass. Nine browser comparisons, including
+both repaired team/player comparisons and mobile width, pass.
+
+Fresh checks: sync 210, data 161, root unit 68; typecheck, consumer build, lint,
+real PostgreSQL publication, verifyPublicSnapshot and actual SQLite queries.
+The prior unrelated domain/web suites remain recorded above; no UI/schema change.
+Local artifacts: /tmp/riftversus-alternative-game1/ (source captures, publication,
+export, merged snapshot, query and browser evidence). Original snapshots remain.
+Copyrighted video/images are evidence retained locally, not redistributed assets.
+No production Pages deployment or durable GitHub data checkpoint is claimed.
+The user's existing commit/push authorization applies; .gitignore stays excluded.
+
+## EvidenceBundleDraft
+
+- Artifact key: alternative-game-review
+- Type: manual-source-review-and-local-publication
+- Source: data/leaguepedia/alternative-game-review.json
+- Summary: Official-video alternative restores LCK 2026 Game 1 and ten players; actual publication, SQLite and nine browser comparisons pass. Timestamp is inferred broadcast-minute precision.
+- Verifier: Primary official video observations, first-hand report, sync/data/unit tests, strict publication, SQLite and Playwright
