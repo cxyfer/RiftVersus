@@ -83,3 +83,10 @@ Entries are workspace records, not authoritative runtime decisions.
 | 2026-10-04 | work | docs/aegis/work/2026-10-04-domestic-leagues-ewc/99-reflection.md | Domestic leagues and EWC execution reflection |
 | 2026-10-04 | plan | docs/aegis/plans/2026-10-04-domestic-leagues-ewc.md | LCK, LPL and EWC historical coverage |
 | 2026-10-04 | plan | docs/aegis/plans/2026-10-04-leaguepedia-real-media-follow-up.md | Leaguepedia real media follow-up |
+| 2026-10-05 | artifact | data/leaguepedia/historical-source-closure.json | Reviewed historical source closure and local snapshot audit |
+| 2026-10-05 | artifact | docs/aegis/work/2026-10-04-domestic-leagues-ewc/task-intent-draft.json | 2026-10-04-domestic-leagues-ewc task-intent-draft |
+| 2026-10-05 | artifact | docs/aegis/work/2026-10-04-domestic-leagues-ewc/impact-statement-draft.json | 2026-10-04-domestic-leagues-ewc impact-statement-draft |
+| 2026-10-05 | artifact | docs/aegis/work/2026-10-04-domestic-leagues-ewc/drift-check-draft.json | 2026-10-04-domestic-leagues-ewc drift-check-draft |
+| 2026-10-05 | artifact | docs/aegis/work/2026-10-04-domestic-leagues-ewc/gate-input-pack.json | 2026-10-04-domestic-leagues-ewc gate input pack |
+| 2026-10-05 | work | docs/aegis/work/2026-10-04-domestic-leagues-ewc/proof-bundle.md | 2026-10-04-domestic-leagues-ewc proof bundle |
+| 2026-10-05 | artifact | docs/aegis/work/2026-10-04-domestic-leagues-ewc/evidence-bundle-draft-historical-source-closure.json | 2026-10-04-domestic-leagues-ewc evidence historical-source-closure |

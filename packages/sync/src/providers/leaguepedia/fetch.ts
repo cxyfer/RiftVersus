@@ -1,6 +1,7 @@
 import { isCompletedSeriesScore } from "@riftversus/contracts";
 import { LEAGUEPEDIA_CARGO_LIMIT, LeaguepediaApiError, LeaguepediaCargoEnvelopeError } from "./client.js";
 import { decodeCargoExportRows } from "./cargo-export.js";
+import { projectSourceRows, sourceScheduleIds, type SourceCorrection } from "./source-corrections.js";
 import type {
   CargoPage, GamePlayersPageInput, GamesPageInput, LeaguepediaEntity, LeaguepediaGame, LeaguepediaGamePlayer,
   LeaguepediaMedia, LeaguepediaSeries, LeaguepediaSliceEvidence, LeaguepediaSnapshot, LeaguepediaTournament,
@@ -59,7 +60,7 @@ export class LeaguepediaSnapshotError extends Error {
   }
 }
 
-export async function fetchLeaguepediaRawInput(client: LeaguepediaReadClient, request: SnapshotRequest): Promise<LeaguepediaRawInput> {
+export async function fetchLeaguepediaRawInput(client: LeaguepediaReadClient, request: SnapshotRequest, corrections: readonly SourceCorrection[] = []): Promise<LeaguepediaRawInput> {
   if (request.slices.length === 0 || request.slices.length > 100) throw new Error("Leaguepedia snapshot requires between 1 and 100 bounded slices.");
   const budget = new SnapshotBudget(request.resourceLimits, request.sourceUrl);
   const slices = request.slices.map((slice) => { const sourceCompetition = slice.sourceCompetition ?? slice.competition; return { ...slice, sourceCompetition, sliceId: stableSliceId({ ...slice, sourceCompetition }) }; });
@@ -73,26 +74,34 @@ export async function fetchLeaguepediaRawInput(client: LeaguepediaReadClient, re
   ]);
   const rawEvidence: RawApiEvidence[] = [teamPages, teamRedirectPages, playerPages, playerRedirectPages, tournamentPages, ...slicePages.map(({ pages }) => pages)].flatMap((page) => page.rawEvidence);
   try {
-  const gameRows = uniqueRows(slicePages.flatMap(({ pages }) => pages.rows), "GameId");
-  const liveTeamSourceKeys = referencedTeamSourceKeys(teamPages.rows, teamRedirectPages.rows, gameRows.flatMap((row) => [
+  const gameRows = uniqueRows(projectSourceRows("ScoreboardGames", slicePages.flatMap(({ pages }) => pages.rows), corrections), "GameId");
+  const liveTeams = projectSourceRows("Teams", teamPages.rows, corrections);
+  const liveTeamRedirects = projectSourceRows("TeamRedirects", teamRedirectPages.rows, corrections);
+  const livePlayers = projectSourceRows("Players", playerPages.rows, corrections);
+  const liveTeamSourceKeys = referencedTeamSourceKeys(liveTeams, liveTeamRedirects, gameRows.flatMap((row) => [
     requiredString(row.Team1, "ScoreboardGames Team1"),
     requiredString(row.Team2, "ScoreboardGames Team2"),
   ]), "Game team");
   const games = gameRows.map((row, index) => parseGame(row, index, liveTeamSourceKeys));
   const sliceIdsByMatch = new Map<string, Set<string>>();
-  for (const { slice, pages } of slicePages) for (const row of pages.rows) {
+  for (const { slice, pages } of slicePages) for (const row of projectSourceRows("ScoreboardGames", pages.rows, corrections)) {
     const matchId = requiredString(row.MatchId, "ScoreboardGames MatchId");
     sliceIdsByMatch.set(matchId, new Set([...(sliceIdsByMatch.get(matchId) ?? []), slice.sliceId]));
   }
   const schedulePagesByChunk = await mapLimit(chunks(uniqueStrings(games.map((game) => game.seriesKey)), 100), 4, async (matchIds) => {
     const sliceIds = uniqueStrings(matchIds.flatMap((matchId) => [...(sliceIdsByMatch.get(matchId) ?? [])]));
-    return fetchAllCargoPages(async (offset) => withScope(await client.fetchMatchSchedulesPage({ offset, matchIds }), { sliceIds, matchIds }), 200, 100_000, (page) => budget.consume(page.rawEvidence, page.rows.length));
+    return fetchAllCargoPages(async (offset) => withScope(await client.fetchMatchSchedulesPage({ offset, matchIds: sourceScheduleIds(matchIds, corrections) }), { sliceIds, matchIds }), 200, 100_000, (page) => budget.consume(page.rawEvidence, page.rows.length));
   });
   rawEvidence.push(...schedulePagesByChunk.flatMap((page) => page.rawEvidence));
   const directTeamKeys = new Set(liveTeamSourceKeys.values());
-  const directTeams = teamPages.rows.filter((row) => directTeamKeys.has(requiredString(row.OverviewPage, "Teams OverviewPage")));
-  const renameSelection = selectRelevantTeamRenameRows(teamPages.rows, teamRedirectPages.rows, directTeamKeys);
-  const reviewedPageTitles = reviewedPagesForTeams(renameSelection.rows, budget.maxReviewedPages);
+  const directTeams = liveTeams.filter((row) => directTeamKeys.has(requiredString(row.OverviewPage, "Teams OverviewPage")));
+  const renameSelection = selectRelevantTeamRenameRows(liveTeams, liveTeamRedirects, directTeamKeys);
+  const reviewedTeamRows = renameSelection.rows.map((row) => {
+    const supplement = corrections.find((rule) => rule.table === "Teams" && rule.row && rule.value === row.OverviewPage
+      && !teamPages.rows.some((original) => original.OverviewPage === rule.value));
+    return supplement ? { ...row, OverviewPage: decodeURIComponent(new URL(supplement.sourceUrl).pathname.slice("/wiki/".length)).replaceAll("_", " ") } : row;
+  });
+  const reviewedPageTitles = reviewedPagesForTeams(reviewedTeamRows, budget.maxReviewedPages);
   const reviewedPageBatches = await mapLimit(chunks(reviewedPageTitles, 50), 4, async (titles) => {
     const result = await client.fetchKnownPagesWithEvidence(titles);
     for (const item of result.rawEvidence) budget.consume(item, 0);
@@ -101,7 +110,7 @@ export async function fetchLeaguepediaRawInput(client: LeaguepediaReadClient, re
   });
   rawEvidence.push(...reviewedPageBatches.flat());
   const sliceIdsByGame = new Map<string, Set<string>>();
-  for (const { slice, pages } of slicePages) for (const row of pages.rows) {
+  for (const { slice, pages } of slicePages) for (const row of projectSourceRows("ScoreboardGames", pages.rows, corrections)) {
     const gameId = requiredString(row.GameId, "ScoreboardGames GameId");
     sliceIdsByGame.set(gameId, new Set([...(sliceIdsByGame.get(gameId) ?? []), slice.sliceId]));
   }
@@ -110,9 +119,10 @@ export async function fetchLeaguepediaRawInput(client: LeaguepediaReadClient, re
     return fetchAllCargoPages(async (offset) => withScope(await client.fetchGamePlayersPage({ offset, gameIds }), { sliceIds, gameIds }), 200, 100_000, (page) => budget.consume(page.rawEvidence, page.rows.length));
   });
   rawEvidence.push(...playerPagesByChunk.flatMap((page) => page.rawEvidence));
-  const playerFactRows = playerPagesByChunk.flatMap((page) => page.rows);
-  const referencedPlayerKeys = new Set(referencedPlayerSourceKeys(playerPages.rows, playerRedirectPages.rows, playerFactRows).values());
-  const referencedPlayers = playerPages.rows.filter((row) => {
+  const gameKeys = new Set(games.map((game) => game.sourceKey));
+  const playerFactRows = projectSourceRows("ScoreboardPlayers", playerPagesByChunk.flatMap((page) => page.rows), corrections.filter((rule) => rule.table !== "ScoreboardPlayers" || gameKeys.has(rule.value)));
+  const referencedPlayerKeys = new Set(referencedPlayerSourceKeys(livePlayers, playerRedirectPages.rows, playerFactRows).values());
+  const referencedPlayers = livePlayers.filter((row) => {
     const sourceKey = stringValue(row.OverviewPage) ?? stringValue(row.ID);
     return sourceKey !== null && referencedPlayerKeys.has(sourceKey);
   });
@@ -148,10 +158,14 @@ export async function fetchLeaguepediaRawInput(client: LeaguepediaReadClient, re
 export async function fetchLeaguepediaSnapshot(client: LeaguepediaReadClient, request: SnapshotRequest): Promise<LeaguepediaSnapshot> { return parseLeaguepediaRawInput(await fetchLeaguepediaRawInput(client, request)); }
 
 /** Deterministic replay parser. This is the only path from retained API envelopes to provider facts. */
-export function parseLeaguepediaRawInput(input: LeaguepediaRawInput): LeaguepediaSnapshot {
+export function parseLeaguepediaRawInput(input: LeaguepediaRawInput, corrections: readonly SourceCorrection[] = []): LeaguepediaSnapshot {
   validateInputProvenance(input);
   validateEvidenceScopes(input);
-  const rows = (table: RawApiEvidence["table"]): Record<string, unknown>[] => input.rawEvidence.filter((item) => item.table === table).flatMap(strictEvidenceRows);
+  const evidenceRows = (item: RawApiEvidence): Record<string, unknown>[] => item.table === undefined ? strictEvidenceRows(item) : projectSourceRows(item.table, strictEvidenceRows(item), corrections.filter((rule) => rule.row === undefined));
+  const correctedGameRows = projectSourceRows("ScoreboardGames", input.rawEvidence.filter((item) => item.table === "ScoreboardGames").flatMap(strictEvidenceRows), corrections);
+  const gameKeys = new Set(correctedGameRows.map((row) => row.GameId));
+  const applicableCorrections = corrections.filter((rule) => rule.table !== "ScoreboardPlayers" || gameKeys.has(rule.value));
+  const rows = (table: NonNullable<RawApiEvidence["table"]>): Record<string, unknown>[] => projectSourceRows(table, input.rawEvidence.filter((item) => item.table === table).flatMap(strictEvidenceRows), applicableCorrections);
   const teamRows = rows("Teams");
   const teamRedirectRows = rows("TeamRedirects");
   const playerRows = rows("Players");
@@ -209,16 +223,17 @@ export function parseLeaguepediaRawInput(input: LeaguepediaRawInput): Leaguepedi
     const gameEvidence = input.rawEvidence.filter((item) => item.table === "ScoreboardGames" && item.scope?.sliceIds?.includes(sliceId));
     assertSliceScope(gameEvidence, { sliceId, competition: sourceCompetition, seasonYear, from, to });
     for (const item of gameEvidence) for (const row of strictEvidenceRows(item)) validateGameRowScope(row, { sourceCompetition, from, to }, item);
-    const sliceGameRows = gameEvidence.flatMap(strictEvidenceRows);
+    const sliceGameRows = projectSourceRows("ScoreboardGames", gameEvidence.flatMap(strictEvidenceRows), applicableCorrections);
+    for (const row of sliceGameRows) validateGameRowScope(row, { sourceCompetition, from, to }, gameEvidence[0]!);
     const sliceGames = uniqueRows(sliceGameRows, "GameId").map((row, index) => parseGame(row, index, teamSourceKeys));
     const gameSourceKeys = sliceGames.map((game) => game.sourceKey);
     const sliceMatchIds = new Set(sliceGames.map((game) => game.seriesKey));
     const scheduleEvidence = input.rawEvidence.filter((item) => item.table === "MatchSchedule" && item.scope?.sliceIds?.includes(sliceId));
     for (const item of scheduleEvidence) {
       const scopedMatchIds = new Set(item.scope?.matchIds ?? []);
-      if (scopedMatchIds.size === 0 || strictEvidenceRows(item).some((row) => !scopedMatchIds.has(requiredString(row.MatchId, "MatchSchedule MatchId")))) throw new LeaguepediaSnapshotError(`Retained schedule evidence ${item.requestId} conflicts with its match scope.`, [item], item.sourceUrl);
+      if (scopedMatchIds.size === 0 || evidenceRows(item).some((row) => !scopedMatchIds.has(requiredString(row.MatchId, "MatchSchedule MatchId")))) throw new LeaguepediaSnapshotError(`Retained schedule evidence ${item.requestId} conflicts with its match scope.`, [item], item.sourceUrl);
     }
-    assertEvidenceScopeCoverage(scheduleEvidence, "matchIds", "MatchId", sliceMatchIds, "MatchSchedule", "match IDs", sliceId, input);
+    assertEvidenceScopeCoverage(scheduleEvidence, "matchIds", "MatchId", sliceMatchIds, "MatchSchedule", "match IDs", sliceId, input, evidenceRows);
     const scheduleGroups = new Map<string, RawApiEvidence[]>();
     for (const item of scheduleEvidence) { const key = canonicalJson(item.scope?.matchIds ?? []); scheduleGroups.set(key, [...(scheduleGroups.get(key) ?? []), item]); }
     const scheduleTraversal = sliceMatchIds.size === 0 ? { requestedPages: 0, visitedPages: 0, complete: true } : scheduleGroups.size === 0 ? traversalFor([]) : combineEvidence([...scheduleGroups.values()].map(traversalFor));
@@ -773,6 +788,7 @@ function assertEvidenceScopeCoverage(
   idLabel: "match IDs" | "game IDs",
   sliceId: string,
   input: LeaguepediaRawInput,
+  readRows: (item: RawApiEvidence) => Record<string, unknown>[] = strictEvidenceRows,
 ): void {
   const required = [...requiredIds];
   const declaredIds = new Set(evidence.flatMap((item) => item.scope?.[scopeKey] ?? []));
@@ -785,8 +801,10 @@ function assertEvidenceScopeCoverage(
       input.sourceUrl,
     );
   }
-  const observedIds = new Set(evidence.flatMap(strictEvidenceRows).map((row) => requiredString(row[rowKey], `${table} ${rowKey}`)));
-  const missingObservedIds = required.filter((id) => !observedIds.has(id));
+  const observedIds = new Set(evidence.flatMap(readRows).map((row) => requiredString(row[rowKey], `${table} ${rowKey}`)));
+  // 真正空 roster 交給 normalization 標示 partial；出現在錯誤 slice 的資料仍拒絕。
+  const allObservedIds = table === "ScoreboardPlayers" ? new Set(input.rawEvidence.filter((item) => item.table === table).flatMap(readRows).map((row) => requiredString(row[rowKey], `${table} ${rowKey}`))) : null;
+  const missingObservedIds = required.filter((id) => !observedIds.has(id) && (allObservedIds === null || allObservedIds.has(id)));
   if (missingObservedIds.length > 0) {
     const sample = missingObservedIds.slice(0, 3).join(", ");
     throw new LeaguepediaSnapshotError(

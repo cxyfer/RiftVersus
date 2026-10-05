@@ -128,3 +128,20 @@ promoted to a private checkpoint or GitHub Pages. No production state changed.
   found 66 candidate images, all rights-blocked, and no retained media. Real
   media discovery is implemented; publishing these assets awaits source rights
   metadata. Hosted selector/summary image consistency, PNG and mobile passed.
+
+## Source closure update — 2026-10-05
+
+The existing Leaguepedia projection owns exact reviewed source corrections,
+loaded from checksummed identities overrides. Immutable raw responses remain
+unchanged; live reference queries and replay use the same corrections. Missing
+formats and exact ID aliases are primary-source backed; source game/roster rows
+require bounded observed-series anchors. Native rows retain precedence and
+unexpected changes fail closed. See the 2026-10-05 ADR-0001 amendment and
+[closure evidence](../work/2026-10-04-domestic-leagues-ewc/90-evidence.md).
+
+Local verified coverage now includes all 32 mapped domestic/EWC annual scopes,
+7,316 merged series: LCK 2,570, LPL 3,627, EWC 53, Worlds 686, MSI 380. One LCK
+2026 game detail remains missing; fourteen LPL score differences are awarded
+starts, not missing played games. This is local mapped-source publication, not a
+claim of complete official archives or a new deployed Pages/checkpoint baseline.
+Existing Actions, SQLite, checkpoint and source/media ownership remain intact.

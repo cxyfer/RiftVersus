@@ -23,6 +23,7 @@ import {
   type RawApiEvidence,
 } from "../src/providers/leaguepedia/index.js";
 import { RetainableStageError } from "../src/types.js";
+import { decodeCargoExportRows } from "../src/providers/leaguepedia/cargo-export.js";
 
 const root = fileURLToPath(new URL("../../..", import.meta.url));
 const fixturePath = `${root}/data/fixtures/leaguepedia-small.json`;
@@ -1176,8 +1177,89 @@ describe("Leaguepedia fetching", () => {
 
   it("fails closed when widened ScoreboardPlayers declarations hide missing slice response rows", async () => {
     const input = swapFactSliceScopesWithWidenedIds(await twoCompleteSlicesInput(), "ScoreboardPlayers");
-
     expect(() => parseLeaguepediaRawInput(input)).toThrow(/ScoreboardPlayers.*response.*cover.*game IDs/i);
+  });
+
+  it("retains complete rosters and reports partial coverage for successfully queried empty rosters", async () => {
+    const input = await rawFixture();
+    const gameId = (input.rawEvidence.find((item) => item.table === "ScoreboardPlayers")!.response as Record<string, unknown>[])[0]!.GameId;
+    for (const item of input.rawEvidence.filter((item) => item.table === "ScoreboardPlayers")) {
+      item.response = (item.response as Record<string, unknown>[]).filter((row) => row.GameId !== gameId);
+    }
+    const parsed = parseLeaguepediaRawInput(input);
+    const normalized = normalizeLeaguepediaSnapshot(parsed, await overrides());
+    expect(normalized.rosterIncompleteGameKeys).toEqual([gameId]);
+    expect(normalized.facts.gamePlayers!.length).toBeGreaterThan(0);
+    const batch = await createLeaguepediaProvider({ loadRawInput: async () => input, overrides: await overrides() }).stage({ mode: "sync-once" });
+    expect(batch.coverage.every((scope) => scope.status === "partial")).toBe(true);
+  });
+
+  it("replays reviewed schedule aliases with the original game scope and immutable response", async () => {
+    const input = await rawFixture();
+    const item = input.rawEvidence.find((evidence) => evidence.table === "MatchSchedule")!;
+    const originalId = (item.response as Record<string, unknown>[])[0]!.MatchId as string;
+    item.response = (item.response as Record<string, unknown>[]).map((row) => ({ ...row, MatchId: "reviewed-schedule-id" }));
+    const reviewed = await overrides();
+    reviewed.sourceCorrections = [{ table: "MatchSchedule", key: "MatchId", value: "reviewed-schedule-id", field: "MatchId", expected: "reviewed-schedule-id", replacement: originalId, sourceUrl: "https://lol.fandom.com/wiki/Reviewed_Tournament?oldid=123", reviewedNote: "Verified exact bracket match." }];
+    const batch = await createLeaguepediaProvider({ loadRawInput: async () => input, overrides: reviewed }).stage({ mode: "sync-once" });
+    expect(batch.facts.series).toHaveLength(1);
+    expect((item.response as Record<string, unknown>[])[0]!.MatchId).toBe("reviewed-schedule-id");
+  });
+
+  it("recovers only source-reviewed missing roster rows within imported games", async () => {
+    const input = await rawFixture();
+    const evidence = input.rawEvidence.find((item) => item.table === "ScoreboardPlayers")!;
+    const originalRows = evidence.response as Record<string, unknown>[];
+    const gameId = originalRows[0]!.GameId as string;
+    const roster = originalRows.filter((row) => row.GameId === gameId);
+    evidence.response = originalRows.filter((row) => row.GameId !== gameId);
+    const reviewed = await overrides();
+    reviewed.sourceCorrections = [...roster, { ...roster[0], GameId: "unrequested-game" }].map((row) => ({ table: "ScoreboardPlayers", key: "GameId", value: row.GameId as string, row: { ...row, PlayerName: row.PlayerKey }, sourceUrl: "https://lol.fandom.com/wiki/Reviewed_Scoreboards?oldid=123", reviewedNote: "Ten explicit player links from the matched single-game scoreboard." }));
+    const normalized = normalizeLeaguepediaSnapshot(parseLeaguepediaRawInput(input, reviewed.sourceCorrections), reviewed);
+    expect(normalized.rosterIncompleteGameKeys).toEqual([]);
+    expect(normalized.facts.gamePlayers).toHaveLength(originalRows.length);
+    expect((evidence.response as Record<string, unknown>[]).some((row) => row.GameId === gameId)).toBe(false);
+  });
+
+  it("uses reviewed source pages and schedule IDs in live fetching without changing retained rows", async () => {
+    const client = playerRedirectCollisionClient([{ OverviewPage: "Dandy", ID: "Dandy", Name: "Dandy" }], [["Dandy", "Dandy"]]);
+    client.fetchTeamsPage = async ({ offset }) => cargoPage("Teams", offset, [{ OverviewPage: "T1", Name: "T1" }]);
+    client.fetchTeamRedirectsPage = async ({ offset }) => teamRedirectPage(offset, [["T1", "T1"]]);
+    client.fetchGamesPage = async ({ offset }) => cargoPage("ScoreboardGames", offset, [{ GameId: "G1", MatchId: "M1", Tournament: "Worlds", DateTime_UTC: "2024-10-01T00:00:00Z", N_GameInMatch: 1, Team1: "T1", Team2: "DDoL", Winner: 1 }]);
+    client.fetchGamePlayersPage = async ({ offset }) => cargoPage("ScoreboardPlayers", offset, [{ GameId: "G1", PlayerName: "Dandy", Team: "T1", PlayerWin: "Yes" }]);
+    const requested: string[][] = [];
+    client.fetchKnownPagesWithEvidence = async (titles) => { requested.push([...titles]); return knownPagesResult(titles); };
+    const fetchSchedules = vi.fn(async ({ offset }: { offset: number; matchIds: readonly string[] }) => matchSchedulePage(offset, [{ UniqueMatch: "source-match", MatchId: "source-match", OverviewPage: "Worlds", DateTime_UTC: "2024-10-01T00:00:00Z", Team1: "T1", Team2: "DDoL", Team1Score: 1, Team2Score: 0, Winner: 1, BestOf: 1 }]));
+    const proof = { sourceUrl: "https://lol.fandom.com/wiki/Reviewed_Tournament?oldid=123", reviewedNote: "Reviewed participant and exact match." };
+    const corrections = [
+      { ...proof, table: "Teams" as const, key: "OverviewPage", value: "DDoL", row: { OverviewPage: "DDoL", Name: "DDoL" } },
+      { ...proof, table: "TeamRedirects" as const, key: "AllName", value: "DDoL", row: { _pageName: "DDoL", AllName: "DDoL" } },
+      { ...proof, table: "MatchSchedule" as const, key: "MatchId", value: "source-match", field: "MatchId" as const, expected: "source-match", replacement: "M1" },
+    ];
+    const input = await fetchLeaguepediaRawInput({ ...client, fetchMatchSchedulesPage: fetchSchedules }, { sourceUrl: "https://lol.example/api.php", slices: [{ competition: "Worlds", seasonYear: 2024, from: "2024-01-01", to: "2025-01-01" }] }, corrections);
+    expect(fetchSchedules).toHaveBeenCalledWith({ offset: 0, matchIds: ["source-match"] });
+    expect(requested.flat().sort()).toEqual(["Reviewed Tournament", "T1"]);
+    expect(parseLeaguepediaRawInput(input, corrections).series[0]!.sourceKey).toBe("M1");
+    expect((input.rawEvidence.find((item) => item.table === "Teams")!.response as Record<string, unknown>[])).toHaveLength(1);
+    expect((input.rawEvidence.find((item) => item.table === "MatchSchedule")!.response as Record<string, unknown>[])[0]!.MatchId).toBe("source-match");
+  });
+
+  it("restores a source-reviewed game only in its observed series and keeps player-query coverage mandatory", async () => {
+    const input = await rawFixture();
+    const evidence = input.rawEvidence.find((item) => item.table === "ScoreboardGames")!;
+    const gameRow = decodeCargoExportRows("ScoreboardGames", evidence.response)[1]!;
+    evidence.response = (evidence.response as Record<string, unknown>[]).filter((row) => row.GameId !== gameRow.GameId);
+    const reviewed = await overrides();
+    reviewed.sourceCorrections = [{ table: "ScoreboardGames", key: "GameId", value: gameRow.GameId as string, row: gameRow, sourceUrl: "https://lol.fandom.com/wiki/Reviewed_Scoreboards?oldid=123", reviewedNote: "Exact missing game observed on its scoreboard page." }];
+    const normalized = normalizeLeaguepediaSnapshot(parseLeaguepediaRawInput(input, reviewed.sourceCorrections), reviewed);
+    expect(normalized.facts.games).toHaveLength(5);
+    expect(normalized.facts.gamePlayers).toHaveLength(50);
+    expect((evidence.response as Record<string, unknown>[])).toHaveLength(4);
+    for (const players of input.rawEvidence.filter((item) => item.table === "ScoreboardPlayers")) {
+      players.scope = { ...players.scope!, gameIds: players.scope!.gameIds!.filter((id) => id !== gameRow.GameId) };
+      players.response = (players.response as Record<string, unknown>[]).filter((row) => row.GameId !== gameRow.GameId);
+    }
+    expect(() => parseLeaguepediaRawInput(input, reviewed.sourceCorrections)).toThrow(/scope does not cover/);
   });
 
   it("accepts shared fact evidence whose scope includes extra IDs from another slice", async () => {

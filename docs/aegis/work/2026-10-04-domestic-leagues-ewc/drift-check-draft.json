@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "taskId": "2026-10-04-domestic-leagues-ewc",
+  "taskIntentRef": "docs/aegis/work/2026-10-04-domestic-leagues-ewc/task-intent-draft.json",
+  "baselineRefs": [
+    "docs/aegis/baseline/2026-10-03-riftversus-github-sqlite.md"
+  ],
+  "scopeStatus": "All 32 mapped annual source scopes accepted locally; upstream exhaustive archive not claimed.",
+  "compatStatus": "Existing owner, raw, UUID, historical label and score contracts preserved.",
+  "retirementStatus": "Exact source workarounds retained until verified upstream repair; native game rows prevent duplicates.",
+  "newRiskSignals": [
+    "One LCK 2026 Game 1 remains missing; fourteen awarded-score rows share incomplete marker."
+  ],
+  "decision": "continue"
+}

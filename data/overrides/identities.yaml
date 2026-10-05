@@ -6,7 +6,9 @@ rules:
     kind: team
     aliases:
       - KSV
-    reviewedNote: Leaguepedia Teams OverviewPage KSV eSports has RenamedTo Gen.G, independently resolved through TeamRedirects; both participate in the 2018 LCK source scope. Keep the existing Gen.G canonical ID and infer non-overlapping historical eras from retained match dates.
+    reviewedNote: Leaguepedia Teams OverviewPage KSV eSports has RenamedTo Gen.G, independently resolved through
+      TeamRedirects; both participate in the 2018 LCK source scope. Keep the existing Gen.G canonical ID and infer
+      non-overlapping historical eras from retained match dates.
   - sourceKey: SK Telecom T1
     canonicalName: T1
     canonicalId: 11111111-1111-5111-8111-111111111111
@@ -33,7 +35,8 @@ rules:
       - PVB
       - Dashing Buffalo
     validTo: 2019-05-30
-    reviewedNote: Leaguepedia Teams RenamedTo resolves through TeamRedirects to Saigon Buffalo; the reviewed Leaguepedia timeline records the Phong Vũ Buffalo to Dashing Buffalo rename on 2019-05-31.
+    reviewedNote: Leaguepedia Teams RenamedTo resolves through TeamRedirects to Saigon Buffalo; the reviewed Leaguepedia
+      timeline records the Phong Vũ Buffalo to Dashing Buffalo rename on 2019-05-31.
   - sourceKey: Saigon Buffalo
     canonicalName: Saigon Buffalo
     canonicalId: ee77cc6b-b3c8-5f06-8068-3c8d96cd4ed7
@@ -42,7 +45,8 @@ rules:
       - SGB
       - Dashing Buffalo
     validFrom: 2020-05-25
-    reviewedNote: Reviewed Leaguepedia page 235370 revision 4352765 as the official forward target used by the MSI lineage; the Leaguepedia timeline records the Dashing Buffalo to Saigon Buffalo rename on 2020-05-25.
+    reviewedNote: Reviewed Leaguepedia page 235370 revision 4352765 as the official forward target used by the MSI lineage;
+      the Leaguepedia timeline records the Dashing Buffalo to Saigon Buffalo rename on 2020-05-25.
   - sourceKey: Movistar R7
     canonicalName: LYON
     canonicalId: 0d531ed1-8517-56d4-84a4-742d46d63bb1
@@ -51,7 +55,8 @@ rules:
       - R7
       - MR7
     validTo: 2024-10-30
-    reviewedNote: Reviewed Leaguepedia page 213232 revision 4394944; its timeline records the Movistar R7 and Six Karma partnership forming LYON on 2024-10-31.
+    reviewedNote: Reviewed Leaguepedia page 213232 revision 4394944; its timeline records the Movistar R7 and Six Karma
+      partnership forming LYON on 2024-10-31.
   - sourceKey: LYON (2024 American Team)
     canonicalName: LYON
     canonicalId: 0d531ed1-8517-56d4-84a4-742d46d63bb1
@@ -59,7 +64,8 @@ rules:
     aliases:
       - LYON
     validFrom: 2024-10-31
-    reviewedNote: Reviewed Leaguepedia page 928951 revision 4471044 as the official forward target formed from the Movistar R7 partnership on 2024-10-31.
+    reviewedNote: Reviewed Leaguepedia page 928951 revision 4471044 as the official forward target formed from the Movistar
+      R7 partnership on 2024-10-31.
   - sourceKey: Splyce
     canonicalName: Movistar KOI
     canonicalId: 35c453b9-1773-5568-8e9b-c7613835f8c8
@@ -67,7 +73,8 @@ rules:
     aliases:
       - SPY
     validTo: 2019-11-28
-    reviewedNote: Leaguepedia Teams RenamedTo resolves through TeamRedirects to MAD Lions KOI; the reviewed Leaguepedia timeline records the Splyce to MAD Lions rebrand on 2019-11-29.
+    reviewedNote: Leaguepedia Teams RenamedTo resolves through TeamRedirects to MAD Lions KOI; the reviewed Leaguepedia
+      timeline records the Splyce to MAD Lions rebrand on 2019-11-29.
   - sourceKey: MAD Lions KOI
     canonicalName: Movistar KOI
     canonicalId: 35c453b9-1773-5568-8e9b-c7613835f8c8
@@ -76,7 +83,8 @@ rules:
       - MDK
     validFrom: 2019-11-29
     validTo: 2024-12-05
-    reviewedNote: This source page carries the MAD Lions history after the Splyce rebrand; the reviewed Leaguepedia timeline records that lineage from 2019-11-29 until the Movistar KOI rebrand on 2024-12-06.
+    reviewedNote: This source page carries the MAD Lions history after the Splyce rebrand; the reviewed Leaguepedia timeline
+      records that lineage from 2019-11-29 until the Movistar KOI rebrand on 2024-12-06.
   - sourceKey: Movistar KOI
     canonicalName: Movistar KOI
     canonicalId: 35c453b9-1773-5568-8e9b-c7613835f8c8
@@ -84,4 +92,2197 @@ rules:
     aliases:
       - MKOI
     validFrom: 2024-12-06
-    reviewedNote: Reviewed Leaguepedia page 183371 revision 4478621 as the official forward target; the Leaguepedia timeline records the Movistar KOI rebrand on 2024-12-06.
+    reviewedNote: Reviewed Leaguepedia page 183371 revision 4478621 as the official forward target; the Leaguepedia timeline
+      records the Movistar KOI rebrand on 2024-12-06.
+  - sourceKey: EStar (Chinese Team)
+    canonicalName: Ultra Prime
+    canonicalId: 18727037-cd96-5de9-83f1-61ba65a29b4c
+    kind: team
+    aliases:
+      - eStar
+      - eStar Gaming
+    validFrom: 2019-12-11
+    validTo: 2021-03-27
+    reviewedNote: Leaguepedia EStar (Chinese Team) revision 4122212 identifies isrenamed=Ultra Prime and
+      disbanded=2021-03-28; the timeline records the 2021-03-28 rebrand. Keep Ultra Prime existing canonical ID and
+      historical eStar display name.
+  - sourceKey: Ultra Prime
+    canonicalName: Ultra Prime
+    canonicalId: 18727037-cd96-5de9-83f1-61ba65a29b4c
+    kind: team
+    aliases:
+      - UP
+    validFrom: 2021-03-28
+    reviewedNote: Reviewed Leaguepedia rebrand on 2021-03-28. EStar and Ultra Prime share a canonical identity with
+      non-overlapping historical eras.
+  - sourceKey: Hyper Youth Gaming
+    canonicalName: Saint Gaming
+    canonicalId: c5c9c71e-3d25-5f0e-86ff-24ad8a9fc858
+    kind: team
+    validTo: 2016-05-16
+    reviewedNote: "Reviewed https://lol.fandom.com/wiki/Saint%20Gaming?oldid=4125181: explicit rename from Hyper Youth
+      Gaming on 2016-05-17. Keep existing Saint Gaming canonical ID and distinct historical display names; not a
+      slot-transfer merge."
+  - sourceKey: Saint Gaming
+    canonicalName: Saint Gaming
+    canonicalId: c5c9c71e-3d25-5f0e-86ff-24ad8a9fc858
+    kind: team
+    validFrom: 2016-05-17
+    reviewedNote: Reviewed official Leaguepedia rename on 2016-05-17. Non-overlapping eras for Hyper Youth Gaming and Saint Gaming.
+  - sourceKey: SinoDragon Gaming
+    canonicalName: Dominus Esports
+    canonicalId: 7044c943-0e89-5eba-8ac1-ac268a05c2d0
+    kind: team
+    validTo: 2019-05-21
+    reviewedNote: "Reviewed https://lol.fandom.com/wiki/Dominus%20Esports?oldid=4218082: explicit rename from SinoDragon
+      Gaming on 2019-05-22. Keep existing Dominus Esports canonical ID and distinct historical display names; not a
+      slot-transfer merge."
+  - sourceKey: Dominus Esports
+    canonicalName: Dominus Esports
+    canonicalId: 7044c943-0e89-5eba-8ac1-ac268a05c2d0
+    kind: team
+    validFrom: 2019-05-22
+    reviewedNote: Reviewed official Leaguepedia rename on 2019-05-22. Non-overlapping eras for SinoDragon Gaming and Dominus Esports.
+  - sourceKey: Snake Esports
+    canonicalName: LNG Esports
+    canonicalId: 51b0d398-d151-5c07-894b-5b255518b46e
+    kind: team
+    validTo: 2019-05-20
+    reviewedNote: "Reviewed https://lol.fandom.com/wiki/LNG%20Esports?oldid=4490661: explicit rename from Snake Esports on
+      2019-05-21. Keep existing LNG Esports canonical ID and distinct historical display names; not a slot-transfer
+      merge."
+  - sourceKey: LNG Esports
+    canonicalName: LNG Esports
+    canonicalId: 51b0d398-d151-5c07-894b-5b255518b46e
+    kind: team
+    validFrom: 2019-05-21
+    reviewedNote: Reviewed official Leaguepedia rename on 2019-05-21. Non-overlapping eras for Snake Esports and LNG Esports.
+  - sourceKey: Qiao Gu Reapers
+    canonicalName: Newbee
+    canonicalId: 02b4e4ca-9178-55ca-86f9-56b77036b891
+    kind: team
+    validTo: 2016-05-10
+    reviewedNote: "Reviewed https://lol.fandom.com/wiki/Newbee?oldid=4124205: explicit rename from Qiao Gu Reapers on
+      2016-05-11. Keep existing Newbee canonical ID and distinct historical display names; not a slot-transfer merge."
+  - sourceKey: Newbee
+    canonicalName: Newbee
+    canonicalId: 02b4e4ca-9178-55ca-86f9-56b77036b891
+    kind: team
+    validFrom: 2016-05-11
+    reviewedNote: Reviewed official Leaguepedia rename on 2016-05-11. Non-overlapping eras for Qiao Gu Reapers and Newbee.
+  - sourceKey: Luo (Luo Ci-Rui)
+    canonicalName: Luo Ci-Rui
+    canonicalId: 7f19fce1-b4f3-5354-8f35-520da2a5e632
+    kind: player
+    aliases:
+      - Luo (Luo Ci-Rui)
+      - Luo
+    reviewedNote: https://lol.fandom.com/wiki/Luo%20(Luo%20Ci-Rui)?oldid=4101147 independently identifies Luo Ci-Rui; the
+      two Luo Players/PlayerRedirects profiles and ScoreboardPlayers keys are distinct. Preserve separate canonical IDs;
+      no display-name-based merge.
+  - sourceKey: Luo (Yin Peng)
+    canonicalName: Yin Peng
+    canonicalId: 128b37b1-8f36-58f1-8933-85b1a6332a51
+    kind: player
+    aliases:
+      - Luo (Yin Peng)
+      - Luo
+    reviewedNote: https://lol.fandom.com/wiki/Luo%20(Yin%20Peng)?oldid=4101149 independently identifies Yin Peng; the two
+      Luo Players/PlayerRedirects profiles and ScoreboardPlayers keys are distinct. Preserve separate canonical IDs; no
+      display-name-based merge.
+sourceCorrections:
+  - table: Players
+    key: OverviewPage
+    value: Levi
+    row:
+      OverviewPage: Levi
+      ID: Levi
+      Name: Đỗ Duy Khánh
+      Player: Levi
+      Team: null
+      Image: null
+    sourceUrl: https://lol.fandom.com/wiki/Levi?oldid=4336550
+    reviewedNote: The player infobox identifies Levi as Đỗ Duy Khánh; Cargo Players omits the profile while PlayerRedirects
+      and GAM/JDG ScoreboardPlayers resolve to Levi. Preserve the existing player source identity; no merge with other
+      players named Levi.
+  - table: Teams
+    key: OverviewPage
+    value: DDoL
+    row:
+      OverviewPage: DDoL
+      Name: DDoL
+      Short: DDoL
+      Region: Korea
+      OrganizationPage: null
+      Image: null
+      RenamedTo: null
+    sourceUrl: https://lol.fandom.com/wiki/Champions%2F2012%20Season%2FSpring?oldid=4492838
+    reviewedNote: The tournament participant bracket identifies DDoL as a distinct Korean team; no standalone Teams row or
+      TeamRedirects exists. Retain a separate identity without guessing lineage.
+  - table: TeamRedirects
+    key: AllName
+    value: DDoL
+    row:
+      _pageName: DDoL
+      AllName: DDoL
+    sourceUrl: https://lol.fandom.com/wiki/Champions%2F2012%20Season%2FSpring?oldid=4492838
+    reviewedNote: Exact tournament participant DDoL and ScoreboardGames team key; no same-name merge or fuzzy redirect.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 1_1
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 1_1
+    replacement: Champions/2014 Season/Summer Season_Group A_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-06-18 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 1_2
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 1_2
+    replacement: Champions/2014 Season/Summer Season_Group B_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-06-18 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 1_3
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 1_3
+    replacement: Champions/2014 Season/Summer Season_Group C_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-06-20 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 1_4
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 1_4
+    replacement: Champions/2014 Season/Summer Season_Group D_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-06-20 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 1_5
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 1_5
+    replacement: Champions/2014 Season/Summer Season_Group A_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-06-21 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 1_6
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 1_6
+    replacement: Champions/2014 Season/Summer Season_Group B_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-06-21 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 2_1
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 2_1
+    replacement: Champions/2014 Season/Summer Season_Group C_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-06-25 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 2_2
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 2_2
+    replacement: Champions/2014 Season/Summer Season_Group D_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-06-25 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 2_3
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 2_3
+    replacement: Champions/2014 Season/Summer Season_Group A_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-06-27 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 2_4
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 2_4
+    replacement: Champions/2014 Season/Summer Season_Group B_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-06-27 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 2_5
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 2_5
+    replacement: Champions/2014 Season/Summer Season_Group C_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-06-28 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 2_6
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 2_6
+    replacement: Champions/2014 Season/Summer Season_Group D_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-06-28 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 3_1
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 3_1
+    replacement: Champions/2014 Season/Summer Season_Group A_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-07-02 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 3_2
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 3_2
+    replacement: Champions/2014 Season/Summer Season_Group B_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-07-02 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 3_3
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 3_3
+    replacement: Champions/2014 Season/Summer Season_Group C_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-07-04 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 3_4
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 3_4
+    replacement: Champions/2014 Season/Summer Season_Group D_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-07-04 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 3_5
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 3_5
+    replacement: Champions/2014 Season/Summer Season_Group A_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-07-05 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 3_6
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 3_6
+    replacement: Champions/2014 Season/Summer Season_Group B_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-07-05 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 4_1
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 4_1
+    replacement: Champions/2014 Season/Summer Season_Group C_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-07-09 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 4_2
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 4_2
+    replacement: Champions/2014 Season/Summer Season_Group D_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-07-09 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 4_3
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 4_3
+    replacement: Champions/2014 Season/Summer Season_Group A_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-07-11 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 4_4
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 4_4
+    replacement: Champions/2014 Season/Summer Season_Group B_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-07-11 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 4_5
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 4_5
+    replacement: Champions/2014 Season/Summer Season_Group C_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-07-12 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Summer Season_Week 4_6
+    field: MatchId
+    expected: Champions/2014 Season/Summer Season_Week 4_6
+    replacement: Champions/2014 Season/Summer Season_Group D_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FSummer+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Summer Season schedule by calendar date 2014-07-12 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 1_1
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 1_1
+    replacement: Champions/2013 Season/Summer_Group A_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-03 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 1_2
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 1_2
+    replacement: Champions/2013 Season/Summer_Group B_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-03 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 1_3
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 1_3
+    replacement: Champions/2013 Season/Summer_Group C_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-05 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 1_4
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 1_4
+    replacement: Champions/2013 Season/Summer_Group D_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-05 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 1_5
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 1_5
+    replacement: Champions/2013 Season/Summer_Group A_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-06 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 1_6
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 1_6
+    replacement: Champions/2013 Season/Summer_Group B_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-06 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 2_1
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 2_1
+    replacement: Champions/2013 Season/Summer_Group C_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-10 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 2_2
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 2_2
+    replacement: Champions/2013 Season/Summer_Group D_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-10 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 2_3
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 2_3
+    replacement: Champions/2013 Season/Summer_Group A_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-12 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 2_4
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 2_4
+    replacement: Champions/2013 Season/Summer_Group B_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-12 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 2_5
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 2_5
+    replacement: Champions/2013 Season/Summer_Group C_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-13 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 2_6
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 2_6
+    replacement: Champions/2013 Season/Summer_Group D_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-13 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 3_1
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 3_1
+    replacement: Champions/2013 Season/Summer_Group A_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-17 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 3_2
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 3_2
+    replacement: Champions/2013 Season/Summer_Group B_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-17 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 3_3
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 3_3
+    replacement: Champions/2013 Season/Summer_Group C_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-19 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 3_4
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 3_4
+    replacement: Champions/2013 Season/Summer_Group D_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-19 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 3_5
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 3_5
+    replacement: Champions/2013 Season/Summer_Group A_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-20 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 3_6
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 3_6
+    replacement: Champions/2013 Season/Summer_Group B_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-20 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 4_1
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 4_1
+    replacement: Champions/2013 Season/Summer_Group C_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-24 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 4_2
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 4_2
+    replacement: Champions/2013 Season/Summer_Group D_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-24 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 4_3
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 4_3
+    replacement: Champions/2013 Season/Summer_Group A_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-26 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 4_4
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 4_4
+    replacement: Champions/2013 Season/Summer_Group B_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-26 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 4_5
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 4_5
+    replacement: Champions/2013 Season/Summer_Group C_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-27 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Week 4_6
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Week 4_6
+    replacement: Champions/2013 Season/Summer_Group D_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FSummer%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Summer schedule by calendar date 2013-07-27 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 1_2
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 1_2
+    replacement: Champions/2014 Season/Winter Season_Group B_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-11-15 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 1_3
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 1_3
+    replacement: Champions/2014 Season/Winter Season_Group C_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-11-15 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 1_1
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 1_1
+    replacement: Champions/2014 Season/Winter Season_Group A_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-11-15 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 1_4
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 1_4
+    replacement: Champions/2014 Season/Winter Season_Group D_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-11-16 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 1_5
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 1_5
+    replacement: Champions/2014 Season/Winter Season_Group A_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-11-16 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 1_6
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 1_6
+    replacement: Champions/2014 Season/Winter Season_Group B_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-11-16 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 2_1
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 2_1
+    replacement: Champions/2014 Season/Winter Season_Group C_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-11-20 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 2_2
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 2_2
+    replacement: Champions/2014 Season/Winter Season_Group D_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-11-20 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 2_3
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 2_3
+    replacement: Champions/2014 Season/Winter Season_Group A_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-11-22 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 2_4
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 2_4
+    replacement: Champions/2014 Season/Winter Season_Group B_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-11-22 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 2_5
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 2_5
+    replacement: Champions/2014 Season/Winter Season_Group C_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-11-23 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 2_6
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 2_6
+    replacement: Champions/2014 Season/Winter Season_Group D_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-11-23 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 3_1
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 3_1
+    replacement: Champions/2014 Season/Winter Season_Group A_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-12-04 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 3_2
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 3_2
+    replacement: Champions/2014 Season/Winter Season_Group B_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-12-04 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 3_4
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 3_4
+    replacement: Champions/2014 Season/Winter Season_Group D_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-12-06 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 3_5
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 3_5
+    replacement: Champions/2014 Season/Winter Season_Group A_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-12-07 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 3_6
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 3_6
+    replacement: Champions/2014 Season/Winter Season_Group B_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-12-07 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 4_1
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 4_1
+    replacement: Champions/2014 Season/Winter Season_Group C_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-12-11 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 4_2
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 4_2
+    replacement: Champions/2014 Season/Winter Season_Group D_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-12-11 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 4_3
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 4_3
+    replacement: Champions/2014 Season/Winter Season_Group A_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-12-13 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 4_4
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 4_4
+    replacement: Champions/2014 Season/Winter Season_Group B_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-12-13 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 4_5
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 4_5
+    replacement: Champions/2014 Season/Winter Season_Group C_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-12-14 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2014 Season/Winter Season_Week 4_6
+    field: MatchId
+    expected: Champions/2014 Season/Winter Season_Week 4_6
+    replacement: Champions/2014 Season/Winter Season_Group D_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2014+Season%2FWinter+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2014 Season/Winter Season schedule by calendar date 2013-12-14 and
+      both redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias
+      only repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Season 3 Korea Regional Finals_Tiebreakers_1
+    field: MatchId
+    expected: Season 3 Korea Regional Finals_Tiebreakers_1
+    replacement: Season 3 Korea Regional Finals_4th Place Decider_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Season+3+Korea+Regional+Finals%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Season 3 Korea Regional Finals schedule by calendar date 2013-09-04 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 1_2
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 1_2
+    replacement: Champions/2013 Season/Winter_Group B_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-09 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 1_3
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 1_3
+    replacement: Champions/2013 Season/Winter_Group A_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-10 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 1_4
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 1_4
+    replacement: Champions/2013 Season/Winter_Group B_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-10 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 2_1
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 2_1
+    replacement: Champions/2013 Season/Winter_Group A_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-13 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 2_2
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 2_2
+    replacement: Champions/2013 Season/Winter_Group B_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-13 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 2_3
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 2_3
+    replacement: Champions/2013 Season/Winter_Group A_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-14 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 2_4
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 2_4
+    replacement: Champions/2013 Season/Winter_Group B_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-14 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 2_5
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 2_5
+    replacement: Champions/2013 Season/Winter_Group A_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-15 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 2_6
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 2_6
+    replacement: Champions/2013 Season/Winter_Group B_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-15 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 2_7
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 2_7
+    replacement: Champions/2013 Season/Winter_Group A_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-16 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 2_8
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 2_8
+    replacement: Champions/2013 Season/Winter_Group B_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-16 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 3_1
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 3_1
+    replacement: Champions/2013 Season/Winter_Group A_7
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-21 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 3_2
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 3_2
+    replacement: Champions/2013 Season/Winter_Group B_7
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-21 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 3_3
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 3_3
+    replacement: Champions/2013 Season/Winter_Group A_8
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-23 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 3_4
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 3_4
+    replacement: Champions/2013 Season/Winter_Group B_8
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-23 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 3_5
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 3_5
+    replacement: Champions/2013 Season/Winter_Group A_9
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-24 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 3_6
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 3_6
+    replacement: Champions/2013 Season/Winter_Group B_9
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-11-24 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 4_1
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 4_1
+    replacement: Champions/2013 Season/Winter_Interleague_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-05 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 4_2
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 4_2
+    replacement: Champions/2013 Season/Winter_Interleague_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-05 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 4_3
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 4_3
+    replacement: Champions/2013 Season/Winter_Interleague_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-07 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 4_4
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 4_4
+    replacement: Champions/2013 Season/Winter_Interleague_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-07 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 4_5
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 4_5
+    replacement: Champions/2013 Season/Winter_Interleague_5
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-08 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 4_6
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 4_6
+    replacement: Champions/2013 Season/Winter_Interleague_6
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-08 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 5_1
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 5_1
+    replacement: Champions/2013 Season/Winter_Group A_10
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-12 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 5_2
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 5_2
+    replacement: Champions/2013 Season/Winter_Group B_10
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-12 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 5_3
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 5_3
+    replacement: Champions/2013 Season/Winter_Group A_11
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-14 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 5_4
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 5_4
+    replacement: Champions/2013 Season/Winter_Group B_11
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-14 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 5_5
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 5_5
+    replacement: Champions/2013 Season/Winter_Group A_12
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-15 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 5_6
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 5_6
+    replacement: Champions/2013 Season/Winter_Group B_12
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-15 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 6_1
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 6_1
+    replacement: Champions/2013 Season/Winter_Group A_13
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-19 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 6_2
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 6_2
+    replacement: Champions/2013 Season/Winter_Group B_13
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-19 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 6_3
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 6_3
+    replacement: Champions/2013 Season/Winter_Group A_14
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-21 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 6_4
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 6_4
+    replacement: Champions/2013 Season/Winter_Group B_14
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-21 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 6_5
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 6_5
+    replacement: Champions/2013 Season/Winter_Group A_15
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-22 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 6_6
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 6_6
+    replacement: Champions/2013 Season/Winter_Group B_15
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Champions%2F2013+Season%2FWinter%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Champions/2013 Season/Winter schedule by calendar date 2012-12-22 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Season 2/Regional Finals/Korea_5th Place Tiebreaker_1
+    field: MatchId
+    expected: Season 2/Regional Finals/Korea_5th Place Tiebreaker_1
+    replacement: Season 2/Regional Finals/Korea_Scoreboards_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Season+2%2FRegional+Finals%2FKorea%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Season 2/Regional Finals/Korea schedule by calendar date 2012-09-12 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Season 2/Regional Finals/Korea_Round 1_1
+    field: MatchId
+    expected: Season 2/Regional Finals/Korea_Round 1_1
+    replacement: Season 2/Regional Finals/Korea_Scoreboards_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Season+2%2FRegional+Finals%2FKorea%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Season 2/Regional Finals/Korea schedule by calendar date 2012-09-14 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Season 2/Regional Finals/Korea_Round 2_1
+    field: MatchId
+    expected: Season 2/Regional Finals/Korea_Round 2_1
+    replacement: Season 2/Regional Finals/Korea_Scoreboards_3
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Season+2%2FRegional+Finals%2FKorea%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Season 2/Regional Finals/Korea schedule by calendar date 2012-09-19 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Season 2/Regional Finals/Korea_Round 3_1
+    field: MatchId
+    expected: Season 2/Regional Finals/Korea_Round 3_1
+    replacement: Season 2/Regional Finals/Korea_Scoreboards_4
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27Season+2%2FRegional+Finals%2FKorea%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique Season 2/Regional Finals/Korea schedule by calendar date 2012-09-21 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: LPL/2013 Season/Spring Season_Week 2_2
+    field: MatchId
+    expected: LPL/2013 Season/Spring Season_Week 2_2
+    replacement: LPL/2013 Season/Spring Season_Week 2_1
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27LPL%2F2013+Season%2FSpring+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique LPL/2013 Season/Spring Season schedule by calendar date 2013-03-22 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: LPL/2013 Season/Spring Season_Week 2_1
+    field: MatchId
+    expected: LPL/2013 Season/Spring Season_Week 2_1
+    replacement: LPL/2013 Season/Spring Season_Week 2_2
+    sourceUrl: https://lol.fandom.com/wiki/Special:CargoExport?tables=MatchSchedule&fields=UniqueMatch%2CMatchId%2COverviewPage%2CDateTime_UTC%3DDateTimeUTC%2CTeam1%2CTeam2%2CTeam1Score%2CTeam2Score%2CWinner%2CBestOf&where=OverviewPage%3D%27LPL%2F2013+Season%2FSpring+Season%27&limit=500&format=json&order_by=DateTime_UTC+ASC%2CMatchId+ASC
+    reviewedNote: Independently matched unique LPL/2013 Season/Spring Season schedule by calendar date 2013-03-22 and both
+      redirected team identities. MatchSchedule remains authoritative for date, format, score, and winner; alias only
+      repairs the source ID join.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Summer_Tiebreakers_1
+    field: MatchId
+    expected: Champions/2013 Season/Summer_Tiebreakers_1
+    replacement: Champions/2013 Season/Summer_Group B_7
+    sourceUrl: https://lol.fandom.com/wiki/Champions%2F2013%20Season%2FSummer?oldid=4492831
+    reviewedNote: Main page explicitly identifies the Group B BO1 tiebreaker. MatchSchedule Tiebreakers_1 and
+      ScoreboardGames Group B_7 have the same teams and CJ Entus Blaze 1-0 winner; dates disagree so retain the
+      authoritative schedule date, not a fuzzy date match.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 1_1
+    field: MatchId
+    expected: Champions/2013 Season/Winter_Week 1_1
+    replacement: Champions/2013 Season/Winter_Group A_1
+    sourceUrl: https://lol.fandom.com/wiki/Champions%2F2013%20Season%2FWinter?oldid=4492835
+    reviewedNote: The tournament footnote says the Xenics Storm roster renamed to Team OP during the tournament. Team OP
+      revision 4126032 dates the transfer to November 12; this November 9 match is played as Xenics Storm, as recorded
+      by both ScoreboardGames games. Preserve separate team identities and only correct this historical schedule label.
+  - table: MatchSchedule
+    key: MatchId
+    value: Champions/2013 Season/Winter_Week 1_1
+    field: Team2
+    expected: Team OP
+    replacement: Xenics Storm
+    sourceUrl: https://lol.fandom.com/wiki/Team%20OP?oldid=4126032
+    reviewedNote: The November 12 roster transfer follows the November 9 match. Both actual game rows identify Xenics Storm;
+      correct the retrospective Team OP schedule label for this one match only, without merging distinct organizations.
+  - table: MatchSchedule
+    key: MatchId
+    value: Season 3 China Regional Finals_Round 1_1
+    field: MatchId
+    expected: Season 3 China Regional Finals_Round 1_1
+    replacement: Season 3 China Regional Finals_Scoreboards_1
+    sourceUrl: https://lol.fandom.com/wiki/Season%203%20China%20Regional%20Finals?oldid=4339234
+    reviewedNote: Reviewed exact bracket round, two teams, observed winner and score, and format against Scoreboards; source
+      schedule/game dates disagree in early rounds. Keep schedule dates and all actual game facts. Finals are BO5 with
+      an awarded OMG 1-0 start; do not invent an unplayed advantage game.
+  - table: MatchSchedule
+    key: MatchId
+    value: Season 3 China Regional Finals_Round 1_2
+    field: MatchId
+    expected: Season 3 China Regional Finals_Round 1_2
+    replacement: Season 3 China Regional Finals_Scoreboards_2
+    sourceUrl: https://lol.fandom.com/wiki/Season%203%20China%20Regional%20Finals?oldid=4339234
+    reviewedNote: Reviewed exact bracket round, two teams, observed winner and score, and format against Scoreboards; source
+      schedule/game dates disagree in early rounds. Keep schedule dates and all actual game facts. Finals are BO5 with
+      an awarded OMG 1-0 start; do not invent an unplayed advantage game.
+  - table: MatchSchedule
+    key: MatchId
+    value: Season 3 China Regional Finals_Round 2_1
+    field: MatchId
+    expected: Season 3 China Regional Finals_Round 2_1
+    replacement: Season 3 China Regional Finals_Scoreboards_3
+    sourceUrl: https://lol.fandom.com/wiki/Season%203%20China%20Regional%20Finals?oldid=4339234
+    reviewedNote: Reviewed exact bracket round, two teams, observed winner and score, and format against Scoreboards; source
+      schedule/game dates disagree in early rounds. Keep schedule dates and all actual game facts. Finals are BO5 with
+      an awarded OMG 1-0 start; do not invent an unplayed advantage game.
+  - table: MatchSchedule
+    key: MatchId
+    value: Season 3 China Regional Finals_Losers Round 1_1
+    field: MatchId
+    expected: Season 3 China Regional Finals_Losers Round 1_1
+    replacement: Season 3 China Regional Finals_Scoreboards_4
+    sourceUrl: https://lol.fandom.com/wiki/Season%203%20China%20Regional%20Finals?oldid=4339234
+    reviewedNote: Reviewed exact bracket round, two teams, observed winner and score, and format against Scoreboards; source
+      schedule/game dates disagree in early rounds. Keep schedule dates and all actual game facts. Finals are BO5 with
+      an awarded OMG 1-0 start; do not invent an unplayed advantage game.
+  - table: MatchSchedule
+    key: MatchId
+    value: Season 3 China Regional Finals_Losers Round 2_1
+    field: MatchId
+    expected: Season 3 China Regional Finals_Losers Round 2_1
+    replacement: Season 3 China Regional Finals_Scoreboards_5
+    sourceUrl: https://lol.fandom.com/wiki/Season%203%20China%20Regional%20Finals?oldid=4339234
+    reviewedNote: Reviewed exact bracket round, two teams, observed winner and score, and format against Scoreboards; source
+      schedule/game dates disagree in early rounds. Keep schedule dates and all actual game facts. Finals are BO5 with
+      an awarded OMG 1-0 start; do not invent an unplayed advantage game.
+  - table: MatchSchedule
+    key: MatchId
+    value: Season 3 China Regional Finals_Finals_1
+    field: MatchId
+    expected: Season 3 China Regional Finals_Finals_1
+    replacement: Season 3 China Regional Finals_Scoreboards_6
+    sourceUrl: https://lol.fandom.com/wiki/Season%203%20China%20Regional%20Finals?oldid=4339234
+    reviewedNote: Reviewed exact bracket round, two teams, observed winner and score, and format against Scoreboards; source
+      schedule/game dates disagree in early rounds. Keep schedule dates and all actual game facts. Finals are BO5 with
+      an awarded OMG 1-0 start; do not invent an unplayed advantage game.
+  - table: MatchSchedule
+    key: MatchId
+    value: LPL/2013 Season/Spring Playoffs_Semifinals_1
+    field: BestOf
+    expected: null
+    replacement: 3
+    sourceUrl: https://lol.fandom.com/wiki/LPL%2F2013%20Season%2FSpring%20Playoffs?oldid=4339219
+    reviewedNote: The tournament Format specifies BO3 except the BO5 final. Fill the missing format for this exact match;
+      preserve scores and dates.
+  - table: MatchSchedule
+    key: MatchId
+    value: LPL/2013 Season/Spring Playoffs_Semifinals_2
+    field: BestOf
+    expected: null
+    replacement: 3
+    sourceUrl: https://lol.fandom.com/wiki/LPL%2F2013%20Season%2FSpring%20Playoffs?oldid=4339219
+    reviewedNote: The tournament Format specifies BO3 except the BO5 final. Fill the missing format for this exact match;
+      preserve scores and dates.
+  - table: MatchSchedule
+    key: MatchId
+    value: LPL/2013 Season/Spring Playoffs_Third-Place Match_1
+    field: BestOf
+    expected: null
+    replacement: 3
+    sourceUrl: https://lol.fandom.com/wiki/LPL%2F2013%20Season%2FSpring%20Playoffs?oldid=4339219
+    reviewedNote: The tournament Format specifies BO3 except the BO5 final. Fill the missing format for this exact match;
+      preserve scores and dates.
+  - table: MatchSchedule
+    key: MatchId
+    value: LPL/2013 Season/Spring Playoffs_Finals_1
+    field: BestOf
+    expected: null
+    replacement: 5
+    sourceUrl: https://lol.fandom.com/wiki/LPL%2F2013%20Season%2FSpring%20Playoffs?oldid=4339219
+    reviewedNote: The tournament Format specifies BO3 except the BO5 final. Fill the missing format for this exact match;
+      preserve scores and dates.
+  - table: MatchSchedule
+    key: OverviewPage
+    value: LPL/2016 Season/Spring Season
+    field: BestOf
+    expected: null
+    replacement: 3
+    sourceUrl: https://lol.fandom.com/wiki/LPL%2F2016%20Season%2FSpring%20Season?oldid=4262176
+    reviewedNote: The tournament Format section explicitly specifies Best of 3. The split schedule subpages omit BestOf;
+      fill only null format, retaining MatchSchedule scores and dates.
+  - table: MatchSchedule
+    key: OverviewPage
+    value: LPL/2016 Season/Summer Season
+    field: BestOf
+    expected: null
+    replacement: 3
+    sourceUrl: https://lol.fandom.com/wiki/LPL%2F2016%20Season%2FSummer%20Season?oldid=4262196
+    reviewedNote: The tournament Format section explicitly specifies Best of 3. The split schedule subpages omit BestOf;
+      fill only null format, retaining MatchSchedule scores and dates.
+  - table: MatchSchedule
+    key: OverviewPage
+    value: LPL/2017 Season/Spring Season
+    field: BestOf
+    expected: null
+    replacement: 3
+    sourceUrl: https://lol.fandom.com/wiki/LPL%2F2017%20Season%2FSpring%20Season?oldid=3961438
+    reviewedNote: The tournament Format section explicitly specifies Best of 3. The split schedule subpages omit BestOf;
+      fill only null format, retaining MatchSchedule scores and dates.
+  - table: MatchSchedule
+    key: OverviewPage
+    value: LPL/2017 Season/Summer Season
+    field: BestOf
+    expected: null
+    replacement: 3
+    sourceUrl: https://lol.fandom.com/wiki/LPL%2F2017%20Season%2FSummer%20Season?oldid=3807038
+    reviewedNote: The tournament Format section explicitly specifies Best of 3. The split schedule subpages omit BestOf;
+      fill only null format, retaining MatchSchedule scores and dates.
+  - table: ScoreboardGames
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3150633
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3150633
+      MatchId: LCK/2023 Season/Spring Season_Week 5_1
+      Tournament: LCK 2023 Spring
+      DateTime_UTC: 2023-02-15T08:57:00.000Z
+      N_GameInMatch: 2
+      Team1: KT Rolster
+      Team2: DRX
+      Winner: 1
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: The exact second-game Scoreboard/Season 8 block explicitly records UTC start, two teams, winner, and
+      official RPGID. Cargo omits this game; use the observed RPGID as a stable reviewed source key, and join only the
+      independently matched existing series. Never derive games from series score alone.
+  - table: ScoreboardGames
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3157736
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3157736
+      MatchId: LCK/2023 Season/Spring Season_Week 6_1
+      Tournament: LCK 2023 Spring
+      DateTime_UTC: 2023-02-22T08:56:00.000Z
+      N_GameInMatch: 2
+      Team1: Nongshim RedForce
+      Team2: Gen.G
+      Winner: 2
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: The exact second-game Scoreboard/Season 8 block explicitly records UTC start, two teams, winner, and
+      official RPGID. Cargo omits this game; use the observed RPGID as a stable reviewed source key, and join only the
+      independently matched existing series. Never derive games from series score alone.
+  - table: ScoreboardGames
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT01_3324646
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT01_3324646
+      MatchId: LCK/2023 Season/Spring Season_Week 9_5
+      Tournament: LCK 2023 Spring
+      DateTime_UTC: 2023-03-17T09:05:00.000Z
+      N_GameInMatch: 2
+      Team1: Kwangdong Freecs
+      Team2: KT Rolster
+      Winner: 2
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: The exact second-game Scoreboard/Season 8 block explicitly records UTC start, two teams, winner, and
+      official RPGID. Cargo omits this game; use the observed RPGID as a stable reviewed source key, and join only the
+      independently matched existing series. Never derive games from series score alone.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3150633
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3150633
+      PlayerName: Kiin
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3150633
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3150633
+      PlayerName: Cuzz
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3150633
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3150633
+      PlayerName: Bdd
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3150633
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3150633
+      PlayerName: Aiming
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3150633
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3150633
+      PlayerName: Lehends
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3150633
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3150633
+      PlayerName: Rascal
+      Team: DRX
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3150633
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3150633
+      PlayerName: Croco
+      Team: DRX
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3150633
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3150633
+      PlayerName: FATE (Yoo Su-hyeok)
+      Team: DRX
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3150633
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3150633
+      PlayerName: deokdam
+      Team: DRX
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3150633
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3150633
+      PlayerName: BeryL
+      Team: DRX
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 5_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 5_1_1
+      PlayerName: Rascal
+      Team: DRX
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 5_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 5_1_1
+      PlayerName: Croco
+      Team: DRX
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 5_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 5_1_1
+      PlayerName: FATE (Yoo Su-hyeok)
+      Team: DRX
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 5_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 5_1_1
+      PlayerName: deokdam
+      Team: DRX
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 5_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 5_1_1
+      PlayerName: BeryL
+      Team: DRX
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 5_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 5_1_1
+      PlayerName: Kiin
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 5_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 5_1_1
+      PlayerName: Cuzz
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 5_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 5_1_1
+      PlayerName: Bdd
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 5_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 5_1_1
+      PlayerName: Aiming
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 5_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 5_1_1
+      PlayerName: Lehends
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3157736
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3157736
+      PlayerName: DnDn
+      Team: Nongshim RedForce
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3157736
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3157736
+      PlayerName: Sylvie
+      Team: Nongshim RedForce
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3157736
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3157736
+      PlayerName: FIESTA (An Hyeon-seo)
+      Team: Nongshim RedForce
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3157736
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3157736
+      PlayerName: vital
+      Team: Nongshim RedForce
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3157736
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3157736
+      PlayerName: Peter (Jeong Yoon-su)
+      Team: Nongshim RedForce
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3157736
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3157736
+      PlayerName: Doran (Choi Hyeon-jun)
+      Team: Gen.G
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3157736
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3157736
+      PlayerName: Peanut
+      Team: Gen.G
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3157736
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3157736
+      PlayerName: Chovy
+      Team: Gen.G
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3157736
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3157736
+      PlayerName: Peyz
+      Team: Gen.G
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT02_3157736
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT02_3157736
+      PlayerName: Delight
+      Team: Gen.G
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 6_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 6_1_1
+      PlayerName: DnDn
+      Team: Nongshim RedForce
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 6_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 6_1_1
+      PlayerName: Sylvie
+      Team: Nongshim RedForce
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 6_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 6_1_1
+      PlayerName: FIESTA (An Hyeon-seo)
+      Team: Nongshim RedForce
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 6_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 6_1_1
+      PlayerName: vital
+      Team: Nongshim RedForce
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 6_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 6_1_1
+      PlayerName: Peter (Jeong Yoon-su)
+      Team: Nongshim RedForce
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 6_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 6_1_1
+      PlayerName: Doran (Choi Hyeon-jun)
+      Team: Gen.G
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 6_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 6_1_1
+      PlayerName: Peanut
+      Team: Gen.G
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 6_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 6_1_1
+      PlayerName: Chovy
+      Team: Gen.G
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 6_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 6_1_1
+      PlayerName: Peyz
+      Team: Gen.G
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 6_1_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 6_1_1
+      PlayerName: Delight
+      Team: Gen.G
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT01_3324646
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT01_3324646
+      PlayerName: DuDu (Lee Dong-ju)
+      Team: Kwangdong Freecs
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT01_3324646
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT01_3324646
+      PlayerName: YoungJae
+      Team: Kwangdong Freecs
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT01_3324646
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT01_3324646
+      PlayerName: BuLLDoG (Lee Tae-young)
+      Team: Kwangdong Freecs
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT01_3324646
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT01_3324646
+      PlayerName: Taeyoon (Kim Tae-yoon)
+      Team: Kwangdong Freecs
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT01_3324646
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT01_3324646
+      PlayerName: Moham
+      Team: Kwangdong Freecs
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT01_3324646
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT01_3324646
+      PlayerName: Kiin
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT01_3324646
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT01_3324646
+      PlayerName: Cuzz
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT01_3324646
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT01_3324646
+      PlayerName: Bdd
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT01_3324646
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT01_3324646
+      PlayerName: Aiming
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: scoreboard-rpgid:ESPORTSTMNT01_3324646
+    row:
+      GameId: scoreboard-rpgid:ESPORTSTMNT01_3324646
+      PlayerName: Lehends
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 9_5_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 9_5_1
+      PlayerName: DuDu (Lee Dong-ju)
+      Team: Kwangdong Freecs
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 9_5_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 9_5_1
+      PlayerName: YoungJae
+      Team: Kwangdong Freecs
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 9_5_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 9_5_1
+      PlayerName: BuLLDoG (Lee Tae-young)
+      Team: Kwangdong Freecs
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 9_5_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 9_5_1
+      PlayerName: Taeyoon (Kim Tae-yoon)
+      Team: Kwangdong Freecs
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 9_5_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 9_5_1
+      PlayerName: Moham
+      Team: Kwangdong Freecs
+      PlayerWin: No
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 9_5_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 9_5_1
+      PlayerName: Kiin
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 9_5_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 9_5_1
+      PlayerName: Cuzz
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 9_5_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 9_5_1
+      PlayerName: Bdd
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 9_5_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 9_5_1
+      PlayerName: Aiming
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.
+  - table: ScoreboardPlayers
+    key: GameId
+    value: LCK/2023 Season/Spring Season_Week 9_5_1
+    row:
+      GameId: LCK/2023 Season/Spring Season_Week 9_5_1
+      PlayerName: Lehends
+      Team: KT Rolster
+      PlayerWin: Yes
+    sourceUrl: https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199
+    reviewedNote: Read all ten explicit Scoreboard/Player links from this exact single-game wikitext block. Matched date,
+      CET-to-UTC start time, blue/red teams and winner to ScoreboardGames; supplement only absent (GameId, PlayerName)
+      Cargo rows and preserve any upstream row.

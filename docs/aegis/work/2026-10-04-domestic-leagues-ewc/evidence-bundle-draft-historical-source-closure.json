@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "historical-source-closure",
+  "type": "local-publication-and-query",
+  "source": "data/leaguepedia/historical-source-closure.json",
+  "summary": "32 mapped annual scopes accepted; 7,316 merged series; reviewed primary sources; SQLite and browser verification recorded in 90-evidence.md.",
+  "verifier": "Strict Leaguepedia publication, verifyPublicSnapshot, real SQLite comparisons, Playwright and repository tests"
+}

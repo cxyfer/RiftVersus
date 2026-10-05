@@ -95,7 +95,9 @@ export async function executeLeaguepediaSync(input: {
       loadRawInput: input.fixture === "leaguepedia-small"
         ? () => loadFixture(input.config, rootDir)
         : async () => {
-          const loaded = await (dependencies.loadLive ?? fetchLeaguepediaRawInput)(client, liveRequest!);
+          const loaded = dependencies.loadLive
+            ? await dependencies.loadLive(client, liveRequest!)
+            : await fetchLeaguepediaRawInput(client, liveRequest!, overrides.sourceCorrections);
           if (loaded.provenance?.kind !== "live") throw new Error("Leaguepedia live loader must return live provenance.");
           return loaded;
         },

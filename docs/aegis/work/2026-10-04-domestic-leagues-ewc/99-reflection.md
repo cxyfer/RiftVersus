@@ -1,21 +1,34 @@
 # Domestic leagues and EWC reflection
 
-The implementation now understands LCK, LPL, EWC, BO2 results, and draws across
-the reviewed import, storage, query, export, and UI paths. Real Leaguepedia
-imports verified T1-HLE LCK, T1-TES EWC, and the LCK 2026 schedule.
+The all-history request is now satisfied at the reviewed Leaguepedia mapped-source
+boundary: all 32 annual scopes imported locally, with 2,265 additional series and
+7,316 merged series. This supersedes the historical 20/32 checkpoint.
 
-The user's all-historical-years preference is not fully satisfied: 20 of 32 year
-scopes passed publication. The user approved publishing the LCK 2026 series with
-an explicit incomplete-game-detail marker. LCK 2026 contains one source result with incomplete
-individual-game detail. The series result remains authoritative, team game
-totals use that final score, and comparison rows identify incomplete game
-detail; player-level comparisons remain limited to observed roster rows.
-LPL 2014, 2018, and 2020 were subsequently imported after source-backed
-validation (the 2020 retry only normalized a case-only tournament key). Twelve
-scopes still need their source gaps and identity conflicts resolved before
-claiming full historical coverage.
+Source review established missing profile data, precise schedule ID joins,
+missing format metadata, dated team rename relationships, and distinct same-name
+players. Three missing LCK 2023 Game 2 records and 60 reviewed roster rows came
+from exact scoreboard wikitext, including official RPGIDs, timestamps, teams,
+winners and explicit players. Existing native rows always take precedence.
 
-No production data was changed. The unrelated `.gitignore` modification was
-preserved. Future import work should keep the all-scope completeness gate and
-add source-specific normalization or reviewed identity mappings only where the
-underlying Leaguepedia evidence supports them.
+Preserving immutable responses and checksumming corrections costs maintained
+review rules but avoids rewriting evidence or weakening publication. The repair
+uses one projection owner in the Leaguepedia provider. Retirement: remove exact
+source workarounds after retained upstream evidence proves those fields/rows are
+fixed; native game rows already prevent duplicate supplemental games. Unexpected
+upstream changes fail closed and require review. Identity lineage is durable
+historical mapping, not a temporary fetch fallback.
+
+ADR action: amend existing ADR-0001. Reversing published source keys and identity
+lineage would require coordinated re-publication; the evidence projection is
+surprising without context; strict permanent rejection versus reviewed primary
+source projection is a real trade-off. The current SQLite baseline is updated.
+No duplicate publication owner, alternate provider, raw rewrite or schema change
+was introduced by source closure. Tests exercise scope isolation, conflicts,
+swapped IDs, successful empty rosters, native source recovery and live fetching.
+
+The remaining actual missing LCK 2026 Game 1 stays explicit under prior user
+approval. Fourteen weighted-score LPL results are not absent played games, though
+the current comparison marker also flags them; team totals retain schedule
+scores and player totals retain played roster facts. No broader scoring UI
+redesign or production deployment occurred. The user's unrelated .gitignore edit
+is preserved. Existing checkpoints and Worlds/MSI records were not deleted.

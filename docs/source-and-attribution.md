@@ -161,3 +161,34 @@ decision plus, at minimum:
 4. identity, coverage, and publication semantics compatible with the single
    `runSync` owner; and
 5. retirement and rollback rules that do not create a second active truth.
+
+## Reviewed source corrections
+
+`sourceCorrections` in the existing checksummed identities override file records
+exact source keys, reviewed Leaguepedia URLs/revisions, original expected values
+and explanations. The Leaguepedia projection module is their sole implementation
+owner; retained raw API envelopes are never rewritten. The same projection feeds
+live query references and deterministic replay. Alias ID swaps use original rows;
+unknown upstream field changes fail closed. Only reviewed missing format/team
+labels and explicit missing rows are eligible; final scores are never replaced.
+
+A reviewed game supplement requires an observed same-MatchId/Tournament series
+anchor, validated slice/date, and declared bounded roster queries. Actual source
+RPGIDs use a separate `scoreboard-rpgid:` key namespace. Native upstream game
+rows with the same series/game number take precedence after repair. Roster
+supplements apply only to imported game keys and explicit source players; no
+lineup inference. Successful empty roster responses become partial coverage;
+missing query scope or wrong-slice responses still fail closed. Optional profile
+rows do not relax referenced identity or raw-source retention checks.
+
+Source corrections are bounded review debt: remove exact workaround rules when
+retained upstream evidence proves repair; re-review unexpected changes. Durable
+historical identity/era mappings remain even after source field repair. Distinct
+same-ID players such as the two Luo profiles never share canonical identity.
+See [historical source closure](../data/leaguepedia/historical-source-closure.json)
+for reviewed facts and the precise local verification boundary.
+
+Awarded initial wins are not played games. Final team scores remain authoritative
+while player comparisons contain only observed game/roster facts. The existing
+incomplete-detail marker also covers awarded-score versus played-row differences;
+it does not imply every such difference is a missing played game.

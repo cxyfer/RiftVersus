@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
 import { parse } from "yaml";
+import { parseSourceCorrections, type SourceCorrection } from "./providers/leaguepedia/source-corrections.js";
 
 export interface IdentityOverride {
   sourceKey: string;
@@ -30,6 +31,7 @@ export interface RegionOverride {
 }
 
 export interface ReviewedOverrides {
+  sourceCorrections?: readonly SourceCorrection[];
   identities: ReadonlyMap<string, IdentityOverride>;
   tournaments: ReadonlyMap<string, TournamentOverride>;
   regions: ReadonlyMap<string, RegionOverride>;
@@ -53,6 +55,7 @@ export async function loadOverrides(paths: OverridePaths): Promise<ReviewedOverr
   const tournaments = parseOverrideFile(parse(tournamentsText), parseTournament, "tournament");
   const regions = parseOverrideFile(parse(regionsText), parseRegion, "region");
   return {
+    sourceCorrections: parseSourceCorrections(asRecord(parse(identitiesText), "identity override file").sourceCorrections),
     identities,
     tournaments,
     regions,

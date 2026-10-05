@@ -1,0 +1,1042 @@
+{
+  "reviewedAt": "2026-10-05",
+  "provider": "leaguepedia",
+  "boundary": "Major-league mapped calendar-year scopes; complete denotes reviewed bounded traversal, not proof that upstream contains every match ever played.",
+  "correctionsFile": "data/overrides/identities.yaml",
+  "correctionsFileChecksum": "130c4615e2105d508f4f44e11798e137e6fb62be7761d30782547889cd8eaa13",
+  "correctionCounts": {
+    "total": 196,
+    "scheduleAliases": 121,
+    "missingFormats": 8,
+    "historicalTeamLabels": 1,
+    "profileAndRedirectSupplements": 3,
+    "gameSupplements": 3,
+    "rosterRows": 60
+  },
+  "acceptedScopes": [
+    {
+      "scope": "EWC-2025",
+      "series": 18,
+      "games": 33,
+      "coverage": [
+        {
+          "status": "complete",
+          "detail": "Verified 33 rows across 153 bounded pages. Media inventory (import scope): {\"candidates\":12,\"eligible\":0,\"missing\":74,\"rightsBlocked\":0,\"invalid\":0,\"unbound\":0,\"ambiguous\":0}; missing or ineligible assets use generated fallback. Ignored 681 malformed unreferenced optional dimension rows (samples: Players:10IQ, Players:20, Players:2Cups, Players:2Vest, Players:3in1warrior, Players:4bo, Players:987, Players:Aaron (Canadian Player), Players:Abedz, Players:Abmis); raw evidence retained. Excluded 34141 valid optional dimension rows not referenced by imported facts or rename closure (samples: Teams:00 Nation, Teams:00 Prospects, Teams:1 Trick Ponies, Teams:1. Berliner Esport-Club e.V., Teams:10 Days, Teams:100 Thieves, Teams:100 Thieves Academy, Teams:100 Thieves Challengers, Teams:100 Thieves Next, Teams:13Noobz Gaming); raw evidence retained."
+        }
+      ],
+      "publication": {
+        "status": "published",
+        "version": "leaguepedia-f8e1dc4434890f59b44550f2abd91e3c27a7ffe6418565467eef6a5658f1db2e"
+      },
+      "tournamentScopes": [
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "Esports World Cup 2025",
+          "from": "2025-01-01",
+          "to": "2026-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        }
+      ]
+    },
+    {
+      "scope": "LCK-2012",
+      "series": 101,
+      "games": 188,
+      "coverage": [
+        {
+          "status": "complete",
+          "detail": "Verified 188 rows across 622 bounded pages. Media inventory (import scope): {\"candidates\":75,\"eligible\":0,\"missing\":173,\"rightsBlocked\":0,\"invalid\":0,\"unbound\":0,\"ambiguous\":0}; missing or ineligible assets use generated fallback. Ignored 681 malformed unreferenced optional dimension rows (samples: Players:10IQ, Players:20, Players:2Cups, Players:2Vest, Players:3in1warrior, Players:4bo, Players:987, Players:Aaron (Canadian Player), Players:Abedz, Players:Abmis); raw evidence retained. Excluded 34039 valid optional dimension rows not referenced by imported facts or rename closure (samples: Teams:00 Nation, Teams:00 Prospects, Teams:1 Trick Ponies, Teams:1. Berliner Esport-Club e.V., Teams:10 Days, Teams:100 Thieves, Teams:100 Thieves Academy, Teams:100 Thieves Challengers, Teams:100 Thieves Next, Teams:13Noobz Gaming); raw evidence retained. Audited 2 forward renames outside imported fact identity scope (samples: Incredible Miracle -> Longzhu Gaming, NaJin e-mFire -> E-mFire); raw evidence retained."
+        }
+      ],
+      "publication": {
+        "status": "published",
+        "version": "leaguepedia-30f90219478ef8776f7ee0b0f39d036ca0713a0fc9c5ddca2a0b99cea63062e6"
+      },
+      "tournamentScopes": [
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "Champions 2012 Spring",
+          "from": "2012-01-01",
+          "to": "2013-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "Champions 2012 Summer",
+          "from": "2012-01-01",
+          "to": "2013-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "Champions 2013 Winter",
+          "from": "2012-01-01",
+          "to": "2013-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "Korea Regional Finals Season 2",
+          "from": "2012-01-01",
+          "to": "2013-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        }
+      ]
+    },
+    {
+      "scope": "LCK-2013",
+      "series": 111,
+      "games": 266,
+      "coverage": [
+        {
+          "status": "complete",
+          "detail": "Verified 266 rows across 780 bounded pages. Media inventory (import scope): {\"candidates\":143,\"eligible\":0,\"missing\":18,\"rightsBlocked\":141,\"invalid\":0,\"unbound\":0,\"ambiguous\":0}; missing or ineligible assets use generated fallback. Ignored 681 malformed unreferenced optional dimension rows (samples: Players:10IQ, Players:20, Players:2Cups, Players:2Vest, Players:3in1warrior, Players:4bo, Players:987, Players:Aaron (Canadian Player), Players:Abedz, Players:Abmis); raw evidence retained. Excluded 34052 valid optional dimension rows not referenced by imported facts or rename closure (samples: Teams:00 Nation, Teams:00 Prospects, Teams:1 Trick Ponies, Teams:1. Berliner Esport-Club e.V., Teams:10 Days, Teams:100 Thieves, Teams:100 Thieves Academy, Teams:100 Thieves Challengers, Teams:100 Thieves Next, Teams:13Noobz Gaming); raw evidence retained. Audited 2 forward renames outside imported fact identity scope (samples: Incredible Miracle -> Longzhu Gaming, SK Telecom T1 -> T1); raw evidence retained."
+        }
+      ],
+      "publication": {
+        "status": "published",
+        "version": "leaguepedia-940f414c2e180ddbbd47da6a76a76c49bdb7d5a8c3ebdf84882f12218fed8d2f"
+      },
+      "tournamentScopes": [
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "Champions 2013 Spring",
+          "from": "2013-01-01",
+          "to": "2014-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "Champions 2013 Summer",
+          "from": "2013-01-01",
+          "to": "2014-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "Champions 2013 Winter",
+          "from": "2013-01-01",
+          "to": "2014-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "Champions 2014 Winter",
+          "from": "2013-01-01",
+          "to": "2014-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "Korea Regional Finals Season 3",
+          "from": "2013-01-01",
+          "to": "2014-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        }
+      ]
+    },
+    {
+      "scope": "LCK-2014",
+      "series": 76,
+      "games": 201,
+      "coverage": [
+        {
+          "status": "complete",
+          "detail": "Verified 201 rows across 624 bounded pages. Media inventory (import scope): {\"candidates\":125,\"eligible\":0,\"missing\":4,\"rightsBlocked\":125,\"invalid\":0,\"unbound\":0,\"ambiguous\":0}; missing or ineligible assets use generated fallback. Ignored 681 malformed unreferenced optional dimension rows (samples: Players:10IQ, Players:20, Players:2Cups, Players:2Vest, Players:3in1warrior, Players:4bo, Players:987, Players:Aaron (Canadian Player), Players:Abedz, Players:Abmis); raw evidence retained. Excluded 34083 valid optional dimension rows not referenced by imported facts or rename closure (samples: Teams:00 Nation, Teams:00 Prospects, Teams:1 Trick Ponies, Teams:1. Berliner Esport-Club e.V., Teams:10 Days, Teams:100 Thieves, Teams:100 Thieves Academy, Teams:100 Thieves Challengers, Teams:100 Thieves Next, Teams:13Noobz Gaming); raw evidence retained."
+        }
+      ],
+      "publication": {
+        "status": "published",
+        "version": "leaguepedia-c5b914d7114d7a431efbd39c5556cf96c40948f79f0d412c2a9754178261e083"
+      },
+      "tournamentScopes": [
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "Champions 2014 Spring",
+          "from": "2014-01-01",
+          "to": "2015-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "Champions 2014 Summer",
+          "from": "2014-01-01",
+          "to": "2015-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "Champions 2014 Winter",
+          "from": "2014-01-01",
+          "to": "2015-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "Korea Regional Finals 2014",
+          "from": "2014-01-01",
+          "to": "2015-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        }
+      ]
+    },
+    {
+      "scope": "LPL-2013",
+      "series": 208,
+      "games": 230,
+      "coverage": [
+        {
+          "status": "complete",
+          "detail": "Verified 230 rows across 779 bounded pages. Media inventory (import scope): {\"candidates\":62,\"eligible\":0,\"missing\":13,\"rightsBlocked\":61,\"invalid\":0,\"unbound\":0,\"ambiguous\":0}; missing or ineligible assets use generated fallback. Ignored 681 malformed unreferenced optional dimension rows (samples: Players:10IQ, Players:20, Players:2Cups, Players:2Vest, Players:3in1warrior, Players:4bo, Players:987, Players:Aaron (Canadian Player), Players:Abedz, Players:Abmis); raw evidence retained. Excluded 34137 valid optional dimension rows not referenced by imported facts or rename closure (samples: Teams:00 Nation, Teams:00 Prospects, Teams:1 Trick Ponies, Teams:1. Berliner Esport-Club e.V., Teams:10 Days, Teams:100 Thieves, Teams:100 Thieves Academy, Teams:100 Thieves Challengers, Teams:100 Thieves Next, Teams:13Noobz Gaming); raw evidence retained. Audited 1 forward renames outside imported fact identity scope (samples: LMQ -> Team Impulse); raw evidence retained."
+        }
+      ],
+      "publication": {
+        "status": "published",
+        "version": "leaguepedia-8f46037b0e0fe6f7131012616a160208e3a10b69b3c6667c90ae62375ae53610"
+      },
+      "tournamentScopes": [
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "China Regional Finals Season 3",
+          "from": "2013-01-01",
+          "to": "2014-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2013 Spring",
+          "from": "2013-01-01",
+          "to": "2014-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2013 Spring Playoffs",
+          "from": "2013-01-01",
+          "to": "2014-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2013 Summer",
+          "from": "2013-01-01",
+          "to": "2014-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2013 Summer Playoffs",
+          "from": "2013-01-01",
+          "to": "2014-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        }
+      ]
+    },
+    {
+      "scope": "LPL-2015",
+      "series": 286,
+      "games": 611,
+      "coverage": [
+        {
+          "status": "complete",
+          "detail": "Verified 611 rows across 793 bounded pages. Media inventory (import scope): {\"candidates\":33,\"eligible\":0,\"missing\":93,\"rightsBlocked\":33,\"invalid\":0,\"unbound\":0,\"ambiguous\":0}; missing or ineligible assets use generated fallback. Ignored 681 malformed unreferenced optional dimension rows (samples: Players:10IQ, Players:20, Players:2Cups, Players:2Vest, Players:3in1warrior, Players:4bo, Players:987, Players:Aaron (Canadian Player), Players:Abedz, Players:Abmis); raw evidence retained. Excluded 34085 valid optional dimension rows not referenced by imported facts or rename closure (samples: Teams:00 Nation, Teams:00 Prospects, Teams:1 Trick Ponies, Teams:1. Berliner Esport-Club e.V., Teams:10 Days, Teams:100 Thieves, Teams:100 Thieves Academy, Teams:100 Thieves Challengers, Teams:100 Thieves Next, Teams:13Noobz Gaming); raw evidence retained. Audited 3 forward renames outside imported fact identity scope (samples: Qiao Gu Reapers -> Newbee, Snake Esports -> LNG Esports, Vici Gaming -> Rare Atom); raw evidence retained."
+        }
+      ],
+      "publication": {
+        "status": "published",
+        "version": "leaguepedia-672f444d2466d6bb9e0fb2e088c488f59771752dbed7e2795b465b62d207831d"
+      },
+      "tournamentScopes": [
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "China Regional Finals 2015",
+          "from": "2015-01-01",
+          "to": "2016-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2015 Spring",
+          "from": "2015-01-01",
+          "to": "2016-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2015 Spring Playoffs",
+          "from": "2015-01-01",
+          "to": "2016-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2015 Summer",
+          "from": "2015-01-01",
+          "to": "2016-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2015 Summer Playoffs",
+          "from": "2015-01-01",
+          "to": "2016-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        }
+      ]
+    },
+    {
+      "scope": "LPL-2016",
+      "series": 211,
+      "games": 529,
+      "coverage": [
+        {
+          "status": "complete",
+          "detail": "Verified 529 rows across 790 bounded pages. Media inventory (import scope): {\"candidates\":128,\"eligible\":0,\"missing\":0,\"rightsBlocked\":128,\"invalid\":0,\"unbound\":0,\"ambiguous\":0}; missing or ineligible assets use generated fallback. Ignored 681 malformed unreferenced optional dimension rows (samples: Players:10IQ, Players:20, Players:2Cups, Players:2Vest, Players:3in1warrior, Players:4bo, Players:987, Players:Aaron (Canadian Player), Players:Abedz, Players:Abmis); raw evidence retained. Excluded 34083 valid optional dimension rows not referenced by imported facts or rename closure (samples: Teams:00 Nation, Teams:00 Prospects, Teams:1 Trick Ponies, Teams:1. Berliner Esport-Club e.V., Teams:10 Days, Teams:100 Thieves, Teams:100 Thieves Academy, Teams:100 Thieves Challengers, Teams:100 Thieves Next, Teams:13Noobz Gaming); raw evidence retained. Audited 3 forward renames outside imported fact identity scope (samples: Game Talents -> Team WE Academy, Snake Esports -> LNG Esports, Vici Gaming -> Rare Atom); raw evidence retained."
+        }
+      ],
+      "publication": {
+        "status": "published",
+        "version": "leaguepedia-bf2a3d5825d248f52a50b35482bef0a49f37c7629dd7e7b2753d0f58f3f2d22f"
+      },
+      "tournamentScopes": [
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "China Regional Finals 2016",
+          "from": "2016-01-01",
+          "to": "2017-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2016 Spring",
+          "from": "2016-01-01",
+          "to": "2017-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2016 Spring Playoffs",
+          "from": "2016-01-01",
+          "to": "2017-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2016 Summer",
+          "from": "2016-01-01",
+          "to": "2017-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2016 Summer Playoffs",
+          "from": "2016-01-01",
+          "to": "2017-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        }
+      ]
+    },
+    {
+      "scope": "LPL-2017",
+      "series": 210,
+      "games": 534,
+      "coverage": [
+        {
+          "status": "complete",
+          "detail": "Verified 534 rows across 788 bounded pages. Media inventory (import scope): {\"candidates\":148,\"eligible\":0,\"missing\":0,\"rightsBlocked\":148,\"invalid\":0,\"unbound\":0,\"ambiguous\":0}; missing or ineligible assets use generated fallback. Ignored 681 malformed unreferenced optional dimension rows (samples: Players:10IQ, Players:20, Players:2Cups, Players:2Vest, Players:3in1warrior, Players:4bo, Players:987, Players:Aaron (Canadian Player), Players:Abedz, Players:Abmis); raw evidence retained. Excluded 34063 valid optional dimension rows not referenced by imported facts or rename closure (samples: Teams:00 Nation, Teams:00 Prospects, Teams:1 Trick Ponies, Teams:1. Berliner Esport-Club e.V., Teams:10 Days, Teams:100 Thieves, Teams:100 Thieves Academy, Teams:100 Thieves Challengers, Teams:100 Thieves Next, Teams:13Noobz Gaming); raw evidence retained. Audited 3 forward renames outside imported fact identity scope (samples: Game Talents -> Team WE Academy, Snake Esports -> LNG Esports, Vici Gaming -> Rare Atom); raw evidence retained."
+        }
+      ],
+      "publication": {
+        "status": "published",
+        "version": "leaguepedia-4c97896bf0f26bfbe7f19764310137ad6655b2864d436f69166a9ee5fa0e4a46"
+      },
+      "tournamentScopes": [
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "China Regional Finals 2017",
+          "from": "2017-01-01",
+          "to": "2018-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2017 Spring",
+          "from": "2017-01-01",
+          "to": "2018-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2017 Spring Playoffs",
+          "from": "2017-01-01",
+          "to": "2018-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2017 Summer",
+          "from": "2017-01-01",
+          "to": "2018-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2017 Summer Playoffs",
+          "from": "2017-01-01",
+          "to": "2018-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        }
+      ]
+    },
+    {
+      "scope": "LPL-2019",
+      "series": 258,
+      "games": 651,
+      "coverage": [
+        {
+          "status": "complete",
+          "detail": "Verified 651 rows across 793 bounded pages. Media inventory (import scope): {\"candidates\":18,\"eligible\":0,\"missing\":171,\"rightsBlocked\":0,\"invalid\":0,\"unbound\":0,\"ambiguous\":0}; missing or ineligible assets use generated fallback. Ignored 681 malformed unreferenced optional dimension rows (samples: Players:10IQ, Players:20, Players:2Cups, Players:2Vest, Players:3in1warrior, Players:4bo, Players:987, Players:Aaron (Canadian Player), Players:Abedz, Players:Abmis); raw evidence retained. Excluded 34040 valid optional dimension rows not referenced by imported facts or rename closure (samples: Teams:00 Nation, Teams:00 Prospects, Teams:1 Trick Ponies, Teams:1. Berliner Esport-Club e.V., Teams:10 Days, Teams:100 Thieves, Teams:100 Thieves Academy, Teams:100 Thieves Challengers, Teams:100 Thieves Next, Teams:13Noobz Gaming); raw evidence retained. Audited 3 forward renames outside imported fact identity scope (samples: Dominus Esports -> ThunderTalk Gaming, Vici Gaming -> Rare Atom, Victory Five -> Ninjas in Pyjamas.CN); raw evidence retained."
+        }
+      ],
+      "publication": {
+        "status": "published",
+        "version": "leaguepedia-3882c29767c39760c44f7d1ce2d80402849263116d22d80117422d70775f502a"
+      },
+      "tournamentScopes": [
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2019 Regional Finals",
+          "from": "2019-01-01",
+          "to": "2020-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2019 Spring",
+          "from": "2019-01-01",
+          "to": "2020-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2019 Spring Playoffs",
+          "from": "2019-01-01",
+          "to": "2020-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2019 Summer",
+          "from": "2019-01-01",
+          "to": "2020-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2019 Summer Playoffs",
+          "from": "2019-01-01",
+          "to": "2020-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        }
+      ]
+    },
+    {
+      "scope": "LPL-2021",
+      "series": 299,
+      "games": 738,
+      "coverage": [
+        {
+          "status": "complete",
+          "detail": "Verified 738 rows across 796 bounded pages. Media inventory (import scope): {\"candidates\":161,\"eligible\":0,\"missing\":0,\"rightsBlocked\":161,\"invalid\":0,\"unbound\":0,\"ambiguous\":0}; missing or ineligible assets use generated fallback. Ignored 681 malformed unreferenced optional dimension rows (samples: Players:10IQ, Players:20, Players:2Cups, Players:2Vest, Players:3in1warrior, Players:4bo, Players:987, Players:Aaron (Canadian Player), Players:Abedz, Players:Abmis); raw evidence retained. Excluded 34050 valid optional dimension rows not referenced by imported facts or rename closure (samples: Teams:00 Nation, Teams:00 Prospects, Teams:1 Trick Ponies, Teams:1. Berliner Esport-Club e.V., Teams:10 Days, Teams:100 Thieves, Teams:100 Thieves Academy, Teams:100 Thieves Challengers, Teams:100 Thieves Next, Teams:13Noobz Gaming); raw evidence retained. Audited 1 forward renames outside imported fact identity scope (samples: Victory Five -> Ninjas in Pyjamas.CN); raw evidence retained."
+        }
+      ],
+      "publication": {
+        "status": "published",
+        "version": "leaguepedia-ee3e0bb9b6ca5d4174581bb3ce71c46e8f813282268ff8d06dcff77fc5912630"
+      },
+      "tournamentScopes": [
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2021 Regional Finals",
+          "from": "2021-01-01",
+          "to": "2022-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2021 Spring",
+          "from": "2021-01-01",
+          "to": "2022-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2021 Spring Playoffs",
+          "from": "2021-01-01",
+          "to": "2022-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2021 Summer",
+          "from": "2021-01-01",
+          "to": "2022-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2021 Summer Playoffs",
+          "from": "2021-01-01",
+          "to": "2022-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        }
+      ]
+    },
+    {
+      "scope": "LPL-2022",
+      "series": 299,
+      "games": 800,
+      "coverage": [
+        {
+          "status": "complete",
+          "detail": "Verified 800 rows across 798 bounded pages. Media inventory (import scope): {\"candidates\":17,\"eligible\":0,\"missing\":135,\"rightsBlocked\":17,\"invalid\":0,\"unbound\":0,\"ambiguous\":0}; missing or ineligible assets use generated fallback. Ignored 681 malformed unreferenced optional dimension rows (samples: Players:10IQ, Players:20, Players:2Cups, Players:2Vest, Players:3in1warrior, Players:4bo, Players:987, Players:Aaron (Canadian Player), Players:Abedz, Players:Abmis); raw evidence retained. Excluded 34059 valid optional dimension rows not referenced by imported facts or rename closure (samples: Teams:00 Nation, Teams:00 Prospects, Teams:1 Trick Ponies, Teams:1. Berliner Esport-Club e.V., Teams:10 Days, Teams:100 Thieves, Teams:100 Thieves Academy, Teams:100 Thieves Challengers, Teams:100 Thieves Next, Teams:13Noobz Gaming); raw evidence retained. Audited 1 forward renames outside imported fact identity scope (samples: Victory Five -> Ninjas in Pyjamas.CN); raw evidence retained."
+        }
+      ],
+      "publication": {
+        "status": "published",
+        "version": "leaguepedia-1fce2ccab4c0ec00a2ccd82ff3a4c651690e90f8536bb479773781578518b5fa"
+      },
+      "tournamentScopes": [
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2022 Regional Finals",
+          "from": "2022-01-01",
+          "to": "2023-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2022 Spring",
+          "from": "2022-01-01",
+          "to": "2023-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2022 Spring Playoffs",
+          "from": "2022-01-01",
+          "to": "2023-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2022 Summer",
+          "from": "2022-01-01",
+          "to": "2023-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LPL 2022 Summer Playoffs",
+          "from": "2022-01-01",
+          "to": "2023-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        }
+      ]
+    },
+    {
+      "scope": "LCK-2023",
+      "series": 188,
+      "games": 474,
+      "coverage": [
+        {
+          "status": "complete",
+          "detail": "Verified 474 rows across 783 bounded pages. Media inventory (import scope): {\"candidates\":80,\"eligible\":0,\"missing\":0,\"rightsBlocked\":80,\"invalid\":0,\"unbound\":0,\"ambiguous\":0}; missing or ineligible assets use generated fallback. Ignored 681 malformed unreferenced optional dimension rows (samples: Players:10IQ, Players:20, Players:2Cups, Players:2Vest, Players:3in1warrior, Players:4bo, Players:987, Players:Aaron (Canadian Player), Players:Abedz, Players:Abmis); raw evidence retained. Excluded 34131 valid optional dimension rows not referenced by imported facts or rename closure (samples: Teams:00 Nation, Teams:00 Prospects, Teams:1 Trick Ponies, Teams:1. Berliner Esport-Club e.V., Teams:10 Days, Teams:100 Thieves, Teams:100 Thieves Academy, Teams:100 Thieves Challengers, Teams:100 Thieves Next, Teams:13Noobz Gaming); raw evidence retained. Audited 1 forward renames outside imported fact identity scope (samples: Liiv SANDBOX -> BNK FEARX); raw evidence retained."
+        }
+      ],
+      "publication": {
+        "status": "published",
+        "version": "leaguepedia-d7b5cd8e4e07b6bcd928cb2797b3db31e0926bc3b6c4bd77c610834aa96f71a2"
+      },
+      "tournamentScopes": [
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LCK 2023 Regional Finals",
+          "from": "2023-01-01",
+          "to": "2024-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LCK 2023 Spring",
+          "from": "2023-01-01",
+          "to": "2024-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LCK 2023 Spring Playoffs",
+          "from": "2023-01-01",
+          "to": "2024-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LCK 2023 Summer",
+          "from": "2023-01-01",
+          "to": "2024-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        },
+        {
+          "provider": "leaguepedia",
+          "tournamentSourceKey": "LCK 2023 Summer Playoffs",
+          "from": "2023-01-01",
+          "to": "2024-01-01",
+          "status": "complete",
+          "unresolvedRows": 0
+        }
+      ]
+    }
+  ],
+  "sourceUrls": [
+    "https://lol.fandom.com/wiki/Levi?oldid=4336550",
+    "https://lol.fandom.com/wiki/Champions%2F2012%20Season%2FSpring?oldid=4492838",
+    "https://lol.fandom.com/wiki/Champions%2F2013%20Season%2FSummer?oldid=4492831",
+    "https://lol.fandom.com/wiki/Champions%2F2013%20Season%2FWinter?oldid=4492835",
+    "https://lol.fandom.com/wiki/Team%20OP?oldid=4126032",
+    "https://lol.fandom.com/wiki/Season%203%20China%20Regional%20Finals?oldid=4339234",
+    "https://lol.fandom.com/wiki/LPL%2F2013%20Season%2FSpring%20Playoffs?oldid=4339219",
+    "https://lol.fandom.com/wiki/LPL%2F2016%20Season%2FSpring%20Season?oldid=4262176",
+    "https://lol.fandom.com/wiki/LPL%2F2016%20Season%2FSummer%20Season?oldid=4262196",
+    "https://lol.fandom.com/wiki/LPL%2F2017%20Season%2FSpring%20Season?oldid=3961438",
+    "https://lol.fandom.com/wiki/LPL%2F2017%20Season%2FSummer%20Season?oldid=3807038",
+    "https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%205?oldid=4538200",
+    "https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%206?oldid=4538201",
+    "https://lol.fandom.com/wiki/LCK%2F2023%20Season%2FSpring%20Season%2FScoreboards%2FWeek%209%20(2)?oldid=4538199"
+  ],
+  "notes": [
+    "Immutable Cargo/query responses remain unchanged; corrections apply to projections and are included in existing override checksum provenance.",
+    "LCK 2023 three missing game-2 facts use exact observed official RPGIDs as stable reviewed provider keys, not guessed original Cargo GameIds. The original wikitext revisions and actual bounded roster queries are retained.",
+    "Luo Ci-Rui and Yin Peng retain separate canonical identities despite both using Luo.",
+    "Qiao Gu Reapers (Newbee rename) and QG Reapers (separate team) remain distinct.",
+    "Calendar-date conflicts in 2013 brackets retain MatchSchedule dates after exact bracket/teams/score verification.",
+    "Successful empty roster queries produce partial coverage; missing declared query scope, contradictory identities, unexpected source values and score conflicts still fail closed.",
+    "No production Pages/site archive publication occurred."
+  ],
+  "reviewedIdentities": [
+    {
+      "sourceKey": "EStar (Chinese Team)",
+      "sourceUrl": "https://lol.fandom.com/wiki/EStar_(Chinese_Team)?oldid=4122212"
+    },
+    {
+      "sourceKey": "Ultra Prime",
+      "sourceUrl": "https://lol.fandom.com/wiki/EStar_(Chinese_Team)?oldid=4122212"
+    },
+    {
+      "sourceKey": "Hyper Youth Gaming",
+      "sourceUrl": "https://lol.fandom.com/wiki/Hyper_Youth_Gaming?oldid=4123054"
+    },
+    {
+      "sourceKey": "Saint Gaming",
+      "sourceUrl": "https://lol.fandom.com/wiki/Saint_Gaming?oldid=4125181"
+    },
+    {
+      "sourceKey": "SinoDragon Gaming",
+      "sourceUrl": "https://lol.fandom.com/wiki/SinoDragon_Gaming?oldid=4125410"
+    },
+    {
+      "sourceKey": "Dominus Esports",
+      "sourceUrl": "https://lol.fandom.com/wiki/Dominus_Esports?oldid=4218082"
+    },
+    {
+      "sourceKey": "Snake Esports",
+      "sourceUrl": "https://lol.fandom.com/wiki/Snake_Esports?oldid=4315835"
+    },
+    {
+      "sourceKey": "LNG Esports",
+      "sourceUrl": "https://lol.fandom.com/wiki/LNG_Esports?oldid=4490661"
+    },
+    {
+      "sourceKey": "Qiao Gu Reapers",
+      "sourceUrl": "https://lol.fandom.com/wiki/Qiao_Gu_Reapers?oldid=4124814"
+    },
+    {
+      "sourceKey": "Newbee",
+      "sourceUrl": "https://lol.fandom.com/wiki/Newbee?oldid=4124205"
+    },
+    {
+      "sourceKey": "Luo (Luo Ci-Rui)",
+      "sourceUrl": "https://lol.fandom.com/wiki/Luo_(Luo_Ci-Rui)?oldid=4101147"
+    },
+    {
+      "sourceKey": "Luo (Yin Peng)",
+      "sourceUrl": "https://lol.fandom.com/wiki/Luo_(Yin_Peng)?oldid=4101149"
+    }
+  ],
+  "verifiedLocalSnapshot": {
+    "snapshotId": "sha256:5b108aa7772caa7384a6809f6362e9849f795393acd74f4b5202ee43a4d43f2b",
+    "totalSeries": 7316,
+    "entities": 1787,
+    "counts": {
+      "lpl": 3627,
+      "msi": 380,
+      "lck": 2570,
+      "worlds": 686,
+      "ewc": 53
+    },
+    "database": {
+      "file": "24dfa7c26851ee16c6620d37450f8d224ee323367baa4db263eef36f177bd474/database.sqlite",
+      "checksum": "24dfa7c26851ee16c6620d37450f8d224ee323367baa4db263eef36f177bd474",
+      "byteSize": 73867264,
+      "pageSize": 4096,
+      "requestChunkSize": 32768
+    },
+    "completeDomesticYearScopes": 32,
+    "scopeBoundary": "All reviewed mapped and bounded source rows accepted locally; not a claim that Leaguepedia contains every official historical match, nor a production deployment.",
+    "seriesScoreGameRowDifferences": {
+      "actualMissingDetail": [
+        {
+          "id": "0bae8198-c795-59ac-88a2-00e957448015",
+          "date": "2026-08-01",
+          "tournament": "LCK 2026 Rounds 3-4",
+          "scores": {
+            "a": 0,
+            "b": 2
+          },
+          "gameRows": 1
+        }
+      ],
+      "reviewedAwardedStarts": [
+        {
+          "id": "018b7dc4-f594-57aa-83c1-2c314daf8bf2",
+          "date": "2017-08-21",
+          "tournament": "LPL 2017 Summer Playoffs",
+          "scores": {
+            "a": 3,
+            "b": 0
+          },
+          "gameRows": 2
+        },
+        {
+          "id": "1b900f19-ba13-500f-8205-958b2de7001a",
+          "date": "2016-08-10",
+          "tournament": "LPL 2016 Summer Playoffs",
+          "scores": {
+            "a": 3,
+            "b": 0
+          },
+          "gameRows": 2
+        },
+        {
+          "id": "3361b95a-561d-5783-89c8-01a5e9f5ed66",
+          "date": "2018-09-06",
+          "tournament": "LPL 2018 Summer Playoffs",
+          "scores": {
+            "a": 3,
+            "b": 1
+          },
+          "gameRows": 3
+        },
+        {
+          "id": "33e81ea7-ae1e-5e72-83fd-c3150cb05736",
+          "date": "2016-04-12",
+          "tournament": "LPL 2016 Spring Playoffs",
+          "scores": {
+            "a": 3,
+            "b": 1
+          },
+          "gameRows": 3
+        },
+        {
+          "id": "43a981aa-57f6-51c6-8237-f1c2c4b1fc88",
+          "date": "2016-04-13",
+          "tournament": "LPL 2016 Spring Playoffs",
+          "scores": {
+            "a": 3,
+            "b": 0
+          },
+          "gameRows": 2
+        },
+        {
+          "id": "6b98b80f-8ce4-57cb-80fc-be769743814d",
+          "date": "2018-04-12",
+          "tournament": "LPL 2018 Spring Playoffs",
+          "scores": {
+            "a": 3,
+            "b": 0
+          },
+          "gameRows": 2
+        },
+        {
+          "id": "80a6d22b-a49f-538e-82b9-8d3e25b749ee",
+          "date": "2018-09-05",
+          "tournament": "LPL 2018 Summer Playoffs",
+          "scores": {
+            "a": 3,
+            "b": 2
+          },
+          "gameRows": 4
+        },
+        {
+          "id": "9c8d81cd-b6f8-5ae0-87dc-c5504a57c922",
+          "date": "2014-08-24",
+          "tournament": "LPL 2014 Summer Playoffs",
+          "scores": {
+            "a": 3,
+            "b": 0
+          },
+          "gameRows": 2
+        },
+        {
+          "id": "9ecfa853-102e-5152-8461-d675c88fadaa",
+          "date": "2018-04-13",
+          "tournament": "LPL 2018 Spring Playoffs",
+          "scores": {
+            "a": 3,
+            "b": 0
+          },
+          "gameRows": 2
+        },
+        {
+          "id": "ae6eb021-d949-5ef9-8270-41bcfadbf42d",
+          "date": "2017-04-17",
+          "tournament": "LPL 2017 Spring Playoffs",
+          "scores": {
+            "a": 1,
+            "b": 3
+          },
+          "gameRows": 3
+        },
+        {
+          "id": "ba5ad060-287f-5635-8e02-471fc5338a97",
+          "date": "2017-04-18",
+          "tournament": "LPL 2017 Spring Playoffs",
+          "scores": {
+            "a": 2,
+            "b": 3
+          },
+          "gameRows": 4
+        },
+        {
+          "id": "dd4282a6-c2c0-5704-828e-380fc3194d62",
+          "date": "2013-09-08",
+          "tournament": "China Regional Finals Season 3",
+          "scores": {
+            "a": 1,
+            "b": 3
+          },
+          "gameRows": 3
+        },
+        {
+          "id": "e40c4823-cee7-500c-8d50-b71716941338",
+          "date": "2016-08-09",
+          "tournament": "LPL 2016 Summer Playoffs",
+          "scores": {
+            "a": 1,
+            "b": 3
+          },
+          "gameRows": 3
+        },
+        {
+          "id": "eae5d460-2ddb-5053-8773-ff62e00709fc",
+          "date": "2017-08-22",
+          "tournament": "LPL 2017 Summer Playoffs",
+          "scores": {
+            "a": 3,
+            "b": 0
+          },
+          "gameRows": 2
+        }
+      ],
+      "presentationBoundary": "Existing gameDetailsComplete=false also marks 14 weighted/awarded-score series; awarded wins are not played Game rows."
+    }
+  },
+  "verifiedQueries": [
+    {
+      "left": "t1",
+      "right": "hanwha-life-esports",
+      "league": "lck",
+      "year": 2023,
+      "seriesTotal": 4
+    },
+    {
+      "left": "Azubu Frost",
+      "right": "Azubu Blaze",
+      "league": "lck",
+      "year": 2012,
+      "seriesTotal": 2
+    },
+    {
+      "left": "Oh My God",
+      "right": "Invictus Gaming",
+      "league": "lpl",
+      "year": 2013,
+      "seriesTotal": 8
+    },
+    {
+      "left": "EDward Gaming",
+      "right": "Oh My God",
+      "league": "lpl",
+      "year": 2015,
+      "seriesTotal": 4
+    },
+    {
+      "left": "EDward Gaming",
+      "right": "Oh My God",
+      "league": "lpl",
+      "year": 2016,
+      "seriesTotal": 3
+    },
+    {
+      "left": "LNG Esports",
+      "right": "Oh My God",
+      "league": "lpl",
+      "year": 2018,
+      "seriesTotal": 4
+    },
+    {
+      "left": "Ultra Prime",
+      "right": "Oh My God",
+      "league": "lpl",
+      "year": 2020,
+      "seriesTotal": 2
+    },
+    {
+      "left": "t1",
+      "right": "hanwha-life-esports",
+      "league": "lck",
+      "year": 2026,
+      "seriesTotal": 8
+    },
+    {
+      "left": "t1",
+      "right": "hanwha-life-esports",
+      "league": "worlds",
+      "year": 2021,
+      "seriesTotal": 1
+    },
+    {
+      "left": "Gen.G",
+      "right": "Anyone's Legend",
+      "league": "ewc",
+      "year": 2025,
+      "seriesTotal": 1
+    }
+  ],
+  "verifiedRecoveredRosterQuery": {
+    "query": {
+      "left": {
+        "kind": "player",
+        "id": "c382b598-db9d-5350-8aff-bd29f93eb4a0"
+      },
+      "right": {
+        "kind": "player",
+        "id": "0249cfa8-dae7-55f4-8755-e2ef550bbc9b"
+      },
+      "from": "2023-02-22",
+      "to": "2023-02-22",
+      "eventCategories": [
+        "league"
+      ],
+      "leagues": [
+        "lck"
+      ],
+      "bestOf": [],
+      "tournamentIds": [],
+      "limit": 100
+    },
+    "seriesSummary": {
+      "wins": 1,
+      "losses": 0,
+      "total": 1,
+      "winRate": 1
+    },
+    "gameSummary": {
+      "wins": 2,
+      "losses": 0,
+      "total": 2,
+      "winRate": 1
+    },
+    "rows": [
+      {
+        "id": "7875491c-b007-54d6-85bf-b4ae75edd9e7",
+        "date": "2023-02-22",
+        "event": {
+          "id": "40c85d83-ddfa-59bd-830f-aafd225ed7bb",
+          "name": "LCK 2023 Spring",
+          "category": "league"
+        },
+        "bestOf": 3,
+        "leftName": "Gen.G",
+        "rightName": "Nongshim RedForce",
+        "leftScore": 2,
+        "rightScore": 0,
+        "gameDetailsComplete": true,
+        "winner": "left"
+      }
+    ]
+  },
+  "awardedScoreSources": [
+    "https://lol.fandom.com/wiki/Season_3_China_Regional_Finals?oldid=4339234",
+    "https://lol.fandom.com/wiki/LPL/2014_Season/Summer_Playoffs?oldid=4492912",
+    "https://lol.fandom.com/wiki/LPL/2016_Season/Spring_Playoffs?oldid=4492854",
+    "https://lol.fandom.com/wiki/LPL/2016_Season/Summer_Playoffs?oldid=4492853",
+    "https://lol.fandom.com/wiki/LPL/2017_Season/Spring_Playoffs?oldid=4492851",
+    "https://lol.fandom.com/wiki/LPL/2017_Season/Summer_Playoffs?oldid=4492850",
+    "https://lol.fandom.com/wiki/LPL/2018_Season/Spring_Playoffs?oldid=4156521",
+    "https://lol.fandom.com/wiki/LPL/2018_Season/Summer_Playoffs?oldid=4208488"
+  ]
+}

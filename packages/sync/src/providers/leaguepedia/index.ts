@@ -45,7 +45,7 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
       let snapshot: LeaguepediaSnapshot;
       let normalized: ReturnType<typeof normalizeLeaguepediaSnapshot>;
       try {
-        snapshot = parseLeaguepediaRawInput(rawInput);
+        snapshot = parseLeaguepediaRawInput(rawInput, options.overrides.sourceCorrections);
         validateRawEvidence(snapshot);
         normalized = normalizeLeaguepediaSnapshot(snapshot, options.overrides);
       } catch (error) {

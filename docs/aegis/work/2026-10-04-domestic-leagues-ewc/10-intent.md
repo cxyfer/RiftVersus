@@ -10,4 +10,12 @@ Scope fence: first-division official seasons and qualifying regional finals,
 EWC main tournaments; no academy/exhibition/promotion or alternate providers.
 Evidence required: exact Cargo keys/date spans, parser regression, actual
 publication and SQLite queries, integration constraints and web draw display.
-Unrelated .gitignore edit is preserved. Git commit/push is outside this request.
+Unrelated .gitignore edit is preserved. The initial import request excluded Git closeout; the later explicit user
+request to commit and push authorizes that closeout for this task.
+
+2026-10-05 continuation: user explicitly requested researching related information,
+independently judging it, and completing the blocked scopes. Apply exact reviewed
+primary-source projections with immutable original evidence; preserve incomplete
+details where no source-backed reconstruction is available. This grants source
+research, correction implementation and isolated local import, not a Pages
+production deployment or modification of unrelated edits.

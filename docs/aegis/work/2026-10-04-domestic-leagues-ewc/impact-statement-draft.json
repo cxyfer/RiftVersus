@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "affectedLayers": [
+    "sync",
+    "apps/data",
+    "reviewed source configuration"
+  ],
+  "owners": [
+    "Leaguepedia projection",
+    "Existing one-shot publisher"
+  ],
+  "invariants": [
+    "Immutable raw responses",
+    "Strict bounded scope and score validation",
+    "Existing identity UUID owners",
+    "Worlds/MSI preservation"
+  ],
+  "compatBoundary": "Existing source, publisher and SQLite remain canonical; corrections are checksummed exact-key projections.",
+  "nonGoals": [
+    "Alternate provider",
+    "Persistent raw rewrite",
+    "Production deployment"
+  ]
+}

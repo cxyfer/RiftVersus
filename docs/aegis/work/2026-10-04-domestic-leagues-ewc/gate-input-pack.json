@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "baselineRefs": [
+    "docs/aegis/baseline/2026-10-03-riftversus-github-sqlite.md"
+  ],
+  "impactStatement": "docs/aegis/work/2026-10-04-domestic-leagues-ewc/impact-statement-draft.json",
+  "compatPlan": "Existing source, publisher and SQLite remain canonical; corrections are checksummed exact-key projections.",
+  "retirementPlan": "Exact source workarounds retained until verified upstream repair; native game rows prevent duplicates.",
+  "evidenceBundle": [
+    "docs/aegis/work/2026-10-04-domestic-leagues-ewc/evidence-bundle-draft-historical-source-closure.json"
+  ]
+}

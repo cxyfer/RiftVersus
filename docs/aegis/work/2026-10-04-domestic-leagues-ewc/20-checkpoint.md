@@ -1,31 +1,30 @@
 # Execution checkpoint
 
-Implemented: reviewed map/audit; BO2, EWC and league contracts; migration 013;
-sync/query/UI/export changes; 161 data tests, 42 domain, 192 sync, 15 contracts,
-81 web, 77 PostgreSQL integration tests; typecheck; isolated checkpoint
-restore; real imports, SQLite queries and local browser checks.
-Thirty-two year scopes were audited; twenty published locally after retries.
-This is partial data coverage, not completion of the all-years request. The
-initial strict import and retry results are in
-/tmp/riftversus-leagues-live-evidence/results.json and `retries.json`.
-Published scopes: LCK 2015-2022 and 2024-2026; LPL 2014, 2018, 2020, and
-2023-2026; EWC 2024 and 2026. T1-HLE LCK has 43 results; original Worlds row is
-retained. Combined preview counts: LCK 2,094, LPL 1,856, EWC 35; Worlds/MSI
-unchanged at 686/380.
-SQLite query evidence: /tmp/riftversus-leagues-live-evidence/query-evidence.json;
-browser DOM evidence: /tmp/riftversus-leagues-live-evidence/browser/evidence.json.
-Browser checks verified T1-HLE LCK, the EWC final, LPL 2014/2018/2020, and mobile width; screenshots
-timed out while waiting for fonts. Twelve scopes remain blocked: LCK 2012-2014,
-2023; LPL 2013, 2015-2017, 2019, and 2021-2022; EWC 2025. LCK 2026 had a
-Leaguepedia case where
-MatchSchedule reports Gen.G 0:2 Dplus Kia but ScoreboardGames only contains
-Game 2. Import now preserves the series result, labels partial game detail, and
-derives team game totals from MatchSchedule. Failures in the other scopes
-include missing or contradictory source rows, unresolved player/team identities,
-and incomplete historical dimensions. Do not mark those scopes complete or
-publish a checkpoint.
-Typecheck/lint, full unit tests and PostgreSQL integration pass; map-indexed
-files validate. The Aegis index now includes the pre-existing media follow-up.
-The final preview remains at http://127.0.0.1:4187/RiftVersus/.
-Drift: one shared Leaguepedia publisher remains owner; no alternate source or
-data truth. No production archive, Pages deployment, commit or push occurred.
+Updated 2026-10-05: the original 20/32 milestone is retained in 90-evidence.md.
+The remaining twelve scopes now pass strict local publication after independently
+reviewed Leaguepedia source corrections. All 32 mapped annual scopes are accepted:
+LCK/Champions 2012-2026, LPL 2013-2026, EWC 2024-2026.
+
+The complete merged SQLite preview contains 7,316 series: LCK 2,570, LPL 3,627,
+EWC 53, Worlds 686, MSI 380. The original Worlds/MSI and twenty accepted scopes
+are preserved. Reviewed Snake/LNG and eStar/Ultra Prime lineage corrections
+retain original historical team-era labels and existing successor UUID owners.
+The two Luo player pages remain distinct.
+
+One LCK 2026 Gen.G-Dplus Kia result still lacks Game 1 and remains explicitly
+incomplete. Fourteen LPL rows have awarded initial wins; no fictitious games were
+created. Coverage complete means the bounded mapped source rows were resolved,
+not proof that the upstream archive includes every official match ever played.
+
+Verification: sync 208, data 161, domain 42, contracts 15, web 81, root unit 68;
+PostgreSQL integration 77 passed, 1 skipped; typecheck, lint, consumer build;
+real SQLite verification, ten team comparisons, recovered Chovy/FIESTA roster
+query, seven browser comparisons and mobile width. See 90-evidence.md and
+data/leaguepedia/historical-source-closure.json for exact evidence.
+
+Preview: http://127.0.0.1:4187/RiftVersus/.
+Raw source responses and immutable snapshots are retained locally. No production
+checkpoint or Pages deployment is claimed. The same one-shot publisher and
+normalizer remain owners; no alternate provider or HTTP source fetch was added.
+Git closeout follows the user's later commit/push instruction; .gitignore stays
+outside the task commit.

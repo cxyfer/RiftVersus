@@ -211,3 +211,37 @@ No legacy provider or runtime writer retained. Old BO1/3/5 constraints remain fo
 ### Boundary
 
 This amendment is an advisory Aegis Method Pack record. It does not grant completion authority or replace project-authoritative architecture sources.
+
+## Amendment - 2026-10-05 - Resolve historical Leaguepedia source gaps through exact reviewed projections with immutable raw evidence.
+
+- Status: amended
+
+### Source Evidence
+
+- Strict local publication of twelve additional scopes; all 32 mapped years accepted; 7,316 merged SQLite series; primary revision-backed game, roster, format and identity facts.
+### Change Summary
+
+Resolve historical Leaguepedia source gaps through exact reviewed projections with immutable raw evidence.
+
+### Compatibility Boundary
+
+Leaguepedia remains the sole facts owner. Existing checksummed overrides own reviewed corrections; one projection module applies them to live references and replay without rewriting raw evidence. Bounded scope, score, identity and retention gates remain strict. Existing successor UUID owners and historical team eras are preserved. Native game rows prevent duplicate supplements after source repair.
+
+### Retirement Impact
+
+Retain original checkpoints, snapshots and raw responses. Remove exact source workaround rules when retained upstream evidence proves repair; keep durable identity lineage. No alternate provider, duplicate publisher or persistent data deletion. A missing LCK 2026 Game 1 remains incomplete; awarded initial wins never create fictitious played games.
+
+### Baseline Sync
+
+- Needed: needed
+- Target: docs/aegis/baseline/2026-10-03-riftversus-github-sqlite.md
+- Action: update baseline
+- Reason: Record the implemented source projection contract and local coverage without changing the deployed Pages or checkpoint baseline.
+
+### Evidence References
+
+- data/leaguepedia/historical-source-closure.json
+- docs/aegis/work/2026-10-04-domestic-leagues-ewc/90-evidence.md
+### Boundary
+
+This amendment is an advisory Aegis Method Pack record. It does not grant completion authority or replace project-authoritative architecture sources.

@@ -65,3 +65,22 @@ bounded. Current published state stays recoverable from its immutable site and
 checkpoint. Success requires actual imported/queryable records, not a map alone;
 external blockers must be evidenced and reported. Shared contract extension
 requires ADR/baseline synchronization after verified implementation.
+
+## Source closure continuation — 2026-10-05
+
+User requested independent primary-source research and completion of blocked
+scopes. Implemented exact reviewed corrections in the existing Leaguepedia
+projection and checksummed overrides, with immutable Cargo/wikitext responses.
+Primary-source IDs, team eras, formats, explicit game winners/times and rosters
+resolve twelve additional scopes. Strict actual query coverage remains required.
+All 32 mapped years now publish locally and the complete merged preview retains
+Worlds/MSI: 7,316 series. This does not imply exhaustive upstream archive coverage.
+No production deployment is claimed. One LCK 2026 Game 1 still lacks evidence;
+fourteen awarded-score LPL rows must not acquire fabricated games.
+
+One projection owner, no alternate writer/provider. Remove source workaround
+rules after verified upstream repair, preserving durable identity mappings.
+ADR-0001 and SQLite baseline sync record the executed boundary. Exact counts,
+primary revision evidence and verification are in the work record and
+`data/leaguepedia/historical-source-closure.json`. Later commit/push authorization
+supersedes the initial Git scope fence; unrelated .gitignore stays excluded.
