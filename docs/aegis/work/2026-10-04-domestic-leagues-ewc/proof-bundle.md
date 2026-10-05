@@ -20,6 +20,7 @@ This proof bundle is an advisory Aegis Method Pack record. It does not determine
 ## Evidence Bundle Refs
 
 - docs/aegis/work/2026-10-04-domestic-leagues-ewc/evidence-bundle-draft-alternative-game-review.json
+- docs/aegis/work/2026-10-04-domestic-leagues-ewc/evidence-bundle-draft-deploy-performance.json
 - docs/aegis/work/2026-10-04-domestic-leagues-ewc/evidence-bundle-draft-historical-source-closure.json
 
 ## Drift Check

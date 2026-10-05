@@ -92,3 +92,4 @@ Entries are workspace records, not authoritative runtime decisions.
 | 2026-10-05 | artifact | docs/aegis/work/2026-10-04-domestic-leagues-ewc/evidence-bundle-draft-historical-source-closure.json | 2026-10-04-domestic-leagues-ewc evidence historical-source-closure |
 | 2026-10-06 | artifact | data/leaguepedia/alternative-game-review.json | User-authorized official-video game and roster review |
 | 2026-10-06 | artifact | docs/aegis/work/2026-10-04-domestic-leagues-ewc/evidence-bundle-draft-alternative-game-review.json | 2026-10-04-domestic-leagues-ewc evidence alternative-game-review |
+| 2026-10-06 | artifact | docs/aegis/work/2026-10-04-domestic-leagues-ewc/evidence-bundle-draft-deploy-performance.json | 2026-10-04-domestic-leagues-ewc evidence deploy-performance |

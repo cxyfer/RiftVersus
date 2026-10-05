@@ -8,6 +8,7 @@
   "retirementPlan": "Exact source workarounds retained until verified upstream repair; native game rows prevent duplicates.",
   "evidenceBundle": [
     "docs/aegis/work/2026-10-04-domestic-leagues-ewc/evidence-bundle-draft-alternative-game-review.json",
+    "docs/aegis/work/2026-10-04-domestic-leagues-ewc/evidence-bundle-draft-deploy-performance.json",
     "docs/aegis/work/2026-10-04-domestic-leagues-ewc/evidence-bundle-draft-historical-source-closure.json"
   ]
 }
