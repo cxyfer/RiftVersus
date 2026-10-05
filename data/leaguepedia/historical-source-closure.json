@@ -1038,5 +1038,18 @@
     "https://lol.fandom.com/wiki/LPL/2017_Season/Summer_Playoffs?oldid=4492850",
     "https://lol.fandom.com/wiki/LPL/2018_Season/Spring_Playoffs?oldid=4156521",
     "https://lol.fandom.com/wiki/LPL/2018_Season/Summer_Playoffs?oldid=4208488"
-  ]
+  ],
+  "remainingGameDetailReview": {
+    "reviewedAt": "2026-10-05",
+    "matchId": "LCK/2026 Season/Rounds 3-4_Week 10_8",
+    "sourceUrl": "https://lol.fandom.com/wiki/LCK/2026_Season/Rounds_3-4/Scoreboards/Week_10_(2)?oldid=4501210",
+    "pageId": 1056761,
+    "revisionId": 4501210,
+    "scheduleScore": "Gen.G 0:2 Dplus Kia",
+    "cargoObservedGameNumbers": [
+      2
+    ],
+    "primaryScoreboardFinding": "Game 1 is only a Scoreboard/Season 5 placeholder with notplayed=Game Data not available.; no actual game RPGID or roster. Game 2 has the full scoreboard and RPGID LOLTMNT02_444730.",
+    "decision": "Preserve authoritative series score and incomplete detail; do not convert a placeholder clock or score into actual game/player facts."
+  }
 }

@@ -105,7 +105,11 @@ roster is partial unless independently reviewed source rows resolve it.
 - Seven real browser comparisons pass; mobile 390px has no horizontal overflow.
   Browser preview reads the final snapshot at http://127.0.0.1:4187/RiftVersus/.
 - A single actual detail gap remains: Gen.G 0:2 Dplus Kia, August 1, 2026;
-  Game 1 has no retained source and remains explicitly incomplete.
+  The [primary Week 10 scoreboard, revision 4501210](https://lol.fandom.com/wiki/LCK/2026_Season/Rounds_3-4/Scoreboards/Week_10_(2)?oldid=4501210)
+  explicitly labels Game 1 `Game Data not available.`; it has no actual RPGID
+  or roster, only a result placeholder. Game 2 has RPGID LOLTMNT02_444730.
+  Rechecked live Cargo still contains only Game 2. The placeholder time is
+  insufficient proof of actual game start, so Game 1 remains incomplete.
 - Fourteen other `gameDetailsComplete=false` rows are source-confirmed awarded
   starts: China regional final 2013, LPL summer final 2014, and first playoff
   rounds in LPL 2016-2018. Awarded initial wins are not played game rows.
