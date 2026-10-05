@@ -210,3 +210,40 @@ The user's existing commit/push authorization applies; .gitignore stays excluded
 - Source: data/leaguepedia/alternative-game-review.json
 - Summary: Official-video alternative restores LCK 2026 Game 1 and ten players; actual publication, SQLite and nine browser comparisons pass. Timestamp is inferred broadcast-minute precision.
 - Verifier: Primary official video observations, first-hand report, sync/data/unit tests, strict publication, SQLite and Playwright
+
+## User-authorized deployment and physical SQLite read repair — 2026-10-06
+
+PR 8 and merged main 00377ee5545920bbae491305f9de2bf9b236f8b5 pass complete
+remote CI (37345785281 and 37346329005). History publication 37346563673 is
+running. The redundant push rebuild 37346328961 was cancelled before deployment;
+it would restore the old checkpoint without importing the requested data.
+Hosted baseline SQLite is independently checksum-verified: 1,066 series,
+Worlds 686 / MSI 380. It is retained under /tmp/riftversus-domestic-production/before.
+
+Ten controlled cold runs of the full local history reveal a physical layout
+problem: 2,293,860 bytes / 32 GETs / 10.754 s median. dbstat attributes most reads
+to the wide game-series index, followed by team/date candidate scans and public
+ID table lookups. Narrow game-count indexing, equality-before-range team index
+keys, WITHOUT ROWID public IDs and the supported 16 KiB request unit yield
+917,604 bytes / 29 GETs, with all ten runs and the median below the unchanged
+1 MiB / 30 GET / 10 s gate. Logical digest remains exactly
+sha256:21a8e4aacc35afa7aee229dd9f4d0bcf36f48584658b1bcdb4648bc73b1a491f.
+
+Fresh suites pass: root 68, contracts 15, domain 42, sync 210, data 161, web 81;
+consumer, typecheck and lint pass. The existing export test now expects the
+reviewed 16 KiB manifest unit; old 32 KiB archives remain supported. Ten legacy
+team comparisons, restored LCK 2023 player detail and both alternative Game 1
+team/player comparisons pass on the newly exported SQLite. All 1,066 hosted
+baseline series IDs are retained. No facts, source rules, query branch or logical
+schema version changed. The narrow index serves scalar counts; the existing wide
+index remains necessary for direct-player queries. No immutable archive or live
+state is deleted. Local artifacts are under /tmp/riftversus-domestic-production.
+Production publication and hosted verification remain pending.
+
+## EvidenceBundleDraft
+
+- Artifact key: deploy-performance
+- Type: controlled-browser-and-immutable-facts-regression
+- Source: docs/aegis/work/2026-10-04-domestic-leagues-ewc/evidence-bundle-draft-deploy-performance.json
+- Summary: Physical SQLite layout repair preserves all facts and passes ten unchanged controlled cold-query publication gates.
+- Verifier: Actual exported SQLite, logical digest, dbstat, ten controlled browser runs, domain/data/web suites and prior-series ID preservation

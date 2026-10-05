@@ -102,3 +102,28 @@ no alternate fetcher/provider or schema. TDD Route: off; focused regression test
 cover restricted tables/URLs, immutable manual review retention, scope isolation,
 replay idempotence, native repair and actual strict import. Broadcast time is
 reconstructed at minute precision and declared as inferred, not server timestamp.
+
+## Authorized deployment performance gate — 2026-10-06
+
+User requests push and deployment. PR 8 passes complete remote CI and merges as
+00377ee5545920bbae491305f9de2bf9b236f8b5. History publication 37346563673 runs
+under the existing Actions writer; current-year publication follows it.
+
+The complete 7,316-series local snapshot fails the unchanged controlled gate:
+ten cold defaults read 2,293,860 bytes in 32 GETs with 10.754 s median. dbstat
+maps the excess to wide game-count probes and team/date candidate index reads.
+Public-ID lookups also perform table reads through a noncovering primary index.
+Isolated physical-layout experiments preserve the exact logical snapshot digest.
+
+Change Necessity: code-change at packages/domain/src/sqlite-schema.ts. Put the
+opponent-region equality before the date range in existing covering team indexes,
+use a narrow series-ID game-count index, cluster public IDs in their existing
+primary key (WITHOUT ROWID), and select the already-supported 16 KiB request unit.
+No query branch, fallback, facts, source authority, column or logical schema
+version changes. Existing old archives remain queryable and rollbackable.
+Minimality: sufficient repair in the existing derived snapshot schema owner.
+Anti-entropy class: derived-state / contract-carrying schema; existing definitions
+are replaced for new exports, no persistent state or immutable archive deletion.
+TDD Route: off; existing domain/data tests, snapshot digest and target comparisons,
+ten controlled cold runs, full remote CI and real hosted verification establish
+the physical-layout repair. The generation/restore/Pages gates stay unchanged.

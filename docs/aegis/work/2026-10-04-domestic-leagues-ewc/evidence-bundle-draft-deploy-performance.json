@@ -1,0 +1,57 @@
+{
+  "artifactKey": "deploy-performance",
+  "schemaVersion": "aegis.schema.v0",
+  "logicalSnapshotUnchanged": true,
+  "snapshotId": "sha256:21a8e4aacc35afa7aee229dd9f4d0bcf36f48584658b1bcdb4648bc73b1a491f",
+  "series": 7316,
+  "domesticYearScopes": 32,
+  "preservedBaselineSeries": 1066,
+  "before": {
+    "runs": 10,
+    "rangeGetCount": 32,
+    "databaseBytesRead": 2293860,
+    "medianReadyMs": 10754.103799000008
+  },
+  "after": {
+    "runs": 10,
+    "rangeGetCount": 29,
+    "databaseBytesRead": 917604,
+    "medianReadyMs": 9233.934178500003,
+    "database": {
+      "file": "6c2cba88fa87099d95c57ec388d9d752423523bcbef4c3d36510da644d54eea3/database.sqlite",
+      "checksum": "6c2cba88fa87099d95c57ec388d9d752423523bcbef4c3d36510da644d54eea3",
+      "byteSize": 74653696,
+      "pageSize": 4096,
+      "requestChunkSize": 16384
+    }
+  },
+  "profile": {
+    "latencyMs": 150,
+    "bandwidthBytesPerSecond": 1250000
+  },
+  "gates": {
+    "maximumRangeGets": 30,
+    "maximumDatabaseBytes": 1048576,
+    "maximumMedianReadyMs": 10000,
+    "status": "passed"
+  },
+  "checks": {
+    "rootUnit": 68,
+    "contracts": 15,
+    "domain": 42,
+    "sync": 210,
+    "data": 161,
+    "web": 81,
+    "consumer": "passed",
+    "typecheck": "passed",
+    "lint": "passed",
+    "sqliteQueries": "ten historical team comparisons and three repaired-player/team comparisons passed"
+  },
+  "localArtifacts": "/tmp/riftversus-domestic-production",
+  "productionStatus": "history publication 37346563673 is still running; no production deployment success claimed",
+  "sqliteSchemaVersion": 3,
+  "type": "derived-sqlite-layout-and-controlled-browser-evidence",
+  "source": "docs/aegis/work/2026-10-04-domestic-leagues-ewc/90-evidence.md",
+  "summary": "Physical SQLite layout preserves 7,316 series and passes ten controlled cold defaults at 917,604 bytes / 29 GETs / 9.234 s median.",
+  "verifier": "Actual SQLite digest and comparisons; ten controlled Worker/WASM/Range browser runs; 577 unit/workspace tests, consumer, typecheck and lint"
+}
