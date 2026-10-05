@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "affectedLayers": [
+    "sync",
+    "apps/data",
+    "reviewed source configuration"
+  ],
+  "owners": [
+    "Leaguepedia projection",
+    "Existing one-shot publisher"
+  ],
+  "invariants": [
+    "Immutable raw responses",
+    "Strict bounded scope and score validation",
+    "Existing identity UUID owners",
+    "Worlds/MSI preservation"
+  ],
+  "compatBoundary": "Same Leaguepedia automatic provider/publisher; explicitly user-authorized missing game/roster supplements use official video plus corroboration and distinct review evidence; native upstream rows retain precedence.",
+  "nonGoals": [
+    "Alternate provider",
+    "Persistent raw rewrite",
+    "Production deployment"
+  ]
+}

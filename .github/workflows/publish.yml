@@ -90,6 +90,13 @@ jobs:
       # Official configure-pages v5, metadata only; never enable Pages implicitly.
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
         id: pages
+      - name: Load reviewed competition mappings
+        run: |
+          {
+            echo 'LEAGUEPEDIA_COMPETITION_MAP<<RIFTVERSUS_REVIEWED_MAP'
+            cat data/leaguepedia/competition-map.json
+            echo 'RIFTVERSUS_REVIEWED_MAP'
+          } >> "$GITHUB_ENV"
       - name: Prepare verified SQLite publication
         id: prepare
         env:
@@ -110,10 +117,9 @@ jobs:
           LEAGUEPEDIA_USER_AGENT: ${{ vars.LEAGUEPEDIA_USER_AGENT }}
           LEAGUEPEDIA_MEDIA_HOSTS: ${{ vars.LEAGUEPEDIA_MEDIA_HOSTS }}
           LEAGUEPEDIA_SYNC_YEARS: ${{ vars.LEAGUEPEDIA_SYNC_YEARS }}
-          LEAGUEPEDIA_SYNC_COMPETITIONS: ${{ vars.LEAGUEPEDIA_SYNC_COMPETITIONS }}
-          LEAGUEPEDIA_COMPETITION_MAP: ${{ vars.LEAGUEPEDIA_COMPETITION_MAP }}
+          LEAGUEPEDIA_SYNC_COMPETITIONS: MSI,LCK,LPL,EWC
           LEAGUEPEDIA_MAPPING_YEARS: ${{ vars.LEAGUEPEDIA_MAPPING_YEARS }}
-          LEAGUEPEDIA_MAPPING_COMPETITIONS: ${{ vars.LEAGUEPEDIA_MAPPING_COMPETITIONS }}
+          LEAGUEPEDIA_MAPPING_COMPETITIONS: MSI,LCK,LPL,EWC
         run: pnpm data publish prepare
       - name: Retain public candidate browser evidence
         if: always()

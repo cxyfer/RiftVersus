@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isCompletedSeriesScore } from "./series-format.js";
 
 import { CoverageWarningSchema } from "./comparison.js";
 import { DatasetSchema } from "./dataset.js";
@@ -65,6 +66,12 @@ export const SnapshotSeriesSchema = z.object({
   completed: z.boolean(),
   winnerSide: z.enum(["a", "b"]).nullable(),
   score: z.object({ a: z.number().int().min(0), b: z.number().int().min(0) }),
+}).superRefine((series, context) => {
+  if (!series.completed) return;
+  const expected = series.score.a === series.score.b ? null : series.score.a > series.score.b ? "a" : "b";
+  if (!isCompletedSeriesScore(series.bestOf, series.score.a, series.score.b) || series.winnerSide !== expected) {
+    context.addIssue({ code: "custom", message: "Completed series result must agree with its format and score.", path: ["score"] });
+  }
 });
 
 // Build-time projection only. Browser queries execute against the SQLite artifact.

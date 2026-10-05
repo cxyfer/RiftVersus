@@ -26,7 +26,7 @@ export async function exportSnapshotFacts(database: Kysely<Database>): Promise<S
       db.selectFrom("media_assets").selectAll().where("is_current", "=", true).orderBy("id").execute(),
       db.selectFrom("series_facts").selectAll().where("publication_generation", "<=", latestPublicationGeneration)
         .where(sql<boolean>`(retired_generation is null or retired_generation > ${latestPublicationGeneration})`)
-        .where("completed", "=", true).where("winner_team_id", "is not", null).where("side_a_score", "is not", null).where("side_b_score", "is not", null).orderBy("id").execute(),
+        .where("completed", "=", true).where("side_a_score", "is not", null).where("side_b_score", "is not", null).orderBy("id").execute(),
       db.selectFrom("game_facts").selectAll().where("publication_generation", "<=", latestPublicationGeneration)
         .where(sql<boolean>`(retired_generation is null or retired_generation > ${latestPublicationGeneration})`).orderBy("played_at").orderBy("id").execute(),
       db.selectFrom("game_players").selectAll().orderBy("game_id").orderBy("player_entity_id").execute(),
@@ -83,7 +83,7 @@ export async function exportSnapshotFacts(database: Kysely<Database>): Promise<S
       return { id: item.id, playedAt: item.played_at.toISOString(), date: item.played_at.toISOString().slice(0, 10),
         tournament: { id: tournament.id, name: tournament.name, category: tournament.category, league: tournament.league_slug as SnapshotSeries["tournament"]["league"] },
         bestOf: item.best_of, sides: [side(item.side_a_team_id, item.side_a_era_id, item.side_a_region_id, []), side(item.side_b_team_id, item.side_b_era_id, item.side_b_region_id, [])],
-        games: gamesBySeries.get(item.id) ?? [], completed: item.completed, winnerSide: item.winner_team_id === item.side_a_team_id ? "a" : "b",
+        games: gamesBySeries.get(item.id) ?? [], completed: item.completed, winnerSide: item.winner_team_id === null ? null : item.winner_team_id === item.side_a_team_id ? "a" : "b",
         score: { a: item.side_a_score!, b: item.side_b_score! } };
     });
     return { schemaVersion: 1, dataset: { version: dataset.version, coverage: dataset.coverage,

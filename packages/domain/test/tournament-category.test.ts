@@ -9,6 +9,7 @@ describe("tournament classification", () => {
     expect(classifyTournament(input, [{ tournamentId: input.id, category: "other" }])).toBe("other");
     expect(classifyTournament({ id: "worlds", name: "2024 World Championship" }, [])).toBe("worlds");
     expect(classifyTournament({ id: "msi", name: "Mid-Season Invitational" }, [])).toBe("msi");
+    expect(classifyTournament({ id: "ewc", name: "Esports World Cup 2024" }, [])).toBe("ewc");
     expect(classifyTournament({ id: "fst", name: "First Stand Tournament" }, [])).toBe("fst");
     expect(classifyTournament({ id: "lpl", name: "Summer", leagueName: "LPL" }, [])).toBe("league");
     expect(classifyTournament({ id: "unknown", name: "Regional Cup" }, [])).toBe("other");

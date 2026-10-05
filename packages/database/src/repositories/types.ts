@@ -13,7 +13,7 @@ export interface EntitySearchResponse {
 export interface FilterOptions {
   eventCategories: EventCategory[];
   tournaments: Array<{ id: string; name: string; category: EventCategory }>;
-  bestOf: Array<1 | 3 | 5>;
+  bestOf: Array<1 | 2 | 3 | 5>;
 }
 
 export interface DatasetStatus extends Dataset {
@@ -97,7 +97,8 @@ export interface SourceObjectInput {
 export interface StagedEntityInput { id: string; provider: string; sourceKeys: readonly string[]; kind: "team" | "player"; canonicalName: string; playerId?: string | null; aliases: readonly string[] }
 export interface StagedRegionInput { id: string; provider: string; sourceKey: string; name: string }
 export interface StagedTeamEraInput { id: string; provider: string; sourceKey: string; teamEntityId: string; displayName: string; regionId?: string | null; validFrom?: string | null; validTo?: string | null }
-export interface StagedTournamentInput { id: string; provider: string; sourceKey: string; name: string; aliases: readonly string[]; category: "league" | "fst" | "msi" | "worlds" | "other"; seasonYear?: number | null; validFrom?: string | null; validTo?: string | null }
+export interface StagedTournamentInput { id: string; provider: string; sourceKey: string; name: string; aliases: readonly string[]; leagueSlug?: "lck" | "lpl" | "lec" | "lcs" | null;
+  category: "league" | "fst" | "msi" | "worlds" | "ewc" | "other"; seasonYear?: number | null; validFrom?: string | null; validTo?: string | null }
 export interface StagedDimensionsInput { entities: readonly StagedEntityInput[]; teamEras: readonly StagedTeamEraInput[]; regions: readonly StagedRegionInput[]; tournaments: readonly StagedTournamentInput[] }
 export interface PublishedMediaInput { provider: string; sourceUrl: string; objectKey: string; checksum: string; contentType: string; byteSize: string; attribution: string; entityId?: string | null; teamEraId?: string | null; license?: string | null; rightsBasis?: import("@riftversus/contracts").MediaRightsBasis }
 export interface OverrideApplicationInput { overrideFile: string; checksum: string }
@@ -131,7 +132,7 @@ export interface CompleteUnchangedSyncRunInput { syncRunId: string; version: str
 
 export interface SeriesFactInput {
   id: string; provider: string; sourceKey: string; tournamentId: string; playedAt: Date;
-  bestOf: 1 | 3 | 5; completed: boolean; sideATeamId: string; sideAEraId?: string | null; sideARegionId?: string | null;
+  bestOf: 1 | 2 | 3 | 5; completed: boolean; sideATeamId: string; sideAEraId?: string | null; sideARegionId?: string | null;
   sideBTeamId: string; sideBEraId?: string | null; sideBRegionId?: string | null; sideAScore?: number | null; sideBScore?: number | null; winnerTeamId?: string | null;
 }
 export interface GameFactInput {

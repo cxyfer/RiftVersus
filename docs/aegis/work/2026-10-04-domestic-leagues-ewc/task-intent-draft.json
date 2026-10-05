@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "requestedOutcome": "Research other sources and manually replace the remaining LCK 2026 Game 1 gap.",
+  "goal": "Import all 32 reviewed mapped annual scopes with primary-source evidence.",
+  "successEvidence": [
+    "data/leaguepedia/historical-source-closure.json",
+    "docs/aegis/work/2026-10-04-domestic-leagues-ewc/90-evidence.md"
+  ],
+  "stopCondition": "All bounded mapped source rows accepted; retain unsupported game details as explicitly incomplete.",
+  "scope": "LCK 2012-2026, LPL 2013-2026, EWC 2024-2026, isolated local publication.",
+  "changeKinds": [
+    "source-correction",
+    "data-import"
+  ],
+  "riskHints": [
+    "Contradictory third-party statistics",
+    "Exact game-server time unavailable"
+  ],
+  "nonGoals": [
+    "Production deployment",
+    "Invented games",
+    "Unrelated .gitignore edit"
+  ]
+}

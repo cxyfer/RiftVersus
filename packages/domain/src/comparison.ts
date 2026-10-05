@@ -1,7 +1,7 @@
 import type { BestOf, EventCategory } from "@riftversus/contracts";
 
 export type SideKey = "a" | "b";
-export type ComparisonWinner = "left" | "right";
+export type ComparisonWinner = "left" | "right" | "draw";
 
 export interface DomainSide {
   readonly teamId: string;
@@ -64,6 +64,7 @@ export interface DirectGame {
 export interface RecordSummary {
   readonly wins: number;
   readonly losses: number;
+  readonly draws?: number;
   readonly total: number;
   readonly winRate: number;
 }
@@ -138,9 +139,10 @@ function passesFilters(query: ComparisonQuery, series: DomainSeries): boolean {
 function recordFrom(outcomes: readonly (ComparisonWinner | null)[]): RecordSummary {
   const wins = outcomes.filter((outcome) => outcome === "left").length;
   const losses = outcomes.filter((outcome) => outcome === "right").length;
-  const total = wins + losses;
+  const draws = outcomes.filter((outcome) => outcome === "draw").length;
+  const total = wins + losses + draws;
 
-  return { wins, losses, total, winRate: total === 0 ? 0 : wins / total };
+  return { wins, losses, ...(draws > 0 ? { draws } : {}), total, winRate: total === 0 ? 0 : wins / total };
 }
 
 function leftTeamIdForSeries(query: ComparisonQuery, series: DomainSeries): string | null {
@@ -187,7 +189,8 @@ export function summarizeComparison(query: ComparisonQuery, series: readonly Dom
   const gameOutcomes: ComparisonWinner[] = [];
 
   for (const item of series) {
-    if (seenSeriesIds.has(item.id) || !item.completed || item.winnerSide === null || !qualifiesSeries(query, item)) {
+    const completedDraw = item.bestOf === 2 && item.score.a === 1 && item.score.b === 1;
+    if (seenSeriesIds.has(item.id) || !item.completed || (item.winnerSide === null && !completedDraw) || !qualifiesSeries(query, item)) {
       continue;
     }
     seenSeriesIds.add(item.id);
@@ -196,14 +199,21 @@ export function summarizeComparison(query: ComparisonQuery, series: readonly Dom
     if (leftTeamId === null) {
       continue;
     }
-    const winnerTeamId = sideAt(item.sides, item.winnerSide).teamId;
-    seriesOutcomes.push(winnerTeamId === leftTeamId ? "left" : "right");
+    const winnerTeamId = item.winnerSide === null ? null : sideAt(item.sides, item.winnerSide).teamId;
+    seriesOutcomes.push(winnerTeamId === null ? "draw" : winnerTeamId === leftTeamId ? "left" : "right");
 
-    for (const game of item.games) {
-      const directGame = resolveDirectGame(query, game);
-      if (directGame !== null && directGame.winner !== null) {
-        gameOutcomes.push(directGame.winner);
+    if (hasPlayerSubject(query)) {
+      for (const game of item.games) {
+        const directGame = resolveDirectGame(query, game);
+        if (directGame !== null && directGame.winner !== null) gameOutcomes.push(directGame.winner);
       }
+    } else {
+      const assignment = resolveSides(query, item.sides);
+      if (assignment === null) continue;
+      const leftScore = item.score[assignment.left];
+      const rightScore = item.score[assignment.right];
+      for (let index = 0; index < leftScore; index += 1) gameOutcomes.push("left");
+      for (let index = 0; index < rightScore; index += 1) gameOutcomes.push("right");
     }
   }
 

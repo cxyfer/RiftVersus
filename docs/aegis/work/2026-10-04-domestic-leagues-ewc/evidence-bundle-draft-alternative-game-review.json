@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "aegis.schema.v0",
+  "artifactKey": "alternative-game-review",
+  "type": "manual-source-review-and-local-publication",
+  "source": "data/leaguepedia/alternative-game-review.json",
+  "summary": "Official-video alternative restores LCK 2026 Game 1 and ten players; actual publication, SQLite and nine browser comparisons pass. Timestamp is inferred broadcast-minute precision.",
+  "verifier": "Primary official video observations, first-hand report, sync/data/unit tests, strict publication, SQLite and Playwright"
+}

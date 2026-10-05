@@ -178,3 +178,104 @@ images; 22 players without an exact binding and all regions retain generated
 presentation. Images are static files outside SQLite. The existing export
 request-unit owner now uses 32 KiB following ten passing controlled cold runs;
 SQL schema, logical snapshot and performance gates remain unchanged.
+
+## Amendment - 2026-10-04 - Add source-reviewed historical LCK/LPL ownership, EWC category and BO2 draw semantics while preserving fail-closed imports.
+
+- Status: amended
+
+### Source Evidence
+
+- data/leaguepedia/competition-map.json; data/leaguepedia/domestic-ewc-audit.json; /tmp/riftversus-leagues-live-evidence/query-evidence.json; isolated PostgreSQL and SQLite verification.
+### Change Summary
+
+Add source-reviewed historical LCK/LPL ownership, EWC category and BO2 draw semantics while preserving fail-closed imports.
+
+### Compatibility Boundary
+
+Leaguepedia remains the sole facts owner; exact reviewed tournament mappings assign lck/lpl, EWC is a separate category, and valid BO2 1:1 draws have no winner and count in totals. Existing Worlds/MSI facts and schema 2 rollback sites remain readable.
+
+### Retirement Impact
+
+No legacy provider or runtime writer retained. Old BO1/3/5 constraints remain for existing formats; downgrade is guarded when BO2 or EWC facts exist.
+
+### Baseline Sync
+
+- Needed: needed
+- Target: docs/aegis/baseline/2026-10-03-riftversus-github-sqlite.md
+- Action: update baseline
+- Reason: Current architecture now includes the historical domestic/EWC schema, mapping and publication contract.
+
+### Evidence References
+
+- docs/aegis/plans/2026-10-04-domestic-leagues-ewc.md
+### Boundary
+
+This amendment is an advisory Aegis Method Pack record. It does not grant completion authority or replace project-authoritative architecture sources.
+
+## Amendment - 2026-10-05 - Resolve historical Leaguepedia source gaps through exact reviewed projections with immutable raw evidence.
+
+- Status: amended
+
+### Source Evidence
+
+- Strict local publication of twelve additional scopes; all 32 mapped years accepted; 7,316 merged SQLite series; primary revision-backed game, roster, format and identity facts.
+### Change Summary
+
+Resolve historical Leaguepedia source gaps through exact reviewed projections with immutable raw evidence.
+
+### Compatibility Boundary
+
+Leaguepedia remains the sole facts owner. Existing checksummed overrides own reviewed corrections; one projection module applies them to live references and replay without rewriting raw evidence. Bounded scope, score, identity and retention gates remain strict. Existing successor UUID owners and historical team eras are preserved. Native game rows prevent duplicate supplements after source repair.
+
+### Retirement Impact
+
+Retain original checkpoints, snapshots and raw responses. Remove exact source workaround rules when retained upstream evidence proves repair; keep durable identity lineage. No alternate provider, duplicate publisher or persistent data deletion. A missing LCK 2026 Game 1 remains incomplete; awarded initial wins never create fictitious played games.
+
+### Baseline Sync
+
+- Needed: needed
+- Target: docs/aegis/baseline/2026-10-03-riftversus-github-sqlite.md
+- Action: update baseline
+- Reason: Record the implemented source projection contract and local coverage without changing the deployed Pages or checkpoint baseline.
+
+### Evidence References
+
+- data/leaguepedia/historical-source-closure.json
+- docs/aegis/work/2026-10-04-domestic-leagues-ewc/90-evidence.md
+### Boundary
+
+This amendment is an advisory Aegis Method Pack record. It does not grant completion authority or replace project-authoritative architecture sources.
+
+## Amendment - 2026-10-06 - Allow explicitly user-authorized official-video manual supplements for exact missing games and rosters.
+
+- Status: amended
+
+### Source Evidence
+
+- User requests other sources and manual completion; official LCK video and first-hand Inven report restore LCK 2026 August 1 Game 1 and ten players. Strict local publication, SQLite team/player comparisons and browser checks pass.
+### Change Summary
+
+Allow explicitly user-authorized official-video manual supplements for exact missing games and rosters.
+
+### Compatibility Boundary
+
+Leaguepedia remains the sole automatic provider. Existing checksummed projection accepts explicit reviewed-alternative video URLs only for missing game/roster rows with corroboration. Manual evidence uses review action, never forged Cargo/query responses. Exact score, identity, slice/date and roster-query constraints remain. Timestamp is explicitly inferred broadcast-minute precision; exact server start unknown.
+
+### Retirement Impact
+
+Native same-series/game-number rows suppress the manual supplement when upstream repairs it. Preserve raw responses, prior snapshots and immutable source objects. No alternate fetcher, scheduled provider, duplicate writer or presentation reuse of copyrighted video/images. Remove exact manual rules after verified native repair.
+
+### Baseline Sync
+
+- Needed: needed
+- Target: docs/aegis/baseline/2026-10-03-riftversus-github-sqlite.md
+- Action: update baseline
+- Reason: Document the explicit user-authorized source exception and time precision while preserving automatic provider, deployment and persistence owners.
+
+### Evidence References
+
+- data/leaguepedia/alternative-game-review.json
+- docs/aegis/work/2026-10-04-domestic-leagues-ewc/90-evidence.md
+### Boundary
+
+This amendment is an advisory Aegis Method Pack record. It does not grant completion authority or replace project-authoritative architecture sources.

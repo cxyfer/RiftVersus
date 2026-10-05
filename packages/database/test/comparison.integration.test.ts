@@ -72,6 +72,13 @@ describeWithDatabase("comparison repositories", () => {
     expect(response.gameSummary).toEqual({ wins: 0, losses: 2, total: 2, winRate: 0 });
   });
 
+  it("uses MatchSchedule scores for team game totals and marks missing game detail", async () => {
+    const response = await compareHeadToHead(query({ kind: "team", id: seedIds.t1 }, { kind: "team", id: seedIds.genG }), db);
+    expect(response.seriesSummary).toEqual({ wins: 1, losses: 0, total: 1, winRate: 1 });
+    expect(response.gameSummary).toEqual({ wins: 2, losses: 0, total: 2, winRate: 1 });
+    expect(response.rows[0]).toMatchObject({ id: seedIds.changedSeries, leftScore: 2, rightScore: 0, gameDetailsComplete: false });
+  });
+
   it("does not present an era that belongs to a different side team", async () => {
     const rollback = new Error("rollback mismatched team-era fixture");
     await expect(db.transaction().execute(async (trx) => {

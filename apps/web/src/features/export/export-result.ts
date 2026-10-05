@@ -181,6 +181,7 @@ function renderExportPage(document: Document, initial: ComparisonResponse, rows:
   score.className = "export-sheet__score";
   appendText(score, "span", "SERIES");
   appendText(score, "strong", `${initial.seriesSummary.wins} - ${initial.seriesSummary.losses}`);
+  if (initial.seriesSummary.draws) appendText(score, "small", `${initial.seriesSummary.draws} DRAWS`);
   appendText(score, "small", `GAMES ${initial.gameSummary.wins} - ${initial.gameSummary.losses}`);
   const right = document.createElement("div");
   right.className = "export-sheet__subject export-sheet__subject--right";
@@ -203,9 +204,9 @@ function renderExportPage(document: Document, initial: ComparisonResponse, rows:
   for (const row of rows) {
     const item = document.createElement("div");
     item.className = "export-sheet__row";
-    appendText(item, "span", `${row.date} · ${row.event.name} · BO${row.bestOf}`);
+    appendText(item, "span", `${row.date} · ${row.event.name} · BO${row.bestOf}${row.gameDetailsComplete ? "" : " · 單局明細不完整"}`);
     appendText(item, "strong", `${row.leftName} ${row.leftScore}:${row.rightScore} ${row.rightName}`);
-    appendText(item, "span", row.winner === "left" ? "WIN" : "LOSS", row.winner === "left" ? "export-sheet__win" : "export-sheet__loss");
+    appendText(item, "span", row.winner === "draw" ? "DRAW" : row.winner === "left" ? "WIN" : "LOSS", row.winner === "draw" ? "export-sheet__draw" : row.winner === "left" ? "export-sheet__win" : "export-sheet__loss");
     list.append(item);
   }
   root.append(list);

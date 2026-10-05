@@ -36,4 +36,10 @@ describe("comparison route state", () => {
     const parsed = parseRouteState(serializeRouteState(state));
     expect(parsed).toEqual({ state, recovered: false });
   });
+
+  it("preserves EWC and BO2 filters in shared URLs", () => {
+    const state = { ...defaultRouteState, events: ["ewc" as const], bestOf: [2 as const] };
+    expect(parseRouteState(serializeRouteState(state))).toEqual({ state, recovered: false });
+    expect(toRouteQuery(state)).toMatchObject({ eventCategories: ["ewc"], bestOf: [2] });
+  });
 });

@@ -21,7 +21,11 @@ second.
 Logical competition names are not fuzzy matched. Every requested
 competition/year pair must have an exact Leaguepedia tournament key in
 `LEAGUEPEDIA_COMPETITION_MAP`; an absent year mapping stops the run before the
-repository is opened. The reviewed canonical mappings are
+repository is opened. Production uses the reviewed exact-key registry at
+`data/leaguepedia/competition-map.json`, including historical LCK/Champions,
+LPL and EWC main events; `domestic-ewc-audit.json` records source counts and
+date spans. Missing or partial upstream scopes remain unpublishable as complete.
+The reviewed canonical mappings are
 `data/overrides/identities.yaml`, `data/overrides/tournaments.yaml`, and
 `data/overrides/regions.yaml`; the third maps source-region values such as LPL
 to canonical regions. Their checksums are retained with each sync run, and
@@ -35,6 +39,9 @@ infer aliases from names, short names, current teams, or other dimension
 fields. A player redirect collision is accepted only when structural parsing
 leaves exactly one valid Players row; zero or multiple valid targets fail
 closed and all source rows remain in immutable evidence.
+Players with different Leaguepedia IDs/pages may share a real name. Those
+source identities remain separate, and publication adds the canonical ID to a
+colliding URL slug without changing an existing player's slug.
 
 Leaguepedia `Players.ID` and `Players.Name` have separate owners in the
 published identity model. `player_id` stores the public competitive ID (for
@@ -51,10 +58,17 @@ renaming an existing player.
 `ScoreboardGames.MatchId` must join exactly one retained schedule row; the
 schedule provides tournament identity, scheduled provenance, teams, `BestOf`,
 final score, and winner. The game rows own actual timestamps, individual game
-sequence, and winners and must exactly explain that final. Canonical series
-`playedAt` is the earliest actual game timestamp for the exact `MatchId`.
-Missing, duplicate, orphan, or conflicting schedule evidence stops the run. The
-importer does not infer a series score or `BestOf` from `ScoreboardGames` fields.
+sequence, and winners. Every observed game must agree with the schedule teams
+and stay within its final score; a source may omit some individual game rows.
+Canonical series `playedAt` is the earliest available actual game timestamp
+for the exact `MatchId`. Duplicate, orphan, or contradictory schedule/game
+evidence stops the run. Team game totals use the schedule's final score, while
+player comparisons use only observed game and roster rows. Comparison rows
+mark series whose game detail is incomplete. The importer does not infer a
+series score or `BestOf` from `ScoreboardGames` fields.
+Completed BO2 series use exact 1:1 scores for a draw with no winner; the two
+game winners remain required. Draws count toward series totals and win-rate
+denominators, but not toward either side's wins or losses.
 
 Comparison subjects describe what the user selected; historical series rows
 describe the teams that actually participated. Each row's `leftName` and
@@ -147,3 +161,58 @@ decision plus, at minimum:
 4. identity, coverage, and publication semantics compatible with the single
    `runSync` owner; and
 5. retirement and rollback rules that do not create a second active truth.
+
+## Reviewed source corrections
+
+`sourceCorrections` in the existing checksummed identities override file records
+exact source keys, reviewed Leaguepedia URLs/revisions, original expected values
+and explanations. The Leaguepedia projection module is their sole implementation
+owner; retained raw API envelopes are never rewritten. The same projection feeds
+live query references and deterministic replay. Alias ID swaps use original rows;
+unknown upstream field changes fail closed. Only reviewed missing format/team
+labels and explicit missing rows are eligible; final scores are never replaced.
+
+A reviewed game supplement requires an observed same-MatchId/Tournament series
+anchor, validated slice/date, and declared bounded roster queries. Actual source
+RPGIDs use a separate `scoreboard-rpgid:` key namespace. Native upstream game
+rows with the same series/game number take precedence after repair. Roster
+supplements apply only to imported game keys and explicit source players; no
+lineup inference. Successful empty roster responses become partial coverage;
+missing query scope or wrong-slice responses still fail closed. Optional profile
+rows do not relax referenced identity or raw-source retention checks.
+
+Source corrections are bounded review debt: remove exact workaround rules when
+retained upstream evidence proves repair; re-review unexpected changes. Durable
+historical identity/era mappings remain even after source field repair. Distinct
+same-ID players such as the two Luo profiles never share canonical identity.
+See [historical source closure](../data/leaguepedia/historical-source-closure.json)
+for reviewed facts and the precise local verification boundary.
+
+Awarded initial wins are not played games. Final team scores remain authoritative
+while player comparisons contain only observed game/roster facts. The existing
+incomplete-detail marker also covers awarded-score versus played-row differences;
+it does not imply every such difference is a missing played game.
+
+## Explicitly reviewed alternative game facts
+
+The user's explicit request to search other sources and manually replace a missing
+game authorizes a bounded exception to the Leaguepedia-only fact policy. Existing
+source corrections may use sourceKind=reviewed-alternative only for absent game
+and roster rows, with a reviewed official YouTube video and corroborating HTTPS
+sources. No automatic alternate provider, API or scheduled fallback is added.
+
+The existing projection keeps the native game/roster precedence and requires the
+same observed-series anchor, date bounds, scores, exact player identities and
+bounded roster queries. A separate review evidence action retains the manual
+rules and URLs with content-derived identity inside the published raw object;
+it never pretends the supplemental row was returned by Cargo/MediaWiki. Original
+responses remain unchanged and the overrides checksum binds the exact facts.
+
+For [the reviewed LCK 2026 Game 1](../data/leaguepedia/alternative-game-review.json),
+only winner, sides, game number and explicit participants are imported. Time is
+an inferred official-broadcast minute, not a precise game-server timestamp; this
+limitation stays in the manual provenance. Current public comparisons expose the
+verified calendar day. Complete game detail refers to observed game/roster
+coverage, not a guarantee of precise server timestamps. Conflicting third-party
+statistics are rejected. Video/images stay local evidence and are not reused as
+presentation assets. Retire the supplement after verified native source repair.

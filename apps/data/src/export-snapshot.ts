@@ -1,3 +1,4 @@
+import { isCompletedSeriesScore } from "@riftversus/contracts";
 import { createHash, randomUUID } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 import { lstat, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
@@ -42,7 +43,7 @@ export function snapshotDigest(snapshot: Omit<PublicSnapshot, "snapshotId">): st
 }
 
 function snapshotWithDigest(projection: Omit<PublicSnapshot, "snapshotId">): PublicSnapshot {
-  if (projection.series.some((series) => !series.completed || series.winnerSide === null)) throw new Error("Public SQLite snapshots require completed series with a winner.");
+  if (projection.series.some((series) => !series.completed || !isCompletedSeriesScore(series.bestOf, series.score.a, series.score.b) || (series.winnerSide === null && !(series.bestOf === 2 && series.score.a === 1 && series.score.b === 1)))) throw new Error("Public SQLite snapshots require valid completed series (including BO2 draws).");
   if (projection.series.some((series) => series.sides.some((side) => side.playerIds.length > 0))) throw new Error("Public SQLite snapshots store player membership per game, not on series sides.");
   const normalized = normalizeProjection(projection);
   const { snapshotId: placeholder, ...content } = normalized;
@@ -269,7 +270,7 @@ async function readSqliteSnapshot(directory: string, manifest: SqliteManifest): 
       if (tournament === undefined) throw new Error(`SQLite series tournament is missing: ${stringValue(row, "tournament_id")}`);
       const sides: [SnapshotSide, SnapshotSide] = [sideFromRow(row, "a", []), sideFromRow(row, "b", [])];
       const winner = nullableStringValue(row, "winner_team_id"); const winnerSide = winner === null ? null : winner === sides[0].teamId ? "a" : winner === sides[1].teamId ? "b" : (() => { throw new Error(`SQLite series winner is not one of its sides: ${id}`); })();
-      series.push({ id, playedAt: stringValue(row, "played_at"), date: stringValue(row, "date"), tournament: { id: stringValue(tournament, "id"), name: stringValue(tournament, "name"), category: stringValue(tournament, "category") as SnapshotSeries["tournament"]["category"], league: nullableStringValue(tournament, "league_slug") as SnapshotSeries["tournament"]["league"] }, bestOf: numberValue(row, "best_of") as SnapshotSeries["bestOf"], sides, games: [...(gamesBySeries.get(id) ?? [])].sort(compareGames), completed: winner !== null, winnerSide, score: { a: numberValue(row, "side_a_score"), b: numberValue(row, "side_b_score") } });
+      series.push({ id, playedAt: stringValue(row, "played_at"), date: stringValue(row, "date"), tournament: { id: stringValue(tournament, "id"), name: stringValue(tournament, "name"), category: stringValue(tournament, "category") as SnapshotSeries["tournament"]["category"], league: nullableStringValue(tournament, "league_slug") as SnapshotSeries["tournament"]["league"] }, bestOf: numberValue(row, "best_of") as SnapshotSeries["bestOf"], sides, games: [...(gamesBySeries.get(id) ?? [])].sort(compareGames), completed: true, winnerSide, score: { a: numberValue(row, "side_a_score"), b: numberValue(row, "side_b_score") } });
     }
     const snapshot = PublicSnapshotSchema.parse({ schemaVersion: 1, snapshotId: manifest.snapshotId, dataset, coverageWarnings, entities, series, ...(freshness === undefined ? {} : { freshness }), ...(attribution === undefined ? {} : { attribution }) });
     const { snapshotId, ...content } = snapshot; void snapshotId;

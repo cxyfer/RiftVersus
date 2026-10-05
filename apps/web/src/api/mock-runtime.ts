@@ -41,9 +41,9 @@ export const mockApi: ComparisonApi = {
     const left = resolved(query.left);
     const right = resolved(query.right);
     const baseRows = [
-      { id: "88888888-8888-4888-8888-888888888881", date: "2025-11-02", event: { id: "99999999-9999-4999-8999-999999999991", name: "World Championship", category: "worlds" as const }, league: "lpl", bestOf: 5 as const, leftName: "T1", rightName: "Weibo Gaming", leftScore: 3, rightScore: 1, winner: "left" as const },
-      { id: "88888888-8888-4888-8888-888888888882", date: "2024-10-27", event: { id: "99999999-9999-4999-8999-999999999992", name: "World Championship", category: "worlds" as const }, league: "lpl", bestOf: 5 as const, leftName: "T1", rightName: "Bilibili Gaming", leftScore: 3, rightScore: 0, winner: "left" as const },
-      { id: "88888888-8888-4888-8888-888888888883", date: "2023-11-19", event: { id: "99999999-9999-4999-8999-999999999993", name: "World Championship", category: "worlds" as const }, league: "lpl", bestOf: 5 as const, leftName: "SK Telecom T1", rightName: "Weibo Gaming", leftScore: 3, rightScore: 2, winner: "left" as const },
+      { id: "88888888-8888-4888-8888-888888888881", date: "2025-11-02", event: { id: "99999999-9999-4999-8999-999999999991", name: "World Championship", category: "worlds" as const }, league: "lpl", bestOf: 5 as const, leftName: "T1", rightName: "Weibo Gaming", leftScore: 3, rightScore: 1, gameDetailsComplete: true, winner: "left" as const },
+      { id: "88888888-8888-4888-8888-888888888882", date: "2024-10-27", event: { id: "99999999-9999-4999-8999-999999999992", name: "World Championship", category: "worlds" as const }, league: "lpl", bestOf: 5 as const, leftName: "T1", rightName: "Bilibili Gaming", leftScore: 3, rightScore: 0, gameDetailsComplete: true, winner: "left" as const },
+      { id: "88888888-8888-4888-8888-888888888883", date: "2023-11-19", event: { id: "99999999-9999-4999-8999-999999999993", name: "World Championship", category: "worlds" as const }, league: "lpl", bestOf: 5 as const, leftName: "SK Telecom T1", rightName: "Weibo Gaming", leftScore: 3, rightScore: 2, gameDetailsComplete: true, winner: "left" as const },
     ];
     const longFixture = typeof window !== "undefined" && window.localStorage.getItem("riftversus.playwright-fixture") === "long";
     const fixtureRows = longFixture ? Array.from({ length: 101 }, (_, index) => ({ ...baseRows[index % baseRows.length]!, id: `88888888-8888-4888-8888-${String(index + 1).padStart(12, "0")}`, event: { ...baseRows[index % baseRows.length]!.event, id: `99999999-9999-4999-8999-${String(index + 1).padStart(12, "0")}`, name: `World Championship ${index + 1}` }, date: new Date(Date.UTC(2025, 10, 9 - index)).toISOString().slice(0, 10) })) : baseRows;
@@ -58,7 +58,7 @@ export const mockApi: ComparisonApi = {
       subjects: { left, right }, query,
       seriesSummary: { wins: allRows.length, losses: 0, total: allRows.length, winRate: allRows.length === 0 ? 0 : 1 },
       gameSummary: { wins: allRows.length * 3, losses: allRows.length, total: allRows.length * 4, winRate: allRows.length === 0 ? 0 : 0.75 },
-      rows: page.map((row) => ({ id: row.id, date: row.date, event: row.event, bestOf: row.bestOf, leftName: row.leftName, rightName: row.rightName, leftScore: row.leftScore, rightScore: row.rightScore, winner: row.winner })), ...(nextCursor === undefined ? {} : { nextCursor }),
+      rows: page.map((row) => ({ id: row.id, date: row.date, event: row.event, bestOf: row.bestOf, leftName: row.leftName, rightName: row.rightName, leftScore: row.leftScore, rightScore: row.rightScore, gameDetailsComplete: row.gameDetailsComplete, winner: row.winner })), ...(nextCursor === undefined ? {} : { nextCursor }),
       dataset: { version: "mock-2026.07", lastSuccessfulSyncAt: "2026-07-12T08:30:00.000Z", coverage: { from: "2015-01-01", to: "2026-07-12" } },
       coverageWarnings: [], mediaUrls: { left: left.mediaUrl ?? "/media-placeholder.svg", right: right.mediaUrl ?? "/media-placeholder.svg" },
     };

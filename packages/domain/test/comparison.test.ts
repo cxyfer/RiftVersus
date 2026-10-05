@@ -75,6 +75,33 @@ const game = (id: string, seriesId: string, sides: DomainSeries["sides"], winner
 });
 
 describe("comparison domain semantics", () => {
+  it("counts completed BO2 draws while excluding other winnerless results", () => {
+    const sides = [t1(ids.t1Era), weibo()] as const;
+    const base = series({ id: ids.st1, sides, games: [game("g-draw-a", ids.st1, sides, "a"), game("g-draw-b", ids.st1, sides, "b")] });
+    const draw: DomainSeries = { ...base, bestOf: 2, winnerSide: null, score: { a: 1, b: 1 } };
+    const invalid: DomainSeries = { ...draw, id: ids.sincomplete, bestOf: 3 };
+    const sweep: DomainSeries = { ...base, id: ids.ssk, bestOf: 2, score: { a: 2, b: 0 }, games: [] };
+    const result = summarizeComparison(query({ kind: "team", id: ids.t1 }, { kind: "team", id: ids.weibo }), [draw, draw, invalid, sweep]);
+    expect(result.series).toEqual({ wins: 1, losses: 0, draws: 1, total: 2, winRate: 0.5 });
+    expect(result.games).toEqual({ wins: 3, losses: 1, total: 4, winRate: 0.75 });
+  });
+
+  it("uses the final scheduled team score when game details are incomplete", () => {
+    const sides = [t1(ids.t1Era), genG()] as const;
+    const partial = series({
+      id: ids.ssk,
+      sides,
+      games: [game("g-only-known", ids.ssk, sides, "b")],
+      winnerSide: "b",
+      score: { a: 0, b: 2 },
+      bestOf: 3,
+    });
+    expect(summarizeComparison(query({ kind: "team", id: ids.t1 }, { kind: "team", id: ids.genG }), [partial])).toEqual({
+      series: { wins: 0, losses: 1, total: 1, winRate: 0 },
+      games: { wins: 0, losses: 2, total: 2, winRate: 0 },
+    });
+  });
+
   it("excludes a team from its own match-time region side", () => {
     const sides = [t1(ids.t1Era), weibo()] as const;
     const item = game("g-own-region", ids.st1, sides);
@@ -150,7 +177,7 @@ describe("comparison domain semantics", () => {
     expect(qualifiesSeries(regionQuery, changed)).toBe(true);
     expect(summarizeComparison(regionQuery, [changed, incomplete])).toEqual({
       series: { wins: 1, losses: 0, total: 1, winRate: 1 },
-      games: { wins: 1, losses: 0, total: 1, winRate: 1 },
+      games: { wins: 3, losses: 1, total: 4, winRate: 0.75 },
     });
   });
 

@@ -77,3 +77,18 @@ Entries are workspace records, not authoritative runtime decisions.
 | 2026-07-18 | artifact | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/resume-state-hint.json | 2026-07-18-comparison-identity-avatar-v2 resume state hint |
 | 2026-07-18 | artifact | docs/aegis/work/2026-07-18-comparison-identity-avatar-v2/evidence-bundle-draft-task7-runtime-gen4-release.json | 2026-07-18-comparison-identity-avatar-v2 evidence task7-runtime-gen4-release |
 | 2026-10-03 | baseline | docs/aegis/baseline/2026-10-03-riftversus-github-sqlite.md | RiftVersus GitHub and SQLite deployed architecture |
+| 2026-10-04 | work | docs/aegis/work/2026-10-04-domestic-leagues-ewc/20-checkpoint.md | Domestic leagues and EWC execution checkpoint |
+| 2026-10-04 | work | docs/aegis/work/2026-10-04-domestic-leagues-ewc/10-intent.md | Domestic leagues and EWC execution intent |
+| 2026-10-04 | work | docs/aegis/work/2026-10-04-domestic-leagues-ewc/90-evidence.md | Domestic leagues and EWC execution evidence |
+| 2026-10-04 | work | docs/aegis/work/2026-10-04-domestic-leagues-ewc/99-reflection.md | Domestic leagues and EWC execution reflection |
+| 2026-10-04 | plan | docs/aegis/plans/2026-10-04-domestic-leagues-ewc.md | LCK, LPL and EWC historical coverage |
+| 2026-10-04 | plan | docs/aegis/plans/2026-10-04-leaguepedia-real-media-follow-up.md | Leaguepedia real media follow-up |
+| 2026-10-05 | artifact | data/leaguepedia/historical-source-closure.json | Reviewed historical source closure and local snapshot audit |
+| 2026-10-05 | artifact | docs/aegis/work/2026-10-04-domestic-leagues-ewc/task-intent-draft.json | 2026-10-04-domestic-leagues-ewc task-intent-draft |
+| 2026-10-05 | artifact | docs/aegis/work/2026-10-04-domestic-leagues-ewc/impact-statement-draft.json | 2026-10-04-domestic-leagues-ewc impact-statement-draft |
+| 2026-10-05 | artifact | docs/aegis/work/2026-10-04-domestic-leagues-ewc/drift-check-draft.json | 2026-10-04-domestic-leagues-ewc drift-check-draft |
+| 2026-10-05 | artifact | docs/aegis/work/2026-10-04-domestic-leagues-ewc/gate-input-pack.json | 2026-10-04-domestic-leagues-ewc gate input pack |
+| 2026-10-05 | work | docs/aegis/work/2026-10-04-domestic-leagues-ewc/proof-bundle.md | 2026-10-04-domestic-leagues-ewc proof bundle |
+| 2026-10-05 | artifact | docs/aegis/work/2026-10-04-domestic-leagues-ewc/evidence-bundle-draft-historical-source-closure.json | 2026-10-04-domestic-leagues-ewc evidence historical-source-closure |
+| 2026-10-06 | artifact | data/leaguepedia/alternative-game-review.json | User-authorized official-video game and roster review |
+| 2026-10-06 | artifact | docs/aegis/work/2026-10-04-domestic-leagues-ewc/evidence-bundle-draft-alternative-game-review.json | 2026-10-04-domestic-leagues-ewc evidence alternative-game-review |

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
 import { parse } from "yaml";
+import { parseSourceCorrections, type SourceCorrection } from "./providers/leaguepedia/source-corrections.js";
 
 export interface IdentityOverride {
   sourceKey: string;
@@ -18,7 +19,7 @@ export interface TournamentOverride {
   sourceKey: string;
   canonicalName: string;
   canonicalId: string;
-  category: "league" | "fst" | "msi" | "worlds" | "other";
+  category: "league" | "fst" | "msi" | "worlds" | "ewc" | "other";
   reviewedNote: string;
 }
 
@@ -30,6 +31,7 @@ export interface RegionOverride {
 }
 
 export interface ReviewedOverrides {
+  sourceCorrections?: readonly SourceCorrection[];
   identities: ReadonlyMap<string, IdentityOverride>;
   tournaments: ReadonlyMap<string, TournamentOverride>;
   regions: ReadonlyMap<string, RegionOverride>;
@@ -53,6 +55,7 @@ export async function loadOverrides(paths: OverridePaths): Promise<ReviewedOverr
   const tournaments = parseOverrideFile(parse(tournamentsText), parseTournament, "tournament");
   const regions = parseOverrideFile(parse(regionsText), parseRegion, "region");
   return {
+    sourceCorrections: parseSourceCorrections(asRecord(parse(identitiesText), "identity override file").sourceCorrections),
     identities,
     tournaments,
     regions,
@@ -95,7 +98,7 @@ function parseIdentity(input: unknown): IdentityOverride {
 function parseTournament(input: unknown): TournamentOverride {
   const rule = asRecord(input, "tournament override");
   const category = rule.category;
-  if (category !== "league" && category !== "fst" && category !== "msi" && category !== "worlds" && category !== "other") throw new Error("Tournament override category is invalid.");
+  if (category !== "league" && category !== "fst" && category !== "msi" && category !== "worlds" && category !== "ewc" && category !== "other") throw new Error("Tournament override category is invalid.");
   return {
     sourceKey: requiredString(rule.sourceKey, "tournament sourceKey"),
     canonicalName: requiredString(rule.canonicalName, "tournament canonicalName"),

@@ -45,7 +45,8 @@ export function createLeaguepediaProvider(options: LeaguepediaProviderOptions): 
       let snapshot: LeaguepediaSnapshot;
       let normalized: ReturnType<typeof normalizeLeaguepediaSnapshot>;
       try {
-        snapshot = parseLeaguepediaRawInput(rawInput);
+        snapshot = parseLeaguepediaRawInput(rawInput, options.overrides.sourceCorrections);
+        rawInput = { ...rawInput, rawEvidence: snapshot.rawEvidence };
         validateRawEvidence(snapshot);
         normalized = normalizeLeaguepediaSnapshot(snapshot, options.overrides);
       } catch (error) {
@@ -126,18 +127,7 @@ function uniqueStrings(items: readonly string[]): string[] { return [...new Set(
 function unresolvedForSlice(snapshot: LeaguepediaSnapshot, normalized: ReturnType<typeof normalizeLeaguepediaSnapshot>, slice: LeaguepediaSnapshot["slices"][number]): number {
   const gameKeys = new Set(slice.gameSourceKeys);
   const unresolvedGames = new Set([...normalized.quarantineAffectedGameKeys, ...normalized.rosterIncompleteGameKeys].filter((key) => gameKeys.has(key)));
-  const games = snapshot.games.filter((game) => gameKeys.has(game.sourceKey));
-  const seriesKeys = new Set(games.map((game) => game.seriesKey));
-  let incompleteSeries = 0;
-  for (const seriesKey of seriesKeys) {
-    const series = snapshot.series.find((item) => item.sourceKey === seriesKey);
-    if (series === undefined || series.sideAScore === null || series.sideBScore === null) { incompleteSeries += 1; continue; }
-    const seriesGames = games.filter((game) => game.seriesKey === seriesKey);
-    const expected = series.sideAScore + series.sideBScore;
-    const numbers = seriesGames.map((game) => game.gameNumber);
-    if (expected <= 0 || numbers.length !== expected || new Set(numbers).size !== numbers.length || numbers.some((number) => number < 1 || number > expected) || !Array.from({ length: expected }, (_, index) => index + 1).every((number) => numbers.includes(number))) incompleteSeries += 1;
-  }
-  return unresolvedGames.size + incompleteSeries;
+  return unresolvedGames.size;
 }
 function reviewedOverrideFiles(checksums: Readonly<Record<string, string>>): { file: string; checksum: `sha256:${string}` }[] {
   return Object.entries(checksums).map(([file, checksum]) => {
@@ -157,7 +147,10 @@ function validateRawEvidence(snapshot: LeaguepediaSnapshot): void {
     requireHttps(item.sourceUrl);
     const validQuery = item.action === "query" && typeof item.response === "object" && item.response !== null && !Array.isArray(item.response);
     const validCargo = item.action === "cargoexport" && Array.isArray(item.response);
-    if (!validQuery && !validCargo) throw new Error(`Raw evidence ${item.requestId} response is invalid.`);
+    const validReview = item.action === "review" && item.table === undefined && typeof item.response === "object"
+      && item.response !== null && "kind" in item.response && item.response.kind === "reviewed-alternative"
+      && "corrections" in item.response && Array.isArray(item.response.corrections) && item.response.corrections.length > 0;
+    if (!validQuery && !validCargo && !validReview) throw new Error(`Raw evidence ${item.requestId} response is invalid.`);
   }
   const evidenceRevisions = [...new Set(snapshot.rawEvidence.flatMap((item) => item.revisionIds))].sort((a, b) => a - b);
   const declaredRevisions = [...snapshot.revisionIds].sort((a, b) => a - b);
