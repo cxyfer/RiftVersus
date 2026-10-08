@@ -9,6 +9,24 @@ rules:
     reviewedNote: Leaguepedia Teams OverviewPage KSV eSports has RenamedTo Gen.G, independently resolved through
       TeamRedirects; both participate in the 2018 LCK source scope. Keep the existing Gen.G canonical ID and infer
       non-overlapping historical eras from retained match dates.
+  - sourceKey: Team Secret (Vietnamese Team)
+    canonicalName: Team Secret Whales
+    canonicalId: c948ba23-06d4-56f1-8990-1ee34429fbea
+    kind: team
+    aliases:
+      - Team Secret
+      - TS
+    reviewedNote: Leaguepedia Teams RenamedTo points to Team Secret Whales. The reviewed 2024 Team Secret and Team Whales
+      union continued as one competitive identity in the imported lineage; retain the historical display name and shared
+      canonical ID rather than treating the rename as an unrelated team.
+  - sourceKey: Team Secret Whales
+    canonicalName: Team Secret Whales
+    canonicalId: c948ba23-06d4-56f1-8990-1ee34429fbea
+    kind: team
+    aliases:
+      - TSW
+    reviewedNote: Reviewed Leaguepedia forward target of Team Secret (Vietnamese Team); keep the same canonical identity
+      while preserving source-specific team-era display names.
   - sourceKey: SK Telecom T1
     canonicalName: T1
     canonicalId: 11111111-1111-5111-8111-111111111111
