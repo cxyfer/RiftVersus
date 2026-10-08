@@ -11,7 +11,8 @@ export interface SourceCorrection {
   sourceKind?: "reviewed-alternative";
   corroboratingUrls?: readonly string[];
   row?: Readonly<Record<string, unknown>>;
-  field?: "BestOf" | "MatchId" | "Team1" | "Team2";
+  field?: "BestOf" | "MatchId" | "Team1" | "Team2" | "Team";
+  playerName?: string;
   expected?: unknown;
   replacement?: unknown;
 }
@@ -41,11 +42,13 @@ export function parseSourceCorrections(value: unknown): readonly SourceCorrectio
       if (r.table === "MatchSchedule" || !r.row || typeof r.row !== "object" || r.row[key] !== r.value || r.field !== undefined) throw new Error("Source correction row is invalid.");
       if (r.table === "ScoreboardPlayers" && (typeof r.row.PlayerName !== "string" || !r.row.PlayerName.trim() || typeof r.row.Team !== "string" || !r.row.Team.trim() || !["Yes", "No"].includes(r.row.PlayerWin as string))) throw new Error("Source correction roster row is invalid.");
       if (r.table === "ScoreboardGames" && (["MatchId", "Tournament", "DateTime_UTC", "Team1", "Team2"].some((field) => typeof r.row![field] !== "string" || !(r.row![field] as string).trim()) || ![1, 2, 3, 4, 5].includes(r.row.N_GameInMatch as number) || ![1, 2].includes(r.row.Winner as number))) throw new Error("Source correction game row is invalid.");
-    } else if (r.table !== "MatchSchedule" || !["BestOf", "MatchId", "Team1", "Team2"].includes(r.field ?? "")
+    } else if (!(r.table === "MatchSchedule" && ["BestOf", "MatchId", "Team1", "Team2"].includes(r.field ?? "")
+      || r.table === "ScoreboardGames" && ["Team1", "Team2"].includes(r.field ?? "")
+      || r.table === "ScoreboardPlayers" && r.field === "Team" && typeof r.playerName === "string" && r.playerName.trim())
       || (r.field === "BestOf" && (r.expected !== null || ![1, 2, 3, 5].includes(r.replacement as number)))
       || (r.field === "MatchId" && (r.expected !== r.value || typeof r.replacement !== "string" || !r.replacement.trim()))
-      || ((r.field === "Team1" || r.field === "Team2") && (typeof r.expected !== "string" || !r.expected.trim() || typeof r.replacement !== "string" || !r.replacement.trim()))) throw new Error("Source correction field is invalid.");
-    const identity = `${r.table}:${r.key}:${r.value}:${r.field ?? "row"}:${r.table === "ScoreboardPlayers" ? r.row?.PlayerName : ""}`;
+      || ((r.field === "Team1" || r.field === "Team2" || r.field === "Team") && (typeof r.expected !== "string" || !r.expected.trim() || typeof r.replacement !== "string" || !r.replacement.trim()))) throw new Error("Source correction field is invalid.");
+    const identity = `${r.table}:${r.key}:${r.value}:${r.field ?? "row"}:${r.table === "ScoreboardPlayers" ? r.row?.PlayerName ?? r.playerName : ""}`;
     if (seen.has(identity)) throw new Error(`Duplicate source correction ${identity}.`);
     seen.add(identity);
     if (r.field === "MatchId") {
@@ -69,7 +72,7 @@ export function projectSourceRows(table: LeaguepediaCargoTable, rows: readonly R
   const result = rows.map((row) => ({ ...row }));
   // ID alias 最後套用，其他精確欄位修正仍以原始 MatchId 選取。
   for (const rule of rules.filter((r) => r.table === table).sort((a, b) => Number(a.field === "MatchId") - Number(b.field === "MatchId"))) {
-    const matches = result.filter((_, index) => rows[index]?.[rule.key] === rule.value && (table !== "ScoreboardPlayers" || rows[index]?.PlayerName === rule.row?.PlayerName));
+    const matches = result.filter((_, index) => rows[index]?.[rule.key] === rule.value && (table !== "ScoreboardPlayers" || rows[index]?.PlayerName === (rule.row?.PlayerName ?? rule.playerName)));
     if (rule.row) {
       // 單局補件只能附加到已觀測且同賽事的系列賽；未請求的其他範圍不匯入。
       if (table === "ScoreboardGames" && !rows.some((row) => row.MatchId === rule.row!.MatchId && row.Tournament === rule.row!.Tournament)) continue;

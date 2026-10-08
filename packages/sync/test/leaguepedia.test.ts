@@ -1685,12 +1685,23 @@ describe("Leaguepedia normalization", () => {
     expect(snapshot.slices[0]?.excludedOptionalDimensionRowKeys).toEqual(expect.arrayContaining(["Players:Duplicate One", "Players:Duplicate Two"]));
   });
 
-  it("merges the reviewed Team Secret rename into the existing Secret Whales identity", async () => {
+  it("keeps EWC's event-specific Team Secret name in the existing Secret Whales era", async () => {
+    const input = JSON.parse(await readFile(`${root}/data/fixtures/leaguepedia-ewc-team-secret.json`, "utf8")) as LeaguepediaRawInput;
+    const retained = structuredClone(input);
     const reviewed = await overrides();
-    const secret = reviewed.identities.get("Team Secret (Vietnamese Team)");
-    const whales = reviewed.identities.get("Team Secret Whales");
-    expect(secret).toMatchObject({ canonicalName: "Team Secret Whales", canonicalId: "c948ba23-06d4-56f1-8990-1ee34429fbea", kind: "team" });
-    expect(whales).toMatchObject({ canonicalName: "Team Secret Whales", canonicalId: secret?.canonicalId, kind: "team" });
+    const withoutEventNameReview = reviewed.sourceCorrections.filter((rule) => rule.expected !== "Team Secret (Vietnamese Team)");
+    expect(() => normalizeLeaguepediaSnapshot(parseLeaguepediaRawInput(input, withoutEventNameReview), reviewed)).toThrow(/Official RenamedTo lineage/);
+    const snapshot = parseLeaguepediaRawInput(input, reviewed.sourceCorrections);
+    const result = normalizeLeaguepediaSnapshot(snapshot, reviewed);
+    expect(input).toEqual(retained);
+    expect(result.dimensions.entities.find((entity) => entity.canonicalName === "Team Secret Whales")?.id).toBe("c948ba23-06d4-56f1-8990-1ee34429fbea");
+    expect(result.dimensions.teamEras.filter((era) => era.sourceKey.startsWith("Team Secret"))).toMatchObject([{ sourceKey: "Team Secret Whales" }]);
+    expect(result.facts.series).toHaveLength(3);
+    expect(result.facts.games).toHaveLength(7);
+    expect(result.facts.gamePlayers).toHaveLength(70);
+    expect(snapshot.games.filter((game) => game.seriesKey.startsWith("Esports World Cup"))).toHaveLength(4);
+    expect(snapshot.gamePlayers.some((player) => player.teamKey === "Team Secret (Vietnamese Team)")).toBe(false);
+    expect(result.quarantine).toEqual([]);
   });
 
   it("stages player ID, real name, and source aliases without conflating canonical identity", async () => {
