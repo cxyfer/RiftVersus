@@ -1685,6 +1685,14 @@ describe("Leaguepedia normalization", () => {
     expect(snapshot.slices[0]?.excludedOptionalDimensionRowKeys).toEqual(expect.arrayContaining(["Players:Duplicate One", "Players:Duplicate Two"]));
   });
 
+  it("merges the reviewed Team Secret rename into the existing Secret Whales identity", async () => {
+    const reviewed = await overrides();
+    const secret = reviewed.identities.get("Team Secret (Vietnamese Team)");
+    const whales = reviewed.identities.get("Team Secret Whales");
+    expect(secret).toMatchObject({ canonicalName: "Team Secret Whales", canonicalId: "c948ba23-06d4-56f1-8990-1ee34429fbea", kind: "team" });
+    expect(whales).toMatchObject({ canonicalName: "Team Secret Whales", canonicalId: secret?.canonicalId, kind: "team" });
+  });
+
   it("stages player ID, real name, and source aliases without conflating canonical identity", async () => {
     const result = normalizeLeaguepediaSnapshot(await fixture(), await overrides());
     const normalizedFaker = result.entities.find((entity) => entity.playerId === "Faker");
