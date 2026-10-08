@@ -9,24 +9,6 @@ rules:
     reviewedNote: Leaguepedia Teams OverviewPage KSV eSports has RenamedTo Gen.G, independently resolved through
       TeamRedirects; both participate in the 2018 LCK source scope. Keep the existing Gen.G canonical ID and infer
       non-overlapping historical eras from retained match dates.
-  - sourceKey: Team Secret (Vietnamese Team)
-    canonicalName: Team Secret Whales
-    canonicalId: c948ba23-06d4-56f1-8990-1ee34429fbea
-    kind: team
-    aliases:
-      - Team Secret
-      - TS
-    reviewedNote: Leaguepedia Teams RenamedTo points to Team Secret Whales. The reviewed 2024 Team Secret and Team Whales
-      union continued as one competitive identity in the imported lineage; retain the historical display name and shared
-      canonical ID rather than treating the rename as an unrelated team.
-  - sourceKey: Team Secret Whales
-    canonicalName: Team Secret Whales
-    canonicalId: c948ba23-06d4-56f1-8990-1ee34429fbea
-    kind: team
-    aliases:
-      - TSW
-    reviewedNote: Reviewed Leaguepedia forward target of Team Secret (Vietnamese Team); keep the same canonical identity
-      while preserving source-specific team-era display names.
   - sourceKey: SK Telecom T1
     canonicalName: T1
     canonicalId: 11111111-1111-5111-8111-111111111111
@@ -209,6 +191,338 @@ rules:
       Luo Players/PlayerRedirects profiles and ScoreboardPlayers keys are distinct. Preserve separate canonical IDs; no
       display-name-based merge.
 sourceCorrections:
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: MatchSchedule
+    key: MatchId
+    value: Esports World Cup 2026_Group Stage_2
+    field: Team1
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: MatchSchedule
+    key: MatchId
+    value: Esports World Cup 2026_Group Stage_9
+    field: Team1
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardGames
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_2_1
+    field: Team2
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardGames
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_1
+    field: Team2
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardGames
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_2
+    field: Team2
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardGames
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_3
+    field: Team1
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_2_1
+    field: Team
+    playerName: Bie
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_2_1
+    field: Team
+    playerName: Dire
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_2_1
+    field: Team
+    playerName: Eddie
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_2_1
+    field: Team
+    playerName: Hizto
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_2_1
+    field: Team
+    playerName: Pun
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_1
+    field: Team
+    playerName: Bie
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_1
+    field: Team
+    playerName: Dire
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_1
+    field: Team
+    playerName: Eddie
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_1
+    field: Team
+    playerName: Hizto
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_1
+    field: Team
+    playerName: Pun
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_2
+    field: Team
+    playerName: Bie
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_2
+    field: Team
+    playerName: Dire
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_2
+    field: Team
+    playerName: Eddie
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_2
+    field: Team
+    playerName: Hizto
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_2
+    field: Team
+    playerName: Pun
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_3
+    field: Team
+    playerName: Bie
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_3
+    field: Team
+    playerName: Dire
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_3
+    field: Team
+    playerName: Eddie
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_3
+    field: Team
+    playerName: Hizto
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
+  - sourceUrl: https://lol.fandom.com/wiki/Esports_World_Cup_2026
+    reviewedNote: "Reviewed EWC 2026 participant footnote: Team Secret Whales
+      competes as Team Secret for club championship points. This event-specific
+      name is not a return to the historical Vietnamese Team Secret era. Normalize
+      only this exact observed fact to the existing Secret Whales identity; retain
+      upstream evidence unchanged."
+    table: ScoreboardPlayers
+    key: GameId
+    value: Esports World Cup 2026_Group Stage_9_3
+    field: Team
+    playerName: Pun
+    expected: Team Secret (Vietnamese Team)
+    replacement: Team Secret Whales
   - table: Players
     key: OverviewPage
     value: Levi

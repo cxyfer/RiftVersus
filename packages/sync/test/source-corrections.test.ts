@@ -5,6 +5,23 @@ const proof = { sourceUrl: "https://lol.fandom.com/wiki/Reviewed_Tournament?oldi
 const alias = { ...proof, table: "MatchSchedule", key: "MatchId", value: "schedule-1", field: "MatchId", expected: "schedule-1", replacement: "games-1" };
 
 describe("reviewed source corrections", () => {
+  it("corrects exact game and player team references with immutable evidence and conflict checks", () => {
+    const game = { ...proof, table: "ScoreboardGames", key: "GameId", value: "g1", field: "Team2", expected: "Legacy", replacement: "Current" };
+    const player = { ...proof, table: "ScoreboardPlayers", key: "GameId", value: "g1", field: "Team", playerName: "Pun", expected: "Legacy", replacement: "Current" };
+    const rules = parseSourceCorrections([game, player]);
+    const raw = [{ GameId: "g1", Team1: "Opponent", Team2: "Legacy" }, { GameId: "g2", Team1: "Opponent", Team2: "Legacy" }];
+    expect(projectSourceRows("ScoreboardGames", raw, rules)).toEqual([{ ...raw[0], Team2: "Current" }, raw[1]]);
+    expect(raw[0]?.Team2).toBe("Legacy");
+    const roster = [{ GameId: "g1", PlayerName: "Pun", Team: "Legacy" }, { GameId: "g1", PlayerName: "Other", Team: "Opponent" }];
+    const corrected = projectSourceRows("ScoreboardPlayers", roster, rules);
+    expect(corrected).toEqual([{ ...roster[0], Team: "Current" }, roster[1]]);
+    expect(projectSourceRows("ScoreboardPlayers", corrected, rules)).toEqual(corrected);
+    expect(() => projectSourceRows("ScoreboardPlayers", [{ ...roster[0], Team: "Unexpected" }], rules)).toThrow(/conflicts/);
+    expect(() => parseSourceCorrections([{ ...player, playerName: undefined }])).toThrow(/field is invalid/);
+    expect(() => parseSourceCorrections([{ ...game, field: "Winner" }])).toThrow(/field is invalid/);
+    expect(() => parseSourceCorrections([player, player])).toThrow(/Duplicate/);
+  });
+
   it("allows explicitly reviewed alternative video evidence only for missing game and roster rows", () => {
     const row = { GameId: "manual-vod:abcdefghijk:1", MatchId: "m1", Tournament: "LCK", DateTime_UTC: "2026-08-01T11:11:00Z", N_GameInMatch: 1, Team1: "A", Team2: "B", Winner: 2 };
     const alternative = { ...proof, sourceKind: "reviewed-alternative", sourceUrl: "https://www.youtube.com/watch?v=abcdefghijk", corroboratingUrls: ["https://www.inven.co.kr/webzine/news/?news=123"], table: "ScoreboardGames", key: "GameId", value: row.GameId, row };

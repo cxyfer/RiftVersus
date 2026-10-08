@@ -713,3 +713,30 @@ same table is not sufficient. These are deterministic CI regression budgets,
 not runtime latency measurements. Record API p95 separately on the deployed
 stack and continue to apply the 150 ms entity-search and 500/750 ms comparison
 runtime budgets.
+
+### 2026-10-08 Actions 同步失敗：EWC 隊伍名稱交替
+
+`Publish` run `37732580243` 在 `sync` 階段失敗；build、lint、tests 及
+mapping 設定檢查已通過。先前 run `37544386020` 的完整 2026 raw input
+（object `60503e1993c6c61ffe65d9e63b841f36f0f82927166ec93e65fed18864c0ae07`）
+可重現兩個相連問題：未覆核的 Team Secret lineage，以及合併 canonical ID 後
+EWC 2026-07-15 事實超出推算的 `open..2026-07-02` 舊 era。
+先前 MSI-only 子批次的 replay 通過不足以證明完整 current 匯入可行。
+
+Leaguepedia [EWC 2026 參賽隊伍註記](https://lol.fandom.com/wiki/Esports_World_Cup_2026)
+說明 Team Secret Whales 為 EWC club championship 積分以 Team Secret 名稱出賽。
+[Team Secret 官方聯合公告](https://teamsecret.gg/blogs/league-of-legends/team-secret-x-team-whales-union-announcement)
+描述的是 Team Secret 與 Team Whales 的合作，不能單憑這份公告將所有歷史隊伍年代合併。
+
+修正由既有 `sourceCorrections` 擁有：對 EWC 的兩個精確 MatchId、四個 GameId、
+及每局五位選手的 GameId + PlayerName，將隊伍 reference 指向既有 Team Secret Whales。
+每項都檢查 expected 值；upstream 已修復時冪等，出現其他值時拒絕。
+撤回未指定日期的全域 Team Secret lineage overrides。
+原始 API envelope、比分、勝者、時間及歷史隊伍身分均保留；修正檔 checksum 照常納入 provenance。
+這些精確修正只保留至來源修復，未命中的年度與比賽不受影響。
+
+驗證包括從封存資料縮小的 `leaguepedia-ewc-team-secret.json`：一場較早 MSI 加兩場 EWC，
+驗證單一 Secret Whales era、穩定 canonical ID、七局與完整 70 人 roster。
+完整 raw input replay 得到 485 場系列賽、1,312 局、13,120 筆選手紀錄、零 quarantine。
+這是解析與 normalization 證據；正式發布仍需通過 Actions checkpoint、SQLite export、
+瀏覽器測試與 Pages 部署後驗證，不能由本機 replay 宣稱部署成功。
