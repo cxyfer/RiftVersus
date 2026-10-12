@@ -17,6 +17,7 @@ import { guardPublication, readDeployedSite } from "./publish-github.js";
 import { requiredPublishValue } from "./publish-plan.js";
 import { runAttemptCommand } from "./attempt-commands.js";
 import { createReleaseStore } from "./release-store.js";
+import { summarizeError } from "./error-summary.js";
 
 export type DataCommand =
   | { kind: "publish"; mode: "prepare" | "guard" | "verify-deployed" | "record-deploy-failure" }
@@ -107,8 +108,7 @@ export async function runDataCli(argv: readonly string[], environment: Record<st
     else if (command.mode === "prepare") console.log(JSON.stringify(await runPublication(environment, runDataCli)));
     else if (command.mode === "record-deploy-failure") await recordDeploymentFailure(environment, runDataCli);
     else {
-      const manifest = await readDeployedSite(requiredPublishValue(environment, "PAGES_BASE_URL"), false);
-      if (manifest?.siteId !== requiredPublishValue(environment, "EXPECTED_SITE_ID")) throw new Error("Deployed site identity does not match the verified archive.");
+      await verifyDeployedIdentity(requiredPublishValue(environment, "PAGES_BASE_URL"), requiredPublishValue(environment, "EXPECTED_SITE_ID"));
     }
     return;
   }
@@ -162,9 +162,27 @@ export async function runDataCli(argv: readonly string[], environment: Record<st
         requireComplete: environment.PUBLISH_REQUIRE_COMPLETE === "true" });
       console.log(JSON.stringify({ ...result, request }));
       if (result.status === "locked") throw new Error("Sync could not acquire the publication lock.");
-    } catch (error) { errors.push(error); console.error(environment.PUBLISH_PRIVATE_DIAGNOSTICS === "true" ? { status: "failed", request } : error); }
+    } catch (error) { errors.push(error); console.error(environment.PUBLISH_PRIVATE_DIAGNOSTICS === "true" ? { status: "failed", request, error: summarizeError(error) } : error); }
   }
   if (errors.length) throw new AggregateError(errors, "Data synchronization failed; do not promote this candidate.");
+}
+
+async function verifyDeployedIdentity(baseUrl: string, expectedSiteId: string): Promise<void> {
+  let actualSiteId: string | null = null;
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 15; attempt += 1) {
+    try {
+      const manifest = await readDeployedSite(baseUrl, false);
+      actualSiteId = manifest?.siteId ?? null;
+      if (actualSiteId === expectedSiteId) return;
+    } catch (error) {
+      lastError = error;
+      if (!(error instanceof Error) || !/manifest unavailable \(404\)/u.test(error.message)) throw error;
+    }
+    if (attempt < 14) await new Promise((resolve) => setTimeout(resolve, 2_000));
+  }
+  const observed = actualSiteId ?? (lastError instanceof Error ? lastError.message : "missing");
+  throw new Error(`Deployed site identity does not match the verified archive: expected ${expectedSiteId}, got ${observed}.`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

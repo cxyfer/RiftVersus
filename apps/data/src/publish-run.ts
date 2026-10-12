@@ -3,10 +3,11 @@ import { join } from "node:path";
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
 import { CheckpointManifestSchema } from "./checkpoint.js";
+import { resolveLatestCheckpoint } from "./checkpoint-release.js";
 import { guardPublication, guardPrivateArchive, readDeployedSite } from "./publish-github.js";
 import { parsePublishPlan, publicBuildEnvironment, requiredPublishValue, type PublishEnvironment, type PublishPlan } from "./publish-plan.js";
 import { createReleaseStore } from "./release-store.js";
-import { listAttemptSummaries } from "./attempt-archive.js";
+import { listAttemptSummaries, MAX_ATTEMPT_UNCOMPRESSED_BYTES } from "./attempt-archive.js";
 
 export type DataRunner = (args: readonly string[], env: PublishEnvironment) => Promise<unknown>;
 export interface PublishOperations {
@@ -180,6 +181,18 @@ export async function recordDeploymentFailure(env: PublishEnvironment, run: Data
   const stage = requiredPublishValue(env, "FAILED_STAGE");
   if (!["pages-upload", "pages-deploy", "pages-smoke"].includes(stage)) throw new Error("Invalid deployment failure stage.");
   await operations.privateArchive(env);
+  if (env.ATTEMPT_PREFLIGHT_ONLY === "true") {
+    const store = createReleaseStore({ repository: requiredPublishValue(env, "DATA_REPOSITORY"), token: requiredPublishValue(env, "RIFTVERSUS_DATA_TOKEN") });
+    const latest = await resolveLatestCheckpoint(store);
+    if (latest === null) throw new Error("No published checkpoint exists; explicit bootstrap is required.");
+    const files = new Map<string, number>([["database.dump", latest.index.manifest.databaseDump.byteSize]]);
+    for (const object of latest.index.manifest.objects) files.set(object.file, object.byteSize);
+    const totalBytes = [...files.values()].reduce((total, value) => total + value, 0);
+    if (totalBytes > MAX_ATTEMPT_UNCOMPRESSED_BYTES) {
+      console.log(JSON.stringify({ status: "skipped", reason: "baseline checkpoint exceeds attempt archive limit", baselineCheckpointId: latest.index.manifest.id, totalBytes, limit: MAX_ATTEMPT_UNCOMPRESSED_BYTES, failedStage: stage }));
+      return;
+    }
+  }
   await mkdir(plan.directory, { recursive: false });
   const baseline = join(plan.directory, "baseline");
   await run(["archive", "resolve", baseline], env);

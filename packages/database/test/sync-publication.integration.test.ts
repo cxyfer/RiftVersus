@@ -473,6 +473,34 @@ describeWithDatabase("sync publication repository", () => {
     expect(await db.selectFrom("media_assets").select(["object_key", "is_current"]).where("entity_id", "=", seedIds.t1).where("kind", "=", "logo").execute()).toEqual(currentMediaBeforeFailure);
   });
 
+  it("reuses an existing game identity when an upstream source key replaces a reviewed row", async () => {
+    const source = { provider: "fixture", sourceKey: "game-identity-transition", sourceUrl: "https://example.test/game-transition", objectKey: "sources/game-transition", checksum: "game-transition", parserVersion: "test" };
+    await recordSourceObject(source, db);
+    const sourceObject = await db.selectFrom("source_objects").select("id").where("provider", "=", source.provider).where("source_key", "=", source.sourceKey).executeTakeFirstOrThrow();
+    const run = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    const replacementId = randomUUID();
+    await publishDataset({
+      syncRunId: run.id, version: "game-identity-transition-v1", sourceObjectId: sourceObject.id, coverage: [], facts: {
+        games: [{ id: replacementId, provider: "fixture", sourceKey: "native-game-1", seriesId: seedIds.t1Series, gameNumber: 1,
+          playedAt: new Date("2024-11-02T12:00:00Z"), sideATeamId: seedIds.t1, sideAEraId: seedIds.t1Era, sideARegionId: seedIds.lck,
+          sideBTeamId: seedIds.weibo, sideBRegionId: seedIds.lpl, winnerTeamId: seedIds.t1 }],
+        gamePlayers: [{ gameId: replacementId, playerEntityId: seedIds.faker, side: "a", teamEntityId: seedIds.t1 }],
+      },
+    }, db);
+    const retained = await db.selectFrom("game_facts").select(["id", "source_key"]).where("series_id", "=", seedIds.t1Series).where("game_number", "=", 1).executeTakeFirstOrThrow();
+    expect(retained).toEqual({ id: seedIds.t1Game, source_key: "native-game-1" });
+    expect(await db.selectFrom("game_facts").select("id").where("id", "=", replacementId).execute()).toEqual([]);
+    expect(await db.selectFrom("game_players").select(["game_id", "player_entity_id"]).where("game_id", "=", seedIds.t1Game).execute()).toEqual([{ game_id: seedIds.t1Game, player_entity_id: seedIds.faker }]);
+    const conflict = await beginSyncRun({ provider: "fixture", mode: "sync", parserVersion: "test" }, db);
+    await expect(publishDataset({
+      syncRunId: conflict.id, version: "game-identity-conflict", sourceObjectId: sourceObject.id, coverage: [], facts: {
+        games: [{ id: randomUUID(), provider: "fixture", sourceKey: "conflicting-native-game", seriesId: seedIds.t1Series, gameNumber: 1,
+          playedAt: new Date("2024-11-02T12:00:00Z"), sideATeamId: seedIds.t1, sideBTeamId: seedIds.weibo, winnerTeamId: seedIds.weibo }],
+      },
+    }, db)).rejects.toThrow("conflicts with existing game");
+    expect(await findDatasetVersion("game-identity-conflict", db)).toBeNull();
+  });
+
   it("does not publish a failed run and excludes concurrent provider work", async () => {
     const run = await beginSyncRun({ provider: "failure", mode: "sync", parserVersion: "test" }, db);
     await failSyncRun({ syncRunId: run.id, error: "invalid source" }, db);

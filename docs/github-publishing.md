@@ -35,8 +35,10 @@ The workflow loads `data/leaguepedia/competition-map.json` from the reviewed
 code revision and requires mappings for `MSI,LCK,LPL,EWC`. For a local one-shot
 history/backfill, pass the same JSON as `LEAGUEPEDIA_COMPETITION_MAP` and set
 `LEAGUEPEDIA_SYNC_COMPETITIONS` to the intended competitions; do not maintain a
-second private map. Domestic and EWC scopes are planned one calendar year per
-request to keep Leaguepedia page and row budgets bounded. See
+second private map. Domestic and EWC history scopes are planned in batches of
+up to two calendar years to avoid repeating fixed provider setup for every
+year while keeping each exact mapped scope behind its complete coverage gate.
+See
 `data/leaguepedia/domestic-ewc-audit.json` for audited source key/date evidence.
 
 ## Modes
@@ -136,9 +138,11 @@ It never becomes a baseline. The small index contains code/baseline/stage IDs,
 not raw exception messages, environment values or credentials.
 
 Pages upload/deployment/smoke failures archive structured failure metadata with
-the latest durable checkpoint, without restoring or modifying that database.
-This distinguishes deployment failures from failed data candidates. A site
-failure never deletes an already verified new checkpoint.
+the latest durable checkpoint when it fits the bounded attempt archive. If the
+checkpoint exceeds that 256 MiB forensic bound, the workflow records a bounded
+skip diagnostic before downloading the checkpoint. This distinguishes
+deployment failures from failed data candidates. A site failure never deletes
+an already verified new checkpoint.
 
 Attempt indexes are capped at 2 MiB; ZIP and uncompressed contents at 256 MiB.
 Metadata limits are checked before downloading/reading payloads. ZIP entries are

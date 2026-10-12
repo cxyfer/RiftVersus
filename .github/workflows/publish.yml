@@ -142,6 +142,7 @@ jobs:
           PUBLISH_WORKDIR: ${{ runner.temp }}/upload-failure-${{ github.run_id }}-${{ github.run_attempt }}
           PAGES_BASE_URL: ${{ steps.prepare.outputs.base_url }}
           FAILED_STAGE: pages-upload
+          ATTEMPT_PREFLIGHT_ONLY: 'true'
         run: pnpm data publish record-deploy-failure
 
   deploy:
@@ -202,4 +203,5 @@ jobs:
           PUBLISH_WORKDIR: ${{ runner.temp }}/deploy-failure-${{ github.run_id }}-${{ github.run_attempt }}
           PAGES_BASE_URL: ${{ needs.prepare.outputs.base_url }}
           FAILED_STAGE: ${{ steps.deployment.outcome == 'success' && 'pages-smoke' || 'pages-deploy' }}
+          ATTEMPT_PREFLIGHT_ONLY: 'true'
         run: pnpm data publish record-deploy-failure
