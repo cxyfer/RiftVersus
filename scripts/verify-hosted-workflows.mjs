@@ -49,8 +49,16 @@ try {
   await faker.click();
   await page.getByRole("button", { name: "套用篩選" }).click();
   await expect(page).toHaveURL(/leftKind=player/u);
-  await expect(page).toHaveURL(/leftId=faker/u);
   await expect(summary).toContainText("Faker", { timeout: 30_000 });
+  // 選手可使用 publicId 或 canonical UUID；分享連結必須能還原同一位選手。
+  const playerUrl = page.url();
+  const playerId = new URL(playerUrl).searchParams.get("leftId");
+  assert.ok(playerId && playerId !== new URL(sharedUrl).searchParams.get("leftId"));
+  const playerSummary = await summary.innerText();
+  await page.reload();
+  await expect(summary).toHaveText(playerSummary, { useInnerText: true, timeout: 30_000 });
+  assert.equal(page.url(), playerUrl);
+  await expect(subject).toHaveValue("Faker (Lee Sang-hyeok)");
   checks.push("search real player ID/name and apply player comparison");
 
   await page.getByLabel("起始日期").fill("2017-01-01");
