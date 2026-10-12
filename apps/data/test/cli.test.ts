@@ -67,17 +67,23 @@ describe("data CLI execution", () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => undefined);
     const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
+    let diagnostics: unknown[] | undefined;
     try {
-      await expect(runDataCli(["sync", "--history-once"], environment)).rejects.toMatchObject({
+      await expect(runDataCli(["sync", "--history-once"], { ...environment, PUBLISH_PRIVATE_DIAGNOSTICS: "true" })).rejects.toMatchObject({
         name: "AggregateError",
         message: "Data synchronization failed; do not promote this candidate.",
       });
+      diagnostics = error.mock.calls.map(([value]) => value);
     } finally {
       log.mockRestore();
       error.mockRestore();
     }
 
     expect(execute).toHaveBeenCalledTimes(2);
+    expect(diagnostics ?? []).toContainEqual(expect.objectContaining({
+      status: "failed",
+      error: expect.objectContaining({ name: "Error", message: "source unavailable" }),
+    }));
     expect(execute.mock.calls.map(([input]) => input.request)).toEqual([
       { mode: "backfill", competitions: ["Worlds"], years: [2025] },
       { mode: "backfill", competitions: ["MSI"], years: [2019] },

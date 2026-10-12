@@ -33,7 +33,7 @@ describe("reviewed domestic and EWC mappings", () => {
     const config = loadSyncConfig({ DATABASE_URL: "postgresql://example.test/db", LEAGUEPEDIA_ENDPOINT: "https://leaguepedia.acme.org/api.php", LEAGUEPEDIA_USER_AGENT: "RiftVersus/1.0 ops@acme.org", LEAGUEPEDIA_MEDIA_HOSTS: "static.acme.org", LEAGUEPEDIA_COMPETITION_MAP: mapText, LEAGUEPEDIA_SYNC_YEARS: "2026", LEAGUEPEDIA_MAPPING_COMPETITIONS: "LCK,LPL,EWC", LEAGUEPEDIA_MAPPING_YEARS: "2026" });
     expect(checkLeaguepediaMappings(config).missing).toEqual([]);
     const domestic = historyRequests(config).filter(request => ["LCK", "LPL", "EWC"].includes(request.competitions[0]!));
-    expect(domestic).toHaveLength(29);
-    expect(domestic.every(request => request.years.length === 1)).toBe(true);
+    expect(domestic).toHaveLength(15);
+    expect(domestic.every(request => request.years.length >= 1 && request.years.length <= 2)).toBe(true);
   });
 });

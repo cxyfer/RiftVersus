@@ -119,16 +119,19 @@ export async function publishDataset(input: PublishDatasetInput, db: Kysely<Data
       .where("id", "=", input.syncRunId).executeTakeFirst();
     if (run === undefined || run.status !== "running") throw new Error("Only a running sync run may publish a dataset.");
     validateProviderBinding(input, run.provider);
-    const facts = input.facts;
-    const rosterGameIds = input.rosterGameIds ?? [...new Set((facts?.gamePlayers ?? []).map((player) => player.gameId))];
-    if ((facts?.gamePlayers ?? []).some((player) => !rosterGameIds.includes(player.gameId))) throw new Error("Every game player must be included in rosterGameIds.");
-    if ((facts !== undefined || rosterGameIds.length > 0) && input.sourceObjectId === undefined) throw new Error("Canonical fact publication requires sourceObjectId provenance.");
+    const inputFacts = input.facts;
+    const inputRosterGameIds = input.rosterGameIds ?? [...new Set((inputFacts?.gamePlayers ?? []).map((player) => player.gameId))];
+    if ((inputFacts?.gamePlayers ?? []).some((player) => !inputRosterGameIds.includes(player.gameId))) throw new Error("Every game player must be included in rosterGameIds.");
+    if ((inputFacts !== undefined || inputRosterGameIds.length > 0) && input.sourceObjectId === undefined) throw new Error("Canonical fact publication requires sourceObjectId provenance.");
     if (input.sourceObjectId !== undefined) {
       const source = await trx.selectFrom("source_objects").select(["id", "provider", "source_key"]).where("id", "=", input.sourceObjectId).executeTakeFirst();
       if (source === undefined) throw new Error("Canonical fact publication source object does not exist.");
       if (source.provider !== run.provider) throw new Error("Source object provider must match the publishing sync run.");
-      for (const fact of [...(facts?.series ?? []), ...(facts?.games ?? [])]) if (fact.provider !== source.provider) throw new Error("Source object does not match canonical fact provenance.");
+      for (const fact of [...(inputFacts?.series ?? []), ...(inputFacts?.games ?? [])]) if (fact.provider !== source.provider) throw new Error("Source object does not match canonical fact provenance.");
     }
+    const reconciled = await reconcileExistingGameIdentities(inputFacts, inputRosterGameIds, trx);
+    const facts = reconciled.facts;
+    const rosterGameIds = reconciled.rosterGameIds;
     const latest = await trx.selectFrom("dataset_versions").select("generation").orderBy("generation", "desc").executeTakeFirst();
     const generation = (BigInt(latest?.generation ?? "0") + 1n).toString();
     await publishDimensions(input, trx);
@@ -137,7 +140,7 @@ export async function publishDataset(input: PublishDatasetInput, db: Kysely<Data
     await publishMedia(input, trx);
     for (const item of facts?.series ?? []) await upsertSeries(item, generation, input.sourceObjectId!, trx);
     for (const item of facts?.games ?? []) await upsertGame(item, generation, input.sourceObjectId!, trx);
-    await retireMissingFacts(input, generation, trx);
+    await retireMissingFacts(input, facts, generation, trx);
     if (rosterGameIds.length > 0) {
       const source = await trx.selectFrom("source_objects").select("provider").where("id", "=", input.sourceObjectId!).executeTakeFirstOrThrow();
       const games = await trx.selectFrom("game_facts").select(["id", "provider"]).where("id", "in", rosterGameIds).execute();
@@ -199,11 +202,55 @@ async function validateFactTeamEraOwnership(facts: CanonicalFacts | undefined, t
   }
 }
 
-async function retireMissingFacts(input: PublishDatasetInput, generation: string, trx: Kysely<Database>): Promise<void> {
+async function reconcileExistingGameIdentities(
+  facts: CanonicalFacts | undefined,
+  rosterGameIds: readonly string[],
+  trx: Kysely<Database>,
+): Promise<{ facts: CanonicalFacts | undefined; rosterGameIds: readonly string[] }> {
+  const games = facts?.games ?? [];
+  if (games.length === 0) return { facts, rosterGameIds };
+  const stagedSlots = new Map<string, string>();
+  for (const game of games) {
+    const slot = `${game.seriesId}:${game.gameNumber}`;
+    const previous = stagedSlots.get(slot);
+    if (previous !== undefined && previous !== game.id) {
+      throw new Error(`Canonical games ${previous} and ${game.id} claim the same series/game number ${slot}.`);
+    }
+    stagedSlots.set(slot, game.id);
+  }
+  const provider = games[0]!.provider;
+  const existing = await trx.selectFrom("game_facts").select(["id", "series_id", "game_number", "side_a_team_id", "side_b_team_id", "winner_team_id"])
+    .where("provider", "=", provider).where("series_id", "in", [...new Set(games.map((game) => game.seriesId))]).execute();
+  const existingBySlot = new Map(existing.map((game) => [`${game.series_id}:${game.game_number}`, game.id]));
+  const existingById = new Map(existing.map((game) => [game.id, game]));
+  const idMap = new Map<string, string>();
+  for (const game of games) {
+    const existingId = existingBySlot.get(`${game.seriesId}:${game.gameNumber}`);
+    if (existingId !== undefined && existingId !== game.id) {
+      const prior = existingById.get(existingId)!;
+      if (prior.side_a_team_id !== game.sideATeamId || prior.side_b_team_id !== game.sideBTeamId || prior.winner_team_id !== (game.winnerTeamId ?? null)) {
+        throw new Error(`Canonical game ${game.id} conflicts with existing game ${existingId} at ${game.seriesId}:${game.gameNumber}.`);
+      }
+      idMap.set(game.id, existingId);
+    }
+  }
+  if (idMap.size === 0) return { facts, rosterGameIds };
+  const remap = (id: string): string => idMap.get(id) ?? id;
+  return {
+    facts: facts === undefined ? facts : {
+      ...facts,
+      ...(facts.games === undefined ? {} : { games: facts.games.map((game) => ({ ...game, id: remap(game.id) })) }),
+      ...(facts.gamePlayers === undefined ? {} : { gamePlayers: facts.gamePlayers.map((player) => ({ ...player, gameId: remap(player.gameId) })) }),
+    },
+    rosterGameIds: rosterGameIds.map(remap),
+  };
+}
+
+async function retireMissingFacts(input: PublishDatasetInput, facts: CanonicalFacts | undefined, generation: string, trx: Kysely<Database>): Promise<void> {
   const scopes = (input.publicationScopes ?? []).filter((scope) => scope.status === "complete" && scope.unresolvedRows === 0);
   if (scopes.length === 0) return;
   if (input.sourceObjectId === undefined) throw new Error("Fact retirement requires source object provenance.");
-  const stagedSeries = new Set((input.facts?.series ?? []).map((item) => item.id)); const stagedGames = new Set((input.facts?.games ?? []).map((item) => item.id));
+  const stagedSeries = new Set((facts?.series ?? []).map((item) => item.id)); const stagedGames = new Set((facts?.games ?? []).map((item) => item.id));
   for (const scope of scopes) {
     const from = new Date(`${scope.from}T00:00:00Z`); const to = new Date(`${scope.to}T00:00:00Z`);
     if (!Number.isFinite(from.valueOf()) || !Number.isFinite(to.valueOf()) || from >= to) throw new Error("Publication scope requires a valid UTC [from,to) range.");
