@@ -103,7 +103,10 @@ are [Saigon Buffalo](https://lol.fandom.com/wiki/Saigon_Buffalo),
 
 Use an isolated Compose project when reviewed identity rules change. Published
 entities, aliases, and eras are immutable, so applying a new canonical merge to
-an existing database is expected to fail closed.
+an existing database is expected to fail closed. The one deliberate exception is
+a player real name: `canonical_name` follows a corrected upstream `Players.Name`
+when a public ID anchors the identity on both sides, while the published slug and
+every other identity surface stay fixed.
 
 ```bash
 export COMPOSE_PROJECT_NAME=riftversus-complete-2013-2026

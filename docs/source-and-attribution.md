@@ -52,7 +52,12 @@ use the public ID. A legacy player published before migration `009` may retain a
 null `player_id` and temporarily falls back to `canonical_name`, but every
 referenced player in a new Leaguepedia publication requires both source fields.
 A conflicting non-null public ID stops publication rather than silently
-renaming an existing player.
+renaming an existing player. The real name is descriptive rather than
+identifying, so a corrected `Players.Name` is adopted on the next publication
+once both the published row and the incoming entity carry a public ID; the
+superseded name remains searchable as an append-only alias and the published
+slug never moves. Every other identity surface — kind, public ID, team and
+region names, eras, tournaments, and slugs — stays fail-closed.
 
 `MatchSchedule` is the sole series identity/completion metadata owner. Every imported
 `ScoreboardGames.MatchId` must join exactly one retained schedule row; the
