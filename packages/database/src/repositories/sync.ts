@@ -277,56 +277,76 @@ function slug(value: string): string {
   return result;
 }
 
-interface PublicationEntityRow {
+interface StagedEntityRow {
   id: string;
   provider: string;
   sourceKeys: readonly string[];
   kind: "team" | "player" | "region";
   canonicalName: string;
-  slug: string;
   playerId: string | null;
 }
 
-interface PublishedEntityIdentity {
+interface PublicationEntityRow extends StagedEntityRow {
+  slug: string;
+}
+
+export interface PublishedEntityIdentity {
   kind: "team" | "player" | "region";
   playerId: string | null;
 }
 
+/** Generous bound: no legitimate team, region, or player name approaches it. */
+const MAX_ENTITY_NAME_LENGTH = 120;
+
 /**
- * A player's immutable identity is the public ID, not the real name held by
- * `canonical_name`: Leaguepedia editors legitimately correct real names, and refusing
- * the correction wedges every later publication behind a fail-closed guard. Adopt the
- * upstream value only while a public ID anchors the identity on both sides, so legacy
- * rows (whose `canonical_name` is still the public label) and every non-player kind stay
- * fail-closed. The superseded name survives as an append-only alias.
+ * Refuse a canonical name that cannot be published safely. Only control characters and
+ * absurd lengths are rejected, so legitimate names in any script still publish — including
+ * scripts `slug` cannot romanize.
  */
-export function canAdoptUpstreamPlayerRealName(published: PublishedEntityIdentity, incoming: PublishedEntityIdentity): boolean {
-  return incoming.kind === "player" && published.playerId !== null && incoming.playerId !== null;
+export function assertPublishableEntityName(name: string, id: string): void {
+  if (/\p{Cc}/u.test(name)) throw new Error(`Staged entity ${id} canonical name contains control characters.`);
+  if (name.length > MAX_ENTITY_NAME_LENGTH) throw new Error(`Staged entity ${id} canonical name exceeds ${MAX_ENTITY_NAME_LENGTH} characters.`);
 }
 
 /**
- * Resolve the permanent slug of every staged entity, keyed by canonical ID. A slug that
- * is already published is a public URL and is never re-derived, so an upstream real-name
- * correction cannot move it. Only a new entity derives a slug, and a slug another entity
- * already owns gains the canonical ID suffix.
+ * A player's immutable identity is the public ID, not the real name held by
+ * `canonical_name`: Leaguepedia editors legitimately correct real names, and refusing the
+ * correction wedges every later publication behind a fail-closed guard. Adopt the value —
+ * an upstream `Players.Name`, or a reviewed override `canonicalName` that `normalize` also
+ * resolves into this field — only while a public ID anchors the identity on both sides, so
+ * legacy rows (whose `canonical_name` is still the public label) and every non-player kind
+ * stay fail-closed. The superseded name survives as an append-only alias.
  */
-export function resolveEntitySlugs(
-  staged: readonly { id: string; slug: string }[],
+export function canAdoptUpstreamPlayerRealName(published: PublishedEntityIdentity, incoming: PublishedEntityIdentity): boolean {
+  return published.kind === "player" && incoming.kind === "player" && published.playerId !== null && incoming.playerId !== null;
+}
+
+/**
+ * Resolve the slug of every staged entity. A slug that is already published is fixed
+ * published data — a search surface and a snapshot field — and is never re-derived, so a
+ * corrected name cannot move it. Only an entity that has never been published needs one
+ * derived, and that derivation is lazy so a corrected name `slug` cannot romanize (for
+ * example a CJK real name) does not abort the publication. A derived slug that another
+ * entity already owns gains the canonical ID suffix.
+ */
+export function resolveEntitySlugs<T extends { id: string; canonicalName: string }>(
+  staged: readonly T[],
   published: readonly { id: string; slug: string }[],
-): Map<string, string> {
+): (T & { slug: string })[] {
   const slugOwners = new Map(published.map((row) => [row.slug, row.id]));
   const existingSlugs = new Map(published.map((row) => [row.id, row.slug]));
   const resolved = new Map<string, string>();
+  // Conflict detection is order-sensitive, so resolve in a stable canonical order.
   for (const item of [...staged].sort((a, b) => a.id.localeCompare(b.id))) {
     const publishedSlug = existingSlugs.get(item.id);
-    let slug = publishedSlug ?? item.slug;
-    if (publishedSlug === undefined && slugOwners.has(item.slug) && slugOwners.get(item.slug) !== item.id) slug = `${item.slug}-${item.id}`;
-    const owner = slugOwners.get(slug);
-    if (owner !== undefined && owner !== item.id) throw new Error(`Canonical slug ${slug} conflicts with published entity ${owner}.`);
-    slugOwners.set(slug, item.id);
-    resolved.set(item.id, slug);
+    let resolvedSlug = publishedSlug ?? slug(item.canonicalName);
+    if (publishedSlug === undefined && slugOwners.has(resolvedSlug) && slugOwners.get(resolvedSlug) !== item.id) resolvedSlug = `${resolvedSlug}-${item.id}`;
+    const owner = slugOwners.get(resolvedSlug);
+    if (owner !== undefined && owner !== item.id) throw new Error(`Canonical slug ${resolvedSlug} conflicts with published entity ${owner}.`);
+    slugOwners.set(resolvedSlug, item.id);
+    resolved.set(item.id, resolvedSlug);
   }
-  return resolved;
+  return staged.map((item) => ({ ...item, slug: resolved.get(item.id)! }));
 }
 
 async function assertImmutableEntity(id: string, expected: PublicationEntityRow, trx: Kysely<Database>): Promise<void> {
@@ -340,6 +360,8 @@ async function assertImmutableEntity(id: string, expected: PublicationEntityRow,
     && !canAdoptUpstreamPlayerRealName({ kind: row.kind, playerId: row.player_id }, { kind: expected.kind, playerId: expected.playerId })) {
     throw new Error(`Published entity ${id} canonical name conflicts for source keys [${(await sourceRows()).join(", ")}] and [${expected.sourceKeys.join(", ")}]: existing "${row.canonical_name}", incoming "${expected.canonicalName}".`);
   }
+  // Unreachable while resolveEntitySlugs pins every already published entity to its own
+  // published slug; retained as a drift detector should that ever stop being true.
   if (row.slug !== expected.slug) {
     throw new Error(`Published entity ${id} slug conflicts for source keys [${(await sourceRows()).join(", ")}] and [${expected.sourceKeys.join(", ")}]: existing "${row.slug}", incoming "${expected.slug}".`);
   }
@@ -348,22 +370,24 @@ async function assertImmutableEntity(id: string, expected: PublicationEntityRow,
   }
 }
 
-function mergeConsistentStagedEntities(rows: readonly PublicationEntityRow[]): PublicationEntityRow[] {
-  const entities = new Map<string, PublicationEntityRow>();
+function mergeConsistentStagedEntities(rows: readonly StagedEntityRow[]): StagedEntityRow[] {
+  const entities = new Map<string, StagedEntityRow>();
   for (const row of rows) {
-    const previous = entities.get(row.id);
+    // PostgreSQL compares uuid case-insensitively, so key this merge the same way; otherwise
+    // ids differing only in case bypass the merge and reach the same published row twice.
+    const key = row.id.toLowerCase();
+    const previous = entities.get(key);
     if (previous === undefined) {
-      entities.set(row.id, row);
+      entities.set(key, row);
       continue;
     }
     const sources = `source keys [${previous.sourceKeys.join(", ")}] and [${row.sourceKeys.join(", ")}]`;
     if (previous.kind !== row.kind) throw new Error(`Staged entity ${row.id} kind conflicts for ${sources}: existing "${previous.kind}", incoming "${row.kind}".`);
     if (previous.canonicalName !== row.canonicalName) throw new Error(`Staged entity ${row.id} canonical name conflicts for ${sources}: existing "${previous.canonicalName}", incoming "${row.canonicalName}".`);
-    if (previous.slug !== row.slug) throw new Error(`Staged entity ${row.id} slug conflicts for ${sources}: existing "${previous.slug}", incoming "${row.slug}".`);
     if (previous.playerId !== null && row.playerId !== null && previous.playerId !== row.playerId) {
       throw new Error(`Staged entity ${row.id} player ID conflicts for ${sources}: existing "${previous.playerId}", incoming "${row.playerId}".`);
     }
-    entities.set(row.id, {
+    entities.set(key, {
       ...previous,
       sourceKeys: [...new Set([...previous.sourceKeys, ...row.sourceKeys])],
       playerId: previous.playerId ?? row.playerId,
@@ -375,23 +399,23 @@ function mergeConsistentStagedEntities(rows: readonly PublicationEntityRow[]): P
 async function publishDimensions(input: PublishDatasetInput, trx: Kysely<Database>): Promise<void> {
   const dimensions = input.dimensions;
   if (dimensions === undefined) return;
-  const entityRows: PublicationEntityRow[] = [
-    ...dimensions.regions.map((item) => ({ id: item.id, provider: item.provider, sourceKeys: [item.sourceKey], kind: "region" as const, canonicalName: item.name, slug: slug(item.name), playerId: null })),
-    ...dimensions.entities.map((item) => ({ id: item.id, provider: item.provider, sourceKeys: item.sourceKeys, kind: item.kind, canonicalName: item.canonicalName, slug: slug(item.canonicalName), playerId: item.playerId ?? null })),
+  const entityRows: StagedEntityRow[] = [
+    ...dimensions.regions.map((item) => ({ id: item.id, provider: item.provider, sourceKeys: [item.sourceKey], kind: "region" as const, canonicalName: item.name, playerId: null })),
+    ...dimensions.entities.map((item) => ({ id: item.id, provider: item.provider, sourceKeys: item.sourceKeys, kind: item.kind, canonicalName: item.canonicalName, playerId: item.playerId ?? null })),
   ];
   const canonicalEntityRows = mergeConsistentStagedEntities(entityRows);
-  // 不同選手可能同名；以 canonical ID 區分網址。已發佈的 slug 是永久網址，即使上游
-  // 更正真名也不再重新推導，否則公開連結會失效。
+  for (const item of canonicalEntityRows) assertPublishableEntityName(item.canonicalName, item.id);
+  // 不同選手可能同名；以 canonical ID 區分。已發佈的 slug 是既成的已發佈資料（搜尋面與
+  // snapshot 欄位；公開路由由 entity_public_ids 擁有），即使上游更正真名也不再重新推導。
   const publishedSlugs = await trx.selectFrom("entities").select(["id", "slug"]).execute();
-  const entitySlugs = resolveEntitySlugs(canonicalEntityRows, publishedSlugs);
-  for (const item of canonicalEntityRows) item.slug = entitySlugs.get(item.id)!;
-  for (const item of canonicalEntityRows) await assertImmutableEntity(item.id, item, trx);
-  for (const item of canonicalEntityRows) await trx.insertInto("entities").values({
+  const resolvedEntityRows = resolveEntitySlugs(canonicalEntityRows, publishedSlugs);
+  for (const item of resolvedEntityRows) await assertImmutableEntity(item.id, item, trx);
+  for (const item of resolvedEntityRows) await trx.insertInto("entities").values({
     id: item.id, kind: item.kind, canonical_name: item.canonicalName, slug: item.slug, player_id: item.playerId,
   }).onConflict((conflict) => conflict.column("id").doUpdateSet((eb) => ({
-    // Only an adopted upstream player real name can differ here; every other drift
-    // already failed closed in assertImmutableEntity. The slug is deliberately left
-    // untouched so published URLs never move.
+    // Only an adopted player real name can differ here; every other drift already failed
+    // closed in assertImmutableEntity. The slug is deliberately left untouched so a
+    // published slug never moves.
     canonical_name: eb.ref("excluded.canonical_name"),
     player_id: eb.fn.coalesce(eb.ref("entities.player_id"), eb.ref("excluded.player_id")),
   }))).execute();

@@ -360,7 +360,7 @@ describeWithDatabase("sync publication repository", () => {
     expect(await db.selectFrom("dataset_versions").select("id").where("version", "=", `existing-player-id-conflict-${id}`).executeTakeFirst()).toBeUndefined();
   });
 
-  it("adopts a corrected upstream player real name without moving the published URL", async () => {
+  it("adopts a corrected upstream player real name without moving the published slug or route ID", async () => {
     const id = randomUUID();
     const sourceKey = `Tatu (Pedro Seixas) ${id}`;
     const entity = (canonicalName: string) => ({ id, provider: "leaguepedia", sourceKeys: [sourceKey], kind: "player" as const, canonicalName, playerId: "Tatu", aliases: [] });
@@ -371,18 +371,56 @@ describeWithDatabase("sync publication repository", () => {
     }, db);
     expect(await db.selectFrom("entities").select(["canonical_name", "slug", "player_id"]).where("id", "=", id).executeTakeFirstOrThrow())
       .toEqual({ canonical_name: `Pedro Seixas ${id}`, slug: `pedro-seixas-${id}`, player_id: "Tatu" });
+    const routeId = await db.selectFrom("entity_public_ids").select("public_id").where("entity_id", "=", id).executeTakeFirstOrThrow();
 
     const corrected = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
     await publishDataset({
       syncRunId: corrected.id, version: `real-name-corrected-${id}`, coverage: [],
       dimensions: { entities: [entity(`Pedro Seixas Brito ${id}`)], regions: [], teamEras: [], tournaments: [] },
     }, db);
-    // The real name follows upstream, the public ID is untouched, and the published slug is permanent.
+    // The real name follows upstream; the competitive ID, the published slug, and the route ID stay put.
     expect(await db.selectFrom("entities").select(["canonical_name", "slug", "player_id"]).where("id", "=", id).executeTakeFirstOrThrow())
       .toEqual({ canonical_name: `Pedro Seixas Brito ${id}`, slug: `pedro-seixas-${id}`, player_id: "Tatu" });
+    expect(await db.selectFrom("entity_public_ids").select("public_id").where("entity_id", "=", id).executeTakeFirstOrThrow()).toEqual(routeId);
     // The superseded real name stays searchable through the append-only alias table.
     expect((await db.selectFrom("entity_aliases").select("display_name").where("entity_id", "=", id).execute()).map((row) => row.display_name).sort())
       .toEqual([sourceKey, `Pedro Seixas ${id}`, `Pedro Seixas Brito ${id}`].sort());
+  });
+
+  it("adopts a corrected real name that cannot be romanized into a slug", async () => {
+    const id = randomUUID();
+    const sourceKey = `Unromanizable ${id}`;
+    const entity = (canonicalName: string) => ({ id, provider: "leaguepedia", sourceKeys: [sourceKey], kind: "player" as const, canonicalName, playerId: "Tatu", aliases: [] });
+    const initial = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({
+      syncRunId: initial.id, version: `cjk-name-initial-${id}`, coverage: [],
+      dimensions: { entities: [entity(`Romanized Name ${id}`)], regions: [], teamEras: [], tournaments: [] },
+    }, db);
+
+    const corrected = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await publishDataset({
+      syncRunId: corrected.id, version: `cjk-name-corrected-${id}`, coverage: [],
+      dimensions: { entities: [entity("이상혁")], regions: [], teamEras: [], tournaments: [] },
+    }, db);
+    // The slug is never re-derived for a published entity, so an unromanizable name cannot wedge the run.
+    expect(await db.selectFrom("entities").select(["canonical_name", "slug"]).where("id", "=", id).executeTakeFirstOrThrow())
+      .toEqual({ canonical_name: "이상혁", slug: `romanized-name-${id}` });
+  });
+
+  it("detects a staged conflict when two entity ids differ only in case", async () => {
+    const id = randomUUID();
+    const run = await beginSyncRun({ provider: "leaguepedia", mode: "sync", parserVersion: "test" }, db);
+    await expect(publishDataset({
+      syncRunId: run.id, version: `case-folded-entity-${id}`, coverage: [],
+      dimensions: {
+        entities: [
+          { id, provider: "leaguepedia", sourceKeys: ["Case Fold A"], kind: "player", canonicalName: "Case Fold Alpha", playerId: "Fold", aliases: [] },
+          { id: id.toUpperCase(), provider: "leaguepedia", sourceKeys: ["Case Fold B"], kind: "player", canonicalName: "Case Fold Bravo", playerId: "Fold", aliases: [] },
+        ],
+        regions: [], teamEras: [], tournaments: [],
+      },
+    }, db)).rejects.toThrow(/canonical name conflicts/i);
+    expect(await findDatasetVersion(`case-folded-entity-${id}`, db)).toBeNull();
   });
 
   it("keeps a team canonical name conflict fail-closed", async () => {
@@ -406,7 +444,7 @@ describeWithDatabase("sync publication repository", () => {
   });
 
   it.each([
-    ["published row without a public ID", null, null],
+    ["published row without a public ID", null, "Tatu"],
     ["incoming entity without a public ID", "Tatu", null],
   ] as const)("keeps a player real-name change fail-closed for a %s", async (label, publishedPlayerId, incomingPlayerId) => {
     const id = randomUUID();

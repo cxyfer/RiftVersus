@@ -41,7 +41,9 @@ leaves exactly one valid Players row; zero or multiple valid targets fail
 closed and all source rows remain in immutable evidence.
 Players with different Leaguepedia IDs/pages may share a real name. Those
 source identities remain separate, and publication adds the canonical ID to a
-colliding URL slug without changing an existing player's slug.
+colliding slug without changing an existing player's slug. `slug` is a search
+surface and a snapshot field, not a route: public routes are owned by
+`entity_public_ids.public_id`, which a publication never reassigns.
 
 Leaguepedia `Players.ID` and `Players.Name` have separate owners in the
 published identity model. `player_id` stores the public competitive ID (for
@@ -49,15 +51,21 @@ example, `Faker`), while `canonical_name` stores the real name (for example,
 `Lee Sang-hyeok`). Search may match either value and presents
 `ID (real name)` when both are available; comparison subjects and avatar labels
 use the public ID. A legacy player published before migration `009` may retain a
-null `player_id` and temporarily falls back to `canonical_name`, but every
-referenced player in a new Leaguepedia publication requires both source fields.
-A conflicting non-null public ID stops publication rather than silently
+null `player_id` and falls back to `canonical_name` as its public label, but
+every referenced player in a new Leaguepedia publication requires both source
+fields. A conflicting non-null public ID stops publication rather than silently
 renaming an existing player. The real name is descriptive rather than
-identifying, so a corrected `Players.Name` is adopted on the next publication
-once both the published row and the incoming entity carry a public ID; the
-superseded name remains searchable as an append-only alias and the published
-slug never moves. Every other identity surface — kind, public ID, team and
-region names, eras, tournaments, and slugs — stays fail-closed.
+identifying, so a corrected value is adopted on the next publication once both
+the published row and the incoming entity carry a public ID — whether it arrives
+as an upstream `Players.Name` or as a reviewed `canonicalName` in
+`data/overrides/identities.yaml`. The superseded name remains searchable as an
+append-only alias and the published slug never moves. Every other identity
+surface — kind, public ID, team and region names, eras, tournaments, and slugs —
+stays fail-closed. Because a legacy row keeps `canonical_name` as its public
+label, such a row cannot adopt a correction at all: the guard fails closed and
+the transaction rolls back, so its `player_id` is never populated and the same
+conflict recurs on every run until an operator resolves it (see
+[operations.md](operations.md#player-real-name-corrections)).
 
 `MatchSchedule` is the sole series identity/completion metadata owner. Every imported
 `ScoreboardGames.MatchId` must join exactly one retained schedule row; the
