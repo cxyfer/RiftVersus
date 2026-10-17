@@ -169,6 +169,16 @@ describeWithDatabase("initial schema migration", () => {
       expect(playerIdConstraint.rows[0]?.definition).toContain("btrim(player_id) = player_id");
       expect(playerIdConstraint.rows[0]?.definition).toContain("player_id <> ''::text");
 
+      const nameBoundsConstraint = await sql<{ definition: string }>`
+        select pg_get_constraintdef(oid) as definition
+        from pg_constraint
+        where conrelid = ${`${schema}.entities`}::regclass and conname = 'entities_canonical_name_bounded'
+      `.execute(db);
+      expect(nameBoundsConstraint.rows).toHaveLength(1);
+      expect(nameBoundsConstraint.rows[0]?.definition).toContain("char_length(canonical_name) >= 1");
+      expect(nameBoundsConstraint.rows[0]?.definition).toContain("char_length(canonical_name) <= 120");
+      expect(nameBoundsConstraint.rows[0]?.definition).toContain("[[:cntrl:]]");
+
       await expect(
         db.insertInto("entities").values({
           id: randomUUID(),
@@ -176,6 +186,15 @@ describeWithDatabase("initial schema migration", () => {
           canonical_name: "Invalid",
           slug: "invalid",
         }).execute(),
+      ).rejects.toThrow();
+
+      // Migration 014 bounds the published label at the storage layer. U+0001 rather than NUL,
+      // because PostgreSQL rejects NUL in text regardless of any constraint.
+      await expect(
+        db.insertInto("entities").values({ id: randomUUID(), kind: "team", canonical_name: "x".repeat(121), slug: "too-long" }).execute(),
+      ).rejects.toThrow();
+      await expect(
+        db.insertInto("entities").values({ id: randomUUID(), kind: "team", canonical_name: "bad\u0001name", slug: "control-char" }).execute(),
       ).rejects.toThrow();
 
       await db.insertInto("entities").values([

@@ -103,7 +103,12 @@ are [Saigon Buffalo](https://lol.fandom.com/wiki/Saigon_Buffalo),
 
 Use an isolated Compose project when reviewed identity rules change. Published
 entities, aliases, and eras are immutable, so applying a new canonical merge to
-an existing database is expected to fail closed.
+an existing database is expected to fail closed. The one deliberate exception is
+a player real name: `canonical_name` follows a corrected value — an upstream
+`Players.Name` or a reviewed `canonicalName` override — when a public ID anchors
+the identity on both sides, while the published slug and every other identity
+surface stay fixed. See
+[Player real-name corrections](#player-real-name-corrections).
 
 ```bash
 export COMPOSE_PROJECT_NAME=riftversus-complete-2013-2026
@@ -113,7 +118,7 @@ docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml up -d postgres minio
 docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml run --rm migrate
 ```
 
-The migration job must report migrations `001` through `009` as successful.
+The migration job must report migrations `001` through `014` as successful.
 Migration `009` additively introduces nullable `entities.player_id` and its
 search index/constraint; it does not delete or rewrite facts, entities, media,
 or source objects. Existing players remain readable through the documented real
@@ -139,6 +144,50 @@ run must be investigated without resetting, truncating, dropping, or deleting
 persistent database rows, named volumes, or object-store objects. Publication
 is atomic: a failed run retains the previously visible generation, which is the
 non-destructive rollback while the source/configuration problem is corrected.
+
+### Player real-name corrections
+
+A player's real name is descriptive, so publication adopts a corrected value
+instead of failing closed, provided both the published row and the incoming
+entity carry a non-null `entities.player_id`. The competitive ID, the published
+slug, and the `entity_public_ids` route key never move, and the superseded name
+stays searchable through the append-only `entity_aliases` row that the previous
+publication wrote.
+
+Two cases still stop publication, and both need an operator:
+
+- **A conflicting non-null public ID.** The public ID is the identity; review
+  `data/overrides/identities.yaml` before changing it.
+- **A legacy row whose `entities.player_id` is still `NULL`.** The guard fails
+  closed, the transaction rolls back, and the same conflict recurs on every run:
+  the `player_id` coalesce never commits, so the row cannot bootstrap itself out
+  of the legacy state. Confirm the row, then resolve it deliberately rather than
+  by editing published rows:
+
+  ```sql
+  select id, kind, canonical_name, player_id, slug from entities
+  where provider = 'leaguepedia' and player_id is null and kind = 'player';
+  ```
+
+  Either revert the upstream name so the pending correction disappears, or add a
+  reviewed identity override that pins the published `canonicalName` and
+  `canonicalId` for that source key. Do not hand-write `canonical_name`.
+
+A brand-new entity still needs a slug, but a name with no ASCII alphanumerics
+(for example a CJK-only real name) falls back to an opaque
+`entity-<canonical-id>` slug instead of aborting the publication. `slug` is only
+a search surface, and the name, its aliases, and the public ID all remain
+searchable. An already published entity is unaffected because its slug is never
+re-derived. Entity names are rejected when they are empty, contain control
+characters, or exceed 120 characters; migration `014` enforces the same bound in
+the database.
+
+Leaguepedia occasionally HTML-encodes `Players.Name`, including the double
+encoded `&amp;nbsp;` that used to reach the site as literal text. Only the
+free-text player real name is decoded (character references, then whitespace
+collapse); team names stay untouched because they are reviewed identity pinned
+by `identities.yaml` and by the exact `canonicalName` that `media.json` binds a
+logo to.
 
 ### Import Worlds and MSI
 
@@ -740,3 +789,42 @@ Leaguepedia [EWC 2026 參賽隊伍註記](https://lol.fandom.com/wiki/Esports_Wo
 完整 raw input replay 得到 485 場系列賽、1,312 局、13,120 筆選手紀錄、零 quarantine。
 這是解析與 normalization 證據；正式發布仍需通過 Actions checkpoint、SQLite export、
 瀏覽器測試與 Pages 部署後驗證，不能由本機 replay 宣稱部署成功。
+
+### 2026-10-15 Actions 同步失敗：選手真名更正
+
+`Publish` run `38331760843`、`38483231974`、`38646689038`（#83–#85）逐字相同的
+錯誤在 `prepare` job 的 `publish prepare` 失敗：
+
+```
+Published entity 8fa90906-1949-5964-8a2c-df2831ed5b79 canonical name conflicts
+for source keys [Tatu (Pedro Seixas), ...]: existing "Pedro Seixas",
+incoming "Pedro Seixas Brito".
+```
+
+`8fa90906-…` 是 `stableUuid("entity:player:Tatu (Pedro Seixas)")`，見
+`data/overrides/media.json` 的 owner 綁定。Leaguepedia 編輯更正了該選手的
+`Players.Name`（真名），而 `assertImmutableEntity` 對所有已發佈實體都把
+`canonical_name` 當成不可變。`deploy` 的 `needs: prepare` 使其整段被跳過，
+所以站台凍結在 `site-38239669584-2`，baseline 停在 `checkpoint-8`（2026-10-09）。
+
+這是資料端變更而非程式回歸：2026-10-12 的成功 run 與 #83–#85 都在同一個
+commit `fc2a733` 上。線上 snapshot 的 `entity_variants` 顯示
+`display_name = "Tatu"` 與 `canonical_name = "Pedro Seixas"` 不同，即該列的
+`entities.player_id` 非 null，符合採用修正的前提。
+
+修正依循既有身分模型：選手的不可變身分是 public ID（`player_id`），真名只是描述性
+欄位。`canonical_name` 現在會在兩側都有 public ID 時採用更正後的值；competitive ID、
+已發佈 slug 與 `entity_public_ids` 路由鍵都不移動，被取代的舊名留在 append-only 的
+`entity_aliases`。team/region 名稱、`kind`、public ID、era、tournament 與 slug 維持
+fail-closed。細節與 operator 處置見
+[Player real-name corrections](#player-real-name-corrections)。
+
+`slug` 只在實體從未發佈時才推導，因此更正為 `slug` 無法羅馬化的名稱（例如純 CJK
+真名）不會再中止發佈；已發佈 slug 的守衛現在是 drift detector。真名另加上界：
+控制字元或超過 120 字元會被拒絕，避免上游把已發佈標籤改成任意長度或含控制字元的字串。
+
+驗證以 PostgreSQL 17.10 執行：整合測試 82/83 通過（未通過的
+`postgres-checkpoint` 需要 `pg_dump`，CI 另行安裝 PG17 client tools），加上 582 個
+unit/workspace 測試。新增覆蓋包含真名採用且 slug 與路由鍵不動、純 CJK 更正、
+team 改名仍 fail-closed、legacy 與無 public ID 的 player 改名仍 fail-closed、
+大小寫不同的 entity id 仍會偵測到 staged 衝突。

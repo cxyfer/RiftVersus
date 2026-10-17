@@ -569,10 +569,14 @@ function validateReviewedPageResult(titles: readonly string[], result: QueryEvid
 function parseEntity(kind: "team" | "player", row: Record<string, unknown>, index: number): LeaguepediaEntity {
   const sourceKey = stringValue(row.OverviewPage) ?? stringValue(row.ID);
   if (sourceKey === null) throw new Error(`${kind} row ${index} is missing a stable source key.`);
+  const name = requiredString(row.Name, `${kind} ${sourceKey} Name`);
   return {
     kind,
     sourceKey,
-    displayName: requiredString(row.Name, `${kind} ${sourceKey} Name`),
+    // Team names are reviewed identity: `identities.yaml` pins them and `media.json` binds a
+    // reviewed logo to the exact `canonicalName`. Only the free-text player real name is
+    // normalized, and Leaguepedia does occasionally HTML-encode that field.
+    displayName: kind === "player" ? decodeSourceName(name) : name,
     ...(kind === "player" ? { playerId: requiredString(row.ID, `player ${sourceKey} ID`) } : {}),
     aliases: [...splitAliases(row.Short), ...splitAliases(row.Aliases)],
     ...(kind === "team" ? { region: stringValue(row.Region) } : {}),
@@ -580,6 +584,32 @@ function parseEntity(kind: "team" | "player", row: Record<string, unknown>, inde
     validFrom: optionalDate(row.DateStart, sourceKey),
     validTo: optionalDate(row.DateEnd, sourceKey),
   };
+}
+
+const NAMED_CHARACTER_REFERENCES: Readonly<Record<string, string>> = {
+  amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ",
+};
+
+/**
+ * Decode HTML character references in a free-text source name and collapse whitespace.
+ * Leaguepedia `Players.Name` is occasionally double encoded (`&amp;nbsp;`), so decoding
+ * repeats until the value stops changing; unrecognized references are left untouched.
+ */
+export function decodeSourceName(value: string): string {
+  let current = value;
+  for (let pass = 0; pass < 3; pass += 1) {
+    const decoded = current.replace(
+      /&(?:#(\d{1,7})|#[xX]([0-9a-fA-F]{1,6})|([a-zA-Z]{2,8}));/g,
+      (match, decimal: string | undefined, hexadecimal: string | undefined, named: string | undefined) => {
+        if (named !== undefined) return NAMED_CHARACTER_REFERENCES[named.toLowerCase()] ?? match;
+        const codePoint = Number.parseInt(decimal ?? hexadecimal!, decimal === undefined ? 16 : 10);
+        return codePoint > 0 && codePoint <= 0x10ffff ? String.fromCodePoint(codePoint) : match;
+      },
+    );
+    if (decoded === current) break;
+    current = decoded;
+  }
+  return current.replace(/\s+/gu, " ").trim();
 }
 
 function parseOptionalDimensionRows<T>(
