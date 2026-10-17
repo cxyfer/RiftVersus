@@ -271,9 +271,15 @@ async function retireMissingFacts(input: PublishDatasetInput, facts: CanonicalFa
   }
 }
 
-function slug(value: string): string {
+/** `slug`, but nullable so a caller can fall back instead of failing the publication. */
+function slugifiable(value: string): string | null {
   const result = value.normalize("NFKD").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  if (!result) throw new Error(`Cannot derive a canonical slug from ${value}.`);
+  return result || null;
+}
+
+function slug(value: string): string {
+  const result = slugifiable(value);
+  if (result === null) throw new Error(`Cannot derive a canonical slug from ${value}.`);
   return result;
 }
 
@@ -299,11 +305,12 @@ export interface PublishedEntityIdentity {
 const MAX_ENTITY_NAME_LENGTH = 120;
 
 /**
- * Refuse a canonical name that cannot be published safely. Only control characters and
- * absurd lengths are rejected, so legitimate names in any script still publish — including
- * scripts `slug` cannot romanize.
+ * Refuse a canonical name that cannot be published safely. Only emptiness, control
+ * characters, and absurd lengths are rejected, so legitimate names in any script still
+ * publish — including scripts `slug` cannot romanize.
  */
 export function assertPublishableEntityName(name: string, id: string): void {
+  if (name.trim() === "") throw new Error(`Staged entity ${id} canonical name is empty.`);
   if (/\p{Cc}/u.test(name)) throw new Error(`Staged entity ${id} canonical name contains control characters.`);
   if (name.length > MAX_ENTITY_NAME_LENGTH) throw new Error(`Staged entity ${id} canonical name exceeds ${MAX_ENTITY_NAME_LENGTH} characters.`);
 }
@@ -326,8 +333,10 @@ export function canAdoptUpstreamPlayerRealName(published: PublishedEntityIdentit
  * published data — a search surface and a snapshot field — and is never re-derived, so a
  * corrected name cannot move it. Only an entity that has never been published needs one
  * derived, and that derivation is lazy so a corrected name `slug` cannot romanize (for
- * example a CJK real name) does not abort the publication. A derived slug that another
- * entity already owns gains the canonical ID suffix.
+ * example a CJK real name) does not abort the publication. A name with no ASCII
+ * alphanumerics falls back to an opaque slug keyed by the canonical ID; `slug` is only a
+ * search surface, and names, aliases, and public IDs stay searchable regardless. A derived
+ * slug that another entity already owns gains the canonical ID suffix.
  */
 export function resolveEntitySlugs<T extends { id: string; canonicalName: string }>(
   staged: readonly T[],
@@ -339,7 +348,7 @@ export function resolveEntitySlugs<T extends { id: string; canonicalName: string
   // Conflict detection is order-sensitive, so resolve in a stable canonical order.
   for (const item of [...staged].sort((a, b) => a.id.localeCompare(b.id))) {
     const publishedSlug = existingSlugs.get(item.id);
-    let resolvedSlug = publishedSlug ?? slug(item.canonicalName);
+    let resolvedSlug = publishedSlug ?? slugifiable(item.canonicalName) ?? `entity-${item.id}`;
     if (publishedSlug === undefined && slugOwners.has(resolvedSlug) && slugOwners.get(resolvedSlug) !== item.id) resolvedSlug = `${resolvedSlug}-${item.id}`;
     const owner = slugOwners.get(resolvedSlug);
     if (owner !== undefined && owner !== item.id) throw new Error(`Canonical slug ${resolvedSlug} conflicts with published entity ${owner}.`);

@@ -118,7 +118,7 @@ docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml up -d postgres minio
 docker compose -p "$COMPOSE_PROJECT_NAME" -f compose.yaml run --rm migrate
 ```
 
-The migration job must report migrations `001` through `009` as successful.
+The migration job must report migrations `001` through `014` as successful.
 Migration `009` additively introduces nullable `entities.player_id` and its
 search index/constraint; it does not delete or rewrite facts, entities, media,
 or source objects. Existing players remain readable through the documented real
@@ -173,11 +173,21 @@ Two cases still stop publication, and both need an operator:
   reviewed identity override that pins the published `canonicalName` and
   `canonicalId` for that source key. Do not hand-write `canonical_name`.
 
-A brand-new entity still needs a slug derived from its name, so a name with no
-ASCII alphanumerics (for example a CJK-only real name) cannot be published for
-the first time; an already published entity is unaffected because its slug is
-never re-derived. Entity names are also rejected when they contain control
-characters or exceed 120 characters.
+A brand-new entity still needs a slug, but a name with no ASCII alphanumerics
+(for example a CJK-only real name) falls back to an opaque
+`entity-<canonical-id>` slug instead of aborting the publication. `slug` is only
+a search surface, and the name, its aliases, and the public ID all remain
+searchable. An already published entity is unaffected because its slug is never
+re-derived. Entity names are rejected when they are empty, contain control
+characters, or exceed 120 characters; migration `014` enforces the same bound in
+the database.
+
+Leaguepedia occasionally HTML-encodes `Players.Name`, including the double
+encoded `&amp;nbsp;` that used to reach the site as literal text. Only the
+free-text player real name is decoded (character references, then whitespace
+collapse); team names stay untouched because they are reviewed identity pinned
+by `identities.yaml` and by the exact `canonicalName` that `media.json` binds a
+logo to.
 
 ### Import Worlds and MSI
 

@@ -1,6 +1,7 @@
 import { expect, it } from "vitest";
 
 import { assertPublishableEntityName, canAdoptUpstreamPlayerRealName, resolveEntitySlugs } from "../packages/database/src/repositories/sync.js";
+import { decodeSourceName } from "../packages/sync/src/providers/leaguepedia/fetch.js";
 
 it("freezes every published slug and derives one only for a new entity", () => {
   const published = [
@@ -27,9 +28,10 @@ it("never derives a slug for a published entity, so a name it cannot romanize st
 
   expect(resolveEntitySlugs([{ id: "aaaaaaaa-0000-5000-8000-000000000001", canonicalName: "이상혁" }], published))
     .toEqual([{ id: "aaaaaaaa-0000-5000-8000-000000000001", canonicalName: "이상혁", slug: "pedro-seixas" }]);
-  // A brand-new entity genuinely needs a slug, so an unromanizable name stays a hard error.
-  expect(() => resolveEntitySlugs([{ id: "eeeeeeee-0000-5000-8000-000000000005", canonicalName: "이상혁" }], published))
-    .toThrow(/Cannot derive a canonical slug/);
+  // A brand-new entity still needs a slug, so an unromanizable name falls back to an opaque
+  // ID-keyed slug rather than aborting the publication; the name stays searchable.
+  expect(resolveEntitySlugs([{ id: "eeeeeeee-0000-5000-8000-000000000005", canonicalName: "이상혁" }], published))
+    .toEqual([{ id: "eeeeeeee-0000-5000-8000-000000000005", canonicalName: "이상혁", slug: "entity-eeeeeeee-0000-5000-8000-000000000005" }]);
 });
 
 it("refuses a disambiguated slug that a published entity already owns", () => {
@@ -61,4 +63,17 @@ it("refuses only entity names that cannot be published safely", () => {
   }
   expect(() => assertPublishableEntityName("bad\u0000name", "entity")).toThrow(/control characters/);
   expect(() => assertPublishableEntityName("x".repeat(121), "entity")).toThrow(/exceeds 120 characters/);
+  expect(() => assertPublishableEntityName("   ", "entity")).toThrow(/is empty/);
+});
+
+it("decodes HTML character references in a source name", () => {
+  // The double encoding Leaguepedia actually ships, plus plain text that must not change.
+  expect(decodeSourceName("Amadeu&amp;nbsp;Jesus Dias de Carvalho")).toBe("Amadeu Jesus Dias de Carvalho");
+  expect(decodeSourceName("Rekkles")).toBe("Rekkles");
+  expect(decodeSourceName("AT&T")).toBe("AT&T");
+  expect(decodeSourceName("Foo &quot;Bar&quot;")).toBe('Foo "Bar"');
+  expect(decodeSourceName("Lee&#32;Sang-hyeok")).toBe("Lee Sang-hyeok");
+  expect(decodeSourceName("Lee&#x20;Sang-hyeok")).toBe("Lee Sang-hyeok");
+  expect(decodeSourceName("Keep &bogus; intact")).toBe("Keep &bogus; intact");
+  expect(decodeSourceName("  spaced   out  ")).toBe("spaced out");
 });

@@ -48,7 +48,10 @@ surface and a snapshot field, not a route: public routes are owned by
 Leaguepedia `Players.ID` and `Players.Name` have separate owners in the
 published identity model. `player_id` stores the public competitive ID (for
 example, `Faker`), while `canonical_name` stores the real name (for example,
-`Lee Sang-hyeok`). Search may match either value and presents
+`Lee Sang-hyeok`). `Players.Name` is published after decoding HTML character
+references and collapsing whitespace, because Leaguepedia occasionally ships
+that field double encoded (`&amp;nbsp;`); team names are never rewritten this way
+because they are reviewed identity. Search may match either value and presents
 `ID (real name)` when both are available; comparison subjects and avatar labels
 use the public ID. A legacy player published before migration `009` may retain a
 null `player_id` and falls back to `canonical_name` as its public label, but
