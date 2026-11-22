@@ -15,9 +15,10 @@
 現行部署方式（依 2026-10-03 baseline 與之後的 ADR-0001 amendment）：
 
 - **發布流程**：GitHub Actions `publish.yml` 是唯一的排程寫入者。每次執行都在全新 runner 上，從私有 `cxyfer/RiftVersus-data` Release 還原 PostgreSQL 17 dump 與物件，再依 mode 執行以下步驟：
-  - `current`、`history`、`backfill`、`media`：sync。
-  - 所有 mode：匯出候選 SQLite、acceptance、封存 checkpoint 與網站、瀏覽器驗證，最後部署 GitHub Pages。
-  - `reexport`：以 migration 後的資料產生新 checkpoint。`rebuild` 與 `rollback` 則不推進 data lineage。
+  - `current`、`history`、`backfill`、`media`：sync，接著匯出候選 SQLite、acceptance、封存新的 checkpoint 與網站、瀏覽器驗證，最後部署 GitHub Pages。checkpoint 可能在網站 smoke 之前就完成提交。
+  - `reexport`：以 migration 後的資料重新匯出，並封存新的 checkpoint。
+  - `rebuild`：從最新的 checkpoint 重新匯出並部署網站，不封存新的 checkpoint。
+  - `rollback`：重新部署已封存的 immutable site，不匯出，也不推進 data lineage。
 - **儲存**：PostgreSQL 只是暫時性的 ingestion／restore 工具，持久保存靠 `pg_dump` checkpoint。審閱過的媒體位元組另外存放在私有的 immutable media Release。
 - **查詢**：瀏覽器透過 `sql.js-httpvfs` Worker/WASM，以 Range request 查詢 Pages 上的 SQLite。
 
@@ -67,10 +68,11 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 | D3 | 排程 owner | 由 `worker` 容器內建排程，設定 `restart: unless-stopped`。預設 UTC `17 19 * * *` 跑 current，`47 20 * * 6` 跑 history。 | 設定 `WORKER_SCHEDULE=off`，改由主機 cron／systemd timer 每 5 分鐘執行 `docker compose run --rm worker schedule tick`（R-DEP-22） | baseline 讓 resident scheduler 退場，是因為當時排程由 Actions 負責。Actions 移除後，排程放進 image 才符合「只靠 Docker image 部署」。兩種方式走同一條 `schedule tick` 程式路徑。 |
 | D4 | 備份與異地保存 | 主備份是 volume 上可獨立還原的備份集（§7.7），保留 14 份，每次 commit 後更新。異地保存由維運者用 restic／rclone 同步整個 `backups/`，app 不內建，文件提供範例。私有 GitHub Release writer 在 P5 退場。 | 保留 `release-store` 作為可選的異地 adapter，代價是要長期保存 `RIFTVERSUS_DATA_TOKEN` | 降低對 GitHub 的耦合與系統 entropy。既有 Releases 保留為歷史證據與遷移來源，不刪除。 |
 | D5 | 前端資料傳輸 | 改用 server JSON API。server 以 `node:sqlite` 唯讀開啟已發布的 release，並重用 `@riftversus/domain` 的查詢。移除 `sql.js-httpvfs`、Worker/WASM 與 Range 傳輸。 | 保留 HTTPVFS，容器只提供靜態檔與 Range | 有 server 後，查詢放在 server 端更簡單、更快，也更容易觀測；查詢語意仍只由 domain 擁有。 |
-| D6 | GitHub Pages、舊 origin 與 base path | Pages 最後部署一個遷移頁，提供 path／query 轉址、保存比較的轉移與 JSON 下載（§8.6），至少保留 12 個月。base path 改為 runtime 設定 `PUBLIC_BASE_PATH`，預設 `/`，同一個 image 要能支援任意前綴（§6.2）。 | 直接停用 Pages，接受分享連結與 localStorage 失效 | 保護既有的分享連結與使用者的保存資料。遷移頁可以用 Pages 的「Deploy from branch」發布，不需要 repo workflow。 |
+| D6 | GitHub Pages、舊 origin 與 base path | Pages 的發布來源改為「Deploy from a branch」的 `gh-pages` 分支，不需要任何 repo workflow。最後發布的是遷移頁，提供 path／query 轉址、保存比較的轉移與 JSON 下載（§8.6），至少保留 12 個月。緊急復原（R-DEP-43）也走同一個分支。base path 改為 runtime 設定 `PUBLIC_BASE_PATH`，預設 `/`，同一個 image 要能支援任意前綴（§6.2）。 | 直接停用 Pages，接受分享連結與 localStorage 失效 | 保護既有的分享連結與使用者的保存資料；刪除 `publish.yml` 後 Pages 仍有發布入口。 |
 | D7 | 部署主機 | 不綁定特定主機，只假設：單一 Linux 主機、Docker Engine 加 Compose v2、本機磁碟。TLS 與網域由維運者的 reverse proxy 負責，容器只開放 HTTP `:8080`。 | 指定某個雲端供應商 | 主機尚未決定。 |
 | D8 | 每次發布的驗證 | production image 不含 Chromium。promote 前，對候選 release 執行 in-process HTTP smoke；commit 後，透過正式 origin 做 HTTP 驗證（R-OPS-07）。瀏覽器 E2E 在 CI 對 image 執行，並在 cutover 與每次 image 升級時，對正式 origin 執行 release 版 E2E。 | production image 內含 Chromium，每次發布都截圖 | Chromium 會讓 image 增加數百 MB。資料發布不會改動前端程式碼，瀏覽器行為只隨 image 版本改變。 |
-| D9 | 審閱媒體位元組的來源 | 用 `riftversus media import <pack>` 從本機目錄或 archive 匯入。受信任的 checksum 來自 repo 內已審閱的 `data/overrides/media.json`／`media-inventory.json`（R-DATA-31）。審閱包由維運者自行下載，例如用 `gh release download`。 | worker 直接讀取私有 media Release（需要 token） | 執行期不需要 GitHub token，審閱與校驗的 gate 維持不變。 |
+| D9 | 審閱媒體位元組的來源 | 用 `riftversus run media --pack <zip>` 匯入受審的 ZIP 並在同一個 run 內發布。受信任的 checksum 只來自 repo 內已審閱的 `data/overrides/media.json`：整包為 `archive.checksum`／`archive.byteSize`，逐檔為 `assets[].rightsBasis.fileChecksum`／`assets[].byteSize`（R-DATA-31）。審閱包由維運者自行下載，例如用 `gh release download`。 | worker 直接讀取私有 media Release（需要 token） | 執行期不需要 GitHub token，審閱與校驗的 gate 維持不變；匯入與發布在同一個 run，物件不會在兩步之間失去引用。 |
+| D10 | 等待中的 run | 每種 run kind 各保留一筆 pending（R-DEP-21）。這是刻意的行為變更：現行 Actions 的 concurrency group 讓所有 mode 共用一筆等待中的 run。 | 所有 kind 共用一筆 pending，與現行相同 | 每日 current 不應把每週 history 擠掉。 |
 
 ## 4. Baseline 與 ADR 對照
 
@@ -87,7 +89,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 | ADR-0001 Retirement Impact：「Delete Fastify/server workspace, application Docker carriers, resident cron scheduler」 | 依本次需求變更，刻意重新引入 | 新的 `apps/server`、Dockerfile 與 worker 排程。不恢復 PostgreSQL、S3、MinIO 依賴 |
 | `publish.yml` 是單一的排程 publisher | 取代（D3） | worker 加上 writer lock（§6.3） |
 | GitHub Pages 提供公開網站 | 取代（D6） | `web` 容器 |
-| 審閱過的圖片存放在私有 immutable media Release，publication 時校驗 | 取代傳輸方式，保留 gate（D9） | `media import` 與本機 object store |
+| 審閱過的圖片存放在私有 immutable media Release，publication 時校驗 | 取代傳輸方式，保留 gate（D9） | `run media --pack` 與本機 object store |
 | 網站 rollback 會部署含 UI 的完整 immutable site；schema 2 site 仍可讀取 | 拆成三條回復路徑（§6.7） | serving rollback、image rollback、舊 site 封存的緊急復原 |
 | 可讀的 entity／era URL key 有持久化的 scoped ownership，後到者不能搶走已發布的 ID | 保留 | SQLite canonical 加 trigger（§7.3）；rollback 與還原都不得讓這個保證倒退（§6.7） |
 | 分享、保存比較、匯出都是 client 功能 | 保留 | 不變；資料改由 API 提供 |
@@ -109,10 +111,10 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 │   releases/<releaseId>/{release.json, data/…, presentation/…}（不可變）                 │
 │   media/<sha256>.<ext>（內容定址的公開媒體池）                                         │
 │   objects/<object-key>/{body,metadata.json}（FilesystemObjectStore）                    │
-│   state/state.json（唯一 commit 點）  state/serving-log.jsonl  state/lseq               │
+│   state/state.json（唯一 commit 點）  state/commit-log.jsonl  state/lseq                │
 │   schedule/scheduler.sqlite   attempts/<runId>/   backups/   locks/                     │
 │                                                                                         │
-│ web（riftversus:<sha> `serve`；releases、media、state 唯讀掛載）                        │
+│ web（riftversus:<sha> `serve`；整個 /data 唯讀掛載）                                    │
 │   GET / (SPA)  /api/v1/*  /presentation/<sha>.<ext>  /presentation/image-credits.html   │
 └───────────────────────────────────▲─────────────────────────────────────────────────────┘
                                     │ reverse proxy（TLS）← 使用者
@@ -124,29 +126,53 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   - 每次提交產生一個不可變的 lineage 檔 `db/lineage/<lseq>.sqlite`。`lseq` 來自 `state/lseq` 的單調遞增計數器，永不倒退，rollback 與 restore 也不例外。檔名中的 `lseq` 與 DB 內部的 `dataset_versions.generation` 是兩回事。
   - `state.json` 的 `head` 指向最新一個已提交的 lineage 檔。每次寫入 run 都先用 SQLite backup API 把 `head` 複製成 `db/candidates/<runId>/candidate.sqlite`，所有寫入只發生在 candidate 上。
 - **R-ARCH-02：release 成品與識別**
-  - `releases/<releaseId>/` 的內部結構沿用現有 exporter 的輸出（`data/manifest.json`、`data/*.sqlite`、`presentation/…`），這樣既有的 `current-snapshot-acceptance` 不用修改就能直接使用。另外新增一個 `release.json`。
+  - `releases/<releaseId>/` 的內部結構沿用現有 exporter 的輸出（`data/manifest.json`、`data/*.sqlite`、`presentation/…`），另外新增一個 `release.json`。沿用目錄結構只讓 `current-snapshot-acceptance` 的成品讀取（`verifyPublicSnapshot`）可以直接使用；它的 canonical 查詢目前走 PG，P1 必須移植（R-DATA-42）。
   - 快照內的媒體 URL 沿用現行的穩定格式 `${basePath}presentation/<sha256>.<ext>`，不含 `releaseId`，所以沒有雜湊循環，`snapshotId` 也能和舊 Pages 做 parity。
   - 計算順序：先算 `snapshotId`（沿用 `snapshotDigest`），接著產生 SQLite 檔並計算 checksum，最後算 `releaseId`。
-  - `releaseId` 是 `release.json` 中「識別欄位」正規化後的 sha256。識別欄位只包括：`snapshotId`、`schemaVersion`、`basePath`、各成品檔的 sha256 與 bytes，以及媒體 checksum 清單。`runId`、`createdAt`、`imageRevision`、`lseq` 屬於非識別的 metadata，不納入雜湊。
-  - 匯出必須是決定性的：相同的 lineage 內容與 `basePath`，在相同的 exporter 版本下，一定得到相同的 `snapshotId` 與 `releaseId`。
+  - `releaseId` 是 `release.json` 中「識別欄位」正規化後的 sha256。識別欄位只包括：`snapshotId`、`schemaVersion`、`basePath`、各成品檔的 sha256 與 bytes，以及媒體 checksum 清單。
+  - `release.json` 只存放由內容決定的欄位：上述識別欄位，加上從快照推導出的 `datasetVersion` 與 `coverage`。`lseq`、`runId`、`imageRevision`、`createdAt` 這類逐次執行的 metadata 不寫進 release 目錄，而是記在 commit log（R-ARCH-03）。
+  - 匯出必須是決定性的：相同的 lineage 內容與 `basePath`，在相同的 exporter 版本下，一定得到相同的 `snapshotId` 與 `releaseId`。因此不同的 lineage 可能產生同一個 `releaseId`。
+  - 目的目錄 `releases/<releaseId>/` 已經存在時，逐檔驗證 checksum：全部相符就丟棄 staging、重用既有目錄；任何不符就 fail closed 並告警，不覆寫。
   - 媒體檔以內容定址，在 promote 時從 release 複製到共用的 `media/` 池；只要還有任何一個保留中的 release 引用，就不會被刪除。
 - **R-ARCH-03：state 與唯一 commit 點**
-  - `state/state.json` 的內容為 `{ head: { lseq, runId }, serving: { releaseId, lseq }, previousServing, updatedAt }`。
-  - `head` 是寫入歷史，`serving` 是目前對外提供的 release；兩者分開記錄（§6.7）。
+  - `state/state.json` 的內容為：
+
+    ```text
+    { commitSeq,
+      head: { lseq, runId },
+      serving: { releaseId, lseq },
+      previousServing: { releaseId, lseq } | null,
+      lastCommit: { commitSeq, kind, runId, imageRevision, at },
+      updatedAt }
+    ```
+
+    - `head` 是寫入歷史，`serving` 是目前對外提供的 release；兩者分開記錄（§6.7）。
+    - `commitSeq` 單調遞增。每一次改變 `head` 或 `serving` 的操作（`run`、`migrate`、`release promote|rollback|rebuild --promote`、`backup restore`）都是一次提交，都有自己的 `runId`。
+  - **commit log**：`state/commit-log.jsonl` 是 append-only 的切換事件流，每次提交一行：`{ commitSeq, kind, runId, head, serving, imageRevision, at }`。
+    - 它是 `releaseId` 與 lineage 對應關係的唯一 owner；同一個 `releaseId` 可以在不同事件中對應不同的 `lseq`，以最新的事件為準。
+    - release 的保留期由事件序列推導：某個 release 目前正在 serving，或在過去 24 小時內有事件把 serving 從它切走，就算在保留期內。rollback 重新啟用舊 release 時只是新增一筆事件，不回改舊紀錄。
+    - GC、`release rebuild` 與 `release rollback` 都從 commit log 取得 release 對應的 lineage。
+  - **`lseq` 配置**：配置新的 `lseq` 時，先以 tmp 檔 + fsync + rename + 目錄 fsync 更新 `state/lseq`，之後才把 candidate 改名為 lineage 檔。對帳時 `state/lseq` 取 `max(state/lseq, head.lseq, db/lineage/ 中的最大序號)`，序號永不重用。
   - 提交依下列順序進行：
-    1. 耐久落盤：candidate 改名為 `db/lineage/<lseq>.sqlite`，release staging 改名為 `releases/<releaseId>/`，新媒體寫入 `media/`。對每個檔案和每個目的目錄都執行 fsync。
+    1. 耐久落盤，對每個檔案和每個目的目錄都執行 fsync：
+       - 本次新寫入、且被 candidate 引用的所有物件（`objects/` 的 `body`、`metadata.json` 與其目錄）。現行 `putImmutable` 只做 rename，P3 必須補上 fsync。
+       - candidate 改名為 `db/lineage/<lseq>.sqlite`。
+       - release staging 改名為 `releases/<releaseId>/`，目錄已存在時依 R-ARCH-02 重用。
+       - 新媒體寫入 `media/`。
     2. 寫入 `state.json.tmp` 並 fsync，再 rename 成 `state.json`。這次 rename 是唯一的 commit 點。
     3. fsync `state/` 目錄。
-  - commit 之後，在 `state/serving-log.jsonl` 追加一筆紀錄 `{ releaseId, servedFrom, retiredAt? }`，並 fsync。
-- **R-ARCH-04：提交狀態與重啟對帳**
-  - 每個 run 的提交狀態分為三種：
+    4. 在 commit log 追加本次事件並 fsync。
+- **R-ARCH-04：提交狀態與對帳**
+  - 每次提交的狀態分為三種：
     - **未提交**：rename 之前就失敗。candidate 與 staging 一律丟棄，`state.json` 保持不變。
     - **已提交**：rename 成功，目錄 fsync 也成功。
     - **提交不確定**：rename 已經呼叫，但目錄 fsync 失敗，或行程在這之間被終止。此時行程以非零碼結束，run 標記為 `commit_uncertain`。
-  - worker 每次啟動都先對帳：讀取實際的 `state.json`。
-    - 若 `head.runId` 等於某個 `running`／`commit_uncertain` 的 run，把該 run 判定為 `succeeded`，並補做尚未完成的提交後步驟：serving-log、備份、對外驗證。
-    - 其他狀況則判定為 `abandoned` 並清理。
-  - 清理只刪除沒有被任何地方引用的檔案。引用來源包括：`state.json`（head、serving、previousServing）、保留中 release 的 `release.json`、備份集，以及 attempt。
+  - 對帳時機：每個寫入指令取得 writer lock 之後、執行任何寫入或 GC 之前，都要先對帳。常駐 worker 接手下一次寫入、或手動指令被終止後再由 worker 接手，都適用。對帳是冪等的，步驟如下：
+    1. 讀取實際的 `state.json`。若它的 `commitSeq` 大於 commit log 的最後一筆，就依 `lastCommit` 與 `head`／`serving` 補寫缺少的那筆事件。
+    2. 若 `lastCommit.runId` 等於某個 `running`／`commit_uncertain` 的 run，把該 run 判定為 `succeeded`，並補做尚未完成的提交後步驟：備份與對外驗證。這同時涵蓋只切換 `serving` 的提交。
+    3. 其他 `running`／`commit_uncertain` 的 run 判定為 `abandoned` 並清理。
+    4. 校正 `state/lseq`。
+  - 清理只刪除沒有被任何地方引用的檔案。引用來源包括：`state.json`（head、serving、previousServing）、保留期內的 release 及其在 commit log 中對應的 lineage、備份集，以及 attempt。
 - **R-ARCH-05：提交後步驟**：備份（R-DATA-50）與對外驗證（R-OPS-07）都在 commit 之後執行。提交前資料已經耐久落盤，所以這兩步失敗時只告警並記錄，不會回滾提交。
 - **R-ARCH-06：查詢語意單一 owner**
   - `@riftversus/domain` 的 SQLite schema v3 與 `searchSqlite`／`compareSqlite` 維持不變，執行環境從瀏覽器的 `sql.js` 換成 server 的 `node:sqlite`。
@@ -160,7 +186,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 | `packages/domain` | 保留 schema v3 與既有查詢；新增單局明細與統計拆解查詢。若因此升級到 v4，web 必須仍能讀取 v3（R-DEP-42） |
 | `packages/database` | P1–P4 期間，在 PG 實作旁新增 SQLite 實作。PG 路徑凍結、只修 bug，讓 `publish.yml` 繼續使用；P5 移除 PG 實作與 `pg` 依賴 |
 | `packages/sync` | 保留 Leaguepedia provider 與 `FilesystemObjectStore`（以邏輯 key 存放 `body` 與 `metadata.json`）；鎖由呼叫端注入 |
-| `apps/data` | 保留 sync、acceptance、export、mapping、freshness；新增 `run`、`schedule`、`release`、`backup`、`media import`、`plan`、`attempt`；P5 退場 GitHub publish／site／archive／checkpoint-release 相關指令（§10） |
+| `apps/data` | 保留 sync、acceptance、export、mapping、freshness；新增 `run`（含 `run media --pack`）、`schedule`、`release`、`backup`、`plan`、`attempt`；P5 退場 GitHub publish／site／archive／checkpoint-release 相關指令（§10） |
 | `apps/server`（重建） | HTTP server、API、靜態檔、release 熱切換、`worker` 入口 |
 | `apps/web` | 新 UI；以 `http-runtime` 取代 `static-runtime`；保留 `mock-runtime` |
 
@@ -201,19 +227,20 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   - `web`：
     - 只宣告 `image:`，使用相同的變數。
     - 執行 `serve`，對外為 `127.0.0.1:${WEB_PORT:-8080}:8080`。
-    - 以唯讀方式掛載 `/data/releases`、`/data/media`、`/data/state`。
+    - 以唯讀方式掛載同一個 named volume 的 `/data`（`/data:ro`），不使用子路徑掛載。web 不開啟 `db/` 下的任何檔案（R-ARCH-06）。
     - healthcheck 為 `riftversus healthcheck web`。
   - `legacy-import` profile：包含 `postgres:17` 與 `riftversus-legacy-tools`，P5 移除。
   - MinIO 的 `legacy-recovery` profile：P5 移除，但 named volume 一律保留。
 - **R-DEP-11：image 一致性**
   - 部署證據必須記錄 web 與 worker 的 image ID 相同。此規則不適用於 legacy profile。
-  - 驗收：在乾淨的主機上，照著部署文件執行一次 `init` → `build` → `up`。
+  - 驗收：在乾淨的主機上，照著部署文件依序執行 `docker compose build worker`（或 `pull`）→ `run --rm worker init` → 準備第一個 release（cutover 時依 R-DATA-46 匯入，或依 R-DATA-52 從備份還原）→ `up -d`。
 - **R-DEP-12：環境變數設定**
   - 所有設定只來自環境變數。`.env.example` 改寫為「正式部署」與「本機工具」兩區，正式區列出：
     - `PUBLIC_BASE_PATH`、`PUBLIC_ORIGIN`、`DATA_DIR=/data`。
     - 排程：`WORKER_SCHEDULE`、`SYNC_CURRENT_CRON`、`SYNC_HISTORY_CRON`、`SYNC_RUN_TIMEOUT_MINUTES=180`。
     - 保留量：`BACKUP_RETAIN=14`、`ATTEMPT_MAX_BYTES`。
     - `ALERT_WEBHOOK_URL`（可選）。
+    - `TRUSTED_PROXY_HOPS`（預設 `1`）：決定從 `X-Forwarded-For` 取哪一跳作為來源 IP，供 rate limit 使用。設為 `0` 時改用連線位址。
     - Leaguepedia 的 endpoint、user agent 與 media hosts。
   - 正式的 competition 範圍與 mapping 不由 env 提供，見 R-OPS-10。
   - 移除 `DATABASE_URL` 與 S3／MinIO 變數。
@@ -232,13 +259,14 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 ### 6.3 單一 writer、排程與 run 生命週期
 
 - **R-DEP-20：writer lock**
-  - 範圍：所有寫入 `db/`、`releases/`、`media/`、`objects/`、`state/`、`backups/` 的指令，都必須先取得 `/data/locks/writer.lock` 的獨占 `flock`，並持有到提交後步驟結束。這些指令包括：`run *`、`migrate`、`release promote|rollback|rebuild --promote`、`backup create|restore`、`media import`。
+  - 範圍：所有寫入 `db/`、`releases/`、`media/`、`objects/`、`state/`、`backups/` 的指令，都必須先取得 `/data/locks/writer.lock` 的獨占 `flock`，並持有到提交後步驟結束。這些指令包括：`run *`（含 `run media --pack`）、`migrate`、`release promote|rollback|rebuild --promote|prune`、`backup create|restore`、`attempt prune`。
   - candidate 的寫入交易使用 `BEGIN IMMEDIATE`。行程遭硬終止時，flock 由 kernel 釋放。
   - 只有 writer 連線可以寫入；其他連線一律以 `mode=ro` 開啟。
 - **R-DEP-21：排程狀態的 owner**
   - `schedule/scheduler.sqlite` 只由 scheduler 模組寫入，不受 writer lock 管轄。scheduler 以自己的短交易寫入，搭配 `busy_timeout`，可跨容器使用。
   - 鎖被占用時，手動指令立即以 `status: locked` 結束並回傳非零 exit code；排程則記錄 `pending`。
-  - 每種 run kind 最多一筆 pending，新的覆蓋舊的。這與 Actions concurrency「只保留最新一筆等待中的 run」的行為一致。
+  - 每種 run kind 最多一筆 pending，同 kind 新的覆蓋舊的（D10，刻意的行為變更：現行 Actions 讓所有 mode 共用一筆）。
+  - 鎖釋放後，多筆 pending 依 `scheduledFor` 由舊到新執行；`scheduledFor` 相同時依 `current`、`history`、`backfill` 的順序。手動指令不進 pending。
 - **R-DEP-22：`schedule tick`**
   - 內建排程每分鐘呼叫一次 `schedule tick`；主機 timer 的替代方案呼叫的也是同一個指令（D3）。
   - tick 依 cron 與 `scheduler.sqlite` 判斷要執行哪些項目：到期的 `scheduledFor` 與既有的 pending。能取得鎖就執行，取不到就記錄 pending。
@@ -256,7 +284,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 | 現行 Actions 提供 | 新 owner | 需求 |
 | --- | --- | --- |
 | `schedule` cron | `schedule tick`（D3） | R-DEP-22 |
-| `concurrency` 單一 writer 與一筆等待中的 run | writer lock 與 pending 合併 | R-DEP-20、R-DEP-21 |
+| `concurrency` 單一 writer 與一筆等待中的 run | writer lock；pending 改為每種 kind 一筆（D10） | R-DEP-20、R-DEP-21 |
 | `timeout-minutes: 180` | `SYNC_RUN_TIMEOUT_MINUTES` | R-DEP-23 |
 | 失敗 attempt 封存 | `/data/attempts/` | R-OPS-03 |
 | 失敗通知 | scheduler 狀態、freshness、webhook | R-OPS-04 |
@@ -268,15 +296,18 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 
 - **R-OPS-03：attempt 封存**
   - 建立時機：run 開始時就建立 `attempts/<runId>/journal.jsonl`。每取得一個 raw source 物件，就追加該物件的 key 與 checksum 並 fsync，因此硬終止後仍知道取得了哪些證據。
-  - 內容：run 失敗、逾時或 abandoned 時，補齊以下內容。
-    - `manifest.json`：`type: attempt`、kind、request、失敗階段、錯誤摘要、image revision、使用的 head。
+  - 內容：run 失敗、逾時或 abandoned 時，補齊以下內容，對應現行失敗封存的 staging DB 與索引物件。
+    - `manifest.json`：`type: attempt`、kind、request（scope 與 `scheduledFor`）、失敗階段、錯誤摘要、image revision、使用的 head，以及審閱輸入的版本（git revision，以及 mapping／overrides 檔案的 checksum）。
+    - `candidate.sqlite`：失敗當下的 candidate，以 SQLite backup API 複製。
+    - journal 中列出的 raw source 物件，留在 `objects/` 並由 attempt 釘住。
     - diagnostics。
-    - 證據完整度狀態：`complete` 或 `evidence_incomplete`。
+    - 證據完整度狀態：上述內容都齊全且 checksum 相符時為 `complete`，否則為 `evidence_incomplete`。`complete` 代表 `attempt show` 可以離線重讀指定的失敗批次。
   - 清理順序：worker 重啟時先依 journal 整理 attempt，之後才做任何清理。journal 中列出的物件由 attempt 釘住，不會被 GC 刪除。
   - 保留優先順序：
     1. 30 天內的 attempt 一律保留。
     2. 超過 30 天的 attempt，只保留最近 30 筆。
     3. 若 30 天內的 attempt 總量超過 `ATTEMPT_MAX_BYTES`，worker 暫停排程並告警（fail closed），不得刪除 30 天內的證據。
+  - 暫停期間，`schedule tick` 仍會執行上述保留清理，但不啟動 run。總量回到上限以下時（attempt 超過 30 天後被清理，或維運者調高 `ATTEMPT_MAX_BYTES`），下一次 tick 自動解除暫停並記錄事件。
   - 使用限制：`backup restore` 與 `release promote` 拒絕任何 `type` 不是 `backup`／`release` 的輸入。
   - 查閱：用 `riftversus attempt show <runId>` 重讀失敗證據。
 - **R-OPS-04：通知**
@@ -284,7 +315,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   - 若有設定 `ALERT_WEBHOOK_URL`，就 POST 一筆不含 secret 的 JSON。
   - worker healthcheck 也反映 freshness 狀態。
 - **R-OPS-05：重建驗證**
-  - 每週 history 之後，執行 `release rebuild --verify`：從 `serving.lseq` 重新匯出，與 `serving.releaseId` 對應的 release 比對。
+  - 每週 history 之後，執行 `release rebuild --verify`（預設 `--from serving`）：從 `serving.lseq` 重新匯出，與 `serving.releaseId` 對應的 release 比對。
   - 判定規則：
     - 相同 `basePath` 下，`snapshotId` 必須嚴格相等。
     - 若 exporter 版本與該 release 相同，`releaseId` 也必須相等。
@@ -315,12 +346,14 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 | 現行 | 新指令（皆在 production image 內） |
 | --- | --- |
 | `publish.yml` mode `current`／`history`／`backfill` | 排程，或 `riftversus run current|history|backfill …` |
-| mode `media` | `riftversus media import <pack>` 後執行 `riftversus run media` |
-| mode `reexport`（在 migration 後產生新的資料提交） | `riftversus migrate`：以 head 產生新的 lineage 並提交，接著 `riftversus release rebuild --promote` 匯出並切換 serving |
-| mode `rebuild`（不推進 data lineage） | `riftversus release rebuild --promote`：從 `serving.lseq` 重新匯出並切換 serving，不改 head |
+| mode `media` | `riftversus run media --pack <zip>`：在同一個 run 內驗證、匯入並發布 |
+| mode `reexport`（在 migration 後產生新的資料提交） | `riftversus migrate`：以 head 產生新的 lineage 並推進 head；接著 `riftversus release rebuild --from head --promote` 匯出並切換 serving |
+| mode `rebuild`（從最新資料重新匯出，不推進 data lineage） | `riftversus release rebuild --from head --promote`：從 `head.lseq` 重新匯出並切換 serving，不改 head。rollback 之後要回到最新資料也用這個指令 |
 | mode `rollback` | `riftversus release rollback [<releaseId>]`、`release list` |
 | `checkpoint pack|verify|restore` | `riftversus backup create|verify|restore` |
-| —（新增） | `riftversus init|schedule tick|plan show|attempt list|show|healthcheck` |
+| —（新增） | `riftversus init|schedule tick|plan show|attempt list|show|prune|release prune|healthcheck` |
+
+`release rebuild` 接受 `--from head|serving|<lseq>`：`--promote` 預設 `--from head`，`--verify` 預設 `--from serving`。`run <kind>` 每次提交都同時推進 head 與 serving，所以 rollback 之後的下一次 run 會讓 serving 回到最新資料。
 | —（遷移專用，在 legacy 工具 image 內） | `riftversus-legacy fetch-checkpoint|import-postgres|parity|site-download` |
 
 `run <kind>` 的管線（全程持有 writer lock）：
@@ -329,7 +362,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 2. 從 head 建立 candidate。
 3. 寫入 candidate。
 4. 匯出到 `releases/.staging-<runId>/`。
-5. 執行 acceptance。沿用 `current-snapshot-acceptance`，它讀取的是匯出的成品與物件。
+5. 執行 acceptance：移植到 SQLite 的 `current-snapshot-acceptance`（R-DATA-42），讀取匯出的成品、candidate 與物件。
 6. 執行 `release verify` 與 smoke。
 7. 耐久落盤並 commit（R-ARCH-03）。
 8. 執行提交後步驟（R-ARCH-05）。
@@ -343,20 +376,25 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
     - `series_facts`、`game_facts`、`game_players`。
     - `entity_public_ids`、`team_era_public_ids`。
     - `coverage_status`、`fact_mutation_audits`、`source_cursors`。
-  - 只允許以 append-only 方式新增以下內容：
-    - `sync_runs`：`mode='media'`。
-    - `source_objects`：只限 reviewed-media manifest。
-    - `override_applications`／`override_application_runs`：只限 `data/overrides/media.json`。
-    - 一筆新的 `dataset_versions`：coverage 與 current／history freshness 欄位都必須與前一筆相同。
-    - `media_assets`／`media_objects`。
+  - 只允許以下差異，各表的所有其他差異都 fail closed：
+    - `sync_runs`：新增一筆 `mode='media'` 的列，以及該列從 `running` 轉為 `succeeded` 的狀態欄位更新。
+    - `source_objects`：只新增 reviewed-media manifest。
+    - `override_applications`／`override_application_runs`：只新增綁定 `data/overrides/media.json` 的列。
+    - `dataset_versions`：至多新增一筆，coverage 與 current／history freshness 欄位都必須與前一筆相同。若 manifest 與已發布的相同，就不新增（沿用現行的無變更語意）。
+    - `media_objects`：只新增。
+    - `media_assets`：新增列，以及 `is_current` 的切換。切換必須精確綁定同一個主體（`entity_id` 或 `team_era_id`）與同一個 `kind`，其他欄位不得更動。
   - 驗證方式：比對 candidate 與 head，違反上述規則即 fail closed。
 
 ### 6.6 升級
 
 - **R-DEP-30：升級程序**
-  - 依序執行：`docker compose build worker`（或 `pull`）→ `docker compose stop worker` → `docker compose run --rm worker migrate` → `docker compose up -d`。
-  - 升級期間舊的 worker 必須停止，舊 writer 與 migration 不得同時執行。
-  - `migrate` 會先自動建立備份集，再以 head 產生新的 lineage。
+  - 依序執行，每一步失敗就停止並保留現狀：
+    1. `docker compose build worker`（或 `pull`）。
+    2. `docker compose stop worker`：停寫。舊 writer 與 migration 不得同時執行。
+    3. `docker compose run --rm worker migrate`：先自動建立備份集，再以 head 產生新的 lineage 並推進 head。
+    4. `docker compose run --rm worker release rebuild --from head --promote`：以新 image 從新的 head 匯出，通過 acceptance 與 smoke 後切換 serving。
+    5. `docker compose up -d web`，執行 R-OPS-07，並對正式 origin 執行 release 版 E2E（D8）。
+    6. 以上都通過後，`docker compose up -d worker` 恢復排程。
   - worker 偵測到尚未執行的 migration 時，拒絕啟動排程。
 
 ### 6.7 回復路徑與相容矩陣
@@ -377,14 +415,15 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   - P5 後，私有 Release 中 schema 2／3 的 immutable site 轉為歷史證據。
   - cutover 後 30 天內，保留可執行的緊急復原能力：
     - legacy 工具 image 的 `site-download` 與封存驗證能力保留到期限屆滿。
-    - P5 之前要演練一次完整流程：從指定的私有封存取件、驗證、以 Pages 重新部署，再返回新站。
+    - 復原入口是 D6 的 `gh-pages` 分支，不依賴 `publish.yml`：以 `site-download` 取件並驗證後，把封存的 site 提交到 `gh-pages`；返回時再提交遷移頁。
+    - P5 之前要用這條分支路徑演練一次完整流程：取件、驗證、發布封存 site、以真實的舊 origin 驗證，再切回遷移頁。不得以舊 workflow 代替。
   - 30 天後，由 ADR-0002 宣告這項相容契約終止，並刪除 legacy 工具 image。
 
 ## 7. 資料需求（SQLite）
 
 ### 7.1 Canonical schema
 
-- **R-DATA-01**：以單一 SQLite baseline migration `sqlite/001_baseline`，重建 PG migration 001–014 最終狀態的 21 張表。表名、欄位與約束的語意都要與 PG 等價：
+- **R-DATA-01**：以單一 SQLite baseline migration `sqlite/001_baseline`，重建 PG migration 001–014 最終狀態的 21 張表，另外新增 2 張 SQLite 專用的 reservation 表（R-DATA-16）。21 張表的表名、欄位與約束語意都要與 PG 等價：
 
   ```text
   coverage_status, dataset_versions, entities, entity_aliases, entity_public_ids,
@@ -395,7 +434,8 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   ```
 
   P5 之前，PG migrations 保留在原位。
-- **R-DATA-02**：所有表都使用 `STRICT`，並移植全部的 CHECK、UNIQUE 與 FK。SQLite 專用的欄位（`*_fold`、授權 `state`、`legacy_*`）另外列在 R-DATA-42 的欄位映射表。
+- **R-DATA-02**：所有表都使用 `STRICT`，並移植全部的 CHECK、UNIQUE 與 FK。SQLite 專用的欄位（`*_fold`、授權的 `id` 與 `state`、`legacy_*`）與 reservation 表，列在 R-DATA-42 的欄位映射表。
+  - `dataset_versions.sync_run_id → sync_runs` 與 `sync_runs.reused_dataset_version_id → dataset_versions` 互相引用，任何逐表順序都無法一次滿足 FK。批次匯入（R-DATA-41）與備份還原必須在單一交易內設定 `PRAGMA defer_foreign_keys=ON`，commit 前執行 `foreign_key_check`。
 
 ### 7.2 型別與功能差異
 
@@ -407,8 +447,8 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 | PL/pgSQL trigger 與交易本地授權 | 見 §7.3 | 見 §7.3 |
 | `jsonb` | `TEXT`，加上 `CHECK (json_valid(col))`，以穩定的鍵序序列化 | round-trip 測試 |
 | `date` | `TEXT`，以 GLOB CHECK 限定 `YYYY-MM-DD` 格式，並由 `DateSchema` 驗證 | 沿用日期邊界測試 |
-| `timestamptz` | `TEXT`，ISO-8601 UTC，精確到毫秒 | 時區與排序測試 |
-| `boolean` | `INTEGER`，加上 `CHECK (col IN (0,1))` | — |
+| `timestamptz` | `TEXT`，ISO-8601 UTC，固定 6 位小數（微秒），與 PG 的精度相同，遷移不失真 | 時區、排序與微秒 round-trip 測試 |
+| `boolean` | `INTEGER`，加上 `CHECK (col IN (0,1))`；parity 時 PG 的 `true/false` 正規化為 `1/0` | — |
 | `bigint`（含 generation sentinel `9223372036854775807`） | `INTEGER`（64-bit）。generation 類欄位一律以 `BigInt` 讀取，不得轉成 `Number`；其他欄位若超出 `MAX_SAFE_INTEGER`，fail closed | sentinel round-trip |
 | `uuid` | `TEXT`，加上格式 CHECK | — |
 | `pg_dump`／`pg_restore` | 備份集（§7.7） | 還原演練 |
@@ -421,32 +461,46 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 
 - **R-DATA-10：交易本地的事實修改授權**
   - 交易邊界：SQLite 只有單一 writer 連線，一次只有一個寫入交易；「交易本地」指的是同一個寫入交易內插入、且尚未 commit 的列。
-  - `fact_mutation_authorizations` 欄位：`id`、`fact_table`、`fact_id`、`provenance_kind`、`provenance_id`、`state`（`active|consumed|historical`）、`created_at`，以及 `legacy_*` 欄位。另建部分唯一索引：`state='active'` 時，每個 `(fact_table, fact_id)` 最多一筆。
+  - `fact_mutation_authorizations` 欄位：`id`、`fact_table`（`series_facts|game_facts`）、`fact_id`、`provenance_kind`（`source_object|override_application`）、`provenance_id`、`state`（`active|consumed|historical`）、`created_at`，以及 `legacy_*` 欄位。另建部分唯一索引：`state='active'` 時，每個 `(fact_table, fact_id)` 最多一筆。
   - 寫入 API `authorizeFactMutation` 的流程：
     1. 先比較既有列與新值。內容完全相同時不授權、也不執行 UPDATE，保持 no-op。
     2. 內容不同時，在同一交易內插入 `active` 授權，接著執行 UPDATE。
-  - trigger 的檢查：
-    - `series_facts`／`game_facts` 等 canonical fact 表的 `BEFORE UPDATE` trigger，要求存在一筆相符的 `active` 授權，否則 `RAISE(ABORT)`。
-    - 相符代表 `fact_table` 等於 trigger 所屬表、`fact_id` 等於 `OLD.id`，且 provenance 存在於 `source_objects` 或 `override_applications`。
-    - 通過檢查時，把該授權改為 `consumed`，並寫入 `fact_mutation_audits`。
-  - 殘留防護：
-    - commit 前，寫入 API 斷言交易內沒有殘留的 `active` 授權，有則 rollback。
-    - 每個寫入交易開始時，也檢查沒有已 commit 的 `active` 殘留，有則中止並告警。
+  - 必須成立的不變式（綁定與消費的具體機制在 P1 定案，見 §14）：
+    - **唯一建立途徑**：只有 writer 連線上的 `authorizeFactMutation` 能建立授權；其他連線都以 `mode=ro` 開啟。
+    - **交易綁定**：授權只對建立它的那個寫入交易有效。即使內容相同，也不能被另一個交易使用。
+    - **精確比對**：`BEFORE UPDATE` trigger 要求 `fact_table` 等於 trigger 所屬表、`fact_id` 等於 `OLD.id`，並依 `provenance_kind` 精確查找：`source_object` 對 `source_objects.id`，`override_application` 對 `override_applications.id`。任何一項不符就 `RAISE(ABORT)`。
+    - **只消費一次**：通過檢查時，把該授權改為 `consumed`，並寫入 `fact_mutation_audits`。
+    - **無殘留**：commit 前斷言本交易沒有 `active` 授權，有則 rollback；每個寫入交易開始時，也確認沒有已 commit 的 `active` 授權，有則中止並告警。
+    - **稽核不倒退**：事實的首次插入與退役（`retired_generation`）留下的 provenance 稽核，範圍不得少於 PG 現行行為；P1 依 PG integration test 列出並移植。
 - **R-DATA-11：append-only 與不可變**
-  - 以下表格以 `BEFORE UPDATE/DELETE` trigger 拒絕修改：`source_objects`、`override_applications`、`override_application_runs`、`fact_mutation_audits`、`media_objects`、`dataset_versions`。
-  - 例外：PG 原本就允許的狀態欄位轉換照樣移植，並逐一列在 P1 的欄位清單中。
+  - 以下 6 張表以 `BEFORE UPDATE/DELETE` trigger 無條件拒絕修改，與 PG 相同、沒有例外：`source_objects`、`override_applications`、`override_application_runs`、`fact_mutation_audits`、`media_objects`、`dataset_versions`。
+  - 可變的狀態表（例如 `sync_runs` 的狀態欄位、`media_assets.is_current`）不在此列，其變更範圍由寫入 API 與 R-OPS-09 規範。
 - **R-DATA-12：public ID 與實體類型**
   - 以下操作一律被拒絕：對 `entity_public_ids`／`team_era_public_ids` 執行 `UPDATE`／`DELETE`；把已發布的 ID 改綁到其他主體。
-  - 類型約束由 trigger 檢查：
-    - `game_players` 的 player 必須是 `kind='player'`。
-    - series／game 兩側的 team 必須是 `kind='team'`，region 必須是 `kind='region'`。
-    - era 必須屬於同一個 team。
+  - 類型約束逐欄移植 `001_initial.ts` 的 `riftversus_enforce_entity_kinds`，在 `INSERT` 與 `UPDATE` 時檢查：
+    - `team_eras.team_entity_id`：`team`。
+    - `series_facts`／`game_facts`：`side_a_team_id`、`side_b_team_id`、`winner_team_id` 為 `team`；`side_a_region_id`、`side_b_region_id` 不為 null 時為 `region`。
+    - `game_players`：`player_entity_id` 為 `player`，`team_entity_id` 為 `team`。
+    - `team_region_history`：`team_entity_id` 為 `team`，`region_entity_id` 為 `region`。
 - **R-DATA-13：歷史授權紀錄**：從 PG 匯入的授權與稽核歷史列，`state` 設為 `historical`，原本的 `transaction_id`／`backend_pid` 存到 `legacy_transaction_id`／`legacy_backend_pid`。這些列不參與執行期授權。
-- **R-DATA-14：拒絕測試**：PG integration suite 中所有「非法寫入必須被拒絕」的測試都要移植並通過。另外新增：跨交易殘留的授權、錯誤的 kind、竄改來源或稽核紀錄、從唯讀連線寫入，以及 no-op upsert 不留下殘留授權。
+- **R-DATA-14：拒絕測試**：PG integration suite 中所有「非法寫入必須被拒絕」的測試都要移植並通過。另外新增：
+  - 跨交易殘留的授權，以及同一事實在另一個交易中以相同內容再次授權。
+  - `provenance_kind` 與 provenance 所在的表不符。
+  - R-DATA-12 每一個欄位的錯誤 kind。
+  - 竄改來源或稽核紀錄、從唯讀連線寫入。
+  - no-op upsert 不留下殘留授權；首次插入與退役的稽核範圍與 PG 相同。
 - **R-DATA-15：publication generation 與 gate**
   - 保留 `dataset_versions`（append-only）與 publication generation 的語意。
   - corrections、alternative game review、identity overrides 的載入與 checksum 方式不變。
   - 既有的 fail-closed gate 不得放寬：mapping 缺漏、redirect 目標缺少 player dimension、BO2／格式證據、partial coverage、awarded score。
+- **R-DATA-16：public ID 保留（reservation）**
+  - `sqlite/001_baseline` 新增兩張 SQLite 專用的表：`entity_public_id_reservations`（public ID、kind、原主體 UUID、`reserved_at`、來源）與 `team_era_public_id_reservations`（public ID、team scope、原 era UUID、`reserved_at`、來源）。
+    - 兩張表都不對 `entities`／`team_eras` 建 FK，所以能保留目前 DB 中尚不存在的主體。
+    - 它們是 append-only，不參與 PG parity（PG 沒有對應的表，cutover 時為空）。
+  - 配置器（`ensurePublicIds`）的規則：
+    - 要配置的 key 有 reservation，且原 UUID 與目前主體相同：取回同一個 key。
+    - 原 UUID 不同：視為已被占用，不得配置給目前主體。
+  - 被保留、但主體目前不存在的 readable 連結，依 §8.1「未知的 readable ID」處理：留在 URL 上並顯示復原提示。
 
 ### 7.4 Release 成品
 
@@ -454,13 +508,13 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   - `releases/<releaseId>/` 包含：
     - 既有 exporter 的輸出（`data/manifest.json`、SQLite、`presentation/` 媒體與 `image-credits.html`）。
     - `release.json`。
-  - `release.json` 的識別欄位依 R-ARCH-02；非識別欄位包括 `datasetVersion`、`coverage`、`lseq`、`runId`、`imageRevision`、`createdAt`。
+  - `release.json` 只含 R-ARCH-02 的識別欄位，以及由內容推導的 `datasetVersion`、`coverage`；逐次執行的 metadata 在 commit log。
 - **R-DATA-21：credits 與 CSP**：`image-credits.html` 改用外部的 `presentation/credits.css`，不再使用 inline `<style>`，以符合 R-API-05 的 CSP（現行 `media-credits.ts` 用的是 inline style）。
 - **R-DATA-22：prune 保留範圍**
-  - `release prune` 保留下列 release，以及它們引用的 lineage 檔與媒體：
+  - `release prune` 保留下列 release，以及它們引用的媒體和 commit log 中對應的 lineage 檔：
     - 最近 10 個 release。
     - `serving` 與 `previousServing`。
-    - `serving-log` 中 `retiredAt` 在 24 小時以內的 release。
+    - 依 commit log 推導、仍在 24 小時保留期內的 release（R-ARCH-03）。
   - lineage 檔另外保留 `head` 與所有備份集引用到的檔案。
 
 ### 7.5 媒體
@@ -470,14 +524,17 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   - `license=null` 的媒體，必須有結構化的 editorial rights basis、file page/revision、經審閱的 checksum、rights statement、attribution，以及精確的 player／team-era 綁定，才能發布。
   - 圖片內容變更後，不得沿用先前的審閱結果。
   - region 一律使用生成頭像；其他媒體 fail closed。
-- **R-DATA-31：`media import <pack>`**
-  - 受信任的 checksum 來自 repo 中已審閱的 `data/overrides/media.json`（整包 checksum）與 `media-inventory.json`（逐檔）。pack 自帶的 checksum 只用來檢查內部一致性。
+- **R-DATA-31：`run media --pack <zip>`**
+  - `<pack>` 限定為受審的 ZIP。受信任的 checksum 只來自 repo 中已審閱的 `data/overrides/media.json`：
+    - 整包：`archive.checksum` 與 `archive.byteSize`。
+    - 逐檔：`assets[].rightsBasis.fileChecksum` 與 `assets[].byteSize`。
+    - `media-inventory.json` 只是統計與缺圖清單，不含 checksum，不作為信任來源。pack 自帶的 checksum 只用來檢查內部一致性。
   - 驗證項目：
-    - 整包與逐檔 checksum 都必須等於 repo 中的值。
+    - 整包與逐檔 checksum、大小都必須等於 `media.json` 中的值，檔名集合必須完全一致。
     - 大小上限、MIME 類型與圖片尺寸。
     - 每個主體綁定都存在於 canonical。
     - credits 欄位齊全。
-  - 全部通過才以 `putImmutable` 寫入 object store；任何一項不符，整包拒絕。
+  - 全部通過才以 `putImmutable` 寫入 object store，並記入 attempt journal（R-OPS-03），因此在 run 提交或失敗封存之前都不會被 GC。任何一項不符，整包拒絕。
 - **R-DATA-32：生成頭像**：deterministic avatar 在 export 時生成，不寫入 `media_objects`，也不構成 provenance。
 
 ### 7.6 一次性遷移與 cutover 交接
@@ -487,33 +544,42 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   - `RIFTVERSUS_DATA_TOKEN` 只在執行當下注入。
 - **R-DATA-41：匯入範圍**
   1. 在 PG 17 還原 checkpoint dump。
-  2. 依 FK 拓撲順序，把 21 張表複製到 SQLite lineage `lseq=1`。
+  2. 在單一交易內把 21 張表複製到 SQLite lineage `lseq=1`。交易中設定 `PRAGMA defer_foreign_keys=ON`，以處理 `dataset_versions` 與 `sync_runs` 的雙向引用（R-DATA-02）；commit 前執行 `foreign_key_check`。
   3. 透過 `putImmutable`，把 checkpoint 的所有物件（raw source、retained／reviewed media）連同邏輯 key 與 `metadata.json` 寫入 `objects/`。
   4. 與 `source_objects`／`media_objects` 對帳 key、checksum、大小與類型：每個 DB 參照都要有物件，每個物件都要有參照或列在白名單。
-  5. 被引用的審閱媒體位元組，從私有 media Release 取得，套用 R-DATA-31 的驗證。
+  5. 被引用的媒體位元組，以 checkpoint 自身的 `media_objects`（checksum、大小、類型）與 `media_assets` 的權利紀錄驗證，不只依目前的 `media.json`，因此也涵蓋舊 checkpoint 保留、但不在目前 pack 的物件。checkpoint 缺少的審閱媒體位元組，從私有 media Release 取得，再套用同樣的驗證。
 - **R-DATA-42：cutover parity gate**（以下全部成立才算通過）：
   - **匯出比對**：以 PG 路徑與 SQLite 路徑，在相同 `basePath`（目前為 `/RiftVersus/`）與相同 exporter 版本下分別匯出，兩者的 `snapshotId` 相等；若現行 Pages site 來自同一份 checkpoint，也必須等於該 site manifest 的 `snapshotId`。
-  - **逐表比對**：每張表的 row count 相等。依欄位映射表，對 PG 原有欄位做正規化（JSON 鍵序、時間格式、BigInt 轉十進位字串），按主鍵排序後算 sha256，兩邊必須相等。
-  - **SQLite 專用欄位**：不納入逐表雜湊，另外驗收：
-    - `*_fold` 必須等於 fold(來源欄位)。
-    - 匯入的授權列，`state` 全部為 `historical`。
-    - `legacy_*` 必須等於 PG 的 `transaction_id`／`backend_pid`。
+  - **逐表比對**：每張表的 row count 相等。依下方的欄位映射表正規化後，按 PG 原有的主鍵（複合鍵依其欄位順序）排序，算 sha256，兩邊必須相等。
+    - 正規化：JSON 以穩定鍵序序列化；時間從 PG 以 UTC、6 位小數的文字取出，與 SQLite 的值逐字比對，不先轉成毫秒；BigInt 轉為十進位字串；boolean 轉為 `1/0`。
+  - **欄位映射表**：
+
+    | 表 | SQLite 欄位 | 處理 |
+    | --- | --- | --- |
+    | `fact_mutation_authorizations` | `legacy_transaction_id`、`legacy_backend_pid` | 對應 PG 的 `transaction_id`、`backend_pid`，納入雜湊與排序鍵，以重建 PG 的複合主鍵 |
+    | `fact_mutation_authorizations` | `id`、`state` | SQLite 專用，不納入雜湊；匯入的列 `state` 必須全部為 `historical` |
+    | `entities`、`entity_aliases` 等有搜尋欄位的表 | `*_fold` | 不納入雜湊；必須等於 fold(來源欄位) |
+    | `entity_public_id_reservations`、`team_era_public_id_reservations` | 整張表 | 不參與 parity；cutover 時必須為空 |
+    | 其餘所有表與欄位 | 與 PG 同名 | 全部納入雜湊 |
   - **public ID**：`entity_public_ids`／`team_era_public_ids` 完全一致，legacy UUID 與 readable 連結解析到相同主體。
   - **物件**：對帳沒有缺漏。
   - **乾淨 volume 驗收**：在乾淨的 volume 上，以遷移結果跑完整的 current snapshot acceptance、來源與歷史結果驗收、媒體與 credits 驗收。
-- **R-DATA-43：archival acceptance（獨立的證據）**：移植到 SQLite 的 `acceptance:archival`，以其對應的固定歷史 checkpoint（generation 4）驗收，在 P1 與 CI 執行並留存證據。它不是最新 checkpoint parity 的條件。
+  - **acceptance 移植**：`current-snapshot-acceptance` 的驗收規則與成品讀取器（`verifyPublicSnapshot`）保留；它目前透過 PG 執行的 canonical 查詢（最新 generation、dataset 狀態、重做 projection、fact provenance、媒體 metadata），P1 移植到 SQLite repository 介面。驗收：以 production image 在沒有 PG 的環境跑正例，並有錯誤 generation、缺少 provenance、媒體不符三種拒絕測試。
+- **R-DATA-43：archival acceptance（獨立的證據）**：移植到 SQLite 的 `acceptance:archival`，它不是最新 checkpoint parity 的條件。輸入來源分成兩種：
+  - **PR CI**：使用 repo 內已提交、不含私有資料的 synthetic fixture，形狀與 gen-4 相同，不需要任何 secret。
+  - **真實 gen-4 checkpoint**：由維運者在 P1 與 cutover 時，以 legacy 工具 image 注入 token 後驗收並留存證據。轉換後的 gen-4 SQLite 檔存入私有備份集，至少保留到 R-DEP-43 的期限屆滿，P5 之後仍可重跑。
 - **R-DATA-44：base path 切換**：parity 通過後，以新的 `PUBLIC_BASE_PATH` 重新匯出。把媒體 URL 前綴正規化之後，`snapshotDigest` 必須相等。
 - **R-DATA-45：shadow volume 隔離**：P3 的 shadow run 使用獨立的 `riftversus-shadow` volume，不會變成正式資料。
 - **R-DATA-46：cutover 交接順序**（依序執行，每一步都留存證據）：
-  1. **封存本機未發布資料**：比較本機 snapshot 與部署中 site 的 `snapshotId` 與 scope。若有差異：
-     - 把本機確切的 DB、引用物件與審閱輸入打包，並附 checksum，存入 `backups/pre-cutover-local-<ts>/`。
-     - 能經 Actions 發布就先發布；不能發布的，列出要在新 worker 重播的 scope。
-     - 重播結果必須逐列比對封存內容，也就是依主鍵正規化後的 hash 相等，而不只是筆數相同。
+  1. **盤點並處理未發布資料**：以 R-DATA-42 的逐表雜湊與物件清單，比較所有可能持有未發布資料的 DB（例如維運者本機的 PG）與最後一份 verified checkpoint。比對範圍是 canonical 的 21 張表與物件，不只是公開的 `snapshotId`，因此也涵蓋未投影的稽核與來源紀錄。若有差異：
+     - 把確切的 DB、引用物件與審閱輸入打包並附 checksum，存入 `backups/pre-cutover-local-<ts>/`。
+     - 新路徑不提供合併匯入：重抓 scope 會產生新的 run、時間與稽核身分，無法原樣重現。這些資料只能在第 2 步之前經 Actions 發布，進入 checkpoint；否則由維運者書面確認放棄，封存保留作為證據，日後以新的 run 重新取得。
+     - 兩者都未完成之前，cutover 不得進入第 2 步。
   2. **凍結舊 writer**：把 `PUBLISH_ENABLED` 設為 `false`，確認沒有排隊中或執行中的 `publish.yml`，也沒有 Pages deployment。
   3. **鎖定 checkpoint**：用 `archive resolve` 鎖定最後一份 verified checkpoint，記錄其 ID、sequence 與 series 數。
   4. **重新遷移**：在正式 volume 上以這份 checkpoint 重做 R-DATA-41、R-DATA-42、R-DATA-44，並從 `lseq=1` 建立第一份 `state.json`，由 head 與 serving 同時指向它。
   5. **5a：只啟動 web**：以 `WORKER_SCHEDULE=off` 執行，透過正式 HTTPS 完成 §9.3 的第 3、5、6 項。
-  6. **5b：啟用 worker 排程**：第一次由新 writer 執行的提交必須通過 R-OPS-07。
+  6. **5b：啟用 worker 排程**：第一次由新 writer 執行的提交必須通過 R-OPS-07。若這次提交已經耐久落盤、但 R-OPS-07 失敗，cutover 進入「5b 受阻」狀態：設定 `WORKER_SCHEDULE=off`，`release rollback` 到第 4 步的第一個 serving release，head 與新寫入的資料保留不動，修正後以新的 run 或新的 image 繼續（fix-forward），不回到 Actions。
   7. **部署 Pages 遷移頁**（§8.6）。
   - 退回規則：
     - 在 5b 之前：把 `PUBLISH_ENABLED` 改回 `true` 即可退回舊路徑，因為舊資料完全沒有被修改。
@@ -522,30 +588,33 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 ### 7.7 備份集
 
 - **R-DATA-50：`backup create`**
-  1. 以 SQLite backup API 複製 head。
-  2. 執行 `integrity_check` 與 `foreign_key_check`。
+  1. 以 SQLite backup API 複製 `head` 的 lineage；若 `serving.lseq` 與 `head.lseq` 不同（例如 rollback 或單獨 `migrate` 之後），也複製 `serving.lseq` 的 lineage。
+  2. 對每個複製的 lineage 執行 `integrity_check` 與 `foreign_key_check`。
   3. 寫入 `manifest.json`，欄位如下：
-     - `type: backup`、`lseq`、DB sha256、schema 版本、image revision。
-     - `serving`：`releaseId`、`snapshotId`、`basePath`。
-     - 物件清單：`{ key, checksum, contentType, byteSize, file }` 的陣列。
+     - `type: backup`、`commitSeq`、schema 版本、image revision。
+     - `head`：`lseq`、DB sha256。
+     - `serving`：`releaseId`、`lseq`、DB sha256、`snapshotId`、`basePath`。
+     - 物件清單：兩個 lineage 引用的所有物件，`{ key, checksum, contentType, byteSize, file }` 的陣列。
   4. 物件以內容定址方式增量複製到 `backups/objects/<sha256>`。serving release 目錄的檔案也一併納入。
-  5. fsync 後，改名為 `backups/<ts>-l<lseq>/`。
-  - 結果：任一備份集加上 `backups/objects/`，就能在沒有 `/data` 的情況下，還原當時的 canonical、物件與 serving release。
+  5. fsync 後，改名為 `backups/<ts>-c<commitSeq>/`。
+  - 結果：任一備份集加上 `backups/objects/`，就能在沒有 `/data` 的情況下，還原當時的 head、serving 及其 lineage、物件與 serving release，之後的每週重建也有輸入。
 - **R-DATA-51：保留與異地範圍**
   - 異地同步必須涵蓋整個 `backups/`。
   - 物件 GC 只能刪除不被任何保留中的備份集、release、lineage 或 attempt 引用的物件。
 - **R-DATA-52：`backup restore <set>`**
   1. 取得 writer lock，暫停 scheduler。scheduler 的資料庫不在還原範圍內。
   2. 在 staging 準備完整的還原內容：
-     - 以新的 `lseq` 號碼建立 lineage 檔。
+     - 為 head 與 serving 的 lineage 各配置新的 `lseq`（兩者相同時只配置一個）。
      - 用 `putImmutable` 重建物件的邏輯 key 與 metadata。
      - 準備 release 目錄。
-  3. 對 staging 做全量驗證：checksum、`integrity_check`、FK、所有引用物件，以及以 manifest 的 `basePath` 重新匯出後的 `snapshotId` 一致性。
-  4. 若被還原的備份比目前 head 舊，必須把目前 head 的 public ID 註冊表匯入為保留（reservation），讓新、舊的 public ID 都維持原本的擁有權，不會被重新分配給其他主體。
-  5. 以 `state.json` 的 rename 提交，同時更新 head 與 serving。
+  3. 若目前主機的 head 有備份中沒有的 public ID，把它們寫入還原後 head lineage 的 reservation 表（R-DATA-16），讓新、舊的 public ID 都維持原本的擁有權，不會被重新分配給其他主體。
+  4. 對 staging 做全量驗證（在第 3 步之後執行）：checksum、每個 lineage 的 `integrity_check` 與 `foreign_key_check`、所有引用物件，以及從 serving lineage 以 manifest 的 `basePath` 重新匯出後的 `snapshotId` 一致性。
+  5. 以 `state.json` 的 rename 提交，同時更新 head 與 serving，並在 commit log 記錄 `kind: restore`。
   6. 提交之後，才把被取代的 state 快照移到 `backups/pre-restore-<ts>/`。舊的 lineage 與物件不刪除。
   - 任一步驟在提交前中斷，原狀態都完整保留。
-- **R-DATA-53：還原演練**：在只有異地副本的乾淨主機上，執行 `init` → `backup restore` → `serve`，並重現相同的 `snapshotId` 與 serving release。演練需包含：在步驟 2、3、5 各中斷一次後重跑，以及還原後再同步一次，確認新、舊 public ID 都維持原本的擁有權。
+- **R-DATA-53：還原演練**：分成兩種情境，兩者都要做。
+  - **乾淨主機災難還原**：在只有異地副本的乾淨主機上，執行 `init` → `backup restore` → `up`，重現相同的 `snapshotId` 與 serving release。備份集要選 `head ≠ serving.lseq` 的狀態，還原後完成重啟、`release rebuild --verify` 與再同步一次。另外在步驟 2、4、5 各中斷一次後重跑。
+  - **回溯還原**：在 head 比備份新的主機上還原較舊的備份，再同步一次。驗收：reservation 寫入後 FK 仍成立；同名的新主體不能取得被保留的 key；原主體重新出現後取回相同的 key。
 
 ## 8. 前端需求（UI 重設計）
 
@@ -557,7 +626,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 | --- | --- |
 | URL 狀態參數 `leftKind/leftId/leftEraId/rightKind/rightId/rightEraId/from/to/events/leagues/bestOf` 的名稱與語意不變。legacy UUID 連結要 canonicalize 為 readable 形式，並保留篩選；未知的 readable ID 留在 URL 上，並顯示復原提示；無效的狀態以 canonical 預設取代 | `app.test.tsx` 中的 route 案例 |
 | 預設比較：T1 vs LPL、2019-01-01–2026-12-31、Worlds、BO5 | `defaultRouteState`、`test/default-comparison.test.ts` |
-| 保存、載入、刪除比較：localStorage key 為 `riftversus.saved-comparisons`，格式為 version 2，最多 20 筆 | `storage.ts`、`storage.test.ts` |
+| 保存、載入、刪除比較：localStorage key 為 `riftversus.saved-comparisons`，格式為 version 2，最多 20 筆。行為變更：已滿 20 筆時不再靜默裁切最舊的一筆（R-WEB-11） | `storage.ts`、`storage.test.ts` |
 | PNG 與多頁 ZIP 匯出：每頁都要有可解碼的可見像素；分頁不重排；不混用不同 release 或不同篩選的資料；最多 1000 列；BO2 平手不算敗場；標示單局資料不完整；圖片載入失敗時改用 placeholder | `export-result.test.ts`、`ExportButton.test.tsx`、E2E |
 | player 顯示為 `ID (真名)`；比較列顯示歷史隊名與 team-era 標籤；摘要保留選定的主體 | `app.test.tsx` |
 | coverage warning、`單局明細不完整` 標示、BO2 的 `DRAW` | 同上 |
@@ -607,7 +676,9 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
      - 以 Escape、點背景或按「完成」關閉；關閉後焦點回到開啟按鈕。
    - **行為變更**：篩選改為立即套用，移除「套用篩選」按鈕與 draft 狀態。瀏覽紀錄規則：
      - chip 切換：500ms debounce 內合併成一次 `pushState`。
-     - 等待提交期間，若使用者按返回、切換主體、保存或匯出，待提交的變更立即提交，再執行該動作。
+     - 等待提交期間：
+       - app 內的動作（切換主體、交換、保存、匯出）先立即提交待提交的變更，再執行該動作；保存與匯出取用的一律是使用者當下選定的條件。
+       - 瀏覽器原生的 Back／Forward（`popstate`）則取消尚未寫入歷史的提交，直接套用 popstate 的狀態，不補做 `pushState`，以免改寫 Forward 歷史。
      - 日期輸入：在 blur 或 Enter 時提交。
      - 交換與主體變更：各自產生一筆紀錄。
      - canonicalize：用 `replaceState`。
@@ -653,24 +724,30 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 
 - **R-API-01：release 釘選**
   - client 啟動時呼叫 `GET /api/v1/meta` 取得 `releaseId`。之後每個資料請求都帶 `release=<releaseId>`，TanStack Query 的 query key 也都包含 `releaseId`。
-  - server 提供 serving release，以及 `serving-log` 中 `retiredAt` 在 24 小時內的 release，兩者都以唯讀連線池開啟。保留範圍在重啟後依 `serving-log` 重建，並與 R-DATA-22 的 GC 規則一致。
+  - server 提供 serving release，以及依 commit log 推導、仍在 24 小時保留期內的 release，兩者都以唯讀連線池開啟。保留範圍在重啟後依 commit log 重建，並與 R-DATA-22 的 GC 規則一致。
   - 錯誤碼：
     - 請求的 release 已超過保留範圍：回 `410 release_expired`。client 顯示「資料已更新」並提供重新載入；進行中的匯出整份中止。
+  - 匯出的 release 檢查：媒體 URL 不帶 release，載圖本身無法察覺 release 到期。因此匯出在取完最後一頁、載完圖片之後，產生檔案之前，呼叫 `GET /api/v1/releases/:releaseId` 確認仍在保留期內：
+    - 回 `410`：整份匯出中止，不產生檔案。
+    - 個別圖片載入失敗：沿用現行行為，改用 placeholder 並繼續。兩種結果分開呈現。
     - cursor 無效：回 `400 invalid_cursor`。
 - **R-API-02：API cursor**
   - API 不直接傳 domain cursor，而是包成 `base64url({ v, releaseId, queryHash, domainCursor })`。其中 `queryHash` 是正規化後查詢的 sha256。
   - server 驗證 `releaseId` 與 `queryHash` 都相符，才把 `domainCursor` 交給 domain。因此，即使兩個 release 的 `snapshotId` 相同，也不能互用 cursor。
 - **R-API-03：媒體**
   - 媒體以內容定址，從共用的 `media/` 池以 `/presentation/<sha256>.<ext>` 提供，標頭為 `immutable`。只要任何保留中的 release 還引用它，就不會被刪除。
-  - credits 頁以 `/presentation/image-credits.html?release=<releaseId>` 提供，回傳該 release 的版本。
+  - credits 頁以 `/presentation/image-credits.html?release=<releaseId>` 提供，回傳該 release 的版本，設 `immutable`；release 已過保留期時回 `410`。
+  - 不帶 `release` 參數時，回傳目前 serving release 的版本，設 `no-cache`。
+  - `/presentation/credits.css` 是 image 內的靜態資產，與 release 無關。
 
 | Method／Path | 回應 | 備註 |
 | --- | --- | --- |
 | `GET /api/v1/meta` | `{ releaseId, snapshotId, schemaVersion, dataset, coverage, lastSuccessfulSyncAt, imageRevision }` | `no-cache` |
-| `GET /api/v1/entities?release=&q=&kinds=` | `ResolvedSubject[]`，最多 20 筆 | `q` 長度 1–64；每個 IP 每 10 秒最多 30 次 |
+| `GET /api/v1/releases/:releaseId` | `{ releaseId, available: true }` | 超過保留期回 `410 release_expired`；`no-cache` |
+| `GET /api/v1/entities?release=&q=&kinds=` | `ResolvedSubject[]`，最多 20 筆 | `q` 長度 1–64；每個來源 IP 每 10 秒最多 30 次，來源 IP 依 `TRUSTED_PROXY_HOPS` 判定（R-DEP-12） |
 | `GET /api/v1/subjects/resolve?release=&kind=&id=&eraId=` | `ResolvedSubject` | 找不到時回 `404 unknown_subject` |
 | `GET /api/v1/comparison?release=&<route query>&cursor=` | `ComparisonResponse` 分頁 | cursor 格式依 R-API-02 |
-| `GET /api/v1/series/:seriesId/games?release=&<route query>` | 見下方 | 單局明細 |
+| `GET /api/v1/series/:seriesId/games?release=&<route query>` | 見下方 | 單局明細；系列賽不存在或不在該查詢的結果中時回 `404 unknown_series` |
 | `GET /api/v1/comparison/breakdown?release=&<route query>` | 見下方 | 對完整篩選集合計算，不受分頁影響 |
 | `GET /healthz` | 行程存活 | 不存取資料 |
 | `GET /readyz` | serving release 已載入、schema 受支援、`basePath` 相符 | — |
@@ -687,14 +764,16 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 PlayerRef = { id, publicId?, displayName, realName? }
 ```
 
-- 回傳該系列賽的所有單局，依 `playedAt`、`id` 排序。
-- left／right 的判定：
-  - 非 player 比較：以比較主體所在的一方為準。
-  - player 比較：左方主體出現的那一隊為 left。
+- 回傳該系列賽的所有單局，依 `game_number`、`id` 排序（不依時間，兩者順序可能不同）；`order` 即 `game_number`。
+- left／right 以系列賽為單位決定，該系列的每一局都使用同一個方位：
+  - 沿用 domain 查詢的 `series_left_team_id`／`oriented_matches.left_team_id`，不在 API 層另行推導。
+  - 非 player 比較：符合左方主體的那一隊。
+  - player 比較：該系列第一個 `direct` 單局中，左方選手所屬的隊伍。
+  - 因此左方選手缺席的單局，也有確定的 left／right 與 `winner`。
 - `matchup`：
-  - `direct` 表示比較雙方在該局分屬兩隊。
-  - `indirect` 表示其中一方沒有出場，例如替補或缺席。
-  - `indirect` 的單局 `winner` 仍以隊伍標示，但不計入 player 比較的 `gameSummary`。
+  - `direct`：符合 domain 的直接交手判定（與 `gameSummary` 共用同一個判定），也就是比較雙方在該局分屬兩隊。
+  - `indirect`：其他所有情況，包括任一方未出場（替補、缺席）、兩名選手同隊，以及 player 與所選 team／region 在同一側。
+  - `indirect` 的單局 `winner` 仍依系列方位標示，但不計入 player 比較的 `gameSummary`。
 - `players` 只在至少一方是 player 時提供，依 `displayName` 排序。
 - `missingGames` 等於比分總局數減去有資料的局數，awarded starts 也算在內；只要大於 0，`complete=false`。不推測、不補值。
 
@@ -731,15 +810,20 @@ breakdown 的回應結構：
 ### 8.5 Web runtime
 
 - **R-WEB-01**
-  - `ComparisonApi` 新增 `meta()`、`seriesGames()`、`breakdown()`。
-  - production 使用 `http-runtime`；`mock-runtime` 同步實作這些方法。
-  - 移除 `static-runtime`、`snapshot-client` 與 `sql.js-httpvfs`。
+  - `ComparisonApi` 新增 `meta()`、`releaseStatus()`、`seriesGames()`、`breakdown()`。
+  - Docker image 使用 `http-runtime`；`mock-runtime` 同步實作這些方法。
+  - P2–P4 期間 `apps/web` 有兩個 build 入口，共用同一套 UI 元件：
+    - `build:pages`：沿用 `static-runtime`（`sql.js-httpvfs`），供 `publish.yml` 與現有的 static E2E 使用。新查詢由 domain 擁有，static runtime 在瀏覽器中執行同一組 domain 查詢；`releaseStatus()` 在靜態站恆為可用。
+    - `build:docker`：`http-runtime`，供 production image 與容器 E2E 使用。
+  - P5 移除 `build:pages`、`static-runtime`、`snapshot-client` 與 `sql.js-httpvfs`。
 - **R-WEB-02**：`lang="zh-Hant"`，UI 字串集中管理。
 - **R-WEB-03**：支援 `prefers-reduced-motion`；所有操作都能用鍵盤完成，且有可見的焦點樣式。
 
 ### 8.6 舊 origin 遷移（D6）
 
 - **R-WEB-10：Pages 遷移頁**
+  - 發布在舊 origin 原本的專案路徑（`/RiftVersus/`），經 D6 的 `gh-pages` 分支發布。因為與舊站同 origin，可以讀到使用者原本的 localStorage。
+  - 深層路徑由 Pages 的 `404.html` 承接，保留 path 與 query。導向目標為新 origin 的 `${PUBLIC_BASE_PATH}` 加上移除 `/RiftVersus/` 前綴後的剩餘路徑，目的前綴可以是 `/` 或巢狀前綴。
   - 讀取舊 origin 的 `riftversus.saved-comparisons`（version 2）。
   - 編碼後 ≤ 32 KB：以 base64url 放進 `#import-saved=`，連同原本的 path 與 query 一起導向新 origin。
   - 超過 32 KB：不自動轉移，改為顯示 JSON 下載與前往新站的連結。
@@ -754,7 +838,8 @@ breakdown 的回應結構：
   - 寫入失敗（例如超過 quota）時不改動任何資料，並顯示錯誤。
   - 重複匯入同一份資料，結果不變。
   - 匯入完成後清除 fragment；拒絕或驗證失敗時不寫入。
-  - 驗收：匯入後再保存新的比較，使用者勾選保留的項目仍在。
+  - 保存已滿：已有 20 筆時再保存，要求使用者選擇替換哪一筆，或取消；不得靜默裁切（取代現行 `storage.ts` 直接丟棄最末一筆的行為）。
+  - 驗收：匯入後保存新的比較時，使用者勾選保留的項目不會被靜默移除；滿 20 筆時的保存、取消與寫入失敗都不改動既有資料。
 
 ## 9. 測試與驗收
 
@@ -770,21 +855,25 @@ breakdown 的回應結構：
 - **E2E**：以 Playwright 對 `docker run` 起來的 production image 執行，使用 synthetic fixture release。涵蓋項目：
   - 基本流程：預設比較、分享連結、player 身分搜尋、PNG／ZIP 匯出。
   - 版面：320／767／768／1199／1200px 斷點兩側；雙主題的 axe-core AA 檢查。
-  - 互動：sheet 與 drawer 的開關、焦點循環與歸還；Back／Forward；debounce 期間觸發返回、保存與匯出；錯誤重試；reduced-motion 下的手動載入。
-  - 單局明細：跨頁、BO2、替補（indirect）、awarded score 的 fixture。breakdown 與 `seriesSummary`／`gameSummary` 分別比對。
-  - release 切換：在 resolve 與分頁之間切換、匯出途中切換、匯出載入圖片時 release 到期、相同 `snapshotId` 但不同 release 的 cursor、多次切換後重啟。
+  - 互動：sheet 與 drawer 的開關、焦點循環與歸還；Back／Forward；debounce 期間觸發原生 Back／Forward、主體切換、保存與匯出，以及畫面結果尚未更新時的保存與匯出；錯誤重試；reduced-motion 下的手動載入。
+  - 單局明細：跨頁、BO2、awarded score，以及左方選手缺席、兩名選手同隊、player 與 team／region 混合、`game_number` 與時間順序不同的 fixture。breakdown 與 `seriesSummary`／`gameSummary` 分別比對。
+  - release 切換：在 resolve 與分頁之間切換、匯出途中切換；最後一頁已取完、媒體仍可讀取但原 release 已到期時，匯出在下載前中止（與個別圖片退回 placeholder 分開驗證）；相同 `snapshotId` 但不同 release 的 cursor；多次切換後重啟。
   - `PUBLIC_BASE_PATH` 分別設為 `/`、`/RiftVersus/`、`/RiftVersus/new/`。
   - credits 在 CSP 下正確渲染。
-  - 保存比較匯入：真實的舊網址、version 2、超過 32 KB、超過 20 筆、同 id 衝突、拒絕匯入、重複匯入、quota 失敗。
+  - 保存比較匯入：以真實的舊 origin 驗收 localStorage 轉移、根路徑與巢狀目的前綴、既有 query；version 2、超過 32 KB、超過 20 筆、同 id 衝突、拒絕匯入、重複匯入、quota 失敗；已滿 20 筆時的保存。
 - **移除**：HTTPVFS 專屬測試，以及 `scripts/static-network-profile*`。
 - **新增 server 與 worker 測試**
   - server 基本行為：safe-path、安全標頭、rate limit、308 導向（含巢狀前綴與防迴圈）、熱切換時不中斷進行中的請求。
   - 鎖與排程：跨容器撞鎖、pending 合併、補跑、`schedule tick` 在內建排程與主機 timer 兩種路徑的行為一致。
-  - 逾時與提交：逾時、每個 rename／fsync 邊界的故障注入，以及重啟後的對帳（含 `commit_uncertain`）；abandoned candidate 不得 promote。
-  - rollback：rollback → 重啟 → 新 run promote，`lseq` 不碰撞，被跳過的 lineage 不會被清除。
+  - 逾時與提交：逾時、每個 rename／fsync 邊界的故障注入（含新物件的 fsync），以及對帳（含 `commit_uncertain`）；abandoned candidate 不得 promote。
+  - commit log：`state.json` 已切換、commit log 尚未落盤時硬終止；只切換 serving 的提交在 rename 後被終止；手動指令被終止後由常駐 worker 接手下一次寫入。三者對帳後都補齊事件與提交後步驟。
+  - release 重用：不同 lineage 產生同一個 `releaseId` 時，重用既有目錄；之後的 promote、重啟與 prune 都依 commit log 取得正確的 lineage。
+  - rollback：rollback → 重啟 → 新 run promote，`lseq` 不碰撞，被跳過的 lineage 不會被清除；`state/lseq` 已遞增但 lineage 尚未改名時硬終止，序號不重用。
+  - 遷移匯入：含 unchanged run（`reused_dataset_version_id`）的 fixture，兩向引用都保留，`foreign_key_check` 通過。
+  - attempt：超過 `ATTEMPT_MAX_BYTES` 後暫停、清理後自動恢復排程；以 `attempt show` 離線重讀指定的失敗批次。
   - history：多批 history 部分失敗；目標 scope 的成功、fail-closed、硬終止，以及 `evidence_incomplete` 的 attempt。
-  - 資料邊界：media-only 防護；attempt 不得被拿來還原；`init` 在空白 named volume 與無寫入權限的 bind mount 上的行為；R-OPS-10 的跨年、過期與缺 mapping 案例。
-- **舊發布路徑回歸**：P1–P4 的每個 PR，都必須讓現有的 `pnpm test`、PG integration 與 static E2E 照常通過。
+  - 資料邊界：media-only 防護（含 `is_current` 切換、`sync_runs` 狀態轉換與無變更的 manifest 等合法案例）；attempt 不得被拿來還原；`init` 在空白 named volume 與無寫入權限的 bind mount 上的行為；R-OPS-10 的跨年、過期與缺 mapping 案例。
+- **舊發布路徑回歸**：P1–P4 的每個 PR，都必須讓現有的 `pnpm test`、PG integration，以及以 `build:pages` 建置的 static E2E 照常通過（該測試禁止 `/api/` 請求，只適用於 Pages 入口）。容器 E2E 另外以 `build:docker` 執行。
 
 ### 9.2 Shadow run（P3，在目標主機上）
 
@@ -818,7 +907,7 @@ breakdown 的回應結構：
 | PG 差異測試（例如 `packages/database/test/snapshot.integration.test.ts`） | 由凍結的 golden fixture 取代後刪除 |
 | `packages/database` 的 PG 實作、`pg`、`@types/pg`、PG migrations | 刪除；migrations 移到 `docs/archive/postgres-migrations/` |
 | `Dockerfile` 的 `legacy-tools` target、compose 的 `legacy-import` profile | 在 R-DEP-43 的期限屆滿後刪除 |
-| `apps/web` 的 `static-runtime`、`snapshot-client`、`sql.js-httpvfs` | 刪除；release E2E 的 `RIFTVERSUS_E2E_BASE_URL` 改指向新 origin |
+| `apps/web` 的 `build:pages`、`static-runtime`、`snapshot-client`、`sql.js-httpvfs`，以及 static E2E | 刪除；release E2E 的 `RIFTVERSUS_E2E_BASE_URL` 改指向新 origin |
 | `scripts/measure-static-sqlite.mjs`、`verify-hosted-workflows.mjs`、`static-network-profile*` | 刪除。`build-static-fixture.mjs` 若仍用於 E2E fixture，改寫後保留 |
 | `test/github-publish.test.ts`、`test/github-ci.test.ts` | 改寫為驗證新的 `ci.yml`、Dockerfile 與 compose 約束 |
 | compose 的 `postgres`、`minio` profile | 刪除；named volume 不刪 |
@@ -835,7 +924,7 @@ breakdown 的回應結構：
 | P0 | 本規格（純文件） | 無 |
 | P1 | SQLite canonical（與 PG 並存）：<ul><li>選定驅動、baseline migration、§7.3 寫入保證</li><li>SQLite repositories、gate 與拒絕測試</li><li>golden oracle、archival acceptance 移植</li><li>legacy 工具 image 與 parity</li><li>ADR-0002</li></ul> | 無 |
 | P2 | <ul><li>`apps/server`、API、release 模型與 lineage／state 機制</li><li>`http-runtime`（暫時沿用舊 UI）</li><li>production Dockerfile、compose、runtime base path</li><li>CI 加入 docker build 與容器 E2E</li></ul> | 無 |
-| P3 | <ul><li>worker、`schedule tick`、鎖與對帳</li><li>attempt、告警、備份、`media import`、`plan show`</li><li>在目標主機用 shadow volume 跑 §9.2</li></ul> | 無（與 Pages 並行） |
+| P3 | <ul><li>worker、`schedule tick`、鎖與對帳</li><li>attempt、告警、備份、`run media --pack`、`plan show`</li><li>在目標主機用 shadow volume 跑 §9.2</li></ul> | 無（與 Pages 並行） |
 | P4 | 前端重設計、單局明細與 breakdown UI、保存比較的匯入與匯出（可與 P3 並行） | 無 |
 | P5 | <ul><li>依 R-DATA-46 與 §9.3 執行 cutover</li><li>部署 Pages 遷移頁</li><li>依 §10 退場</li><li>更新文件與 baseline</li></ul> | 生產切換 |
 
@@ -861,9 +950,9 @@ breakdown 的回應結構：
 
 | 維度 | 評估 |
 | --- | --- |
-| Ownership integrity | <ul><li>facts：Leaguepedia</li><li>canonical 寫入：worker（writer lock 加上唯一的 commit 點）</li><li>排程狀態：scheduler 模組</li><li>查詢語意：`@riftversus/domain`</li><li>公開讀取：web（只讀不可變的 release）</li><li>備份：`backup` 指令</li><li>媒體資格：sync 與 `media import` 的 gate</li><li>正式 scope：repo mapping</li></ul>每一項都只有一個 owner。 |
+| Ownership integrity | <ul><li>facts：Leaguepedia</li><li>canonical 寫入：worker（writer lock 加上唯一的 commit 點）</li><li>排程狀態：scheduler 模組</li><li>查詢語意：`@riftversus/domain`</li><li>公開讀取：web（只讀不可變的 release）</li><li>備份：`backup` 指令</li><li>媒體資格：sync 與 `run media --pack` 的 gate</li><li>正式 scope：repo mapping</li></ul>每一項都只有一個 owner。 |
 | Module boundaries | web 只依賴 contracts、domain 的型別與 API；server 依賴 domain 查詢，不 import `packages/sync`；只有 worker 使用 sync 與 database。 |
-| Contract changes | <ul><li>新增：`/api/v1`、release identity 與 API cursor、`410`／`400`、單局明細與 breakdown、保存比較的匯入</li><li>行為變更：篩選改為立即套用、base path 預設 `/`、rollback 拆成三條路徑</li><li>不變：URL 參數、schema v3、快照內的媒體 URL 格式</li></ul>以上皆由 ADR-0002 記錄。 |
+| Contract changes | <ul><li>新增：`/api/v1`、release identity 與 API cursor、`410`／`400`、單局明細與 breakdown、保存比較的匯入</li><li>行為變更：篩選改為立即套用、base path 預設 `/`、rollback 拆成三條路徑、pending 改為每種 kind 一筆（D10）、保存已滿時改為明確選擇</li><li>不變：URL 參數、schema v3、快照內的媒體 URL 格式</li></ul>以上皆由 ADR-0002 記錄。 |
 | Cascade proliferation | 移除 PG、Release 封存協定、Pages、HTTPVFS 四條外部依賴鏈。新增的依賴只有 HTTP 框架與排程函式庫（P2／P3 選定）。 |
 | Dependency direction | apps 依賴 packages，contracts 最穩定，domain 不依賴 database。 |
 | Retirement completeness | §10 逐項列出退場項目，並綁定 P5 與 R-DEP-43 的期限；PG 只保留在 legacy 工具 image 中；差異 oracle 與 archival acceptance 都有替代方案。 |
@@ -877,4 +966,5 @@ breakdown 的回應結構：
 - 是否需要 FTS5 trigram。
 - 是否把 schema 升到 v4（需遵守 R-DEP-42）。
 - runtime base path 的實作方式（R-DEP-14）。
-- R-DATA-11 中，PG 允許的狀態欄位轉換的完整清單（P1 依 migration 001–014 逐表列出）。
+- R-DATA-10 交易綁定與一次性消費的具體機制（例如每個寫入交易的 token），需滿足 R-DATA-10 的不變式與 R-DATA-14 的拒絕測試。
+- `state.json`、commit log 與 attempt manifest 的確切 JSON schema（欄位語意依 R-ARCH-03、R-OPS-03）。
