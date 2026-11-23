@@ -285,7 +285,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   - 暫停原因：`scheduler.sqlite` 以「原因集合」記錄暫停，每個原因各自設定、各自解除，集合為空才可啟動 run。內建排程與主機 timer 呼叫的 `schedule tick` 都遵守同一個集合。
     - `operator`：由 `schedule pause|resume` 設定與解除，升級（R-DEP-30）使用它，優先於其他原因。存在時 `schedule tick` 完全 no-op：不啟動 run、不做保留清理、不重新評估或解除任何其他原因，也不取得 writer lock。
     - `attempt_quota`：由 R-OPS-03 自動設定與解除。只有它存在時，tick 仍會做保留清理，以非阻塞方式嘗試取得 writer lock，取不到就跳過。
-    - `restore`：由 `backup restore` 設定（R-DATA-52），提交後步驟成功時自動解除，也可用 `schedule resume --reason restore` 手動解除。存在時 tick 的行為與 `operator` 相同。
+    - `restore`：由 `backup restore` 設定（R-DATA-52），web 上線後的對外驗證與備份都成功時自動解除，也可用 `schedule resume --reason restore` 手動解除。存在時 tick 不啟動 run、不做清理，唯一例外是執行 R-DATA-52 第 6 步記錄的待驗證提交。
     - `schedule resume` 預設只解除 `operator`；之後的下一次 tick 才依實際容量重新評估，符合條件時解除 `attempt_quota`。R-OPS-03 的自動解除只解除 `attempt_quota`。
 - **R-DEP-23：逾時**：超過 `SYNC_RUN_TIMEOUT_MINUTES` 時，先送 `AbortSignal`；寬限 60 秒後強制結束，run 記為 `timed_out`。若尚未提交，丟棄 candidate；若已進入提交，依 R-ARCH-04 對帳。
 - **R-DEP-24：連線與檔案格式**
@@ -648,11 +648,15 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
      - 目的主機已有 commit log（回溯還原）：保留既有 log，restore 事件的 `commitSeq` 為「目前最後一筆加 1」。
      - 目的主機的 log 是空的（乾淨主機）：新主機開始一份新的 log，restore 事件就是 `commitSeq=1` 的第一筆。備份的 commit log 快照原樣複製到 `backups/restored-from-<set>/` 作為證據，不寫入 `state/commit-log.jsonl`，因為它引用的歷史 release 與 lineage 不在備份中。
      - 新的 `state.json.commitSeq` 一律等於這筆 restore 事件的 `commitSeq`。
-  6. 提交後步驟（備份與對外驗證，R-ARCH-05）都成功後，自動解除 `restore` 暫停原因，排程恢復；任一步失敗時保留暫停並告警，由維運者處理後以 `schedule resume --reason restore` 解除。
+  6. 提交後步驟分成兩段：
+     - 備份（R-DATA-50）在 restore 指令內執行。
+     - 對外驗證（R-OPS-07）需要 web 已在提供服務，所以 restore 只在 `scheduler.sqlite` 記錄「待驗證的 restore 提交」，不在指令內執行。乾淨主機上，這一步會在 `up` 之後才發生。
+     - `up` 之後，worker 在 `restore` 暫停期間仍會處理待驗證的提交（只做對外驗證，不啟動 run、不做清理）。R-OPS-07 通過且備份成功後，自動解除 `restore` 暫停原因，排程恢復。
+     - 任一步失敗時保留暫停並告警，由維運者處理後以 `schedule resume --reason restore` 解除。
   7. 提交之後，才把被取代的 state 快照移到 `backups/pre-restore-<ts>/`。舊的 lineage 與物件不刪除。
   - 任一步驟在提交前中斷，原狀態都完整保留。
 - **R-DATA-53：還原演練**：分成兩種情境，兩者都要做。
-  - **乾淨主機災難還原**：在只有異地副本的乾淨主機上，執行 `init` → `backup restore` → `up`，重現相同的 `snapshotId` 與 serving release。備份集要選 `head ≠ serving.lseq`，且 head 與 serving 由不同 image 產生的狀態，還原後完成重啟、`release rebuild --verify` 與再同步一次。另外在步驟 2、4、5 各中斷一次後重跑。還原後 commit log 從 1 開始、只有一筆 restore 事件；新配置的 `lseq` 大於備份的 `maxLseq`；提交後步驟成功後排程自動恢復；`release rollback` 只列出備份中的 serving release，不引用不存在的歷史成品。
+  - **乾淨主機災難還原**：在只有異地副本的乾淨主機上，執行 `init` → `backup restore` → `up`，重現相同的 `snapshotId` 與 serving release。備份集要選 `head ≠ serving.lseq`，且 head 與 serving 由不同 image 產生的狀態，還原後完成重啟、`release rebuild --verify` 與再同步一次。另外在步驟 2、4、5 各中斷一次後重跑。還原後 commit log 從 1 開始、只有一筆 restore 事件；新配置的 `lseq` 大於備份的 `maxLseq`；`up` 之後 R-OPS-07 通過、排程自動恢復；`release rollback` 只列出備份中的 serving release，不引用不存在的歷史成品。
   - **回溯還原**：在 head 比備份新的主機上還原較舊的備份，再同步一次。驗收：reservation 寫入後 FK 仍成立；同名的新主體不能取得被保留的 key；原主體重新出現後取回相同的 key，更名後也一樣；連續兩次回溯還原後，第一次留下的 reservation 仍有效。
 
 ## 8. 前端需求（UI 重設計）
