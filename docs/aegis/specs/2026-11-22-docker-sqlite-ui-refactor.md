@@ -176,8 +176,8 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
     - **提交不確定**：rename 已經呼叫，但目錄 fsync 失敗，或行程在這之間被終止。此時行程以非零碼結束，run 標記為 `commit_uncertain`。
   - 對帳時機：每個寫入指令取得 writer lock 之後、執行任何寫入或 GC 之前，都要先對帳。常駐 worker 接手下一次寫入、或手動指令被終止後再由 worker 接手，都適用。對帳是冪等的，步驟如下：
     1. 修復 commit log：若最後一行不完整或雜湊不符，把 log 截斷到最後一個合法行並 fsync（被截掉的尾段另存到 `state/commit-log.torn-<ts>` 作為證據）。
-    2. 讀取實際的 `state.json`，並先 fsync `state.json` 與 `state/` 目錄，讓可能處於 `commit_uncertain` 的 rename 成為耐久狀態。之後才處理 log：若它的 `commitSeq` 等於 log 最後一筆加 1，就依 `lastCommit`、`head`、`serving` 與 `servingExporter` 補寫缺少的那筆事件並 fsync；若差距大於 1，或 log 的最後一筆大於 `state.json` 的 `commitSeq`，代表狀態損毀，fail closed 並告警，不自動修復。
-    3. 若 `lastCommit.runId` 等於某個 `running`／`commit_uncertain` 的 run，把該 run 判定為 `succeeded`，並補做尚未完成的提交後步驟：備份與對外驗證。這同時涵蓋只切換 `serving` 的提交。`kind: restore` 的提交例外：對帳只補齊 commit log、備份與 R-DATA-52 第 7 步的封存，對外驗證保留給 web 上線後的 worker（R-DATA-52 第 6 步）。
+    2. 讀取實際的 `state.json`，並先 fsync `state.json` 與 `state/` 目錄，讓可能處於 `commit_uncertain` 的 rename 成為耐久狀態。之後才處理 log：若它的 `commitSeq` 等於 log 最後一筆加 1（空 log 視為 0），就依 `lastCommit`、`head`、`serving` 與 `servingExporter` 補寫缺少的那筆事件並 fsync；若差距大於 1，或 log 的最後一筆大於 `state.json` 的 `commitSeq`，代表狀態損毀，fail closed 並告警，不自動修復。
+    3. 若 `lastCommit.runId` 等於某個 `running`／`commit_uncertain` 的 run，把該 run 判定為 `succeeded`，並補做尚未完成的提交後步驟：備份與對外驗證。這同時涵蓋只切換 `serving` 的提交。`kind: restore` 的提交例外：對帳只補齊 commit log、備份與 R-DATA-52 第 7 步的封存（含乾淨主機的 `backups/restored-from-<set>/` 證據），對外驗證保留給 web 上線後的 worker（R-DATA-52 第 6 步）。
     4. 其他 `running`／`commit_uncertain` 的 run 判定為 `abandoned` 並清理。
     5. 校正 `state/lseq`。
   - 清理只刪除沒有被任何地方引用的檔案。引用來源包括：`state.json`（head、serving、previousServing）、保留期內的 release 及其在 commit log 中對應的 lineage、備份集，以及 attempt。
@@ -654,8 +654,9 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
      - 對外驗證（R-OPS-07）需要 web 已在提供服務，所以 restore 只在 `scheduler.sqlite` 記錄「待驗證的 restore 提交」，不在指令內執行。乾淨主機上，這一步會在 `up` 之後才發生。
      - 「待驗證」的登記與第 1 步的登記是同一筆紀錄，在第 5 步 rename 之前就已存在，所以 rename 之後任何時點中斷都找得到它。
      - `up` 之後，worker 在 `restore` 暫停期間仍會處理這筆紀錄：先以非阻塞方式取得 writer lock 並依 R-ARCH-04 對帳（補齊 log、備份與封存），再執行對外驗證；不啟動 run、不做清理。R-OPS-07 通過且備份成功後，自動解除 `restore` 暫停原因，排程恢復。
+     - 只有對帳確認登記的 restore 已提交（`lastCommit.runId` 相符）時，才執行 R-OPS-07 並在通過後解除 `restore`。若對帳把它判定為 `abandoned`（rename 之前就中斷），不對既有 release 執行驗證，保留 `restore` 暫停並告警。
      - 任一步失敗時保留暫停並告警，由維運者處理後以 `schedule resume --reason restore` 解除。
-  7. 提交之後，才把被取代的 state 快照移到 `backups/pre-restore-<ts>/`。舊的 lineage 與物件不刪除。
+  7. 提交之後，才把被取代的 state 快照移到 `backups/pre-restore-<ts>/`，乾淨主機則複製第 5 步所述的 `backups/restored-from-<set>/` 證據。舊的 lineage 與物件不刪除。
   - 任一步驟在提交前中斷，原狀態都完整保留。
 - **R-DATA-53：還原演練**：分成兩種情境，兩者都要做。
   - **乾淨主機災難還原**：在只有異地副本的乾淨主機上，執行 `init` → `backup restore` → `up`，重現相同的 `snapshotId` 與 serving release。備份集要選 `head ≠ serving.lseq`，且 head 與 serving 由不同 image 產生的狀態，還原後完成重啟、`release rebuild --verify` 與再同步一次。另外在步驟 2、4、5 各中斷一次後重跑；第 5 步要分別演練 rename 之前與之後中斷，以及 rename 之後中斷時「直接 `up`」與「重跑同一個 `backup restore`」兩種恢復方式。還原後 commit log 從 1 開始、只有一筆 restore 事件；新配置的 `lseq` 大於備份的 `maxLseq`；`up` 之後 R-OPS-07 通過、排程自動恢復；`release rollback` 只列出備份中的 serving release，不引用不存在的歷史成品。
