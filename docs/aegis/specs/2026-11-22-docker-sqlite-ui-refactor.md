@@ -47,7 +47,7 @@
   - Leaguepedia 是唯一的自動 facts provider。
   - 只發布有授權（license）的媒體，或有結構化 editorial rights basis 的審閱媒體；其他媒體一律 fail closed。
   - 生成頭像只是呈現輸出，不構成 provenance。
-- **G6**：遷移不得遺失或改變已驗證的資料與物件。cutover 時從最後一份 verified checkpoint 重新遷移；若有尚未進入 checkpoint 的已驗證本機資料（例如 baseline 記錄的本機 domestic／EWC 覆蓋），改以通過驗收的本機超集作為遷移輸入（R-DATA-46）。兩者都要通過嚴格的 parity 檢查（§7.6、§9.3）。已與正式 lineage 分岔的本機資料是明文例外（D11）：完整封存、永久保留，但不保證原樣進入新的 canonical。
+- **G6**：遷移不得遺失或改變已驗證的資料與物件。cutover 時從最後一份 verified checkpoint 重新遷移；若有尚未進入 checkpoint 的已驗證本機資料（例如 baseline 記錄的本機 domestic／EWC 覆蓋），改以通過驗收的本機同源後繼作為遷移輸入（R-DATA-46）。兩者都要通過嚴格的 parity 檢查（§7.6、§9.3）。已與正式 lineage 分岔的本機資料是明文例外（D11）：完整封存、永久保留，但不保證原樣進入新的 canonical。
 
 ### 2.2 非目標
 
@@ -73,7 +73,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 | D8 | 每次發布的驗證 | production image 不含 Chromium。promote 前，對候選 release 執行 in-process HTTP smoke；commit 後，透過正式 origin 做 HTTP 驗證（R-OPS-07）。瀏覽器 E2E 在 CI 對 image 執行，並在 cutover 與每次 image 升級時，對正式 origin 執行 release 版 E2E。 | production image 內含 Chromium，每次發布都截圖 | Chromium 會讓 image 增加數百 MB。資料發布不會改動前端程式碼，瀏覽器行為只隨 image 版本改變。 |
 | D9 | 審閱媒體位元組的來源 | 用 `riftversus run media --pack <zip>` 匯入受審的 ZIP 並在同一個 run 內發布。受信任的 checksum 只來自 repo 內已審閱的 `data/overrides/media.json`：整包為 `archive.checksum`／`archive.byteSize`，逐檔為 `assets[].rightsBasis.fileChecksum`／`assets[].byteSize`（R-DATA-31）。審閱包由維運者自行下載，例如用 `gh release download`。 | worker 直接讀取私有 media Release（需要 token） | 執行期不需要 GitHub token，審閱與校驗的 gate 維持不變；匯入與發布在同一個 run，物件不會在兩步之間失去引用。 |
 | D10 | 等待中的 run | 每種 run kind 各保留一筆 pending（R-DEP-21）。這是刻意的行為變更：現行 Actions 的 concurrency group 讓所有 mode 共用一筆等待中的 run。 | 所有 kind 共用一筆 pending，與現行相同 | 每日 current 不應把每週 history 擠掉。 |
-| D11 | 已分岔的本機資料 | 已驗證的本機資料若是正式 checkpoint 的超集，原樣作為遷移輸入；若已與正式 lineage 分岔，則不自動整併。遷移輸入固定為正式 checkpoint，分岔資料完整封存、永久保留，cutover 後以新的 run 重新取得（R-DATA-46）。這是 G6 的明文例外，須經使用者核准。 | 開發雙 lineage 的受控整併工具，逐列裁決後合併 | 同一個 `generation` 的兩個版本無法在 append-only 的 publication 模型中同時成立；整併工具的成本與風險遠高於重新取得。 |
+| D11 | 已分岔的本機資料 | 已驗證的本機資料若是正式 checkpoint 的同源後繼，原樣作為遷移輸入；若已與正式 lineage 分岔，則不自動整併。遷移輸入固定為正式 checkpoint，分岔資料完整封存、永久保留，cutover 後以新的 run 重新取得（R-DATA-46）。這是 G6 的明文例外，須經使用者核准。 | 開發雙 lineage 的受控整併工具，逐列裁決後合併 | 同一個 `generation` 的兩個版本無法在 append-only 的 publication 模型中同時成立；整併工具的成本與風險遠高於重新取得。 |
 
 ## 4. Baseline 與 ADR 對照
 
@@ -140,23 +140,25 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 
     ```text
     { commitSeq,
-      head: { lseq, runId },
-      serving: { releaseId, lseq },
+      head: { lseq, runId, schemaVersion, producer: { imageRevision, imageDigest? } },
+      serving: { releaseId, lseq, schemaVersion },
       previousServing: { releaseId, lseq } | null,
-      lastCommit: { commitSeq, kind, runId, imageRevision, at },
+      lastCommit: { commitSeq, kind, runId, imageRevision, imageDigest?, at },
       servingExporter: { imageRevision, imageDigest? },
       updatedAt }
     ```
 
     - `head` 是寫入歷史，`serving` 是目前對外提供的 release；兩者分開記錄（§6.7）。
+    - `head.producer` 是產生這個 lineage 的 image，只有推進 head 的提交才會更新；`schemaVersion` 是各自 lineage 的 canonical schema 版本。這些欄位是 lineage 來源身分的持久 owner，備份從這裡取得。
     - `commitSeq` 單調遞增。每一次改變 `head` 或 `serving` 的操作（`run`、`migrate`、`release promote|rollback|rebuild --promote`、`backup restore`）都是一次提交，都有自己的 `runId`。
-  - **commit log**：`state/commit-log.jsonl` 是 append-only 的切換事件流，每次提交一行：`{ commitSeq, kind, runId, head, serving, imageRevision, servingExporter, at, sha256 }`，`sha256` 是該行其餘欄位正規化後的雜湊。
+  - **commit log**：`state/commit-log.jsonl` 是 append-only 的切換事件流，每次提交一行：`{ commitSeq, kind, runId, head, serving, imageRevision, imageDigest?, servingExporter, at, sha256 }`，`sha256` 是該行其餘欄位正規化後的雜湊。
     - `imageRevision` 是執行這次提交的 image；`servingExporter` 是實際匯出目前 serving release 的 image，兩者分開記錄。只有新匯出 release 的提交才設定新的 `servingExporter`；重用既有 release、rollback 與 restore 都沿用該 release 原本的值（restore 從備份 manifest 取得）。
     - `imageRevision` 是必填的 git revision（D2）。`imageDigest` 是選填，由主機以 `RIFTVERSUS_IMAGE_DIGEST` 注入（R-DEP-12）；容器無法自行取得自身 digest。
     - 合法的 log 必須是完整、可解析、且 `commitSeq` 從 1 起連續的序列；最後一行若不完整或雜湊不符，視為未寫完的尾段（見 R-ARCH-04）。
     - 它是 `releaseId` 與 lineage 對應關係的唯一 owner；同一個 `releaseId` 可以在不同事件中對應不同的 `lseq`，以最新的事件為準。
     - release 的保留期由事件序列推導：某個 release 目前正在 serving，或在過去 24 小時內有事件把 serving 從它切走，就算在保留期內。rollback 重新啟用舊 release 時只是新增一筆事件，不回改舊紀錄。
     - GC、`release rebuild` 與 `release rollback` 都從 commit log 取得 release 對應的 lineage。
+    - 重用條件：只有 commit log 中已有事件引用的 `releaseId`，才算具有耐久的 exporter 紀錄，可以依 R-ARCH-02 重用。若 `releases/<releaseId>/` 存在、但沒有任何事件引用它（例如 release 目錄已落盤、`state.json` 尚未提交時中斷），就是 orphan：把它改名為 `releases/.orphan-<releaseId>-<ts>/` 保留作為證據，再改名本次的 staging，exporter 身分採本次的 image。
   - **`lseq` 配置**：配置新的 `lseq` 時，先以 tmp 檔 + fsync + rename + 目錄 fsync 更新 `state/lseq`，之後才把 candidate 改名為 lineage 檔。對帳時 `state/lseq` 取 `max(state/lseq, head.lseq, db/lineage/ 中的最大序號)`，序號永不重用。
   - 提交依下列順序進行：
     1. 耐久落盤，對每個檔案和每個目的目錄都執行 fsync：
@@ -174,7 +176,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
     - **提交不確定**：rename 已經呼叫，但目錄 fsync 失敗，或行程在這之間被終止。此時行程以非零碼結束，run 標記為 `commit_uncertain`。
   - 對帳時機：每個寫入指令取得 writer lock 之後、執行任何寫入或 GC 之前，都要先對帳。常駐 worker 接手下一次寫入、或手動指令被終止後再由 worker 接手，都適用。對帳是冪等的，步驟如下：
     1. 修復 commit log：若最後一行不完整或雜湊不符，把 log 截斷到最後一個合法行並 fsync（被截掉的尾段另存到 `state/commit-log.torn-<ts>` 作為證據）。
-    2. 讀取實際的 `state.json`，並先 fsync `state.json` 與 `state/` 目錄，讓可能處於 `commit_uncertain` 的 rename 成為耐久狀態。之後才處理 log：若它的 `commitSeq` 等於 log 最後一筆加 1，就依 `lastCommit` 與 `head`／`serving` 補寫缺少的那筆事件並 fsync；若差距大於 1，或 log 的最後一筆大於 `state.json` 的 `commitSeq`，代表狀態損毀，fail closed 並告警，不自動修復。
+    2. 讀取實際的 `state.json`，並先 fsync `state.json` 與 `state/` 目錄，讓可能處於 `commit_uncertain` 的 rename 成為耐久狀態。之後才處理 log：若它的 `commitSeq` 等於 log 最後一筆加 1，就依 `lastCommit`、`head`、`serving` 與 `servingExporter` 補寫缺少的那筆事件並 fsync；若差距大於 1，或 log 的最後一筆大於 `state.json` 的 `commitSeq`，代表狀態損毀，fail closed 並告警，不自動修復。
     3. 若 `lastCommit.runId` 等於某個 `running`／`commit_uncertain` 的 run，把該 run 判定為 `succeeded`，並補做尚未完成的提交後步驟：備份與對外驗證。這同時涵蓋只切換 `serving` 的提交。
     4. 其他 `running`／`commit_uncertain` 的 run 判定為 `abandoned` 並清理。
     5. 校正 `state/lseq`。
@@ -281,9 +283,9 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   - 紀錄欄位：`scheduledFor`、kind、runId、狀態（`pending|running|succeeded|failed|abandoned|timed_out|commit_uncertain`）、開始／結束時間。
   - `run <kind>` 可加上 `--scheduled-for`，讓手動補跑也有紀錄。
   - 暫停原因：`scheduler.sqlite` 以「原因集合」記錄暫停，每個原因各自設定、各自解除，集合為空才可啟動 run。內建排程與主機 timer 呼叫的 `schedule tick` 都遵守同一個集合。
-    - `operator`：由 `schedule pause|resume` 設定與解除，升級（R-DEP-30）使用它。存在時 `schedule tick` 完全 no-op：不啟動 run、不做保留清理，也不取得 writer lock。
+    - `operator`：由 `schedule pause|resume` 設定與解除，升級（R-DEP-30）使用它，優先於其他原因。存在時 `schedule tick` 完全 no-op：不啟動 run、不做保留清理、不重新評估或解除任何其他原因，也不取得 writer lock。
     - `attempt_quota`：由 R-OPS-03 自動設定與解除。只有它存在時，tick 仍會做保留清理，以非阻塞方式嘗試取得 writer lock，取不到就跳過。
-    - `schedule resume` 只解除 `operator`；R-OPS-03 的自動解除只解除 `attempt_quota`。
+    - `schedule resume` 只解除 `operator`；之後的下一次 tick 才依實際容量重新評估，符合條件時解除 `attempt_quota`。R-OPS-03 的自動解除只解除 `attempt_quota`。
 - **R-DEP-23：逾時**：超過 `SYNC_RUN_TIMEOUT_MINUTES` 時，先送 `AbortSignal`；寬限 60 秒後強制結束，run 記為 `timed_out`。若尚未提交，丟棄 candidate；若已進入提交，依 R-ARCH-04 對帳。
 - **R-DEP-24：連線與檔案格式**
   - 每個連線設定 `foreign_keys=ON`、`busy_timeout=5000`。
@@ -319,7 +321,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
     1. 30 天內的 attempt 一律保留。
     2. 超過 30 天的 attempt，只保留最近 30 筆。
     3. 若 30 天內的 attempt 總量超過 `ATTEMPT_MAX_BYTES`，worker 暫停排程並告警（fail closed），不得刪除 30 天內的證據。
-  - 超量時設定 `attempt_quota` 暫停原因（R-DEP-22）。期間 `schedule tick` 仍執行上述保留清理，但不啟動 run。總量回到上限以下時（attempt 超過 30 天後被清理，或維運者調高 `ATTEMPT_MAX_BYTES`），下一次 tick 只解除 `attempt_quota` 並記錄事件；其他暫停原因不受影響。
+  - 超量時設定 `attempt_quota` 暫停原因（R-DEP-22）。期間 `schedule tick` 仍執行上述保留清理，但不啟動 run。總量回到上限以下時（attempt 超過 30 天後被清理，或維運者調高 `ATTEMPT_MAX_BYTES`），下一次 tick 只解除 `attempt_quota` 並記錄事件；其他暫停原因不受影響。`operator` 存在期間 tick 完全 no-op，所以容量的重新評估會延到 `schedule resume` 之後。
   - 使用限制：`backup restore` 與 `release promote` 拒絕任何 `type` 不是 `backup`／`release` 的輸入。
   - 查閱：用 `riftversus attempt show <runId>` 重讀失敗證據。
 - **R-OPS-04：通知**
@@ -590,11 +592,15 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
      - 把確切的 DB、引用物件與審閱輸入打包並附 checksum，存入 `backups/pre-cutover-local-<ts>/`。
      - 不以重抓 scope 的方式重播：重抓會產生新的 run、時間與稽核身分，無法原樣重現。
      - 改走受控的「已驗證本機來源」匯入，讓這些資料原樣成為遷移輸入（G6）：
-       1. 該 DB 必須是鎖定 checkpoint 的超集：checkpoint 的每一列，在該 DB 中都存在且正規化後完全相同；append-only 表只能多出新列。
-          - 若兩者已經分岔（例如本機與 Actions 從同一份 checkpoint 各自發布，在同一個 `generation` 產生不同的版本），不是超集，就不走這條路徑，改依下方的分岔處理（D11）。
+       1. 該 DB 必須是鎖定 checkpoint 的同源後繼。判定以 append-only 的發布歷史為準，不要求每一列都不變：
+          - R-DATA-11 的 6 張 append-only 表與 public ID 表：checkpoint 的每一列在該 DB 中都存在且正規化後完全相同，只能多出新列。
+          - 該 DB 的 `dataset_versions` 必須延續 checkpoint 最新的 generation，不得在同一個 generation 有不同的版本。
+          - 可變的狀態欄位（例如 `media_assets.is_current`、`sync_runs` 狀態、`coverage_status`、`source_cursors`）以及經授權修改的 fact，可以與 checkpoint 不同；但每一筆 fact 差異都必須能由該 DB 中晚於 checkpoint generation 的 `fact_mutation_audits` 解釋。
+          - 不符合以上任一項，就是分岔，不走這條路徑，改依下方的分岔處理（D11）。
        2. 在 legacy 工具 image 中，以該 DB 跑完整的 current snapshot acceptance、來源與歷史結果驗收，並與引用物件對帳，全部通過。
        3. 第 4 步改以該 DB（而不是 checkpoint）作為 R-DATA-41 的輸入，R-DATA-42 的 parity 也以它為比對對象。匯出比對時不要求等於 Pages 的 `snapshotId`，改為等於 legacy 路徑對同一份 DB 的匯出。
-       4. 驗收：封存中每一張表依主鍵正規化後的 hash，必須等於遷移後 SQLite 對應的 hash；物件集合相同。
+       4. 驗收：封存中每一張表依主鍵正規化後的 hash（包括稽核與來源紀錄），必須等於遷移後 SQLite 對應的 hash；物件集合相同。
+     - **輸入綁定**：第 1 步的判定（同源後繼或分岔）、差異紀錄與核准，都綁定第 3 步最終鎖定的 checkpoint ID 與本機封存的 checksum。第 3 步鎖定的 checkpoint 與第 1 步比對時不同，或封存的 checksum 改變，就重做第 1 步，包括重新核准。
      - **分岔處理（D11，G6 的明文例外）**：本規格不提供兩條已分岔 lineage 的自動整併，因為同一個 `generation` 的兩個版本無法在 append-only 的 publication 模型中同時成立。處理方式：
        - 遷移輸入固定為正式 checkpoint。
        - 分岔的本機 DB、引用物件與審閱輸入，完整、原樣地保存在 `backups/pre-cutover-local-<ts>/`：附 checksum，永久保留，不受 GC 影響，並納入異地同步。
@@ -602,7 +608,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
        - cutover 後，對應的 scope 以新的 run 重新取得，會產生新的 run、時間與稽核身分；這部分不宣稱與封存原樣相同。
      - 封存（`backups/pre-cutover-local-<ts>/`）無論如何都保留，作為來源證據。
   2. **凍結舊 writer**：把 `PUBLISH_ENABLED` 設為 `false`，確認沒有排隊中或執行中的 `publish.yml`，也沒有 Pages deployment。
-  3. **鎖定 checkpoint**：用 `archive resolve` 鎖定最後一份 verified checkpoint，記錄其 ID、sequence 與 series 數。若第 1 步選用已驗證本機來源，也在此鎖定該 DB 與封存的 checksum，並重新確認它仍是這份 checkpoint 的超集。
+  3. **鎖定 checkpoint**：用 `archive resolve` 鎖定最後一份 verified checkpoint，記錄其 ID、sequence 與 series 數。若第 1 步選用已驗證本機來源，也在此鎖定該 DB 與封存的 checksum，並重新確認它仍是這份 checkpoint 的同源後繼（輸入綁定規則見第 1 步）。
   4. **重新遷移**：在正式 volume 上以鎖定的遷移輸入（checkpoint，或第 1 步的已驗證本機來源）重做 R-DATA-41、R-DATA-42、R-DATA-44，並從 `lseq=1` 建立第一份 `state.json`，由 head 與 serving 同時指向它。
   5. **5a：只啟動 web**：以 `WORKER_SCHEDULE=off` 執行，透過正式 HTTPS 完成 §9.3 的第 3–6 項。
   6. **5b：啟用 worker 排程**：第一次由新 writer 執行的提交必須通過 R-OPS-07。若這次提交已經耐久落盤、但 R-OPS-07 失敗，cutover 進入「5b 受阻」狀態：設定 `WORKER_SCHEDULE=off`，`release rollback` 到第 4 步的第一個 serving release，head 與新寫入的資料保留不動，修正後以新的 run 或新的 image 繼續（fix-forward），不回到 Actions。
@@ -617,9 +623,9 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   1. 以 SQLite backup API 複製 `head` 的 lineage；若 `serving.lseq` 與 `head.lseq` 不同（例如 rollback 或單獨 `migrate` 之後），也複製 `serving.lseq` 的 lineage。
   2. 對每個複製的 lineage 執行 `integrity_check` 與 `foreign_key_check`。
   3. 寫入 `manifest.json`，欄位如下：
-     - `type: backup`、`commitSeq`、canonical schema 版本，以及建立備份的 image revision。
-     - `head`：`lseq`、DB sha256、canonical schema 版本，以及產生此 lineage 的 `imageRevision`（`imageDigest` 若有就一併記錄）。
-     - `serving`：`releaseId`、`lseq`、DB sha256、`snapshotId`、`basePath`，以及取自 `state.json` 的 `servingExporter`。
+     - `type: backup`、`commitSeq`，以及建立備份的 image revision。
+     - `head`：`lseq`、DB sha256，以及取自 `state.json` 的 `schemaVersion` 與 `producer`。
+     - `serving`：`releaseId`、`lseq`、DB sha256、`schemaVersion`、`snapshotId`、`basePath`，以及取自 `state.json` 的 `servingExporter`。
      - 物件清單：兩個 lineage 引用的所有物件，`{ key, checksum, contentType, byteSize, file }` 的陣列。
   4. 物件以內容定址方式增量複製到 `backups/objects/<sha256>`。serving release 目錄的檔案也一併納入。
   5. fsync 後，改名為 `backups/<ts>-c<commitSeq>/`。
@@ -904,13 +910,15 @@ breakdown 的回應結構：
   - server 基本行為：safe-path、安全標頭、rate limit、308 導向（含巢狀前綴與防迴圈）、熱切換時不中斷進行中的請求。
   - 鎖與排程：跨容器撞鎖、pending 合併、補跑、`schedule tick` 在內建排程與主機 timer 兩種路徑的行為一致。
   - 逾時與提交：逾時、每個 rename／fsync 邊界的故障注入（含新物件的 fsync），以及對帳（含 `commit_uncertain`）；abandoned candidate 不得 promote。
-  - commit log：`state.json` 已切換、commit log 尚未落盤時硬終止；log 最後一行只寫入一半；只切換 serving 的提交在 rename 後被終止；手動指令被終止後由常駐 worker 接手下一次寫入。對帳後 log 都是完整連續的序列，並補齊事件與提交後步驟；在 log 補齊之前，web 仍讓剛卸任的 release 可以分頁。
+  - commit log：`state.json` 已切換、commit log 尚未落盤時硬終止；log 最後一行只寫入一半；只切換 serving 的提交在 rename 後被終止；手動指令被終止後由常駐 worker 接手下一次寫入。對帳後 log 都是完整連續的序列，並補齊事件與提交後步驟；在 log 補齊之前，web 仍讓剛卸任的 release 可以分頁。只推進 head 的 `migrate` 缺行時，log 補齊前後的保留視圖一致，已逾期的 `previousServing` 不會被誤判為仍可用。
+  - orphan release：release 目錄已落盤、`state.json` 尚未提交時中斷，再由另一個 image 接手並產生同一個 `releaseId`；orphan 被保留為證據，不被重用，`servingExporter` 是接手的 image。
+  - lineage 來源：image B 的 `migrate` 只推進 head，之後由 image C 備份並在乾淨主機還原後再備份；`head.producer` 仍是 B，`servingExporter` 仍是原本的 exporter。
   - 物件耐久：run A 在物件 rename 後、目錄 fsync 前被終止，run B 重用該物件並提交；模擬斷電後，canonical 引用的物件全部存在且 checksum 相符。
   - release 重用：不同 lineage 產生同一個 `releaseId` 時，重用既有目錄；之後的 promote、重啟與 prune 都依 commit log 取得正確的 lineage。
   - rollback：rollback → 重啟 → 新 run promote，`lseq` 不碰撞，被跳過的 lineage 不會被清除；`state/lseq` 已遞增但 lineage 尚未改名時硬終止，序號不重用。
   - 遷移匯入：含 unchanged run（`reused_dataset_version_id`）的 fixture，兩向引用都保留，`foreign_key_check` 通過。
   - attempt：超過 `ATTEMPT_MAX_BYTES` 後暫停、清理後自動恢復排程；多批 history 其中兩批失敗時，以 `attempt show --request` 只用 attempt 目錄與 `objects/` 離線重讀每一批及其審閱輸入。
-  - 升級停寫：`schedule pause` 之後，內建排程與主機 timer 的 `schedule tick` 都完全 no-op，不取得 writer lock；升級途中 attempt 容量恢復，也只解除 `attempt_quota`，`operator` 暫停仍有效；升級全程沒有 sync 寫入。
+  - 升級停寫：`schedule pause` 之後，內建排程與主機 timer 的 `schedule tick` 都完全 no-op，不取得 writer lock；升級途中 attempt 容量恢復時，`attempt_quota` 保留不變、tick 不清理；`schedule resume` 之後的下一次 tick 才重新評估並解除；升級全程沒有 sync 寫入。
   - 對帳途中再次斷電：在補寫 log 之後、任何後續步驟之前斷電，重啟後 state 與 log 仍一致，不觸發 fail closed。
   - exporter 身分：由 image A 匯出的 serving release，在乾淨主機以 image C 還原後再備份，`servingExporter` 仍是 A。
   - history：多批 history 部分失敗；目標 scope 的成功、fail-closed、硬終止，以及 `evidence_incomplete` 的 attempt。
