@@ -177,7 +177,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   - 對帳時機：每個寫入指令取得 writer lock 之後、執行任何寫入或 GC 之前，都要先對帳。常駐 worker 接手下一次寫入、或手動指令被終止後再由 worker 接手，都適用。對帳是冪等的，步驟如下：
     1. 修復 commit log：若最後一行不完整或雜湊不符，把 log 截斷到最後一個合法行並 fsync（被截掉的尾段另存到 `state/commit-log.torn-<ts>` 作為證據）。
     2. 讀取實際的 `state.json`，並先 fsync `state.json` 與 `state/` 目錄，讓可能處於 `commit_uncertain` 的 rename 成為耐久狀態。之後才處理 log：若它的 `commitSeq` 等於 log 最後一筆加 1，就依 `lastCommit`、`head`、`serving` 與 `servingExporter` 補寫缺少的那筆事件並 fsync；若差距大於 1，或 log 的最後一筆大於 `state.json` 的 `commitSeq`，代表狀態損毀，fail closed 並告警，不自動修復。
-    3. 若 `lastCommit.runId` 等於某個 `running`／`commit_uncertain` 的 run，把該 run 判定為 `succeeded`，並補做尚未完成的提交後步驟：備份與對外驗證。這同時涵蓋只切換 `serving` 的提交。
+    3. 若 `lastCommit.runId` 等於某個 `running`／`commit_uncertain` 的 run，把該 run 判定為 `succeeded`，並補做尚未完成的提交後步驟：備份與對外驗證。這同時涵蓋只切換 `serving` 的提交。`kind: restore` 的提交例外：對帳只補齊 commit log、備份與 R-DATA-52 第 7 步的封存，對外驗證保留給 web 上線後的 worker（R-DATA-52 第 6 步）。
     4. 其他 `running`／`commit_uncertain` 的 run 判定為 `abandoned` 並清理。
     5. 校正 `state/lseq`。
   - 清理只刪除沒有被任何地方引用的檔案。引用來源包括：`state.json`（head、serving、previousServing）、保留期內的 release 及其在 commit log 中對應的 lineage、備份集，以及 attempt。
@@ -285,7 +285,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   - 暫停原因：`scheduler.sqlite` 以「原因集合」記錄暫停，每個原因各自設定、各自解除，集合為空才可啟動 run。內建排程與主機 timer 呼叫的 `schedule tick` 都遵守同一個集合。
     - `operator`：由 `schedule pause|resume` 設定與解除，升級（R-DEP-30）使用它，優先於其他原因。存在時 `schedule tick` 完全 no-op：不啟動 run、不做保留清理、不重新評估或解除任何其他原因，也不取得 writer lock。
     - `attempt_quota`：由 R-OPS-03 自動設定與解除。只有它存在時，tick 仍會做保留清理，以非阻塞方式嘗試取得 writer lock，取不到就跳過。
-    - `restore`：由 `backup restore` 設定（R-DATA-52），web 上線後的對外驗證與備份都成功時自動解除，也可用 `schedule resume --reason restore` 手動解除。存在時 tick 不啟動 run、不做清理，唯一例外是執行 R-DATA-52 第 6 步記錄的待驗證提交。
+    - `restore`：由 `backup restore` 設定（R-DATA-52），web 上線後的對外驗證與備份都成功時自動解除，也可用 `schedule resume --reason restore` 手動解除。存在時 tick 不啟動 run、不做清理，唯一例外是處理 R-DATA-52 登記的 restore：先對帳，再執行待驗證的對外驗證。
     - `schedule resume` 預設只解除 `operator`；之後的下一次 tick 才依實際容量重新評估，符合條件時解除 `attempt_quota`。R-OPS-03 的自動解除只解除 `attempt_quota`。
 - **R-DEP-23：逾時**：超過 `SYNC_RUN_TIMEOUT_MINUTES` 時，先送 `AbortSignal`；寬限 60 秒後強制結束，run 記為 `timed_out`。若尚未提交，丟棄 candidate；若已進入提交，依 R-ARCH-04 對帳。
 - **R-DEP-24：連線與檔案格式**
@@ -596,7 +596,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
        1. 該 DB 必須是鎖定 checkpoint 的同源後繼。判定以 append-only 的發布歷史為準，不要求每一列都不變：
           - R-DATA-11 的 6 張 append-only 表與 public ID 表：checkpoint 的每一列在該 DB 中都存在且正規化後完全相同，只能多出新列。
           - 該 DB 的 `dataset_versions` 必須延續 checkpoint 最新的 generation，不得在同一個 generation 有不同的版本。
-          - 可變的狀態欄位（例如 `media_assets.is_current`、`sync_runs` 狀態、`coverage_status`、`source_cursors`）以及經授權修改的 fact，可以與 checkpoint 不同；但每一筆 fact 差異都必須能由該 DB 中晚於 checkpoint generation 的 `fact_mutation_audits` 解釋。
+          - 寫入 API 合法更新的欄位可以與 checkpoint 不同，例如 `media_assets.is_current`、`sync_runs` 狀態、`source_cursors`、`entities` 的真名採納與 `player_id` 補齊、`game_players`；完整清單在 P1 依現行 repositories 列出。經授權修改的 fact 也可以不同，但每一筆 fact 差異都必須能由 checkpoint 中沒有、且 `new_payload` 的 generation 晚於 checkpoint 的新增 `fact_mutation_audits` 解釋。
           - 不符合以上任一項，就是分岔，不走這條路徑，改依下方的分岔處理（D11）。
        2. 在 legacy 工具 image 中，以該 DB 跑完整的 current snapshot acceptance、來源與歷史結果驗收，並與引用物件對帳，全部通過。
        3. 第 4 步改以該 DB（而不是 checkpoint）作為 R-DATA-41 的輸入，R-DATA-42 的 parity 也以它為比對對象。匯出比對時不要求等於 Pages 的 `snapshotId`，改為等於 legacy 路徑對同一份 DB 的匯出。
@@ -637,7 +637,8 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   - 異地同步必須涵蓋整個 `backups/`。
   - 物件 GC 只能刪除不被任何保留中的備份集、release、lineage 或 attempt 引用的物件。
 - **R-DATA-52：`backup restore <set>`**
-  1. 取得 writer lock，在 `scheduler.sqlite` 設定 `restore` 暫停原因（R-DEP-22）。scheduler 的資料庫不在還原範圍內；乾淨主機上它是 `init` 建立的空資料庫。
+  1. 取得 writer lock，在 `scheduler.sqlite` 設定 `restore` 暫停原因（R-DEP-22），並登記本次 restore 的 `runId` 與來源備份集識別，狀態為「待提交」。scheduler 的資料庫不在還原範圍內；乾淨主機上它是 `init` 建立的空資料庫。
+     - 冪等重跑：開始前先依 R-ARCH-04 對帳。若 `lastCommit` 是同一個備份集登記過的 restore 提交，代表上次已經在第 5 步 rename 之後中斷：不再發起第二筆提交，直接續完第 6、7 步。
   2. 在 staging 準備完整的還原內容：
      - 先把 `state/lseq` 提高到 `max(目前的 state/lseq, manifest 的 maxLseq)`，依 R-ARCH-03 耐久落盤，再為 head 與 serving 的 lineage 各配置新的 `lseq`（兩者相同時只配置一個）。因此在乾淨主機上，還原後的序號也一定大於原主機配置過的所有序號，不會與快照中的歷史序號重複。
      - 用 `putImmutable` 重建物件的邏輯 key 與 metadata。
@@ -651,12 +652,13 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   6. 提交後步驟分成兩段：
      - 備份（R-DATA-50）在 restore 指令內執行。
      - 對外驗證（R-OPS-07）需要 web 已在提供服務，所以 restore 只在 `scheduler.sqlite` 記錄「待驗證的 restore 提交」，不在指令內執行。乾淨主機上，這一步會在 `up` 之後才發生。
-     - `up` 之後，worker 在 `restore` 暫停期間仍會處理待驗證的提交（只做對外驗證，不啟動 run、不做清理）。R-OPS-07 通過且備份成功後，自動解除 `restore` 暫停原因，排程恢復。
+     - 「待驗證」的登記與第 1 步的登記是同一筆紀錄，在第 5 步 rename 之前就已存在，所以 rename 之後任何時點中斷都找得到它。
+     - `up` 之後，worker 在 `restore` 暫停期間仍會處理這筆紀錄：先以非阻塞方式取得 writer lock 並依 R-ARCH-04 對帳（補齊 log、備份與封存），再執行對外驗證；不啟動 run、不做清理。R-OPS-07 通過且備份成功後，自動解除 `restore` 暫停原因，排程恢復。
      - 任一步失敗時保留暫停並告警，由維運者處理後以 `schedule resume --reason restore` 解除。
   7. 提交之後，才把被取代的 state 快照移到 `backups/pre-restore-<ts>/`。舊的 lineage 與物件不刪除。
   - 任一步驟在提交前中斷，原狀態都完整保留。
 - **R-DATA-53：還原演練**：分成兩種情境，兩者都要做。
-  - **乾淨主機災難還原**：在只有異地副本的乾淨主機上，執行 `init` → `backup restore` → `up`，重現相同的 `snapshotId` 與 serving release。備份集要選 `head ≠ serving.lseq`，且 head 與 serving 由不同 image 產生的狀態，還原後完成重啟、`release rebuild --verify` 與再同步一次。另外在步驟 2、4、5 各中斷一次後重跑。還原後 commit log 從 1 開始、只有一筆 restore 事件；新配置的 `lseq` 大於備份的 `maxLseq`；`up` 之後 R-OPS-07 通過、排程自動恢復；`release rollback` 只列出備份中的 serving release，不引用不存在的歷史成品。
+  - **乾淨主機災難還原**：在只有異地副本的乾淨主機上，執行 `init` → `backup restore` → `up`，重現相同的 `snapshotId` 與 serving release。備份集要選 `head ≠ serving.lseq`，且 head 與 serving 由不同 image 產生的狀態，還原後完成重啟、`release rebuild --verify` 與再同步一次。另外在步驟 2、4、5 各中斷一次後重跑；第 5 步要分別演練 rename 之前與之後中斷，以及 rename 之後中斷時「直接 `up`」與「重跑同一個 `backup restore`」兩種恢復方式。還原後 commit log 從 1 開始、只有一筆 restore 事件；新配置的 `lseq` 大於備份的 `maxLseq`；`up` 之後 R-OPS-07 通過、排程自動恢復；`release rollback` 只列出備份中的 serving release，不引用不存在的歷史成品。
   - **回溯還原**：在 head 比備份新的主機上還原較舊的備份，再同步一次。驗收：reservation 寫入後 FK 仍成立；同名的新主體不能取得被保留的 key；原主體重新出現後取回相同的 key，更名後也一樣；連續兩次回溯還原後，第一次留下的 reservation 仍有效。
 
 ## 8. 前端需求（UI 重設計）
