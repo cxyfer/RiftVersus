@@ -627,6 +627,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
      - `head`：`lseq`、DB sha256，以及取自 `state.json` 的 `schemaVersion` 與 `producer`。
      - `serving`：`releaseId`、`lseq`、DB sha256、`schemaVersion`、`snapshotId`、`basePath`，以及取自 `state.json` 的 `servingExporter`。
      - 物件清單：兩個 lineage 引用的所有物件，`{ key, checksum, contentType, byteSize, file }` 的陣列。
+     - commit log 快照：備份當下、經 R-ARCH-04 驗證完整且連續的 `state/commit-log.jsonl` 副本（`commit-log.jsonl`，含最後一筆的 `commitSeq` 與整份檔案的 sha256），以及同一時點的 `state.json` 副本。
   4. 物件以內容定址方式增量複製到 `backups/objects/<sha256>`。serving release 目錄的檔案也一併納入。
   5. fsync 後，改名為 `backups/<ts>-c<commitSeq>/`。
   - 結果：任一備份集加上 `backups/objects/`，就能在沒有 `/data` 的情況下，還原當時的 head、serving 及其 lineage、物件與 serving release，之後的每週重建也有輸入。
@@ -642,11 +643,14 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
      - 準備 release 目錄。
   3. 合併 public ID 擁有權：目前主機 head 的 `*_public_ids` 與既有 reservation 中，凡是備份裡沒有的綁定，都寫入還原後 head lineage 的 reservation 表（R-DATA-16）。因此連續多次回溯還原時，先前留下、尚未認領的 reservation 也會繼承。完全相同的綁定合併為一筆。依 R-DATA-16 的雙向唯一檢查：同一個 key 綁定到不同 UUID，或同一個 UUID 綁定到不同 key，都在提交前拒絕還原、告警，並把雙方的綁定清單存為證據。
   4. 對 staging 做全量驗證（在第 3 步之後執行）：checksum、每個 lineage 的 `integrity_check` 與 `foreign_key_check`、所有引用物件，以及從 serving lineage 以 manifest 的 `basePath` 重新匯出後的 `snapshotId` 一致性。
-  5. 以 `state.json` 的 rename 提交，同時更新 head 與 serving，並在 commit log 記錄 `kind: restore`。
+  5. 以 `state.json` 的 rename 提交，同時更新 head 與 serving，並在 commit log 記錄 `kind: restore`。commit log 依目的主機的狀態處理，兩種情況都維持 R-ARCH-03 的「從 1 起連續」：
+     - 目的主機已有 commit log（回溯還原）：保留既有 log，在其後追加 `commitSeq` 為「目前最後一筆加 1」的 restore 事件。
+     - 目的主機的 log 是空的（乾淨主機）：先把備份的 commit log 快照驗證後原樣寫入作為歷史，再追加 `commitSeq` 為「快照最後一筆加 1」的 restore 事件。release 與 lineage 的對應、保留期與 rollback 的歷史因此延續。
+     - 新的 `state.json.commitSeq` 一律等於這筆 restore 事件的 `commitSeq`；寫入 log 與 `state.json` 的順序依 R-ARCH-03，對帳依 R-ARCH-04。
   6. 提交之後，才把被取代的 state 快照移到 `backups/pre-restore-<ts>/`。舊的 lineage 與物件不刪除。
   - 任一步驟在提交前中斷，原狀態都完整保留。
 - **R-DATA-53：還原演練**：分成兩種情境，兩者都要做。
-  - **乾淨主機災難還原**：在只有異地副本的乾淨主機上，執行 `init` → `backup restore` → `up`，重現相同的 `snapshotId` 與 serving release。備份集要選 `head ≠ serving.lseq`，且 head 與 serving 由不同 image 產生的狀態，還原後完成重啟、`release rebuild --verify` 與再同步一次。另外在步驟 2、4、5 各中斷一次後重跑。
+  - **乾淨主機災難還原**：在只有異地副本的乾淨主機上，執行 `init` → `backup restore` → `up`，重現相同的 `snapshotId` 與 serving release。備份集要選 `head ≠ serving.lseq`，且 head 與 serving 由不同 image 產生的狀態，還原後完成重啟、`release rebuild --verify` 與再同步一次。另外在步驟 2、4、5 各中斷一次後重跑。還原後 commit log 從 1 起連續、最後一筆是 restore 事件，`release rollback` 與 prune 能取得備份前的 release 歷史。
   - **回溯還原**：在 head 比備份新的主機上還原較舊的備份，再同步一次。驗收：reservation 寫入後 FK 仍成立；同名的新主體不能取得被保留的 key；原主體重新出現後取回相同的 key，更名後也一樣；連續兩次回溯還原後，第一次留下的 reservation 仍有效。
 
 ## 8. 前端需求（UI 重設計）
