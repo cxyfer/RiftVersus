@@ -159,7 +159,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
     - 它是 `releaseId` 與 lineage 對應關係的唯一 owner；同一個 `releaseId` 可以在不同事件中對應不同的 `lseq`，以最新的事件為準。
     - release 的保留期由事件序列推導：某個 release 目前正在 serving，或在過去 24 小時內有事件把 serving 從它切走，就算在保留期內。rollback 重新啟用舊 release 時只是新增一筆事件，不回改舊紀錄。
     - GC、`release rebuild` 與 `release rollback` 都從 commit log 取得 release 對應的 lineage。
-    - 重用條件：重用資格綁定目錄的實際安裝，而不是 `releaseId` 本身。事件的 `serving.installId` 記錄它引用的那一次安裝；只有 `releases/<releaseId>/install.json` 的 `installId` 已被某筆事件引用，該目錄才具有耐久的 exporter 紀錄，可以依 R-ARCH-02 重用。重用時 exporter 身分取自安裝紀錄，且必須與引用事件的 `servingExporter` 相同，不同就 fail closed。只有舊事件引用同一個 `releaseId` 不構成資格，例如目錄曾被 prune、之後另一次匯出以同一個 `releaseId` 重新安裝。若目錄存在、但它的 `installId` 沒有被任何事件引用（例如 release 目錄已落盤、`state.json` 尚未提交時中斷），就是 orphan：把它改名為 `releases/.orphan-<releaseId>-<ts>/` 保留作為證據，再改名本次的 staging，exporter 身分採本次的 image。
+    - 重用條件：重用資格綁定目錄的實際安裝，而不是 `releaseId` 本身。事件的 `serving.installId` 記錄它引用的那一次安裝；只有 `releases/<releaseId>/install.json` 的 `installId` 已被某筆事件引用，該目錄才具有耐久的 exporter 紀錄，可以依 R-ARCH-02 重用。重用時 exporter 身分取自安裝紀錄，且必須與引用事件的 `servingExporter` 相同，不同就 fail closed。只有舊事件引用同一個 `releaseId` 不構成資格，例如目錄曾被 prune、之後另一次匯出以同一個 `releaseId` 重新安裝。若目錄存在、但它的 `installId` 沒有被任何事件引用（例如 release 目錄已落盤、`state.json` 尚未提交時中斷），就是 orphan：把它改名為 `releases/.orphan-<releaseId>-<ts>/` 保留作為證據，再改名本次的 staging，exporter 身分取自本次 staging 的安裝紀錄：新匯出時是本次執行匯出的 image；restore 安裝備份副本時依 R-DATA-52 第 2 步保留備份記載的 exporter，不是執行 restore 的 image。
   - **`lseq` 配置**：配置新的 `lseq` 時，先以 tmp 檔 + fsync + rename + 目錄 fsync 更新 `state/lseq`，之後才把 candidate 改名為 lineage 檔。對帳時 `state/lseq` 取 `max(state/lseq, head.lseq, db/lineage/ 中的最大序號)`，序號永不重用。
   - 提交依下列順序進行：
     1. 耐久落盤，對每個檔案和每個目的目錄都執行 fsync：
@@ -941,7 +941,7 @@ breakdown 的回應結構：
   - 升級停寫：`schedule pause` 之後，內建排程與主機 timer 的 `schedule tick` 都完全 no-op，不取得 writer lock；升級途中 attempt 容量恢復時，`attempt_quota` 保留不變、tick 不清理；`schedule resume` 之後的下一次 tick 才重新評估並解除；升級全程沒有 sync 寫入。
   - 對帳途中再次斷電：在補寫 log 之後、任何後續步驟之前斷電，重啟後 state 與 log 仍一致，不觸發 fail closed。
   - exporter 身分：由 image A 匯出的 serving release，在乾淨主機以 image C 還原後再備份，`servingExporter` 仍是 A。目的主機已有 image B 匯出、具重用資格的同一 `releaseId` 時，還原事件與再次備份都記錄 B；沒有可重用的目錄時記錄 A。
-  - 還原已被 prune 的 release：從備份重新安裝後、提交前中斷，再以同一個備份集重跑；前一次的目錄視為 orphan，新安裝取得新的 `installId`，最終只有一筆 restore 事件。
+  - 還原已被 prune 的 release：從備份重新安裝後、提交前中斷，再以同一個備份集重跑；前一次的目錄視為 orphan，新安裝取得新的 `installId`，最終只有一筆 restore 事件。以 image B 還原 image A 匯出的備份時，新安裝的 `install.json`、`state.json` 的 `servingExporter`、restore 事件與再次備份都記錄 A。
   - history：多批 history 部分失敗；目標 scope 的成功、fail-closed、硬終止，以及 `evidence_incomplete` 的 attempt。
   - 資料邊界：media-only 防護（含 `is_current` 切換、`sync_runs` 狀態轉換與無變更的 manifest 等合法案例）；attempt 不得被拿來還原；`init` 在空白 named volume 與無寫入權限的 bind mount 上的行為；R-OPS-10 的跨年、過期與缺 mapping 案例。
 - **舊發布路徑回歸**：P1–P4 的每個 PR，都必須讓現有的 `pnpm test`、PG integration，以及以 `build:pages` 建置的 static E2E 照常通過（該測試禁止 `/api/` 請求，只適用於 Pages 入口）。容器 E2E 另外以 `build:docker` 執行。
