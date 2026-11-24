@@ -153,7 +153,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
     - `head.producer` 是產生這個 lineage 的 image，只有推進 head 的提交才會更新；`schemaVersion` 是各自 lineage 的 canonical schema 版本。這些欄位是 lineage 來源身分的持久 owner，備份從這裡取得。
     - `commitSeq` 單調遞增。每一次改變 `head` 或 `serving` 的操作（`run`、`migrate`、`release promote|rollback|rebuild --promote`、`backup restore`）都是一次提交，都有自己的 `runId`。
   - **commit log**：`state/commit-log.jsonl` 是 append-only 的切換事件流，每次提交一行：`{ commitSeq, kind, runId, head, serving, imageRevision, imageDigest?, servingExporter, at, sha256 }`，`sha256` 是該行其餘欄位正規化後的雜湊。
-    - `imageRevision` 是執行這次提交的 image；`servingExporter` 是實際匯出目前 serving release 的 image，兩者分開記錄。只有新匯出 release 的提交才設定新的 `servingExporter`；重用既有 release、rollback 與 restore 都沿用該 release 原本的值（restore 從備份 manifest 取得）。
+    - `imageRevision` 是執行這次提交的 image；`servingExporter` 是實際匯出目前 serving release 的 image，兩者分開記錄。只有新匯出 release 的提交才設定新的 `servingExporter`；重用既有 release、rollback 與 restore 都沿用實際採用的 release 目錄的安裝紀錄（restore 依 R-DATA-52 第 2 步決定採用哪一份成品）。
     - `imageRevision` 是必填的 git revision（D2）。`imageDigest` 是選填，由主機以 `RIFTVERSUS_IMAGE_DIGEST` 注入（R-DEP-12）；容器無法自行取得自身 digest。
     - 合法的 log 必須是完整、可解析、且 `commitSeq` 從 1 起連續的序列；最後一行若不完整或雜湊不符，視為未寫完的尾段（見 R-ARCH-04）。
     - 它是 `releaseId` 與 lineage 對應關係的唯一 owner；同一個 `releaseId` 可以在不同事件中對應不同的 `lseq`，以最新的事件為準。
@@ -270,7 +270,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
 
 - **R-DEP-20：writer lock**
   - 範圍：所有寫入 `db/`、`releases/`、`media/`、`objects/`、`state/`、`backups/` 的指令，都必須先取得 `/data/locks/writer.lock` 的獨占 `flock`，並持有到提交後步驟結束。這些指令包括：`run *`（含 `run media --pack`）、`migrate`、`release promote|rollback|rebuild --promote|prune`、`backup create|restore`、`attempt prune`。
-  - 例外：`backup restore` 分兩段持鎖（R-DATA-52 第 6 步）。restore 指令持鎖到指令內的備份完成即釋放；web 上線後，由 worker 重新取鎖完成對帳與對外驗證。兩段之間的寫入由 R-DATA-52 的 restore 閘門管制。
+  - 例外：`backup restore` 分兩段持鎖（R-DATA-52 第 6 步）。restore 指令持鎖到指令內的備份與第 7 步封存完成即釋放；web 上線後，由 worker 重新取鎖完成對帳與對外驗證。兩段之間的寫入由 R-DATA-52 的 restore 閘門管制。
   - candidate 的寫入交易使用 `BEGIN IMMEDIATE`。行程遭硬終止時，flock 由 kernel 釋放。
   - 只有 writer 連線可以寫入；其他連線一律以 `mode=ro` 開啟。
 - **R-DEP-21：排程狀態的 owner**
@@ -599,7 +599,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
        1. 該 DB 必須是鎖定 checkpoint 的同源後繼。判定以 append-only 的發布歷史為準，不要求每一列都不變：
           - R-DATA-11 的 6 張 append-only 表與 public ID 表：checkpoint 的每一列在該 DB 中都存在且正規化後完全相同，只能多出新列。
           - 該 DB 的 `dataset_versions` 必須延續 checkpoint 最新的 generation，不得在同一個 generation 有不同的版本。
-          - 寫入 API 合法更新的欄位可以與 checkpoint 不同，例如 `media_assets.is_current`、`sync_runs` 狀態、`source_cursors`、`entities` 的真名採納與 `player_id` 補齊、`game_players`；完整清單在 P1 依現行 repositories 列出。經授權修改的 fact 也可以不同，但每一筆 fact 差異都必須由 checkpoint 中沒有的新增 `fact_mutation_audits` 逐筆證明：依 `audit_id` 排序後，第一筆的 `old_payload` 等於 checkpoint 中該 fact 的列，每一筆的 `new_payload` 等於下一筆的 `old_payload`，最後一筆的 `new_payload` 等於該 DB 中的現值；每筆 audit 引用的 `source_objects` 或 `override_applications` 都存在於該 DB，並通過來源驗證。判定不依 generation，所以 generation 不變的授權修正（例如只改 `played_at`，見 `migrations.integration.test.ts`）也算同源。
+          - 寫入 API 合法更新的欄位可以與 checkpoint 不同，例如 `media_assets.is_current`、`sync_runs` 狀態、`source_cursors`、`entities` 的真名採納與 `player_id` 補齊、`game_players`；完整清單在 P1 依現行 repositories 列出。經授權修改的 fact 也可以不同，但每一筆 fact 差異都必須由 checkpoint 中沒有的新增 `fact_mutation_audits` 逐筆證明：依 `audit_id` 排序後，第一筆的 `old_payload` 等於 checkpoint 中該 fact 的列；checkpoint 中不存在的 fact，第一筆必須是新增時寫入、`old_payload` 為 `{}` 的 audit（現行 `upsertSeries`／`upsertGame` 的行為）。之後每一筆的 `new_payload` 等於下一筆的 `old_payload`，最後一筆的 `new_payload` 等於該 DB 中的現值（都以正規化後的 payload 比較；新增 audit 只記錄寫入的欄位，比較欄位清單在 P1 定義）；每筆 audit 引用的 `source_objects` 或 `override_applications` 都存在於該 DB，並通過來源驗證。判定不依 generation，所以 generation 不變的授權修正（例如只改 `played_at`，見 `migrations.integration.test.ts`）也算同源。
           - 不符合以上任一項，就是分岔，不走這條路徑，改依下方的分岔處理（D11）。
        2. 在 legacy 工具 image 中，以該 DB 跑完整的 current snapshot acceptance、來源與歷史結果驗收，並與引用物件對帳，全部通過。
        3. 第 4 步改以該 DB（而不是 checkpoint）作為 R-DATA-41 的輸入，R-DATA-42 的 parity 也以它為比對對象。匯出比對時不要求等於 Pages 的 `snapshotId`，改為等於 legacy 路徑對同一份 DB 的匯出。
@@ -635,7 +635,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   4. 物件以內容定址方式增量複製到 `backups/objects/<sha256>`。serving release 目錄的檔案也一併納入。
   5. fsync 後，改名為 `backups/<ts>-c<commitSeq>/`。
   - 結果：任一備份集加上 `backups/objects/`，就能在沒有 `/data` 的情況下，還原當時的 head、serving 及其 lineage、物件與 serving release，之後的每週重建也有輸入。備份不包含其他歷史 release；乾淨主機還原後，rollback 只能回到備份中的 serving release。
-  - image 可取得性：備份記錄的每個 `imageRevision`，都必須能從已審核的 git revision 重新 build（D2），或由維運者以 `docker save` 保存到 `backups/images/<imageRevision>.tar`。還原時把備份的 `servingExporter`、`head.producer`、`head.schemaVersion` 與 `serving.schemaVersion`（lineage 的 canonical schema 版本，不是 `release.json` 的公開快照 schema 版本）寫回 `state.json` 與 `kind: restore` 事件，之後的 R-OPS-05 依它判斷 exporter 是否相同。
+  - image 可取得性：備份記錄的每個 `imageRevision`，都必須能從已審核的 git revision 重新 build（D2），或由維運者以 `docker save` 保存到 `backups/images/<imageRevision>.tar`。還原時把 `head.producer`、`head.schemaVersion` 與 `serving.schemaVersion`（lineage 的 canonical schema 版本，不是 `release.json` 的公開快照 schema 版本）寫回 `state.json` 與 `kind: restore` 事件；`servingExporter` 與 `serving.installId` 則取自 R-DATA-52 第 2 步實際採用的成品的安裝紀錄，未重用目的主機既有目錄時即為備份記載的 exporter。之後的 R-OPS-05 依它判斷 exporter 是否相同。
 - **R-DATA-51：保留與異地範圍**
   - 異地同步必須涵蓋整個 `backups/`。
   - 物件 GC 只能刪除不被任何保留中的備份集、release、lineage 或 attempt 引用的物件。
@@ -645,7 +645,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
   2. 在 staging 準備完整的還原內容：
      - 先把 `state/lseq` 提高到 `max(目前的 state/lseq, manifest 的 maxLseq)`，依 R-ARCH-03 耐久落盤，再為 head 與 serving 的 lineage 各配置新的 `lseq`（兩者相同時只配置一個）。因此在乾淨主機上，還原後的序號也一定大於原主機配置過的所有序號，不會與快照中的歷史序號重複。
      - 用 `putImmutable` 重建物件的邏輯 key 與 metadata。
-     - 準備 release 目錄：依 R-ARCH-02／03 判斷。目的主機既有的同名目錄具有重用資格且 checksum 相符時，重用它，`serving.installId` 與 `servingExporter` 取自該目錄的安裝紀錄；否則安裝備份中的副本，並保留其 `install.json`，`installId` 與 exporter 都取自備份。
+     - 準備 release 目錄：依 R-ARCH-02／03 判斷。目的主機既有的同名目錄具有重用資格且 checksum 相符時，重用它，`serving.installId` 與 `servingExporter` 取自該目錄的安裝紀錄；否則安裝備份中的副本：配置新的 `installId`，`install.json` 的 exporter 保留備份記載的值。因此已被 prune 的 release 從備份重新安裝時，在提交前中斷後重跑，前一次未提交的安裝不會因舊事件引用同一個 `releaseId` 而取得重用資格，而是依 R-ARCH-03 視為 orphan。
   3. 合併 public ID 擁有權：目前主機 head 的 `*_public_ids` 與既有 reservation 中，凡是備份裡沒有的綁定，都寫入還原後 head lineage 的 reservation 表（R-DATA-16）。因此連續多次回溯還原時，先前留下、尚未認領的 reservation 也會繼承。完全相同的綁定合併為一筆。依 R-DATA-16 的雙向唯一檢查：同一個 key 綁定到不同 UUID，或同一個 UUID 綁定到不同 key，都在提交前拒絕還原、告警，並把雙方的綁定清單存為證據。
   4. 對 staging 做全量驗證（在第 3 步之後執行）：checksum、每個 lineage 的 `integrity_check` 與 `foreign_key_check`、所有引用物件，以及從 serving lineage 以 manifest 的 `basePath` 重新匯出後的 `snapshotId` 一致性。
   5. 以 `state.json` 的 rename 提交，同時更新 head 與 serving，並在 commit log 記錄 `kind: restore`。兩種情況都只追加一筆事件，沿用 R-ARCH-03 的一般提交協定與 R-ARCH-04 的對帳，不需要特別的安裝流程：
@@ -659,7 +659,7 @@ PR 核准即視為接受下表的建議預設；若要改用替代方案，請�
      - `up` 之後，worker 在 `restore` 暫停期間仍會處理這筆紀錄：先以非阻塞方式取得 writer lock 並依 R-ARCH-04 對帳（補齊 log、備份與封存），再執行對外驗證；不啟動 run、不做清理。R-OPS-07 通過且備份成功後，自動解除 `restore` 暫停原因，排程恢復。
      - 只有對帳確認登記的 restore 已提交（`lastCommit.runId` 相符）時，才執行 R-OPS-07 並在通過後解除 `restore`。若對帳把它判定為 `abandoned`（rename 之前就中斷），不對既有 release 執行驗證，保留 `restore` 暫停並告警。
      - 任一步失敗時保留暫停並告警，由維運者處理後以 `schedule resume --reason restore` 解除。
-     - restore 閘門：只要 `scheduler.sqlite` 中有狀態為「待提交」或「待驗證」的 restore 紀錄，其他會提交或清理的寫入指令（`run *`、`migrate`、`release promote|rollback|rebuild --promote|prune`、`attempt prune`）都在取得 writer lock 後、對帳之前以 `status: restore_pending` 結束並回傳非零 exit code，不改變任何狀態。因此兩段之間 `lastCommit.runId` 不會被其他提交取代。允許的動作只有：worker 處理這筆紀錄、以同一個備份集重跑 `backup restore`（續做），以及唯讀指令。
+     - restore 閘門：只要 `scheduler.sqlite` 中有狀態為「待提交」或「待驗證」的 restore 紀錄，其他取得 writer lock 的指令（`run *`、`migrate`、`release promote|rollback|rebuild --promote|prune`、`attempt prune`、`backup create`）都在取得 writer lock 後、對帳之前以 `status: restore_pending` 結束並回傳非零 exit code，不改變任何狀態。因此兩段之間 `lastCommit.runId` 不會被其他提交取代。允許的動作只有：worker 處理這筆紀錄、以同一個備份集重跑 `backup restore`（續做），以及唯讀指令。
      - 結束舊紀錄只能透過明確的取代流程：`schedule resume --reason restore` 把紀錄標為 `superseded`，並記錄維運者、時間與原因，之後閘門解除；以不同的備份集執行 `backup restore`，會先把舊紀錄標為 `superseded`，再登記新的 restore。被取代的 restore 不再自動驗證，需要時由維運者手動執行 R-OPS-07。
   7. 提交之後，才把被取代的 state 快照移到 `backups/pre-restore-<ts>/`，乾淨主機則複製第 5 步所述的 `backups/restored-from-<set>/` 證據。舊的 lineage 與物件不刪除。
   - 任一步驟在提交前中斷，原狀態都完整保留。
@@ -936,11 +936,12 @@ breakdown 的回應結構：
   - release 重用：不同 lineage 產生同一個 `releaseId` 時，重用既有目錄；之後的 promote、重啟與 prune 都依 commit log 取得正確的 lineage。
   - rollback：rollback → 重啟 → 新 run promote，`lseq` 不碰撞，被跳過的 lineage 不會被清除；`state/lseq` 已遞增但 lineage 尚未改名時硬終止，序號不重用。
   - 遷移匯入：含 unchanged run（`reused_dataset_version_id`）的 fixture，兩向引用都保留，`foreign_key_check` 通過。
-  - 同源後繼判定（R-DATA-46）：checkpoint 之後經授權只改 `played_at`、generation 不變的修正，以 audit 鏈證明為同源；audit 鏈斷裂、引用的來源不存在，或現值與最後一筆 `new_payload` 不符，都判為分岔。
+  - 同源後繼判定（R-DATA-46）：checkpoint 之後經授權只改 `played_at`、generation 不變的修正，以及 checkpoint 之後新增、再經授權修正的 fact，都以 audit 鏈證明為同源；audit 鏈斷裂、引用的來源不存在，或現值與最後一筆 `new_payload` 不符，都判為分岔。
   - attempt：超過 `ATTEMPT_MAX_BYTES` 後暫停、清理後自動恢復排程；多批 history 其中兩批失敗時，以 `attempt show --request` 只用 attempt 目錄與 `objects/` 離線重讀每一批及其審閱輸入。
   - 升級停寫：`schedule pause` 之後，內建排程與主機 timer 的 `schedule tick` 都完全 no-op，不取得 writer lock；升級途中 attempt 容量恢復時，`attempt_quota` 保留不變、tick 不清理；`schedule resume` 之後的下一次 tick 才重新評估並解除；升級全程沒有 sync 寫入。
   - 對帳途中再次斷電：在補寫 log 之後、任何後續步驟之前斷電，重啟後 state 與 log 仍一致，不觸發 fail closed。
-  - exporter 身分：由 image A 匯出的 serving release，在乾淨主機以 image C 還原後再備份，`servingExporter` 仍是 A。
+  - exporter 身分：由 image A 匯出的 serving release，在乾淨主機以 image C 還原後再備份，`servingExporter` 仍是 A。目的主機已有 image B 匯出、具重用資格的同一 `releaseId` 時，還原事件與再次備份都記錄 B；沒有可重用的目錄時記錄 A。
+  - 還原已被 prune 的 release：從備份重新安裝後、提交前中斷，再以同一個備份集重跑；前一次的目錄視為 orphan，新安裝取得新的 `installId`，最終只有一筆 restore 事件。
   - history：多批 history 部分失敗；目標 scope 的成功、fail-closed、硬終止，以及 `evidence_incomplete` 的 attempt。
   - 資料邊界：media-only 防護（含 `is_current` 切換、`sync_runs` 狀態轉換與無變更的 manifest 等合法案例）；attempt 不得被拿來還原；`init` 在空白 named volume 與無寫入權限的 bind mount 上的行為；R-OPS-10 的跨年、過期與缺 mapping 案例。
 - **舊發布路徑回歸**：P1–P4 的每個 PR，都必須讓現有的 `pnpm test`、PG integration，以及以 `build:pages` 建置的 static E2E 照常通過（該測試禁止 `/api/` 請求，只適用於 Pages 入口）。容器 E2E 另外以 `build:docker` 執行。
