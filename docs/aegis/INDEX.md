@@ -5,6 +5,7 @@ Entries are workspace records, not authoritative runtime decisions.
 
 | Date | Kind | Path | Title |
 | --- | --- | --- | --- |
+| 2026-11-22 | spec | docs/aegis/specs/2026-11-22-docker-sqlite-ui-refactor.md | Proposed Docker image deployment, SQLite data store and UI redesign |
 | 2026-10-04 | work | docs/aegis/work/2026-10-04-sqlite-performance/20-checkpoint.md | SQLite performance execution checkpoint |
 | 2026-10-04 | work | docs/aegis/work/2026-10-04-sqlite-performance/90-evidence.md | SQLite performance execution evidence |
 | 2026-10-04 | plan | docs/aegis/plans/2026-10-04-sqlite-query-performance.md | Proposed SQLite performance implementation and two-stage deployment |
